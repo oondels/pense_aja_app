@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=0.7, user-scalable=no">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./bootstrap/icons/font/bootstrap-icons.css">
+  <link rel="stylesheet" type="text/css" href="assets/css/layout.css">
+  <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./assets/css/sweetalert2.min.css">
+  <link rel="stylesheet" href="./assets/css/modal.css">
+  <script src="./assets/js/sweetalert2.all.min.js"></script>
+
+  <title>Pense&Aja</title>
+</head>
+
+<body onload="listaTable()">
+  <header>
+    <div class="col-12 d-flex">
+      <div class="logo col-1">
+        <a href="./" id="logo"><img src="./assets/img/lampada.png" alt="ideia" width="50"></a>
+      </div>
+      <div class="col-3 d-flex align-items-center">
+        <span id="usuario" class="usuario"></span>
+        <span id="nome" class="nome"></span>
+        <span id="funcao" class="funcao"></span>
+      </div>
+      <div class="col-3 d-flex justify-content-between">
+        <div class="col-5">
+          <span id="valorTotal" class="valorTotal"></span>
+        </div>
+        <div class="col-5">
+          <span id="avaliacaoMensal" class="valorTotal"></span>
+        </div>
+      </div>
+      <div class="buttons col-5 d-flex justify-content-end">
+        <button id="openLoja" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="CONSULTAR PONTOS E RETIRAR BRINDES"><img src="./assets/img/loja-virtual.png" alt="loja" width="50" height="50"></button>
+        <button id="openLista" onclick="obtemAnoAtualEMesAnterior()" data-bs-toggle="tooltip" data-bs-placement="bottom" data-custom-class="custom-tooltip" title="LISTAR PENSE E AJA ANTERIORES"><img src="./assets/img/lista.png" alt="lista" width="50" height="50"></button>
+        <button id="openMenu" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip" title="CADASTRAR PENSE E AJA"><img src="./assets/img/ideiaOff.png" alt="ideiaoff" width="50" height="50"></button>
+        <button id="openUser" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip" title="LOGIN"><img src="./assets/img/user.png" alt="user" width="50" height="50"></button>
+      </div>
+    </div>
+
+    <nav id="loja" class="loja">
+      <div class="container-fluid itemsLoja text-center text-white font-weight-bold">
+        <span>Pontuação sujeita a mudança após avaliação do gerente</span>
+        <div class="col-12 d-flex justify-content-between mb-2">
+          <div id="divLojaMatricula" class="col-4 d-flex">
+            <input type="number" class="me-2 text-center rounded" placeholder="Matrícula" id="lojaMatricula">
+            <i id="pesqLoja" class="fs-2 bi bi-search text-white"></i>
+          </div>
+          <div class="col-4">
+            <p id="pontosLoja" class="fs-2"></p>
+          </div>
+          <div class="col-4 text-end">
+            <i id="closeLoja" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
+          </div>
+        </div>
+
+        <div class="d-none">
+          <span id="nomeLoja" class="nomeLoja">Nome: </span>
+          <span id="setorLoja" class="setorLoja">Setor: </span>
+          <span id="gerenteLoja" class="gerenteLoja">Gerente: </span>
+          <span id="liderLoja" class="liderLoja">Líder: </span>
+        </div>
+
+        <div class="divItensLoja col-12">
+          <div id="divSuperior" class="col-12 h-50 d-flex justify-content-between px-3 pt-3">
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="10" data-text="bloco de notas">
+              <div class="d-flex justify-content-center align-items-center w-100 h-100">
+                <img width="180" src="./assets/img/bloco.png" alt="Bloco de Notas" data-value="10">
+              </div>
+              <div class="container">
+                <p>BLOCO DE NOTAS</p>
+              </div>
+            </div>
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="20" data-text="necessaire">
+              <div class="d-flex justify-content-center align-items-center w-100 h-100">
+                <img width="180" src="./assets/img/bolsa.png" alt="Necessaire" data-value="20">
+              </div>
+              <div class="container">
+                <p>NECESSAIRE</p>
+              </div>
+            </div>
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="30" data-text="camisa">
+              <div class="d-flex justify-content-center align-items-center w-100 h-100">
+                <img width="180" src="./assets/img/camisa.png" alt="Camisa" data-value="30">
+              </div>
+              <div class="container">
+                <p>CAMISA</p>
+              </div>
+            </div>
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="15" data-text="caneca">
+              <div class="d-flex justify-content-center align-items-center w-100 h-100">
+                <img width="180" src="./assets/img/caneca.png" alt="Caneca" data-value="15">
+              </div>
+              <div class="container">
+                <p>CANECA</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="divInferior" class="col-12 h-50 d-flex justify-content-between px-3">
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="4" data-text="caneta">
+              <div class="d-flex justify-content-center align-items-center w-100 h-100">
+                <img width="180" src="./assets/img/caneta.png" alt="Caneta" data-value="4">
+              </div>
+              <div class="container">
+                <p>CANETA</p>
+              </div>
+            </div>
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="5" data-text="chaveiro">
+              <div class="d-flex justify-content-center align-items-center w-100 h-100">
+                <img width="180" src="./assets/img/chaveiro.png" alt="Chaveiro" data-value="5">
+              </div>
+              <div class="container">
+                <p>CHAVEIRO</p>
+              </div>
+            </div>
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="10" data-text="copo">
+              <div class="d-flex justify-content-center align-items-center w-100 h-100">
+                <img width="180" src="./assets/img/copo.png" alt="Copo" data-value="10">
+              </div>
+              <div class="container">
+                <p>COPO</p>
+              </div>
+            </div>
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="40" data-text="tenis">
+              <div class="d-flex justify-content-center align-items-center w-100 h-100">
+                <img width="180" src="./assets/img/tenis.png" alt="Tênis" data-value="40">
+              </div>
+              <div class="container">
+                <p>TÊNIS</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <nav id="lista">
+      <div class="navHeaderLista col-12">
+        <div class="col-4 d-flex ">
+          <div id="divMesLista" class="divMesLista text-center">
+            <h6 class="fs-6 m-0 text-white">MÊS:</h6>
+            <select name="mesLista" id="mesLista" onchange="busc()"></select>
+          </div>
+          <div id="divAnoLista" class="divAnoLista text-center">
+            <h6 class="fs-6 m-0 text-white">ANO:</h6>
+            <select name="anoLista" id="anoLista" onchange="busc()">
+            </select>
+          </div>
+        </div>
+        <div id="totalLista" class="totalLista col-4 ">
+          <span id="valorTotalLista" class="valorTotal"></span>
+        </div>
+        <div class="col-4 text-end pe-2 ">
+          <i id="closeLista" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
+        </div>
+      </div>
+      <div class="divGlossarioLista">
+        <div class="coresGlossarioLista">
+          <button id="exemploVermelho" class="exemploVermelho" onclick="filterReprovadoLista()"></button>
+          <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
+        </div>
+        <div class="coresGlossarioLista">
+          <button id="exemploRoxo" class="exemploRoxo" onclick="filterAmbosLista()"></button>
+          <label for="exemploRoxo" class="labelRoxo">Sem análises</label>
+        </div>
+        <div class="coresGlossarioLista">
+          <button id="exemploLaranja" class="exemploLaranja" onclick="filterGerenteLista()"></button>
+          <label for="exemploLaranja" class="labelLaranja">Visto pelo analista</label>
+        </div>
+        <div class="coresGlossarioLista">
+          <button id="exemploAzul" class="exemploAzul" onclick="filterAnalistaLista()"></button>
+          <label for="exemploAzul" class="labelAzul">Visto pelo gerente</label>
+        </div>
+        <div class="coresGlossarioLista">
+          <button id="exemploBranco" class="exemploBranco" onclick="filterVisibleLista()"></button>
+          <label for="exemploBranco" class="labelBranco">Aprovado</label>
+        </div>
+        <div class="coresGlossarioLista">
+          <button id="exemploRose" class="exemploRose" onclick="filterRoseLista()"></button>
+          <label for="exemploRose" class="labelRose">Em Espera</label>
+        </div>
+      </div>
+      <div class="divTableLista">
+        <table class="consulta" id="emp-tableLista">
+          <thead id="headTheadLista">
+            <tr id="headConsultaLista" class="trHeadListaTR">
+              <th class="subtitles celulaLista colMenor thID">ID</th>
+              <th class="subtitles text-center celulaLista colMaior" col-index=1>Realizado</th>
+              <th class="ocult" col-index=2>Fábrica
+                <select class="table-filterLista col colMai" autocomplete="off" id="fabricaSel" name="fabricaSel" data-el="2" onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista nomeNormal colNome" col-index=3>Nome
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="nomeSel" name="nomeSel" data-el="3" onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaiorX" col-index=4>Setor
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="setorSel" name="setorSel" data-el="4" onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaiorX" col-index=5>Gerente
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="gerenteSel" name="gerenteSel" data-el="5" onchange="filter_rowsLista()">
+                  <option value="" id="selecionadoLista"></option>
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaiorX print" col-index=6>Nome do projeto
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="projetoSel" name="projetoSel" data-el="6" onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaior" col-index=7>Turno
+                <select class="table-filterLista col colMai" autocomplete="off" id="turnoSel" name="turnoSel" data-el="7" onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="action subtitles text-center celulaLista colMaior acoes">Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody id="tbodyLista">
+          </tbody>
+        </table>
+      </div>
+      <div id="loading-overlay">
+        <div id="loading-spinner"></div>
+      </div>
+    </nav>
+    <nav id="menu">
+      <div class="navConteudo container-fluid border">
+
+
+        <div class="col-12 text-end">
+          <i id="closeMenu" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
+        </div>
+
+
+        <form id="cadastroForm">
+          <div id="dadosColaborador" class="inputSmall"></div>
+          <div id="cabProjeto" class="cabProjeto"></div>
+          <div class="insereDados">
+            <div id="sitAnterior" class="sitAnterior"></div>
+            <div id="sitAtual" class="sitAtual"></div>
+          </div>
+          <div id="elimPerda" class="elimPerda"></div>
+          <div class="col-12 d-flex opcionais mb-2">
+            <div id="amortizacao" class="labelSmall col-6 d-flex justify-content-center flex-column"></div>
+            <div id="outrosGanhos" class="labelSmall col-6 d-flex justify-content-center flex-column"></div>
+          </div>
+          <div id="saveCad"></div>
+          <div class="codigoInput" id="codigoInput"></div>
+          <input type="text" id="fabrica" class="ocult">
+        </form>
+      </div>
+    </nav>
+    <nav id="login">
+      <img src="./assets/img/semFundo.png" class="imgFundo" alt="Pense">
+      <div class="navHeader" class="flex-row-reverse">
+        <button id="closeUser"><img src="./assets/img/userC.png" alt="userC" width="50" height="50"></button>
+      </div>
+      <div class="navConteudo container-fluid mt-4">
+        <div id="container" class="row align-items-center">
+          <div id="subContainer" class="col-md-10 mx-auto col-lg-5">
+            <form id="loginForm" class="p-4 p-md-5 border rounded-3">
+              <div id="user" class="form-floating mb-3"></div>
+              <div id="pass" class="form-floating mb-3"></div>
+              <div id="save"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+  <main>
+    <section class="text-center">
+      <div class="principal">
+        <div class="text-center bg-body-tertiary" id="divTitle">
+          <div class="container-fluid" id="titles">
+            <h1 id="titleText" class="m-0 fs-3">PENSE & AJA -
+              <span id="mes">
+                <script>
+                  const month = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
+                  const data = new Date();
+                  const dia = data.getDate();
+                  const mes = data.getMonth();
+                  const proximo = mes + 1;
+                  if (dia >= 29) {
+                    let nomeMes = month[proximo];
+                    document.querySelector('#mes').innerText = nomeMes;
+                  } else {
+                    let nomeMes = month[mes];
+                    document.querySelector('#mes').innerText = nomeMes;
+                  }
+                </script>
+              </span>
+            </h1>
+          </div>
+        </div>
+        <div class="divGlossario">
+          <div class="coresGlossario">
+            <button id="exemploVermelho" class="exemploVermelho" onclick="filterReprovado();"></button>
+            <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
+          </div>
+          <div class="coresGlossario">
+            <button id="exemploRoxo" class="exemploRoxo" onclick="filterAmbos();"></button>
+            <label for="exemploRoxo" class="labelRoxo">Sem análises</label>
+          </div>
+          <div class="coresGlossario">
+            <button id="exemploLaranja" class="exemploLaranja" onclick="filterGerente();"></button>
+            <label for="exemploLaranja" class="labelLaranja">Visto pelo analista</label>
+          </div>
+          <div class="coresGlossario">
+            <button id="exemploAzul" class="exemploAzul" onclick="filterAnalista();"></button>
+            <label for="exemploAzul" class="labelAzul">Visto pelo gerente</label>
+          </div>
+          <div class="coresGlossario">
+            <button id="exemploBranco" class="exemploBranco" onclick="filterVisible();"></button>
+            <label for="exemploBranco" class="labelBranco">Aprovado</label>
+          </div>
+          <div class="coresGlossario">
+            <button id="exemploRose" class="exemploRose" onclick="filterRose()"></button>
+            <label for="exemploRose" class="labelRose">Em Espera</label>
+          </div>
+        </div>
+        <div class="divTable">
+          <table class="consulta" id="emp-table">
+            <thead id="headThead">
+              <tr id="headConsulta" class="trHead">
+                <th class="subtitles celula colMenor thID">ID</th>
+                <th class="subtitles celula colMaior" col-index=1>Realizado</th>
+                <th class="ocult" col-index=2>Fábrica
+                  <select class="table-filter col colMai" autocomplete="off" id="realizadoSelLista" name="realizadoSelLista" data-el="2" onchange="filter_rows()">
+                    <option value="all"></option>
+                  </select>
+                </th>
+                <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
+                  <select class="table-filter col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista" data-el="3" onchange="filter_rows()">
+                    <option value="all"></option>
+                  </select>
+                </th>
+                <th class="subtitles celula colMaiorX" col-index=4>Setor
+                  <select class="table-filter col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista" data-el="4" onchange="filter_rows()">
+                    <option value="all"></option>
+                  </select>
+                </th>
+                <th class="subtitles celula colMaiorX" col-index=5>Gerente
+                  <select class="table-filter col colMaiX" autocomplete="off" id="gerenteSelLista" name="gerenteSelLista" data-el="5" onchange="filter_rows()">
+                    <option value="" id="selecionado"></option>
+                    <option value="all"></option>
+                  </select>
+                </th>
+                <th class="subtitles celula colMaiorX print" col-index=6>Nome do projeto
+                  <select class="table-filter col colMaiX" autocomplete="off" id="projetoSelLista" name="projetoSelLista" data-el="6" onchange="filter_rows()">
+                    <option value="all"></option>
+                  </select>
+                </th>
+                <th class="subtitles celula colMaior" col-index=7>Turno
+                  <select class="table-filter col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista" data-el="7" onchange="filter_rows()">
+                    <option value="all"></option>
+                  </select>
+                </th>
+                <th class="action subtitles celula colMaior acoes">Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-xl modal-dialog modal-dialog-scrollable modal-fullscreen-lg-down modalBack">
+          <div class="modal-content modalForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel"></h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body mBody">
+              <div class="dadosCadastrante">
+                <div id="colaborador" class="row text-start colaborador">
+                  <div class="divisaoColaborador">
+                    <span id="matriculaModal" class="rowW"></span>
+                    <span id="nomeModal" class="rowW"></span>
+                  </div>
+                  <div class="divisaoColaborador">
+                    <span id="setorModal" class="rowW"></span>
+                    <span id="liderModal" class="rowW"></span>
+                  </div>
+                  <div class="divisaoColaborador">
+                    <span id="turnoModal" class="rowW"></span>
+                    <span id="dataModal" class="rowW"></span>
+                  </div>
+                </div>
+                <div id="projeto" class="row text-start">
+                  <div class="divisaoSituacao">
+                    <span id="anteriorModal" class="rowW"></span>
+                    <span id="atualModal" class="rowW"></span>
+                  </div>
+                  <div class="divisaoAmais">
+                    <span id="elimPerdaModal" class="rowW"></span>
+                    <span id="amortizacaoModal" class="rowW"></span>
+                    <span id="outGanhosModal" class="rowW"></span>
+                  </div>
+                </div>
+              </div>
+              <hr>
+              <div id="avaliadores" class="avaliadores">
+                <span id="gerAprovador" class="gerAprovador"></span>
+                <span id="anaAprovador" class="anaAprovador"></span>
+              </div>
+              <div id="avaliacao" class="avaliacao">
+                <span id="id" class="d-none"></span>
+                <span id="status_gerente" class="d-none"></span>
+                <span id="status_analista" class="d-none"></span>
+                <div class="avaliacaoInterior">
+                  <div class="classificacao">
+                    <h5 id="lblclass" class="lblclass">CLASSIFICAÇÃO</h5>
+                    <div id="subClassificacao" class="subClassificacao">
+                      <div id="classificacaoA" class="classificacaoA">
+                        <label for="a"><i>(A)</i></label>&nbsp;
+                        <input type='radio' id="a" class="radio" name='op' value='a'>
+                      </div>
+                      <div id="classificacaoB" class="classificacaoB">
+                        <label for="b"><i>(B)</i></label>&nbsp;
+                        <input type='radio' id="b" class="radio" name='op' value='b'>
+                      </div>
+                      <div id="classificacaoC" class="classificacaoC">
+                        <label for="c"><i>(C)</i></label>&nbsp;
+                        <input type='radio' id="c" class="radio" name='op' value='c'>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="avaliacaoInterior">
+                  <div id="a3Mae" class="a3Mae">
+                    <h5>A3 Mãe</h5>
+                    <select name="a3_mae" id="a3_mae" class="a3_mae form-select form-select-lg">
+                      <option value="" id="escolha">Selecione</option>
+                      <option value="lean">LEAN</option>
+                      <option value="pessoas">PESSOAS</option>
+                      <option value="digitalizacao">DIGITALIZAÇÃO</option>
+                      <option value="produtividade">PRODUTIVIDADE</option>
+                      <option value="padronizacao">PADRONIZAÇÃO</option>
+                      <option value="comunicacao">COMUNICAÇÃO</option>
+                      <option value="comunicacao">SSMA</option>
+                      <option value="comunicacao">ORÇAMENTO</option>
+                      <option value="comunicacao">QUALIDADE</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <div id="flag" class="flag">
+                <div id="flagEsperar" class="flagEsperar">
+                  <label for="esperar">Em Espera
+                    <input type="checkbox" name="esperar" id="esperar">
+                  </label>
+                </div>
+                <div id="flagReplicar" class="flagReplicar">
+                  <label for="replicar">Replicável
+                    <input type="checkbox" name="replicar" id="replicar">
+                  </label>
+                </div>
+              </div>
+              <button type="button" id="aprovar" class="btn btn-outline-success">Aprovar</button>
+              <button type="button" id="reprovar" class="btn btn-outline-danger">Reprovar</button>
+              <button type="button" id="excluir" class="btn btn-outline-warning">Excluir</button>
+              <button type="button" id="btnClose" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <footer class="footer h6">
+    <p class="copy_right">
+      <span>Desenvolvido por DASS SEST</span> &copy;
+      <span class="copy_right_ano">
+        <script>
+          const date = new Date();
+          document.querySelector('.copy_right_ano').innerText = date.getFullYear();
+        </script>
+      </span>
+      </span>
+    </p>
+  </footer>
+  <script src="assets/js/jquery.min.js"></script>
+  <script src="assets/js/script.js"></script>
+  <script src="assets/js/socket.js"></script>
+  <script src="assets/js/loja.js"></script>
+  <script src="assets/js/index.js" type="module"></script>
+  <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+  </script>
+</body>
+
+</html>
