@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="./assets/css/sweetalert2.min.css">
   <link rel="stylesheet" href="./assets/css/modal.css">
+  <link rel="stylesheet" href="./assets/css/email.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="./assets/js/sweetalert2.all.min.js"></script>
 
   <title>Pense&Aja</title>
@@ -35,10 +37,17 @@
         </div>
       </div>
       <div class="buttons col-5 d-flex justify-content-end">
-        <button id="openLoja" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="CONSULTAR PONTOS E RETIRAR BRINDES"><img src="./assets/img/loja-virtual.png" alt="loja" width="50" height="50"></button>
-        <button id="openLista" onclick="obtemAnoAtualEMesAnterior()" data-bs-toggle="tooltip" data-bs-placement="bottom" data-custom-class="custom-tooltip" title="LISTAR PENSE E AJA ANTERIORES"><img src="./assets/img/lista.png" alt="lista" width="50" height="50"></button>
-        <button id="openMenu" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip" title="CADASTRAR PENSE E AJA"><img src="./assets/img/ideiaOff.png" alt="ideiaoff" width="50" height="50"></button>
-        <button id="openUser" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip" title="LOGIN"><img src="./assets/img/user.png" alt="user" width="50" height="50"></button>
+        <button id="openLoja" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
+          data-bs-title="CONSULTAR PONTOS E RETIRAR BRINDES"><img src="./assets/img/loja-virtual.png" alt="loja"
+            width="50" height="50"></button>
+        <button id="openLista" onclick="obtemAnoAtualEMesAnterior()" data-bs-toggle="tooltip" data-bs-placement="bottom"
+          data-custom-class="custom-tooltip" title="LISTAR PENSE E AJA ANTERIORES"><img src="./assets/img/lista.png"
+            alt="lista" width="50" height="50"></button>
+        <button id="openMenu" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip"
+          title="CADASTRAR PENSE E AJA"><img src="./assets/img/ideiaOff.png" alt="ideiaoff" width="50"
+            height="50"></button>
+        <button id="openUser" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip"
+          title="LOGIN"><img src="./assets/img/user.png" alt="user" width="50" height="50"></button>
       </div>
     </div>
 
@@ -67,7 +76,8 @@
 
         <div class="divItensLoja col-12">
           <div id="divSuperior" class="col-12 h-50 d-flex justify-content-between px-3 pt-3">
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="10" data-text="bloco de notas">
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
+              data-value="10" data-text="bloco de notas">
               <div class="d-flex justify-content-center align-items-center w-100 h-100">
                 <img width="180" src="./assets/img/bloco.png" alt="Bloco de Notas" data-value="10">
               </div>
@@ -75,7 +85,8 @@
                 <p>BLOCO DE NOTAS</p>
               </div>
             </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="20" data-text="necessaire">
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
+              data-value="20" data-text="necessaire">
               <div class="d-flex justify-content-center align-items-center w-100 h-100">
                 <img width="180" src="./assets/img/bolsa.png" alt="Necessaire" data-value="20">
               </div>
@@ -83,7 +94,8 @@
                 <p>NECESSAIRE</p>
               </div>
             </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="30" data-text="camisa">
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
+              data-value="30" data-text="camisa">
               <div class="d-flex justify-content-center align-items-center w-100 h-100">
                 <img width="180" src="./assets/img/camisa.png" alt="Camisa" data-value="30">
               </div>
@@ -91,7 +103,8 @@
                 <p>CAMISA</p>
               </div>
             </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="15" data-text="caneca">
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
+              data-value="15" data-text="caneca">
               <div class="d-flex justify-content-center align-items-center w-100 h-100">
                 <img width="180" src="./assets/img/caneca.png" alt="Caneca" data-value="15">
               </div>
@@ -102,7 +115,8 @@
           </div>
 
           <div id="divInferior" class="col-12 h-50 d-flex justify-content-between px-3">
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="4" data-text="caneta">
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
+              data-value="4" data-text="caneta">
               <div class="d-flex justify-content-center align-items-center w-100 h-100">
                 <img width="180" src="./assets/img/caneta.png" alt="Caneta" data-value="4">
               </div>
@@ -110,7 +124,8 @@
                 <p>CANETA</p>
               </div>
             </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="5" data-text="chaveiro">
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
+              data-value="5" data-text="chaveiro">
               <div class="d-flex justify-content-center align-items-center w-100 h-100">
                 <img width="180" src="./assets/img/chaveiro.png" alt="Chaveiro" data-value="5">
               </div>
@@ -118,7 +133,8 @@
                 <p>CHAVEIRO</p>
               </div>
             </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="10" data-text="copo">
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
+              data-value="10" data-text="copo">
               <div class="d-flex justify-content-center align-items-center w-100 h-100">
                 <img width="180" src="./assets/img/copo.png" alt="Copo" data-value="10">
               </div>
@@ -126,7 +142,8 @@
                 <p>COPO</p>
               </div>
             </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center" data-value="40" data-text="tenis">
+            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
+              data-value="40" data-text="tenis">
               <div class="d-flex justify-content-center align-items-center w-100 h-100">
                 <img width="180" src="./assets/img/tenis.png" alt="Tênis" data-value="40">
               </div>
@@ -192,33 +209,39 @@
               <th class="subtitles celulaLista colMenor thID">ID</th>
               <th class="subtitles text-center celulaLista colMaior" col-index=1>Realizado</th>
               <th class="ocult" col-index=2>Fábrica
-                <select class="table-filterLista col colMai" autocomplete="off" id="fabricaSel" name="fabricaSel" data-el="2" onchange="filter_rowsLista()">
+                <select class="table-filterLista col colMai" autocomplete="off" id="fabricaSel" name="fabricaSel"
+                  data-el="2" onchange="filter_rowsLista()">
                   <option value="all"></option>
                 </select>
               </th>
               <th class="subtitles text-center celulaLista nomeNormal colNome" col-index=3>Nome
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="nomeSel" name="nomeSel" data-el="3" onchange="filter_rowsLista()">
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="nomeSel" name="nomeSel" data-el="3"
+                  onchange="filter_rowsLista()">
                   <option value="all"></option>
                 </select>
               </th>
               <th class="subtitles text-center celulaLista colMaiorX" col-index=4>Setor
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="setorSel" name="setorSel" data-el="4" onchange="filter_rowsLista()">
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="setorSel" name="setorSel"
+                  data-el="4" onchange="filter_rowsLista()">
                   <option value="all"></option>
                 </select>
               </th>
               <th class="subtitles text-center celulaLista colMaiorX" col-index=5>Gerente
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="gerenteSel" name="gerenteSel" data-el="5" onchange="filter_rowsLista()">
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="gerenteSel" name="gerenteSel"
+                  data-el="5" onchange="filter_rowsLista()">
                   <option value="" id="selecionadoLista"></option>
                   <option value="all"></option>
                 </select>
               </th>
               <th class="subtitles text-center celulaLista colMaiorX print" col-index=6>Nome do projeto
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="projetoSel" name="projetoSel" data-el="6" onchange="filter_rowsLista()">
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="projetoSel" name="projetoSel"
+                  data-el="6" onchange="filter_rowsLista()">
                   <option value="all"></option>
                 </select>
               </th>
               <th class="subtitles text-center celulaLista colMaior" col-index=7>Turno
-                <select class="table-filterLista col colMai" autocomplete="off" id="turnoSel" name="turnoSel" data-el="7" onchange="filter_rowsLista()">
+                <select class="table-filterLista col colMai" autocomplete="off" id="turnoSel" name="turnoSel"
+                  data-el="7" onchange="filter_rowsLista()">
                   <option value="all"></option>
                 </select>
               </th>
@@ -337,33 +360,39 @@
                 <th class="subtitles celula colMenor thID">ID</th>
                 <th class="subtitles celula colMaior" col-index=1>Realizado</th>
                 <th class="ocult" col-index=2>Fábrica
-                  <select class="table-filter col colMai" autocomplete="off" id="realizadoSelLista" name="realizadoSelLista" data-el="2" onchange="filter_rows()">
+                  <select class="table-filter col colMai" autocomplete="off" id="realizadoSelLista"
+                    name="realizadoSelLista" data-el="2" onchange="filter_rows()">
                     <option value="all"></option>
                   </select>
                 </th>
                 <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
-                  <select class="table-filter col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista" data-el="3" onchange="filter_rows()">
+                  <select class="table-filter col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista"
+                    data-el="3" onchange="filter_rows()">
                     <option value="all"></option>
                   </select>
                 </th>
                 <th class="subtitles celula colMaiorX" col-index=4>Setor
-                  <select class="table-filter col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista" data-el="4" onchange="filter_rows()">
+                  <select class="table-filter col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista"
+                    data-el="4" onchange="filter_rows()">
                     <option value="all"></option>
                   </select>
                 </th>
                 <th class="subtitles celula colMaiorX" col-index=5>Gerente
-                  <select class="table-filter col colMaiX" autocomplete="off" id="gerenteSelLista" name="gerenteSelLista" data-el="5" onchange="filter_rows()">
+                  <select class="table-filter col colMaiX" autocomplete="off" id="gerenteSelLista"
+                    name="gerenteSelLista" data-el="5" onchange="filter_rows()">
                     <option value="" id="selecionado"></option>
                     <option value="all"></option>
                   </select>
                 </th>
                 <th class="subtitles celula colMaiorX print" col-index=6>Nome do projeto
-                  <select class="table-filter col colMaiX" autocomplete="off" id="projetoSelLista" name="projetoSelLista" data-el="6" onchange="filter_rows()">
+                  <select class="table-filter col colMaiX" autocomplete="off" id="projetoSelLista"
+                    name="projetoSelLista" data-el="6" onchange="filter_rows()">
                     <option value="all"></option>
                   </select>
                 </th>
                 <th class="subtitles celula colMaior" col-index=7>Turno
-                  <select class="table-filter col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista" data-el="7" onchange="filter_rows()">
+                  <select class="table-filter col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
+                    data-el="7" onchange="filter_rows()">
                     <option value="all"></option>
                   </select>
                 </th>
@@ -376,7 +405,8 @@
           </table>
         </div>
       </div>
-      <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-xl modal-dialog modal-dialog-scrollable modal-fullscreen-lg-down modalBack">
           <div class="modal-content modalForm">
             <div class="modal-header">
@@ -474,13 +504,46 @@
               <button type="button" id="aprovar" class="btn btn-outline-success">Aprovar</button>
               <button type="button" id="reprovar" class="btn btn-outline-danger">Reprovar</button>
               <button type="button" id="excluir" class="btn btn-outline-warning">Excluir</button>
-              <button type="button" id="btnClose" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" id="btnClose" class="btn btn-outline-secondary"
+                data-bs-dismiss="modal">Cancelar</button>
             </div>
           </div>
         </div>
       </div>
     </section>
 
+    <div class="email-colector">
+      <div class="email-popup-overlay"></div>
+      <div class="email-popup">
+        <div class="email-popup-content">
+          <div class="email-popup-header">
+            <div class="email-popup-icon">
+              <svg viewBox="0 0 24 24" width="32" height="32">
+                <path fill="currentColor" d="M20,4H4C2.9,4,2,4.9,2,6v12c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V6C22,4.9,21.1,4,20,4z M20,8l-8,5L4,8V6l8,5l8-5V8z"/>
+              </svg>
+            </div>
+            <h3>Mantenha-se conectado</h3>
+            <button class="email-popup-close">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="email-popup-body">
+            <p>Deseja receber atualizações sobre o sistema Pense&Aja?</p>
+            <div class="email-input-container">
+              <input type="email" id="email-input" placeholder="Seu email">
+              <div class="email-validation-message"></div>
+            </div>
+          </div>
+          <div class="email-popup-footer">
+            <button class="email-popup-button secondary" id="email-skip">Agora não</button>
+            <button class="email-popup-button danger" id="email-no-email">Não tenho email!</button>
+            <button class="email-popup-button primary" id="email-submit">Continuar</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
   <footer class="footer h6">
     <p class="copy_right">
@@ -499,6 +562,7 @@
   <script src="assets/js/socket.js"></script>
   <script src="assets/js/loja.js"></script>
   <script src="assets/js/index.js" type="module"></script>
+  <script src="assets/js/email.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
   <script>
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')

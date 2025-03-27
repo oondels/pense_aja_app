@@ -34,9 +34,7 @@ let success = function (message) {
       var elemdivMatricula = document.getElementById("divMatricula");
       var elemNomeProjeto = document.getElementById("nomeProjeto");
       var elemDataProjeto = document.getElementById("dataProjeto");
-      var elemLblSituacaoAnterior = document.getElementById(
-        "lblSituacaoAnterior"
-      );
+      var elemLblSituacaoAnterior = document.getElementById("lblSituacaoAnterior");
       var elemSituacaoAnterior = document.getElementById("situacaoAnterior");
       var elemLblSituacaoAtual = document.getElementById("lblSituacaoAtual");
       var elemSituacaoAtual = document.getElementById("situacaoAtual");
@@ -55,21 +53,13 @@ let success = function (message) {
       var elemValorBInput = document.getElementById("valorBInput");
       var elemValorAmortizado = document.getElementById("valorAmortizadoInput");
       var elemOutGanhos = document.getElementById("outGanhos");
-      var elemdivInputCompleteColaborador = document.getElementById(
-        "divInputCompleteColaborador"
-      );
+      var elemdivInputCompleteColaborador = document.getElementById("divInputCompleteColaborador");
       var elemdivMetadeUmPerdas = document.getElementById("divMetadeUmPerdas");
-      var elemdivMetadeDoisPerdas = document.getElementById(
-        "divMetadeDoisPerdas"
-      );
+      var elemdivMetadeDoisPerdas = document.getElementById("divMetadeDoisPerdas");
       var elemdivInputsAmortiza = document.getElementById("divInputsAmortiza");
-      var elemdivInputsOutrosGanhos = document.getElementById(
-        "divInputsOutrosGanhos"
-      );
+      var elemdivInputsOutrosGanhos = document.getElementById("divInputsOutrosGanhos");
       if (elemMatricula.parentNode) {
-        elemdivInputsOutrosGanhos.parentNode.removeChild(
-          elemdivInputsOutrosGanhos
-        );
+        elemdivInputsOutrosGanhos.parentNode.removeChild(elemdivInputsOutrosGanhos);
         elemdivInputsAmortiza.parentNode.removeChild(elemdivInputsAmortiza);
         elemdivMatricula.parentNode.removeChild(elemdivMatricula);
         elemMatricula.parentNode.removeChild(elemMatricula);
@@ -98,9 +88,7 @@ let success = function (message) {
         elemValorBInput.parentNode.removeChild(elemValorBInput);
         elemValorAmortizado.parentNode.removeChild(elemValorAmortizado);
         elemOutGanhos.parentNode.removeChild(elemOutGanhos);
-        elemdivInputCompleteColaborador.parentNode.removeChild(
-          elemdivInputCompleteColaborador
-        );
+        elemdivInputCompleteColaborador.parentNode.removeChild(elemdivInputCompleteColaborador);
         elemdivMetadeUmPerdas.parentNode.removeChild(elemdivMetadeUmPerdas);
         elemdivMetadeDoisPerdas.parentNode.removeChild(elemdivMetadeDoisPerdas);
       }
@@ -119,8 +107,7 @@ let loginSuccess = function (message) {
     timer: 2100,
   }).then(function () {
     document.getElementById("login").style.opacity = "0";
-    document.getElementById("login").style.left =
-      document.getElementById("login").offsetWidth * -1 + "px";
+    document.getElementById("login").style.left = document.getElementById("login").offsetWidth * -1 + "px";
     document.getElementById("login").removeAttribute("style");
     openUser.removeAttribute("style");
     document.getElementById("openUser").classList.remove("d-none");
@@ -167,8 +154,7 @@ let errorCracha = function (message) {
   Swal.fire({
     position: "center",
     icon: "error",
-    title:
-      "Matrícula não encotrada na lista de funcionário, verifique se digitou corretamente!",
+    title: "Matrícula não encotrada na lista de funcionário, verifique se digitou corretamente!",
     timer: 5000,
   });
 };
@@ -210,9 +196,7 @@ openMenu.addEventListener("click", () => {
     elemCadastro.adcElemento();
     document.getElementById("matriculaInput").focus();
     const digMatricula = document.getElementById("matriculaInput");
-    let divInputCompleteColaborador = document.getElementById(
-      "divInputCompleteColaborador"
-    );
+    let divInputCompleteColaborador = document.getElementById("divInputCompleteColaborador");
     let dadosColaborador = document.getElementById("dadosColaborador");
     digMatricula.addEventListener("keyup", (e) => {
       let digitoMatricula = e.target.value;
@@ -221,27 +205,16 @@ openMenu.addEventListener("click", () => {
       let iniFila = digitoMatricula.substring(0, 4);
       if (ini == "400" || ini == "401" || ini == "402" || iniFila == "2000") {
         if (digitoMatricula.length == 7) {
-          fetch(
-            "http://" +
-              ip +
-              "/routes/pense_aja_vdc/apiBuscaCadastrante.php?matricula=" +
-              digitoMatricula
-          )
+          fetch("http://" + ip + "/routes/pense_aja_vdc/apiBuscaCadastrante.php?matricula=" + digitoMatricula)
             .then((response) => response.json())
             .then((data) => {
               if (data.erro == false) {
-                document.getElementById("nomeInput").value =
-                  data.matricula.nome;
-                document.getElementById("setorInput").value =
-                  data.matricula.setor;
-                document.getElementById("codigoInput").value =
-                  data.matricula.codigo;
+                document.getElementById("nomeInput").value = data.matricula.nome;
+                document.getElementById("setorInput").value = data.matricula.setor;
+                document.getElementById("codigoInput").value = data.matricula.codigo;
                 document.getElementById("liderInput").value =
-                  data.matricula.lider != null
-                    ? data.matricula.lider
-                    : data.matricula.gerente;
-                document.getElementById("gerenteInput").value =
-                  data.matricula.gerente;
+                  data.matricula.lider != null ? data.matricula.lider : data.matricula.gerente;
+                document.getElementById("gerenteInput").value = data.matricula.gerente;
                 if (data.matricula.valor == null) {
                   document.getElementById("pontosColab").innerText = "0";
                 } else {
@@ -254,9 +227,7 @@ openMenu.addEventListener("click", () => {
                 dadosColaborador.classList.remove("inputSmall");
                 dadosColaborador.classList.add("dadosColaborador");
               } else {
-                return required(
-                  "Matrícula não encotrada na lista de funcionário, verifique se digitou corretamente!"
-                );
+                return required("Matrícula não encotrada na lista de funcionário, verifique se digitou corretamente!");
               }
             });
         } else {
@@ -273,31 +244,20 @@ openMenu.addEventListener("click", () => {
         }
       }
       if (digitoMatricula.length == "4") {
-        fetch(
-          "http://" +
-            ip +
-            "/routes/pense_aja_vdc/apiBuscaCadastrante.php?matricula=400" +
-            digitoMatricula
-        )
+        fetch("http://" + ip + "/routes/pense_aja_vdc/apiBuscaCadastrante.php?matricula=400" + digitoMatricula)
           .then((response) => response.json())
           .then((data) => {
             if (data.erro == false) {
               document.getElementById("nomeInput").value = data.matricula.nome;
-              document.getElementById("setorInput").value =
-                data.matricula.setor;
-              document.getElementById("codigoInput").value =
-                data.matricula.codigo;
+              document.getElementById("setorInput").value = data.matricula.setor;
+              document.getElementById("codigoInput").value = data.matricula.codigo;
               document.getElementById("liderInput").value =
-                data.matricula.lider != null
-                  ? data.matricula.lider
-                  : data.matricula.gerente;
-              document.getElementById("gerenteInput").value =
-                data.matricula.gerente;
+                data.matricula.lider != null ? data.matricula.lider : data.matricula.gerente;
+              document.getElementById("gerenteInput").value = data.matricula.gerente;
               if (data.matricula.valor == null) {
                 document.getElementById("pontosColab").innerText = "0";
               } else {
-                document.getElementById("pontosColab").innerText =
-                  data.matricula.valor;
+                document.getElementById("pontosColab").innerText = data.matricula.valor;
               }
               //Surgir campos de verificação
               divInputCompleteColaborador.classList.add("surgeDeCima");
@@ -318,32 +278,21 @@ openMenu.addEventListener("click", () => {
         dadosColaborador.classList.remove("dadosColaborador");
       }
       if (digitoMatricula.length == "5") {
-        fetch(
-          "http://" +
-            ip +
-            "/routes/pense_aja_vdc/apiBuscaCadastrante.php?matricula=40" +
-            digitoMatricula
-        )
+        fetch("http://" + ip + "/routes/pense_aja_vdc/apiBuscaCadastrante.php?matricula=40" + digitoMatricula)
           .then((response) => response.json())
           .then((data) => {
             if (data.erro == false) {
               document.getElementById("nomeInput").value = data.matricula.nome;
-              document.getElementById("setorInput").value =
-                data.matricula.setor;
-              document.getElementById("codigoInput").value =
-                data.matricula.codigo;
+              document.getElementById("setorInput").value = data.matricula.setor;
+              document.getElementById("codigoInput").value = data.matricula.codigo;
               //console.log(data.matricula.codigo);
               document.getElementById("liderInput").value =
-                data.matricula.lider != null
-                  ? data.matricula.lider
-                  : data.matricula.gerente;
-              document.getElementById("gerenteInput").value =
-                data.matricula.gerente;
+                data.matricula.lider != null ? data.matricula.lider : data.matricula.gerente;
+              document.getElementById("gerenteInput").value = data.matricula.gerente;
               if (data.matricula.valor == null) {
                 document.getElementById("pontosColab").innerText = "0";
               } else {
-                document.getElementById("pontosColab").innerText =
-                  data.matricula.valor;
+                document.getElementById("pontosColab").innerText = data.matricula.valor;
               }
               //Surgir campos de verificação
               divInputCompleteColaborador.classList.add("surgeDeCima");
@@ -372,13 +321,8 @@ openMenu.addEventListener("click", () => {
       }
       e.preventDefault();
       let fabrica = document.getElementById("fabrica");
-      let codigoFinalFabrica = document
-        .getElementById("codigoInput")
-        .value.split(" ")[3]
-        .substring(1);
-      let codigoInicioSetor = document
-        .getElementById("codigoInput")
-        .value.split(" ")[1];
+      let codigoFinalFabrica = document.getElementById("codigoInput").value.split(" ")[3].substring(1);
+      let codigoInicioSetor = document.getElementById("codigoInput").value.split(" ")[1];
 
       if (codigoInicioSetor == "20") {
         fabrica.value = codigoFinalFabrica;
@@ -462,9 +406,7 @@ openMenu.addEventListener("click", () => {
           } else if (data.message == "error") {
             return error("Erro ao cadastrar, verifique!");
           } else if (data.message == "existe") {
-            return warning(
-              "Pense & Aja já cadastrado com esse nome para o mesmo colaborador!"
-            );
+            return warning("Pense & Aja já cadastrado com esse nome para o mesmo colaborador!");
           }
         });
       e.preventDefault();
@@ -485,9 +427,7 @@ openMenu.addEventListener("click", () => {
       }
     });
     let checkOutrosGanho = document.getElementById("checkOutrosGanho");
-    let divInputsOutrosGanhos = document.getElementById(
-      "divInputsOutrosGanhos"
-    );
+    let divInputsOutrosGanhos = document.getElementById("divInputsOutrosGanhos");
     let outrosGanhos = document.getElementById("outrosGanhos");
 
     checkOutrosGanho.addEventListener("change", function () {
@@ -507,15 +447,13 @@ openMenu.addEventListener("click", () => {
       let valor_a = e.target.value;
       let valor_b = valorB.value;
       let amortiza = parseFloat(valor_a) / parseFloat(valor_b);
-      document.getElementById("valorAmortizadoInput").value =
-        amortiza.toFixed(2);
+      document.getElementById("valorAmortizadoInput").value = amortiza.toFixed(2);
     });
     valorB.addEventListener("keyup", (e) => {
       let valor_b = e.target.value;
       let valor_a = valorA.value;
       let amortiza = parseFloat(valor_a) / parseFloat(valor_b);
-      document.getElementById("valorAmortizadoInput").value =
-        amortiza.toFixed(2);
+      document.getElementById("valorAmortizadoInput").value = amortiza.toFixed(2);
     });
   }, 10);
 });
@@ -572,13 +510,13 @@ openUser.addEventListener("click", () => {
           .then((response) => response.json())
           .then((data) => {
             if (data.message == "sucess") {
+
+              sessionStorage.setItem("haveEmail", data.matricula.haveEmail);
+              sessionStorage.setItem("email", data.matricula.email);
               sessionStorage.setItem("usuario", data.matricula.usuario);
               sessionStorage.setItem("nome", data.matricula.nome);
               sessionStorage.setItem("funcao", data.matricula.funcao);
-              sessionStorage.setItem(
-                "avaliacao_mensal",
-                data.matricula.avaliacao_mensal
-              );
+              sessionStorage.setItem("avaliacao_mensal", data.matricula.avaliacao_mensal);
               return loginSuccess("Login realizado");
             } else {
               return error("Usuário ou senha não conferem, verifique!");
@@ -722,10 +660,7 @@ function alterarSenha(dados) {
           showConfirmButton: true,
           confirmButtonText: "Alterar",
           preConfirm: () => {
-            return [
-              document.getElementById("swal-input1").value,
-              document.getElementById("swal-input2").value,
-            ];
+            return [document.getElementById("swal-input1").value, document.getElementById("swal-input2").value];
           },
         });
         if (formValues[0] === "") {
@@ -789,9 +724,7 @@ function alterarSenha(dados) {
                 document.getElementById("loginForm").reset();
                 return success("Senha atualizada");
               } else {
-                return error(
-                  "Não foi possível atualizar a senha, verifique a matrícula digitada e tente novamente!"
-                );
+                return error("Não foi possível atualizar a senha, verifique a matrícula digitada e tente novamente!");
               }
             });
         }
