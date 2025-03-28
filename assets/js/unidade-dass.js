@@ -66,6 +66,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         closeUnidadePopup();
+        setTimeout(() => {
+          window.location.reload()
+        }, 2000);
       })
       .catch((error) => {
         const message = error.response.data.message;
