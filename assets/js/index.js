@@ -546,8 +546,8 @@ closeUser.addEventListener("click", () => {
     ativaBtn();
   }, 200);
 });
+
 openLista.addEventListener("click", () => {
-  showLoading();
   listaTableLista();
   dadosFiltroLista();
   lista.style.display = "flex";

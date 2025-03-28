@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="./assets/css/modal.css">
   <link rel="stylesheet" href="./assets/css/email.css">
   <link rel="stylesheet" href="./assets/css/unidade-dass.css">
+  <link rel="stylesheet" href="./assets/css/main.css">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="./assets/js/sweetalert2.all.min.js"></script>
 
@@ -584,6 +585,26 @@
         </div>
       </div>
     </div>
+
+    <div class="loading-cdata hidden">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-core"></div>
+        <div class="spinner-text">
+          <span>C</span>
+          <span>A</span>
+          <span>R</span>
+          <span>R</span>
+          <span>E</span>
+          <span>G</span>
+          <span>A</span>
+          <span>N</span>
+          <span>D</span>
+          <span>O</span>
+        </div>
+      </div>
+    </div>
+
   </main>
   <footer class="footer h6">
     <p class="copy_right">
