@@ -38,10 +38,6 @@ export const closeEmailPopup = () => {
 };
 
 document.addEventListener("DOMContentLoaded", function () {
-  setTimeout(() => {
-    showEmailPopup();
-  }, 0);
-
   const currentYear = new Date().getFullYear();
   const yearElement = document.getElementById("email-copyright-year");
   if (yearElement) {
