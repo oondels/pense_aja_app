@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./assets/css/sweetalert2.min.css">
   <link rel="stylesheet" href="./assets/css/modal.css">
   <link rel="stylesheet" href="./assets/css/email.css">
+  <link rel="stylesheet" href="./assets/css/unidade-dass.css">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="./assets/js/sweetalert2.all.min.js"></script>
 
@@ -512,6 +513,35 @@
       </div>
     </section>
 
+    <div class="unidade-dass">
+      <div class="unidade-popup-overlay"></div>
+      <div class="unidade-popup">
+        <div class="unidade-popup-content">
+          <div class="unidade-popup-header">
+            <div class="unidade-popup-icon">
+              <img src="./assets/img/dass.png"></img>
+            </div>
+            <h3>Bem-vindo ao Sistema Pense & Aja!</h3>
+          </div>
+          <div class="unidade-popup-body">
+            <p>Para prosseguirmos, por favor informe sua matrícula para identificarmos sua unidade Dass.</p>
+            <div class="unidade-input-container">
+              <input type="number" id="unidade-input" placeholder="Sua matrícula">
+              <div class="unidade-validation-message"></div>
+            </div>
+          </div>
+          <div class="unidade-popup-footer">
+            <button class="unidade-popup-button primary" id="unidade-submit">
+              <span>Continuar</span>
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="email-colector">
       <div class="email-popup-overlay"></div>
       <div class="email-popup">
@@ -522,13 +552,13 @@
                 <path fill="currentColor" d="M20,4H4C2.9,4,2,4.9,2,6v12c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V6C22,4.9,21.1,4,20,4z M20,8l-8,5L4,8V6l8,5l8-5V8z"/>
               </svg> -->
               <svg viewBox="0 0 24 24" width="32" height="32">
-                <path fill="currentColor" d="M12,22c1.1,0,2-0.9,2-2h-4C10,21.1,10.9,22,12,22z M18,16v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-0.83-0.67-1.5-1.5-1.5 S10.5,3.17,10.5,4v0.68C7.63,5.36,6,7.92,6,11v5l-2,2v1h16v-1L18,16z"/>
+                <path fill="currentColor" d="M12,22c1.1,0,2-0.9,2-2h-4C10,21.1,10.9,22,12,22z M18,16v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-0.83-0.67-1.5-1.5-1.5 S10.5,3.17,10.5,4v0.68C7.63,5.36,6,7.92,6,11v5l-2,2v1h16v-1L18,16z" />
               </svg>
             </div>
             <h3>Mantenha-se conectado</h3>
             <button class="email-popup-close">
               <svg viewBox="0 0 24 24" width="24" height="24">
-                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
               </svg>
 
               </svg>
@@ -573,6 +603,7 @@
   <script src="assets/js/loja.js"></script>
   <script src="assets/js/index.js" type="module"></script>
   <script src="assets/js/email.js" type="module"></script>
+  <script src="assets/js/unidade-dass.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
   <script>
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
