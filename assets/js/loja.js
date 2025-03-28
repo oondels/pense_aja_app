@@ -45,7 +45,7 @@ document.querySelectorAll("img").forEach(function (div) {
         }).then(async (result) => {
 console.log(item)
           if (result.isConfirmed) {
-            let brinde = await fetch("http://" + ip + "/routes/pense_aja_vdc/apiPostPremio.php", {
+            let brinde = await fetch("/server/apiPostPremio.php", {
               method: "POST",
               body: JSON.stringify(item),
               headers: {
@@ -90,7 +90,7 @@ console.log(item)
 async function buscaColab() {
   let matricula = document.getElementById('lojaMatricula').value;
   let data = { "matricula": matricula };
-  let buscaDadosColaboradorLoja = await fetch("http://" + ip + "/routes/pense_aja_vdc/apiBuscaColaboradorLoja.php", {
+  let buscaDadosColaboradorLoja = await fetch("/server/apiBuscaColaboradorLoja.php", {
     method: "POST",
     body: JSON.stringify(data),
     headers: {

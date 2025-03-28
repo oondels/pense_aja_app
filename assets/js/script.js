@@ -277,14 +277,14 @@ function lerURL(URL) {
 
   return http.responseText;
 }
-let ip = "10.100.1.43";
+let ip = "localhost";
 
 /*****************************************************************************/
 async function listaTable() {
   let tbody = document.getElementById("tbody");
   tbody.innerText = "";
   let buscaDados = await fetch(
-    "http://" + ip + "/routes/pense_aja_vdc/apiBuscaDados.php",
+    "/server/apiBuscaDados.php",
     {
       method: "GET",
       headers: {
@@ -414,7 +414,7 @@ async function listaTable() {
           let el = event.target.id.substring(1);
           let data = { identificador: el };
           let buscaPenseAja = await fetch(
-            "http://" + ip + "/routes/pense_aja_vdc/apiBuscaPenseAja.php",
+            "/server/apiBuscaPenseAja.php",
             {
               method: "POST",
               body: JSON.stringify(data),
@@ -598,7 +598,7 @@ async function listaTable() {
             let reprovado = await fetch(
               "http://" +
                 ip +
-                "/routes/pense_aja_vdc/apiPostPenseAjaReprovado.php",
+                "/dass-penseaja-vdc/server/apiPostPenseAjaReprovado.php",
               {
                 method: "POST",
                 body: JSON.stringify(dataR),
@@ -656,7 +656,7 @@ async function listaTable() {
             let aprovado = await fetch(
               "http://" +
                 ip +
-                "/routes/pense_aja_vdc/apiPostPenseAjaAprovado.php",
+                "/dass-penseaja-vdc/server/apiPostPenseAjaAprovado.php",
               {
                 method: "POST",
                 body: JSON.stringify(dataA),
@@ -688,7 +688,7 @@ async function listaTable() {
             /*Se avaliação pelo gerente e pelo analista salva ponto*/
             if (setFuncao == "ANALISTA" && esperou == false) {
               let pontos = await fetch(
-                "http://" + ip + "/routes/pense_aja_vdc/apiPostPontos.php",
+                "/server/apiPostPontos.php",
                 {
                   method: "POST",
                   body: JSON.stringify(dataPonto),
@@ -705,7 +705,7 @@ async function listaTable() {
               esperou == false
             ) {
               let pontos = await fetch(
-                "http://" + ip + "/routes/pense_aja_vdc/apiPostPontos.php",
+                "/server/apiPostPontos.php",
                 {
                   method: "POST",
                   body: JSON.stringify(dataPonto),
@@ -742,7 +742,7 @@ async function listaTable() {
                   let excluir = await fetch(
                     "http://" +
                       ip +
-                      "/routes/pense_aja_vdc/apiPostPenseAjaExcluido.php",
+                      "/dass-penseaja-vdc/server/apiPostPenseAjaExcluido.php",
                     {
                       method: "POST",
                       body: JSON.stringify(dataE),
@@ -862,7 +862,7 @@ async function listaTableLista() {
     selectClassificacao: selectClassificacao,
   };
   let buscaDadosLista = await fetch(
-    "http://" + ip + "/routes/pense_aja_vdc/apiBuscaDadosLista.php",
+    "/server/apiBuscaDadosLista.php",
     {
       method: "POST",
       body: JSON.stringify(select),
@@ -1005,7 +1005,7 @@ async function listaTableLista() {
         let el = events.target.id.substring(6);
         let data = { identificador: el };
         let buscaPenseAjaLista = await fetch(
-          "http://" + ip + "/routes/pense_aja_vdc/apiBuscaPenseAja.php",
+          "/server/apiBuscaPenseAja.php",
           {
             method: "POST",
             body: JSON.stringify(data),
@@ -1191,7 +1191,7 @@ async function listaTableLista() {
           let reprovadoLista = await fetch(
             "http://" +
               ip +
-              "/routes/pense_aja_vdc/apiPostPenseAjaReprovado.php",
+              "/dass-penseaja-vdc/server/apiPostPenseAjaReprovado.php",
             {
               method: "POST",
               body: JSON.stringify(dataR),
@@ -1242,7 +1242,7 @@ async function listaTableLista() {
             replicavel: document.getElementById("replicar").checked,
           };
           let response = await fetch(
-            "http://" + ip + "/routes/pense_aja_vdc/apiPostPenseAjaAprovado.php",
+            "/server/apiPostPenseAjaAprovado.php",
             {
               method: "POST",
               body: JSON.stringify(dataA),
@@ -1272,7 +1272,7 @@ async function listaTableLista() {
           };
           if (setFuncaoLista == "ANALISTA" && esperouLista == false) {
             let pontosLista = await fetch(
-              "http://" + ip + "/routes/pense_aja_vdc/apiPostPontos.php",
+              "/server/apiPostPontos.php",
               {
                 method: "POST",
                 body: JSON.stringify(dataPonto),
@@ -1289,7 +1289,7 @@ async function listaTableLista() {
             esperouLista == false
           ) {
             let pontosLista = await fetch(
-              "http://" + ip + "/routes/pense_aja_vdc/apiPostPontos.php",
+              "/server/apiPostPontos.php",
               {
                 method: "POST",
                 body: JSON.stringify(dataPonto),
@@ -1326,7 +1326,7 @@ async function listaTableLista() {
                 fetch(
                   "http://" +
                     ip +
-                    "/routes/pense_aja_vdc/apiPostPenseAjaExcluido.php",
+                    "/dass-penseaja-vdc/server/apiPostPenseAjaExcluido.php",
                   {
                     method: "POST",
                     body: JSON.stringify(dataE),
@@ -1929,7 +1929,7 @@ async function dadosFiltroLista() {
   let anoLista = document.getElementById("anoLista");
   let mesLista = document.getElementById("mesLista");
   let selectMesAno = await fetch(
-    "http://" + ip + "/routes/pense_aja_vdc/apiSelectMesAno.php",
+    "/server/apiSelectMesAno.php",
     {
       method: "GET",
       headers: {

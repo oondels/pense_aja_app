@@ -206,7 +206,7 @@ openMenu.addEventListener("click", () => {
       let iniFila = digitoMatricula.substring(0, 4);
       if (ini == "400" || ini == "401" || ini == "402" || iniFila == "2000") {
         if (digitoMatricula.length == 7) {
-          fetch("http://" + ip + "/routes/pense_aja_vdc/apiBuscaCadastrante.php?matricula=" + digitoMatricula)
+          fetch("/server/apiBuscaCadastrante.php?matricula=" + digitoMatricula)
             .then((response) => response.json())
             .then((data) => {
               if (data.erro == false) {
@@ -245,7 +245,7 @@ openMenu.addEventListener("click", () => {
         }
       }
       if (digitoMatricula.length == "4") {
-        fetch("http://" + ip + "/routes/pense_aja_vdc/apiBuscaCadastrante.php?matricula=400" + digitoMatricula)
+        fetch("/server/apiBuscaCadastrante.php?matricula=400" + digitoMatricula)
           .then((response) => response.json())
           .then((data) => {
             if (data.erro == false) {
@@ -279,7 +279,7 @@ openMenu.addEventListener("click", () => {
         dadosColaborador.classList.remove("dadosColaborador");
       }
       if (digitoMatricula.length == "5") {
-        fetch("http://" + ip + "/routes/pense_aja_vdc/apiBuscaCadastrante.php?matricula=40" + digitoMatricula)
+        fetch("/server/apiBuscaCadastrante.php?matricula=40" + digitoMatricula)
           .then((response) => response.json())
           .then((data) => {
             if (data.erro == false) {
@@ -392,7 +392,7 @@ openMenu.addEventListener("click", () => {
         required("Descreva a situação atual!");
         return false;
       }
-      fetch("http://" + ip + "/routes/pense_aja_vdc/apiPostPenseAja.php", {
+      fetch("/server/apiPostPenseAja.php", {
         method: "POST",
         body: JSON.stringify(data),
         headers: {
@@ -501,11 +501,11 @@ openUser.addEventListener("click", () => {
         alterarSenha(data);
         e.preventDefault();
       } else {
-        fetch("http://" + ip + "/routes/pense_aja_vdc/apiCheckLogin.php", {
+        fetch("/server/apiCheckLogin.php", {
           method: "POST",
           body: JSON.stringify(data),
           headers: {
-            "Content-type": "aplication/json; charset=UTF-8",
+            "Content-type": "application/json; charset=UTF-8",
           },
         })
           .then((response) => response.json())
@@ -641,7 +641,7 @@ function alterarSenha(dados) {
     usuario: dados.usuario,
     senha: dados.senha,
   };
-  fetch("http://" + ip + "/routes/pense_aja_vdc/apiCheckLogin.php", {
+  fetch("/server/apiCheckLogin.php", {
     method: "POST",
     body: JSON.stringify(data),
     headers: {
@@ -714,7 +714,7 @@ function alterarSenha(dados) {
             matricula: formValues[0],
             senha: formValues[1],
           };
-          fetch("http://" + ip + "/routes/pense_aja_vdc/apiPutLogin.php", {
+          fetch("/server/apiPutLogin.php", {
             method: "POST",
             body: JSON.stringify(data),
             headers: {
