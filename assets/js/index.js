@@ -1,5 +1,6 @@
+import { checkUserEmail, showEmailPopup, closeEmailPopup } from "./email.js";
+
 // Sweet Alert
-/*--------------------------------------*/
 let success = function (message) {
   Swal.fire({
     icon: "success",
@@ -509,14 +510,16 @@ openUser.addEventListener("click", () => {
         })
           .then((response) => response.json())
           .then((data) => {
-            if (data.message == "sucess") {
-
+            if (data.message === "sucess") {
+              sessionStorage.setItem("matricula", data.matricula.matricula);
               sessionStorage.setItem("haveEmail", data.matricula.haveEmail);
               sessionStorage.setItem("email", data.matricula.email);
               sessionStorage.setItem("usuario", data.matricula.usuario);
               sessionStorage.setItem("nome", data.matricula.nome);
               sessionStorage.setItem("funcao", data.matricula.funcao);
               sessionStorage.setItem("avaliacao_mensal", data.matricula.avaliacao_mensal);
+
+              checkUserEmail();
               return loginSuccess("Login realizado");
             } else {
               return error("Usuário ou senha não conferem, verifique!");

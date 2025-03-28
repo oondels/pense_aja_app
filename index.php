@@ -518,8 +518,11 @@
         <div class="email-popup-content">
           <div class="email-popup-header">
             <div class="email-popup-icon">
-              <svg viewBox="0 0 24 24" width="32" height="32">
+              <!-- <svg viewBox="0 0 24 24" width="32" height="32">
                 <path fill="currentColor" d="M20,4H4C2.9,4,2,4.9,2,6v12c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V6C22,4.9,21.1,4,20,4z M20,8l-8,5L4,8V6l8,5l8-5V8z"/>
+              </svg> -->
+              <svg viewBox="0 0 24 24" width="32" height="32">
+                <path fill="currentColor" d="M12,22c1.1,0,2-0.9,2-2h-4C10,21.1,10.9,22,12,22z M18,16v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-0.83-0.67-1.5-1.5-1.5 S10.5,3.17,10.5,4v0.68C7.63,5.36,6,7.92,6,11v5l-2,2v1h16v-1L18,16z"/>
               </svg>
             </div>
             <h3>Mantenha-se conectado</h3>
@@ -527,10 +530,12 @@
               <svg viewBox="0 0 24 24" width="24" height="24">
                 <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
               </svg>
+
+              </svg>
             </button>
           </div>
           <div class="email-popup-body">
-            <p>Deseja receber atualizações sobre o sistema Pense&Aja?</p>
+            <p>Deseja receber notificações sobre o sistema Pense&Aja?</p>
             <div class="email-input-container">
               <input type="email" id="email-input" placeholder="Seu email">
               <div class="email-validation-message"></div>
@@ -540,6 +545,11 @@
             <button class="email-popup-button secondary" id="email-skip">Agora não</button>
             <button class="email-popup-button danger" id="email-no-email">Não tenho email!</button>
             <button class="email-popup-button primary" id="email-submit">Continuar</button>
+          </div>
+          <div class="email-popup-copyright">
+            <div>
+              <span>Dass - SEST</span> &copy; <span id="email-copyright-year"></span>
+            </div>
           </div>
         </div>
       </div>
