@@ -6,7 +6,7 @@
     include_once('./config/connection.php');
 
     $response = "";
-            $query = "SELECT DISTINCT EXTRACT(MONTH FROM createdat) AS mes, EXTRACT(YEAR FROM createdat) AS ano FROM pense_aja.pense_aja_vdc ORDER BY mes";
+            $query = "SELECT DISTINCT EXTRACT(MONTH FROM createdat) AS mes, EXTRACT(YEAR FROM createdat) AS ano FROM pense_aja.pense_aja ORDER BY mes";
             $result = $conn->prepare($query);
             $result->execute();
     if(($result) AND ($result->rowCount() != 0)) {

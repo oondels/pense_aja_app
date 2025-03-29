@@ -42,7 +42,7 @@ SELECT
 FROM
     autenticacao.usuarios au
 LEFT JOIN
-    pense_aja.pense_aja_vdc pa
+    pense_aja.pense_aja pa
 ON
     au.nome = pa.analista_avaliador
     AND pa.data_avaanalista BETWEEN (SELECT inicio_mes_anterior FROM data_interval)

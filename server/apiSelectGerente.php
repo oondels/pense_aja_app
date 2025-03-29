@@ -15,7 +15,7 @@
     }
 
     $response = "";
-            $query = "SELECT DISTINCT gerente FROM pense_aja.pense_aja_vdc ORDER BY gerente ASC";
+            $query = "SELECT DISTINCT gerente FROM pense_aja.pense_aja ORDER BY gerente ASC";
             $result = $conn->prepare($query);
             $result->execute();
     if(($result) AND ($result->rowCount() != 0)) {

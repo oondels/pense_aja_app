@@ -45,7 +45,7 @@
     $response = "";
 
     $hoje = date('Y-m-d');
-    $query = "SELECT *FROM pense_aja.pense_aja_vdc WHERE CAST(createdat AS DATE ) = :dataCriacao AND nome_projeto = :nomeProjeto AND matricula = :matricula";
+    $query = "SELECT *FROM pense_aja.pense_aja WHERE CAST(createdat AS DATE ) = :dataCriacao AND nome_projeto = :nomeProjeto AND matricula = :matricula";
     $result = $conn->prepare($query);
     $result->bindParam(':dataCriacao', $hoje);
     $result->bindParam(':nomeProjeto', $nomeProjeto);
@@ -71,7 +71,7 @@
         exit();
     }
 
-    $query = "INSERT INTO pense_aja.pense_aja_vdc
+    $query = "INSERT INTO pense_aja.pense_aja
     (matricula, nome, turno, setor, fabrica, lider, gerente, nome_projeto, data_realizada, situacao_anterior, situacao_atual, super_producao, transporte, processamento, movimento, estoque, espera, talento, retrabalho, valor_a, valor_b, valor_amortizado, outros_ganhos, gerente_aprovador, analista_avaliador, a3_mae, createdat, updatedat, excluido)
     VALUES(:matricula, :nome, :turno, :setor, :fabrica, :lider, :gerente, :nomeProjeto, :dataProjeto, :situacaoAnterior, :situacaoAtual, :superProducao, :transporte, :processamento, :movimento, :estoque, :espera, :talento, :retrabalho, :valorA, :valorB, :valorAmortizado, :outrosGanhos, '', '', '', NOW(), NOW(), '');";
     $result = $conn->prepare($query);

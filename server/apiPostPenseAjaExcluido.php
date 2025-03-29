@@ -19,7 +19,7 @@
         echo json_encode($response);
     } else {
         $response = "";
-        $query = "UPDATE pense_aja.pense_aja_vdc SET excluido = 'S', gerente_aprovador = :nome, deletedat = NOW(), data_aprogerente = NOW(), em_espera = DEFAULT, replicavel = DEFAULT  WHERE id = :identificador";
+        $query = "UPDATE pense_aja.pense_aja SET excluido = 'S', gerente_aprovador = :nome, deletedat = NOW(), data_aprogerente = NOW(), em_espera = DEFAULT, replicavel = DEFAULT  WHERE id = :identificador";
         $result = $conn->prepare($query);
         $result->bindParam(':identificador', $identificador);
         $result->bindParam(':nome', $nome);

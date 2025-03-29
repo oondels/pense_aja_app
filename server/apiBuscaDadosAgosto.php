@@ -16,7 +16,7 @@
 
     $response = "";
             $query = "SELECT *
-            FROM pense_aja.pense_aja_vdc
+            FROM pense_aja.pense_aja
             WHERE
                 (createdat >= DATE_TRUNC('MONTH', CURRENT_DATE - INTERVAL '2 MONTHS') + INTERVAL '29 DAYS'
                 AND createdat <= DATE_TRUNC('MONTH', CURRENT_DATE - INTERVAL '1 MONTH') + INTERVAL '28 DAYS')
