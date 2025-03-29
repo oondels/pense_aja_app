@@ -590,8 +590,8 @@ const buscaPA_Lista = (listaSize) => {
       selecionadoLista.innerText = "";
       selecionadoLista.value = "";
     }
-    getUniqueValuesFromColumnLista();
-    filter_rowsLista();
+    // getUniqueValuesFromColumnLista();
+    // filter_rowsLista();
     hideLoading();
   }
 
@@ -1077,6 +1077,7 @@ async function listaTableLista() {
   if (queryCache[cachedListKey] && currentTime - queryCache[cachedListKey].timestamp < 180000) {
     showLoadingComponent();
     buscaPA_Lista(listaSize);
+    updateSelectOptionsLista(queryCache[cachedListKey].filters);
     console.log("Não pesquisar, dados em cache");
     return;
   }
@@ -1090,11 +1091,15 @@ async function listaTableLista() {
         (!queryCache[cachedListKey] || newCache.dados.length > queryCache[cachedListKey].payload.length)
       ) {
         console.log("Atualizando cache com novos dados");
-        queryCache[cachedListKey] = { payload: newCache.dados, timestamp: currentTime };
+        queryCache[cachedListKey] = { payload: newCache.dados, timestamp: currentTime, filters: newCache.filters };
         localStorage.setItem("filterCache", JSON.stringify(queryCache));
         renderListaTableLista(queryCache[cachedListKey].payload);
         listaSize = queryCache[cachedListKey].payload.length;
       }
+
+      listaSize = newCache.dados.length;
+      valorTotal.innerHTML = `${listaSize}<strong class="text-success fs-6"> Registros</strong>`;
+      updateSelectOptionsLista(newCache.filters);
     })
     .catch((error) => {
       required("Filtro inválido");
@@ -1410,108 +1415,33 @@ function filter_rows() {
   });
   soma();
 }
-/*FILTRO LISTA*/
-// function getUniqueValuesFromColumnLista() {
-//   var unique_col_values_dict = {};
+
+// function updateSelectOptionsLista(unique_col_values_dict) {
 //   allFilters = document.querySelectorAll(".table-filterLista");
 //   allFilters.forEach((filter_i) => {
 //     col_index = filter_i.parentElement.getAttribute("col-index");
-//     const rows = document.querySelectorAll("#emp-tableLista > tbody > tr");
-//     rows.forEach((row) => {
-//       cell_value = row.querySelector("td:nth-child(" + col_index + ")").innerHTML;
-//       if (col_index in unique_col_values_dict) {
-//         if (unique_col_values_dict[col_index].includes(cell_value)) {
-//         } else {
-//           unique_col_values_dict[col_index].push(cell_value);
-//         }
-//       } else {
-//         unique_col_values_dict[col_index] = new Array(cell_value);
-//       }
+
+//     unique_col_values_dict[col_index].sort().forEach((i) => {
+//       filter_i.innerHTML = filter_i.innerHTML + `\n\n<option value="${i}">${i}</option>`;
 //     });
 //   });
-//   for (i in unique_col_values_dict) {
-//   }
-//   updateSelectOptionsLista(unique_col_values_dict);
 // }
-
-function getUniqueValuesFromColumnLista() {
-  const uniqueValues = {};
-  // Busca os filtros e inicializa o conjunto para cada coluna
-  const filters = Array.from(document.querySelectorAll(".table-filterLista"));
-  filters.forEach((filter) => {
-    const colIndex = filter.parentElement.getAttribute("col-index");
-    if (colIndex) {
-      uniqueValues[colIndex] = new Set();
-    }
-  });
-
-  // Busca todas as linhas da tabela apenas uma vez
-  const rows = document.querySelectorAll("#emp-tableLista > tbody > tr");
-  rows.forEach((row) => {
-    filters.forEach((filter) => {
-      const colIndex = filter.parentElement.getAttribute("col-index");
-      const cell = row.querySelector(`td:nth-child(${colIndex})`);
-      if (cell) {
-        uniqueValues[colIndex].add(cell.innerHTML);
-      }
-    });
-  });
-
-  // Converte os Sets para arrays
-  const uniqueValuesDict = {};
-  for (const col in uniqueValues) {
-    uniqueValuesDict[col] = Array.from(uniqueValues[col]);
-  }
-  updateSelectOptionsLista(uniqueValuesDict);
-}
 
 function updateSelectOptionsLista(unique_col_values_dict) {
-  allFilters = document.querySelectorAll(".table-filterLista");
+  const allFilters = document.querySelectorAll(".table-filterLista");
   allFilters.forEach((filter_i) => {
-    col_index = filter_i.parentElement.getAttribute("col-index");
+    // Limpa as opções atuais
+    filter_i.innerHTML = "";
+
+    // (Opcional) Adiciona uma opção padrão, como "Todos"
+    filter_i.innerHTML += `<option value="all"></option>`;
+
+    const col_index = filter_i.parentElement.getAttribute("col-index");
     unique_col_values_dict[col_index].sort().forEach((i) => {
-      filter_i.innerHTML = filter_i.innerHTML + `\n\n<option value="${i}">${i}</option>`;
+      filter_i.innerHTML += `<option value="${i}">${i}</option>`;
     });
   });
 }
-
-// function filter_rowsLista() {
-//   allFilters = document.querySelectorAll(".table-filterLista");
-//   var filter_value_dict = {};
-//   allFilters.forEach((filter_i) => {
-//     col_index = filter_i.parentElement.getAttribute("col-index");
-//     value = filter_i.value;
-//     if (value != "all") {
-//       filter_value_dict[col_index] = value;
-//     }
-//   });
-//   var col_cell_value_dict = {};
-//   const rows = document.querySelectorAll("#emp-tableLista tbody tr");
-//   rows.forEach((row) => {
-//     var display_row = true;
-//     allFilters.forEach((filter_i) => {
-//       col_index = filter_i.parentElement.getAttribute("col-index");
-//       col_cell_value_dict[col_index] = row.querySelector("td:nth-child(" + col_index + ")").innerHTML;
-//     });
-//     for (var col_i in filter_value_dict) {
-//       filter_value = filter_value_dict[col_i];
-//       row_cell_value = col_cell_value_dict[col_i];
-//       if (row_cell_value.indexOf(filter_value) == -1 && filter_value != "all") {
-//         display_row = false;
-//         break;
-//       }
-//     }
-//     if (display_row == true) {
-//       row.style.display = "table-row";
-//       row.classList.add("activeLista");
-//     } else {
-//       row.style.display = "none";
-//       row.classList.remove("activeLista");
-//     }
-//   });
-//   somaLista();
-//   showLoading("none");
-// }
 
 function filter_rowsLista() {
   const filters = Array.from(document.querySelectorAll(".table-filterLista"));
