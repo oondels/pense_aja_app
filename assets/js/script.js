@@ -495,17 +495,22 @@ const renderListaTable = (data) => {
 };
 
 async function listaTable() {
+  const mesAnterior = new Date().getMonth() - 1;
+  const mesAtual = new Date().getMonth();
+  const anoAtual = new Date().getFullYear();
+  const cachedKey = `${mesAnterior}-${mesAtual}-${anoAtual}`;
+
   if (!unidade) {
     console.log("Informe sua matricula para definição da unidade");
     return;
   }
 
-  const cachedList = getCachedData("cachedList");
-  const currentDate = new Date().getTime();
-  if (cachedList?.payload && currentDate - cachedList.timestamp < 180000) {
+  const cachedList = getCachedData(cachedKey);
+  if (cachedList?.payload) {
+    console.log("Dados em cache...");
     renderListaTable(cachedList.payload);
-    return;
   } else {
+    console.log("Dados não encontrados em cache, buscando no servidor...");
     showLoadingComponent();
   }
 
@@ -517,6 +522,7 @@ async function listaTable() {
     });
 
     const resBuscaDados = response.data;
+    const currentDate = new Date().getTime();
 
     if (resBuscaDados.erro == false) {
       const newCache = {
@@ -524,8 +530,12 @@ async function listaTable() {
         timestamp: currentDate,
       };
 
-      localStorage.setItem("cachedList", JSON.stringify(newCache));
-      renderListaTable(newCache.payload);
+      // Verifica se os dados do servidor são mais recentes que os do cache
+      if (resBuscaDados.dados.length > cachedList?.payload.length) {
+        console.log("Dados novos encontrados, atualizando cache...");
+        localStorage.setItem(cachedKey, JSON.stringify(newCache));
+        renderListaTable(newCache.payload);
+      }
     } else {
       soma();
     }
@@ -1057,8 +1067,6 @@ async function listaTableLista() {
   const currentTime = new Date().getTime();
   const cachedListKey = `cachedListTable-${selectMes}-${selectAno}`;
   const queryCache = JSON.parse(localStorage.getItem("filterCache")) || {};
-
-  console.log(queryCache);
 
   if (queryCache && Object.keys(queryCache).length > 0 && queryCache[cachedListKey]) {
     renderListaTableLista(queryCache[cachedListKey]?.payload);
