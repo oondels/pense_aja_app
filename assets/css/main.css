@@ -1,3 +1,14 @@
+/* Menu Principal */
+header {
+  display: flex;
+  flex: 1 1 100vw;
+  border-radius: 5px;
+}
+
+.main-menu {
+  padding: 15px !important;
+}
+
 /* Estilos para o componente de loading */
 .loading-cdata {
   position: fixed;

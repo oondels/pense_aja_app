@@ -21,35 +21,70 @@
 
 <body onload="listaTable()">
   <header>
-    <div class="col-12 d-flex">
-      <div class="logo col-1">
-        <a href="./" id="logo"><img src="./assets/img/lampada.png" alt="ideia" width="50"></a>
-      </div>
-      <div class="col-3 d-flex align-items-center">
-        <span id="usuario" class="usuario"></span>
-        <span id="nome" class="nome"></span>
-        <span id="funcao" class="funcao"></span>
-      </div>
-      <div class="col-3 d-flex justify-content-between">
-        <div class="col-5">
-          <span id="valorTotal" class="valorTotal"></span>
+    <!-- Itens Menu Principal -->
+    <div class="col-12 d-flex main-menu">
+      <!-- Menu antigo -->
+      <div style="display: none">
+        <!-- Logo principal -->
+        <div class="logo col-1">
+          <a href="./" id="logo"><img src="./assets/img/lampada.png" alt="ideia" width="50"></a>
         </div>
-        <div class="col-5">
-          <span id="avaliacaoMensal" class="valorTotal"></span>
+
+        <!-- Informações User -->
+        <div class="col-3 d-flex align-items-center">
+          <span id="usuario" class="usuario"></span>
+          <span id="nome" class="nome"></span>
+          <span id="funcao" class="funcao"></span>
+        </div>
+
+        <!-- Quantidade total e de avaliações -->
+        <div class="col-3 d-flex justify-content-between">
+          <div class="col-5">
+            <span id="valorTotal" class="valorTotal"></span>
+          </div>
+
+          <div class="col-5">
+            <span id="avaliacaoMensal" class="valorTotal"></span>
+          </div>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="buttons col-5 d-flex justify-content-end">
+          <button id="openLoja" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
+            data-bs-title="CONSULTAR PONTOS E RETIRAR BRINDES"><img src="./assets/img/loja-virtual.png" alt="loja"
+              width="50" height="50" />
+
+            <button id="openLista" onclick="obtemAnoAtualEMesAnterior()" data-bs-toggle="tooltip" data-bs-placement="bottom"
+              data-custom-class="custom-tooltip" title="LISTAR PENSE E AJA ANTERIORES"><img src="./assets/img/lista.png"
+                alt="lista" width="50" height="50" />
+
+              <button id="openMenu" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip"
+                title="CADASTRAR PENSE E AJA"><img src="./assets/img/ideiaOff.png" alt="ideiaoff" width="50"
+                  height="50" />
+
+                <button id="openUser" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip"
+                  title="LOGIN"><img src="./assets/img/user.png" alt="user" width="50" height="50" />
         </div>
       </div>
-      <div class="buttons col-5 d-flex justify-content-end">
-        <button id="openLoja" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
-          data-bs-title="CONSULTAR PONTOS E RETIRAR BRINDES"><img src="./assets/img/loja-virtual.png" alt="loja"
-            width="50" height="50"></button>
-        <button id="openLista" onclick="obtemAnoAtualEMesAnterior()" data-bs-toggle="tooltip" data-bs-placement="bottom"
-          data-custom-class="custom-tooltip" title="LISTAR PENSE E AJA ANTERIORES"><img src="./assets/img/lista.png"
-            alt="lista" width="50" height="50"></button>
-        <button id="openMenu" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip"
-          title="CADASTRAR PENSE E AJA"><img src="./assets/img/ideiaOff.png" alt="ideiaoff" width="50"
-            height="50"></button>
-        <button id="openUser" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip"
-          title="LOGIN"><img src="./assets/img/user.png" alt="user" width="50" height="50"></button>
+
+      <!-- Menu novo -->
+      <div>
+        <div class="logo col-1">
+          <Logo de uma lampada>
+        </div>
+
+        <h1>
+          <span>Pense</span>
+          <span class="text-primary">&</span>
+          <span>Aja</span>
+        </h1>
+
+        <div>
+          <span>Loja icone loja</span>
+          <span>Historico icone historico</span>
+          <span>Login icone login</span>
+          <span>Menu icone menu</span>
+        </div>
       </div>
     </div>
 
@@ -157,7 +192,6 @@
         </div>
       </div>
     </nav>
-
     <nav id="lista">
       <div class="navHeaderLista col-12">
         <div class="col-4 d-flex ">
@@ -261,12 +295,9 @@
     </nav>
     <nav id="menu">
       <div class="navConteudo container-fluid border">
-
-
         <div class="col-12 text-end">
           <i id="closeMenu" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
         </div>
-
 
         <form id="cadastroForm">
           <div id="dadosColaborador" class="inputSmall"></div>
@@ -304,6 +335,7 @@
       </div>
     </nav>
   </header>
+
   <main>
     <section class="text-center">
       <div class="principal">
