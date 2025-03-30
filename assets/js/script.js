@@ -501,8 +501,10 @@ async function listaTable() {
   }
 
   const cachedList = getCachedData("cachedList");
-  if (cachedList) {
+  const currentDate = new Date().getTime();
+  if (cachedList?.payload && currentDate - cachedList.timestamp < 180000) {
     renderListaTable(cachedList.payload);
+    return;
   } else {
     showLoadingComponent();
   }
@@ -517,15 +519,13 @@ async function listaTable() {
     const resBuscaDados = response.data;
 
     if (resBuscaDados.erro == false) {
-      const newCache = resBuscaDados.dados;
+      const newCache = {
+        payload: resBuscaDados.dados,
+        timestamp: currentDate,
+      };
 
-      // Se os novos dados forem maior que o em cache, atualiza o cache e renderiza a tabela
-      if (!cachedList || resBuscaDados.dados.length > cachedList.payload.length) {
-        const currentDate = new Date().getTime();
-        localStorage.setItem("cachedList", JSON.stringify({ payload: resBuscaDados.dados, timestamp: currentDate }));
-
-        renderListaTable(newCache);
-      }
+      localStorage.setItem("cachedList", JSON.stringify(newCache));
+      renderListaTable(newCache.payload);
     } else {
       soma();
     }
@@ -582,16 +582,18 @@ const buscaPA_Lista = (listaSize) => {
   let selecionadoLista = document.getElementById("selecionadoLista");
   let nomesLista = sessionStorage.getItem("nome");
   let colabLista = sessionStorage.getItem("funcao");
+
   if (listaSize !== 0) {
     if (colabLista == "GERENTE") {
       selecionadoLista.innerText = nomesLista;
       selecionadoLista.value = nomesLista;
     } else {
-      selecionadoLista.innerText = "";
-      selecionadoLista.value = "";
+      if (selecionadoLista) {
+        selecionadoLista.innerText = "";
+        selecionadoLista.value = "";
+      }
     }
-    // getUniqueValuesFromColumnLista();
-    // filter_rowsLista();
+    filter_rowsLista();
     hideLoading();
   }
 
@@ -1056,9 +1058,13 @@ async function listaTableLista() {
   const cachedListKey = `cachedListTable-${selectMes}-${selectAno}`;
   const queryCache = JSON.parse(localStorage.getItem("filterCache")) || {};
 
+  console.log(queryCache);
+
   if (queryCache && Object.keys(queryCache).length > 0 && queryCache[cachedListKey]) {
     renderListaTableLista(queryCache[cachedListKey]?.payload);
   } else {
+    console.log("mostrando loading");
+
     showLoadingComponent();
   }
 
