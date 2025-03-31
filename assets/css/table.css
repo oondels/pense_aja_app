@@ -1,0 +1,378 @@
+/* Tabela */
+tbody {
+  height: 85vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+table {
+  border-spacing: 0 !important;
+  table-layout: fixed !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+td,
+th {
+  word-wrap: break-word;
+  padding: 8px;
+}
+
+.divTable {
+  margin-top: 20px !important;
+  display: flex;
+  justify-content: center; /* Centraliza a tabela horizontalmente */
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto; /* Centraliza a div em relação à página */
+  border-radius: 12px;
+  margin-bottom: 1vh;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  overflow: auto;
+}
+
+.divTableLista {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  border-radius: 12px;
+  margin-bottom: 1vh;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+#headThead {
+  width: 100%;
+  top: 0;
+}
+
+.consulta {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: auto;
+}
+
+.consultaComLogin {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  width: 90.9%;
+  border-radius: 8px;
+  overflow: auto;
+  background: #ffffff;
+}
+
+#headConsulta {
+  border-collapse: collapse;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #ffffff;
+  width: 100%;
+  font-family: "roboto-bold";
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+#headConsulta th {
+  padding: 12px 8px;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-align: center;
+  top: 0;
+  transition: background-color 0.2s ease;
+}
+
+tr {
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+  color: #333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.01);
+}
+
+/*start - Estilizar coluna separadamente*/
+.colMenor {
+  max-width: 3.59vw;
+  min-width: 3.59vw;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.colMen {
+  width: 3vw;
+  letter-spacing: 0.5px;
+}
+
+.data select {
+  font-size: 12px;
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  background-color: #fff;
+  transition: all 0.2s;
+}
+
+.data select:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.colMedio {
+  max-width: 4.11vw;
+  min-width: 4.11vw;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.colMed {
+  width: 3vw;
+  letter-spacing: 0.5px;
+}
+
+.colMaior {
+  max-width: 9.2vw;
+  min-width: 9.2vw;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.colMai {
+  width: 8.3vw;
+  letter-spacing: 0.5px;
+}
+
+.colMaiorX {
+  max-width: 18vw;
+  min-width: 18vw;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.colNomeComLogin {
+  max-width: 18vw;
+  min-width: 18vw;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.colNome {
+  max-width: 18vw;
+  min-width: 18vw;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.colMaiX {
+  width: 17vw;
+  letter-spacing: 0.5px;
+}
+
+.divSelect {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.celula {
+  height: 4.5vh;
+  padding: 8px;
+  transition: all 0.2s;
+  vertical-align: middle;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.celulaLista {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  height: 4.5vh;
+  color: #fff;
+  padding: 8px;
+  transition: all 0.2s;
+  vertical-align: middle;
+}
+
+.content {
+  font-family: "roboto-regular";
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.5;
+  color: #333;
+}
+
+.data {
+  width: 10vw;
+}
+
+/* Tooltip styling */
+#modDif,
+#metDif {
+  position: relative;
+  cursor: pointer;
+  padding: 4px;
+  color: #2563eb;
+  transition: all 0.2s;
+}
+
+#modDif:hover,
+#metDif:hover {
+  color: #1d4ed8;
+}
+
+#tooltipText {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  background-color: #1e293b;
+  color: #fff;
+  font-weight: bold;
+  letter-spacing: 1px;
+  word-spacing: 1px;
+  border-radius: 6px;
+  padding: 8px 12px;
+  white-space: nowrap;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  /* z-index: 100; */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateX(-50%) translateY(-10px);
+}
+
+#modDif:hover #tooltipText,
+#metDif:hover #tooltipText {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+/*end - Estilizar coluna separadamente*/
+
+/* Status colors with modern styling */
+.exemploAzul,
+.semAnalista,
+.semAnalistaLista {
+  background-color: rgba(56, 189, 248, 0.15);
+  border-left: 4px solid #0ea5e9;
+  color: #0369a1;
+  transition: all 0.3s;
+}
+
+.exemploLaranja,
+.semGerente,
+.semGerenteLista {
+  background-color: rgba(251, 146, 60, 0.15);
+  border-left: 4px solid #f97316;
+  color: #9a3412;
+  transition: all 0.3s;
+}
+
+.exemploRoxo,
+.semAmbos,
+.semAmbosLista {
+  background-color: rgba(168, 85, 247, 0.15);
+  border-left: 4px solid #a855f7;
+  color: #6b21a8;
+  transition: all 0.3s;
+}
+
+.exemploBranco,
+.avaliado,
+.avaliadoLista {
+  background-color: #fff;
+  border-left: 4px solid #e2e8f0;
+}
+
+.exemploRose,
+.emEspera,
+.emEsperaLista {
+  background-color: rgba(253, 224, 71, 0.2);
+  border-left: 4px solid #fbbf24;
+  font-weight: bold;
+  color: #92400e;
+}
+
+.exemploVermelho,
+.reprovadoGerente,
+.reprovadoGerenteLista {
+  background-color: rgba(239, 68, 68, 0.15);
+  border-left: 4px solid #ef4444;
+  color: #991b1b;
+  transition: all 0.3s;
+}
+
+.exemploAzul:hover {
+  background-color: rgba(56, 189, 248, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(14, 165, 233, 0.2);
+}
+
+.exemploLaranja:hover {
+  background-color: rgba(251, 146, 60, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(249, 115, 22, 0.2);
+}
+
+.exemploRoxo:hover {
+  background-color: rgba(168, 85, 247, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(168, 85, 247, 0.2);
+}
+
+.exemploVermelho:hover {
+  background-color: rgba(239, 68, 68, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+}
+
+.subClassificacao {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 15%;
+  margin-bottom: 50px;
+}
+
+.a3_mae {
+  text-align: center;
+}
+
+.textarea {
+  width: 25%;
+  height: 60px;
+  color: #333;
+  font-size: 14px;
+  text-align: center;
+  resize: none;
+  vertical-align: middle;
+  line-height: 29px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px;
+  transition: all 0.3s;
+}
+
+.textarea:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.center {
+  text-align: center;
+}
