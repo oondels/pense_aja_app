@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="./assets/css/email.css">
   <link rel="stylesheet" href="./assets/css/unidade-dass.css">
   <link rel="stylesheet" href="./assets/css/main.css">
+  <link rel="stylesheet" href="./assets/css/new.css">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="./assets/js/sweetalert2.all.min.js"></script>
 
@@ -22,69 +23,65 @@
 <body onload="listaTable()">
   <header>
     <!-- Itens Menu Principal -->
-    <div class="col-12 d-flex main-menu">
-      <!-- Menu antigo -->
-      <div style="display: none">
-        <!-- Logo principal -->
-        <div class="logo col-1">
-          <a href="./" id="logo"><img src="./assets/img/lampada.png" alt="ideia" width="50"></a>
-        </div>
-
-        <!-- Informações User -->
-        <div class="col-3 d-flex align-items-center">
-          <span id="usuario" class="usuario"></span>
-          <span id="nome" class="nome"></span>
-          <span id="funcao" class="funcao"></span>
-        </div>
-
-        <!-- Quantidade total e de avaliações -->
-        <div class="col-3 d-flex justify-content-between">
-          <div class="col-5">
-            <span id="valorTotal" class="valorTotal"></span>
+    <div class="banner-wrapper">
+      <div class="banner-container">
+        <div class="banner-left">
+          <div class="logo-container">
+            <div class="logo-circle">
+              <img src="./assets/img/lampada.png" alt="ideia" class="logo-img">
+            </div>
           </div>
 
-          <div class="col-5">
-            <span id="avaliacaoMensal" class="valorTotal"></span>
+          <div class="banner-titles">
+            <h1 class="main-title">Pense <span class="highlight">&</span> Aja</h1>
+            <p class="tagline">Transformando ideias em <span class="highlight-text">ações</span></p>
+            <div class="current-month">
+              <span class="month-label">Mês atual: </span>
+              <span id="mes" class="month-value"></span>
+            </div>
           </div>
         </div>
+        <div class="banner-right">
+          <div class="button-group">
+            <button id="openLoja" class="action-button" data-bs-toggle="tooltip" data-bs-placement="top"
+              data-bs-custom-class="custom-tooltip" data-bs-title="CONSULTAR PONTOS E RETIRAR BRINDES">
+              <div class="button-icon-container">
+                <img src="./assets/img/icons/store.png" alt="loja" class="button-icon">
+              </div>
+              <span class="button-label">Loja</span>
+            </button>
 
-        <!-- Botões de ação -->
-        <div class="buttons col-5 d-flex justify-content-end">
-          <button id="openLoja" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
-            data-bs-title="CONSULTAR PONTOS E RETIRAR BRINDES"><img src="./assets/img/loja-virtual.png" alt="loja"
-              width="50" height="50" />
+            <button id="openLista" class="action-button" onclick="obtemAnoAtualEMesAnterior()" data-bs-toggle="tooltip"
+              data-bs-placement="bottom" data-custom-class="custom-tooltip" title="LISTAR PENSE E AJA ANTERIORES">
+              <div class="button-icon-container">
+                <img src="./assets/img/lista.png" alt="lista" class="button-icon">
+              </div>
+              <span class="button-label">Listagem</span>
+            </button>
 
-            <button id="openLista" onclick="obtemAnoAtualEMesAnterior()" data-bs-toggle="tooltip" data-bs-placement="bottom"
-              data-custom-class="custom-tooltip" title="LISTAR PENSE E AJA ANTERIORES"><img src="./assets/img/lista.png"
-                alt="lista" width="50" height="50" />
+            <button id="openMenu" class="action-button" data-bs-toggle="tooltip" data-bs-placement="bottom"
+              data-bs-custom-class="custom-tooltip" title="CADASTRAR PENSE E AJA">
+              <div class="button-icon-container">
+                <img src="./assets/img/icons/idea-off.png" alt="ideiaoff" class="button-icon">
+              </div>
+              <span class="button-label">Cadastrar</span>
+            </button>
 
-              <button id="openMenu" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip"
-                title="CADASTRAR PENSE E AJA"><img src="./assets/img/ideiaOff.png" alt="ideiaoff" width="50"
-                  height="50" />
-
-                <button id="openUser" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip"
-                  title="LOGIN"><img src="./assets/img/user.png" alt="user" width="50" height="50" />
+            <button id="openUser" class="action-button" data-bs-toggle="tooltip" data-bs-placement="bottom"
+              data-bs-custom-class="custom-tooltip" title="LOGIN">
+              <div class="button-icon-container">
+                <!-- <img src="./assets/img/user.png" alt="user" class="button-icon"> -->
+                <img src="./assets/img/icons/login.png" alt="user" class="button-icon">
+              </div>
+              <span class="button-label">Login</span>
+            </button>
+          </div>
         </div>
       </div>
-
-      <!-- Menu novo -->
-      <div>
-        <div class="logo col-1">
-          <Logo de uma lampada>
-        </div>
-
-        <h1>
-          <span>Pense</span>
-          <span class="text-primary">&</span>
-          <span>Aja</span>
-        </h1>
-
-        <div>
-          <span>Loja icone loja</span>
-          <span>Historico icone historico</span>
-          <span>Login icone login</span>
-          <span>Menu icone menu</span>
-        </div>
+      <div class="banner-decoration">
+        <div class="decoration-circle circle-1"></div>
+        <div class="decoration-circle circle-2"></div>
+        <div class="decoration-circle circle-3"></div>
       </div>
     </div>
 
@@ -339,28 +336,7 @@
   <main>
     <section class="text-center">
       <div class="principal">
-        <div class="text-center bg-body-tertiary" id="divTitle">
-          <div class="container-fluid" id="titles">
-            <h1 id="titleText" class="m-0 fs-3">PENSE & AJA -
-              <span id="mes">
-                <script>
-                  const month = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
-                  const data = new Date();
-                  const dia = data.getDate();
-                  const mes = data.getMonth();
-                  const proximo = mes + 1;
-                  if (dia >= 29) {
-                    let nomeMes = month[proximo];
-                    document.querySelector('#mes').innerText = nomeMes;
-                  } else {
-                    let nomeMes = month[mes];
-                    document.querySelector('#mes').innerText = nomeMes;
-                  }
-                </script>
-              </span>
-            </h1>
-          </div>
-        </div>
+        <!-- Filtros Status -->
         <div class="divGlossario">
           <div class="coresGlossario">
             <button id="exemploVermelho" class="exemploVermelho" onclick="filterReprovado();"></button>
@@ -387,6 +363,8 @@
             <label for="exemploRose" class="labelRose">Em Espera</label>
           </div>
         </div>
+
+        <!-- Tabela -->
         <div class="divTable">
           <table class="consulta" id="emp-table">
             <thead id="headThead">
@@ -439,6 +417,7 @@
           </table>
         </div>
       </div>
+
       <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-xl modal-dialog modal-dialog-scrollable modal-fullscreen-lg-down modalBack">
@@ -636,8 +615,8 @@
         </div>
       </div>
     </div>
-
   </main>
+
   <footer class="footer h6">
     <p class="copy_right">
       <span>Desenvolvido por DASS SEST</span> &copy;
@@ -650,6 +629,7 @@
       </span>
     </p>
   </footer>
+
   <script src="assets/js/jquery.min.js"></script>
   <script src="assets/js/script.js"></script>
   <script src="assets/js/socket.js"></script>
