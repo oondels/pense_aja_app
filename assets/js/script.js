@@ -491,24 +491,26 @@ const renderListaTable = (data) => {
       document.getElementById("a3_mae").selectedIndex = null;
     }
   };
-  buscaPA();
+  // buscaPA();
 };
 
 async function listaTable() {
   const mesAnterior = new Date().getMonth() - 1;
   const mesAtual = new Date().getMonth();
   const anoAtual = new Date().getFullYear();
-  const cachedKey = `${mesAnterior}-${mesAtual}-${anoAtual}`;
 
   if (!unidade) {
     console.log("Informe sua matricula para definição da unidade");
     return;
   }
 
-  const cachedList = getCachedData(cachedKey);
-  if (cachedList?.payload) {
+  const cachedKey = `${mesAnterior}-${mesAtual}-${anoAtual}`;
+  let cachedList = getCachedData("cachedList") || {};
+  const currentDate = new Date().getTime();
+
+  if (Object.keys(cachedList).length && cachedList[cachedKey].payload) {
     console.log("Dados em cache...");
-    renderListaTable(cachedList.payload);
+    renderListaTable(cachedList[cachedKey].payload);
   } else {
     console.log("Dados não encontrados em cache, buscando no servidor...");
     showLoadingComponent();
@@ -522,20 +524,24 @@ async function listaTable() {
     });
 
     const resBuscaDados = response.data;
-    const currentDate = new Date().getTime();
-
     if (resBuscaDados.erro == false) {
+      if (!Object.keys(cachedList).length) {
+        renderListaTable(resBuscaDados.dados);
+      }
+
       const newCache = {
         payload: resBuscaDados.dados,
         timestamp: currentDate,
       };
+      cachedList[cachedKey] = newCache;
 
       // Verifica se os dados do servidor são mais recentes que os do cache
-      if (resBuscaDados.dados.length > cachedList?.payload.length) {
+      if (cachedList && resBuscaDados && resBuscaDados.dados.length > cachedList[cachedKey].payload.length) {
         console.log("Dados novos encontrados, atualizando cache...");
-        localStorage.setItem(cachedKey, JSON.stringify(newCache));
-        renderListaTable(newCache.payload);
+        renderListaTable(cachedList[cachedKey].payload);
       }
+
+      localStorage.setItem("cachedList", JSON.stringify(cachedList));
     } else {
       soma();
     }
@@ -1072,7 +1078,6 @@ async function listaTableLista() {
     renderListaTableLista(queryCache[cachedListKey]?.payload);
   } else {
     console.log("mostrando loading");
-
     showLoadingComponent();
   }
 
