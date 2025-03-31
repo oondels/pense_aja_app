@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="./assets/css/unidade-dass.css">
   <link rel="stylesheet" href="./assets/css/main.css">
   <link rel="stylesheet" href="./assets/css/new.css">
+  <link rel="stylesheet" href="./assets/css/table.css">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="./assets/js/sweetalert2.all.min.js"></script>
 
@@ -365,57 +366,60 @@
         </div>
 
         <!-- Tabela -->
-        <div class="divTable">
-          <table class="consulta" id="emp-table">
-            <thead id="headThead">
-              <tr id="headConsulta" class="trHead">
-                <th class="subtitles celula colMenor thID">ID</th>
-                <th class="subtitles celula colMaior" col-index=1>Realizado</th>
-                <th class="ocult" col-index=2>Fábrica
-                  <select class="table-filter col colMai" autocomplete="off" id="realizadoSelLista"
-                    name="realizadoSelLista" data-el="2" onchange="filter_rows()">
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
-                  <select class="table-filter col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista"
-                    data-el="3" onchange="filter_rows()">
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="subtitles celula colMaiorX" col-index=4>Setor
-                  <select class="table-filter col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista"
-                    data-el="4" onchange="filter_rows()">
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="subtitles celula colMaiorX" col-index=5>Gerente
-                  <select class="table-filter col colMaiX" autocomplete="off" id="gerenteSelLista"
-                    name="gerenteSelLista" data-el="5" onchange="filter_rows()">
-                    <option value="" id="selecionado"></option>
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="subtitles celula colMaiorX print" col-index=6>Nome do projeto
-                  <select class="table-filter col colMaiX" autocomplete="off" id="projetoSelLista"
-                    name="projetoSelLista" data-el="6" onchange="filter_rows()">
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="subtitles celula colMaior" col-index=7>Turno
-                  <select class="table-filter col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
-                    data-el="7" onchange="filter_rows()">
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="action subtitles celula colMaior acoes">Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody id="tbody">
-            </tbody>
-          </table>
+        <div style="display: flex; justify-content: center;">
+          <div class="divTable">
+            <table class="consulta" id="emp-table">
+              <thead id="headThead">
+                <tr id="headConsulta" class="trHead">
+                  <th class="subtitles celula colMenor thID">ID</th>
+                  <th class="subtitles celula colMaior" col-index=1>Realizado</th>
+                  <th class="ocult" col-index=2>Fábrica
+                    <select class="table-filter col colMai" autocomplete="off" id="realizadoSelLista"
+                      name="realizadoSelLista" data-el="2" onchange="filter_rows()">
+                      <option value="all"></option>
+                    </select>
+                  </th>
+                  <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
+                    <select class="table-filter col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista"
+                      data-el="3" onchange="filter_rows()">
+                      <option value="all"></option>
+                    </select>
+                  </th>
+                  <th class="subtitles celula colMaiorX" col-index=4>Setor
+                    <select class="table-filter col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista"
+                      data-el="4" onchange="filter_rows()">
+                      <option value="all"></option>
+                    </select>
+                  </th>
+                  <th class="subtitles celula colMaiorX" col-index=5>Gerente
+                    <select class="table-filter col colMaiX" autocomplete="off" id="gerenteSelLista"
+                      name="gerenteSelLista" data-el="5" onchange="filter_rows()">
+                      <option value="" id="selecionado"></option>
+                      <option value="all"></option>
+                    </select>
+                  </th>
+                  <th class="subtitles celula colMaiorX print" col-index=6>Nome do projeto
+                    <select class="table-filter col colMaiX" autocomplete="off" id="projetoSelLista"
+                      name="projetoSelLista" data-el="6" onchange="filter_rows()">
+                      <option value="all"></option>
+                    </select>
+                  </th>
+                  <th class="subtitles celula colMaior" col-index=7>Turno
+                    <select class="table-filter col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
+                      data-el="7" onchange="filter_rows()">
+                      <option value="all"></option>
+                    </select>
+                  </th>
+                  <th class="action subtitles celula colMaior acoes">Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+              </tbody>
+            </table>
+          </div>
         </div>
+
       </div>
 
       <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"

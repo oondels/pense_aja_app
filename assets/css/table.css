@@ -4,14 +4,6 @@ tbody {
   overflow-x: hidden;
   overflow-y: auto;
 }
-table {
-  border-spacing: 0 !important;
-  table-layout: fixed !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  width: 100% !important;
-  border-collapse: collapse !important;
-}
 
 td,
 th {
@@ -19,17 +11,27 @@ th {
   padding: 8px;
 }
 
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: auto;
+  font-family: "Roboto", sans-serif;
+  font-size: 13px;
+  color: #333;
+}
+
 .divTable {
   margin-top: 20px !important;
   display: flex;
-  justify-content: center; /* Centraliza a tabela horizontalmente */
+  justify-content: center;
   width: 100%;
   max-width: 1400px;
-  margin: 0 auto; /* Centraliza a div em relação à página */
+  margin: 0 auto 2rem auto;
   border-radius: 12px;
-  margin-bottom: 1vh;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  overflow: auto;
+  overflow-x: auto;
+  background-color: #ffffff;
 }
 
 .divTableLista {
@@ -43,8 +45,11 @@ th {
 }
 
 #headThead {
-  width: 100%;
+  position: sticky;
   top: 0;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #ffffff;
+  z-index: 2;
 }
 
 .consulta {
@@ -87,6 +92,15 @@ th {
   transition: background-color 0.2s ease;
 }
 
+/* Células */
+th,
+td {
+  padding: 12px 8px;
+  text-align: center;
+  word-break: break-word;
+  border-bottom: 1px solid #e2e8f0;
+}
+
 tr {
   transition: all 0.2s ease;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -99,9 +113,10 @@ tbody tr:hover {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-tr:nth-child(even) {
+/* Alternar cores de linhas */
+/* tr:nth-child(even) {
   background-color: rgba(0, 0, 0, 0.01);
-}
+} */
 
 /*start - Estilizar coluna separadamente*/
 .colMenor {
@@ -116,19 +131,30 @@ tr:nth-child(even) {
   letter-spacing: 0.5px;
 }
 
-.data select {
+/* .data select {
   font-size: 12px;
   padding: 5px;
   border-radius: 4px;
   border: 1px solid #e2e8f0;
   background-color: #fff;
   transition: all 0.2s;
+} */
+
+.data select,
+.table-filter {
+  font-size: 13px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: #fff;
+  transition: all 0.2s ease-in-out;
 }
 
-.data select:focus {
+.data select:focus,
+.table-filter:focus {
   border-color: #3b82f6;
-  outline: none;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  outline: none;
 }
 
 .colMedio {
@@ -375,4 +401,17 @@ tr:nth-child(even) {
 
 .center {
   text-align: center;
+}
+
+@media (max-width: 768px) {
+  th,
+  td {
+    font-size: 11px;
+    padding: 8px 4px;
+  }
+
+  .divTable {
+    max-width: 100%;
+    padding: 0 10px;
+  }
 }
