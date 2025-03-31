@@ -1,5 +1,34 @@
 import { checkUserEmail, showEmailPopup, closeEmailPopup } from "./email.js";
 
+// Pega mês atual e atualiza banner
+const month = [
+  "JANEIRO",
+  "FEVEREIRO",
+  "MARÇO",
+  "ABRIL",
+  "MAIO",
+  "JUNHO",
+  "JULHO",
+  "AGOSTO",
+  "SETEMBRO",
+  "OUTUBRO",
+  "NOVEMBRO",
+  "DEZEMBRO",
+];
+const data = new Date();
+const dia = data.getDate();
+const mes = data.getMonth();
+const proximo = mes + 1;
+const mesElement = document.querySelector("#mes");
+
+if (dia >= 29) {
+  let nomeMes = month[proximo % 12]; // Garantindo que não ultrapasse o índice máximo
+  mesElement.innerText = nomeMes;
+} else {
+  let nomeMes = month[mes];
+  mesElement.innerText = nomeMes;
+}
+
 // Sweet Alert
 let success = function (message) {
   Swal.fire({
@@ -749,9 +778,9 @@ function sessao() {
     document.getElementById("nome").innerText = `${nomes.toUpperCase()}`;
     document.getElementById("funcao").innerText = `${colab.toUpperCase()}!`;
   } else {
-    document.getElementById("usuario").innerText = "Olá, Usuário!";
-    document.getElementById("nome").innerText = "Nome gerente!";
-    document.getElementById("funcao").innerText = "Função!";
+    // document.getElementById("usuario").innerText = "Olá, Usuário!";
+    // document.getElementById("nome").innerText = "Nome gerente!";
+    // document.getElementById("funcao").innerText = "Função!";
   }
   if (colab == "GERENTE") {
     selecionado.innerText = nomes;
