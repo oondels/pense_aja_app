@@ -25,7 +25,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #F4F4F4;
+  background-color: #f4f4f4;
 }
 
 * {
@@ -50,12 +50,6 @@ main,
 footer {
   display: flex;
   margin: 2px;
-}
-
-header {
-  height: 50px;
-  flex: 1 1 100vw;
-  border-radius: 5px;
 }
 
 header #logo {
@@ -106,7 +100,7 @@ header #logo {
   width: 100%;
   border-radius: 10px;
   margin-left: 1%;
-  background-color: #B0062B;
+  background-color: #b0062b;
   box-shadow: 0.2em 0.2em 0em 0em #2c2c2c;
 }
 
@@ -143,7 +137,7 @@ header #logo {
   text-align: center;
   align-items: center;
   border-radius: 5px;
-  box-shadow: .1em .1em 0em 0em #2c2c2c;
+  box-shadow: 0.1em 0.1em 0em 0em #2c2c2c;
   background: #fff;
 }
 
@@ -275,14 +269,15 @@ div.polaroid:active {
 .pontosSEM {
   box-shadow: none;
   filter: grayscale(1);
-  transition: all ease-in-out .4s;
+  transition: all ease-in-out 0.4s;
 }
 
 .pontosOK {
-  box-shadow: 0px 0px 9px 6px rgb(255 255 255), 0px 0px 20px 2px rgb(255 248 248), inset 0px 0px 15px 2px rgb(255, 255, 255);
+  box-shadow: 0px 0px 9px 6px rgb(255 255 255), 0px 0px 20px 2px rgb(255 248 248),
+    inset 0px 0px 15px 2px rgb(255, 255, 255);
   filter: grayscale(0);
   cursor: pointer;
-  transition: all ease-in-out .4s;
+  transition: all ease-in-out 0.4s;
 }
 
 div.container {
@@ -299,7 +294,6 @@ div.container p {
 }
 
 /****************************************************************************************************/
-
 
 :is(.dados, .letra, .quantidade, .pontosClassif) span {
   font-size: 13.2px;
@@ -319,7 +313,7 @@ h2 {
   letter-spacing: 1px;
   color: #00000000;
   background-color: #00000000;
-  -webkit-text-stroke: .1vw #2f2c2cad;
+  -webkit-text-stroke: 0.1vw #2f2c2cad;
 }
 
 h2::before {
@@ -347,7 +341,6 @@ h2::before {
 }
 
 @keyframes animate {
-
   0%,
   10%,
   100% {
@@ -363,7 +356,7 @@ h2::before {
 }
 
 #lista {
-  background: linear-gradient(160deg, rgba(32, 32, 33, 1) 0%, rgba(148, 148, 156, 1) 96%, rgba(227, 231, 232, 1) 100%)
+  background: linear-gradient(160deg, rgba(32, 32, 33, 1) 0%, rgba(148, 148, 156, 1) 96%, rgba(227, 231, 232, 1) 100%);
 }
 
 .loja {
@@ -371,7 +364,7 @@ h2::before {
 }
 
 .itemsLoja {
-  background-color: rgb(32 32 33 / 89%)
+  background-color: rgb(32 32 33 / 89%);
 }
 
 .divMesLista,
@@ -413,19 +406,19 @@ h2::before {
   transform: translate(-50%);
   color: #fff;
   cursor: pointer;
-  transition: color .4s ease-out;
+  transition: color 0.4s ease-out;
 }
 
 .icone:hover {
   color: #daa520;
   filter: drop-shadow(0 0 6px #fff);
-  transition: all .4s ease-out;
+  transition: all 0.4s ease-out;
 }
 
 .icone:active {
   color: #fff;
   filter: none;
-  transition: all .1s ease-out;
+  transition: all 0.1s ease-out;
 }
 
 .navConteudo {
@@ -582,7 +575,7 @@ h2::before {
   width: 11vw;
   height: 8vh;
   border-radius: 10px;
-  background-color: #B0062B;
+  background-color: #b0062b;
   font-family: "roboto-black";
 }
 
@@ -730,7 +723,7 @@ input[type="number"]::-webkit-inner-spin-button {
   font-weight: bold;
 }
 
-.dadosColaborador>.matricula {
+.dadosColaborador > .matricula {
   background-color: white;
   color: black;
   font-weight: bold;
@@ -753,7 +746,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .btnAcoes:hover {
-  transition: all .5s;
+  transition: all 0.5s;
   color: rgba(255, 255, 255, 0.473);
   cursor: pointer;
 }
@@ -830,11 +823,11 @@ section {
 
 .exemploBranco {
   border: 1px solid #0c1022;
-  transition: all .5s;
+  transition: all 0.5s;
 }
 
 .exemploBranco:hover {
-  transition: all .5s;
+  transition: all 0.5s;
   transform: scale(1.2);
   background-color: #dfdfdf;
 }
@@ -883,7 +876,6 @@ section {
   background-color: #0c1022;
   color: aliceblue;
   width: 100%;
-
 }
 
 tr:hover {
@@ -897,12 +889,12 @@ tr:hover {
   max-width: 3.59vw;
   min-width: 3.59vw;
   font-size: 11px;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .colMen {
   width: 3vw;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .data select {
@@ -913,50 +905,50 @@ tr:hover {
   max-width: 4.11vw;
   min-width: 4.11vw;
   font-size: 11px;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .colMed {
   width: 3vw;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .colMaior {
   max-width: 9.2vw;
   min-width: 9.2vw;
   font-size: 10px;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .colMai {
   width: 8.3vw;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .colMaiorX {
   max-width: 18vw;
   min-width: 18vw;
   font-size: 10px;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .colNomeComLogin {
   max-width: 18vw;
   min-width: 18vw;
   font-size: 10px;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .colNome {
   max-width: 18vw;
   min-width: 18vw;
   font-size: 10px;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .colMaiX {
   width: 17vw;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .divSelect {
@@ -1051,8 +1043,8 @@ th {
 .exemploAzul,
 .semAnalista,
 .semAnalistaLista {
-  background-color: #00CEFFbd;
-  transition: all .5s;
+  background-color: #00ceffbd;
+  transition: all 0.5s;
 }
 
 .exemploLaranja,
@@ -1060,7 +1052,7 @@ th {
 .semGerenteLista {
   background-color: #ff4d00bd;
   color: rgb(255, 255, 255);
-  transition: all .5s;
+  transition: all 0.5s;
 }
 
 .exemploRoxo,
@@ -1068,7 +1060,7 @@ th {
 .semAmbosLista {
   background-color: #42008dbd;
   color: rgb(255, 255, 255);
-  transition: all .5s;
+  transition: all 0.5s;
 }
 
 .exemploBranco,
@@ -1091,35 +1083,35 @@ th {
   background-color: #c20000bd;
   border-color: #c20000bd;
   color: rgb(255, 255, 255);
-  transition: all .5s;
+  transition: all 0.5s;
 }
 
 .exemploAzul:hover {
   background-color: #00ccff80;
   border-color: #00ccff80;
   transform: scale(1.2);
-  transition: all .5s;
+  transition: all 0.5s;
 }
 
 .exemploLaranja:hover {
   background-color: #ff4d0080;
   border-color: #00ccff80;
   transform: scale(1.2);
-  transition: all .5s;
+  transition: all 0.5s;
 }
 
 .exemploRoxo:hover {
   background-color: #42008d80;
   border-color: #42008d80;
   transform: scale(1.2);
-  transition: all .5s;
+  transition: all 0.5s;
 }
 
 .exemploVermelho:hover {
   background-color: #c2000080;
   border-color: #c2000080;
   transform: scale(1.2);
-  transition: all .5s;
+  transition: all 0.5s;
 }
 
 .footer {
@@ -1192,7 +1184,7 @@ th {
   display: none;
   border-width: 7px;
   border-style: groove;
-  Border-color: gainsboro;
+  border-color: gainsboro;
 }
 
 #tooltipTextAfter,
@@ -1213,7 +1205,7 @@ th {
   margin-top: 1px;
   border-width: 7px;
   border-style: groove;
-  Border-color: gainsboro;
+  border-color: gainsboro;
 }
 
 #nomeProjeto:hover #tooltipTextBefore,
@@ -1225,7 +1217,7 @@ th {
 
 /* Loading */
 #loading-overlay {
-  transition: all .5s;
+  transition: all 0.5s;
   position: fixed;
   top: 0;
   left: 0;
@@ -1239,7 +1231,7 @@ th {
 }
 
 #loading-spinner {
-  transition: all .5s;
+  transition: all 0.5s;
   border: 5px solid #f3f3f3;
   border-top: 5px solid #0c1022bd;
   border-radius: 50%;
@@ -1268,14 +1260,13 @@ th {
   --bs-tooltip-bg: var(--bs-primary);
 }
 
-input[type=checkbox] {
+input[type="checkbox"] {
   cursor: pointer;
   accent-color: #228b22;
   transition: all 0.2s linear;
 }
 
 @media only screen and (max-width: 860px) {
-
   #openMenu,
   #openLista,
   #openUser,
@@ -1341,7 +1332,6 @@ input[type=checkbox] {
   }
 
   .dadosColaborador {
-
     display: flex;
     justify-content: space-between;
     flex-direction: column;
@@ -1353,7 +1343,7 @@ input[type=checkbox] {
     gap: 10px;
     background-color: #494949;
     border-radius: 10px;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .dadosColaborador input {
@@ -1371,7 +1361,7 @@ input[type=checkbox] {
     padding-right: 1vw;
     background-color: #494949;
     border-radius: 10px;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .inputSmall {
@@ -1381,7 +1371,7 @@ input[type=checkbox] {
     align-items: normal;
     height: 8vh;
     padding-right: 0;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
     width: 100%;
     gap: 0;
   }
@@ -1445,7 +1435,7 @@ input[type=checkbox] {
     flex-direction: column;
     height: 25vh;
     padding-right: 0;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .outrosGanhos {
@@ -1453,7 +1443,7 @@ input[type=checkbox] {
     flex-direction: column;
     height: 14vh;
     padding-right: 0;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .planoAcao {
@@ -1461,7 +1451,7 @@ input[type=checkbox] {
     flex-direction: column;
     height: 36vh;
     padding-right: 0;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .labelSmall {
@@ -1470,7 +1460,7 @@ input[type=checkbox] {
     height: 4vh;
     padding-right: 0;
     margin-bottom: 1vh;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
     width: 100%;
   }
 
@@ -1502,7 +1492,7 @@ input[type=checkbox] {
   .divInputsOutrosGanhos {
     height: 0;
     overflow: hidden;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .surgeDeCima,
@@ -1514,7 +1504,7 @@ input[type=checkbox] {
     justify-content: center;
     flex-direction: column;
     align-items: center;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   #saveCad {
@@ -1528,7 +1518,7 @@ input[type=checkbox] {
   #saveCad button {
     width: 100%;
     margin-bottom: 1vh;
-    height: 5vh
+    height: 5vh;
   }
 
   .coresGlossario {
@@ -1577,7 +1567,6 @@ input[type=checkbox] {
     left: 32%;
     text-align: center;
   }
-
 }
 
 @media only screen and (min-width: 861px) and (max-width: 1366px) {
@@ -1625,7 +1614,7 @@ input[type=checkbox] {
   #closeUser,
   #closeMenu,
   #closeLista {
-    top: 32px
+    top: 32px;
   }
 
   .dadosColaborador input {
@@ -1634,11 +1623,10 @@ input[type=checkbox] {
 }
 
 @media only screen and (min-width: 1920px) and (min-height: 920px) {
-
   #closeUser,
   #closeMenu,
   #closeLista {
-    top: 28px
+    top: 28px;
   }
 
   .divTableLista {
@@ -1690,7 +1678,7 @@ input[type=checkbox] {
   }
 
   a:after {
-    content: "(" attr(href)")";
+    content: "(" attr(href) ")";
   }
 
   .print {
