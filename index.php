@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=0.7, user-scalable=no">
   <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./assets/img/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="./bootstrap/icons/font/bootstrap-icons.css">
   <link rel="stylesheet" type="text/css" href="assets/css/layout.css">
   <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
@@ -15,6 +16,7 @@
   <link rel="stylesheet" href="./assets/css/main.css">
   <link rel="stylesheet" href="./assets/css/new.css">
   <link rel="stylesheet" href="./assets/css/table.css">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="./assets/js/sweetalert2.all.min.js"></script>
 
@@ -42,9 +44,9 @@
             </div>
 
             <div class="col-3 d-flex align-items-center">
-              <span id="usuario" class="usuario">Olá Hendrius</span>
-              <span id="nome" class="nome">HENDRIUS FELIX CERQUEIRA GOMES DE SANTANA</span>
-              <span id="funcao" class="funcao">ANALISTA!</span>
+              <span id="usuario" class="usuario"></span>
+              <span id="nome" class="nome"></span>
+              <span id="funcao" class="funcao">\</span>
               <span id="avaliacaoMensal" class="valorTotal"></span>
               <span id="valorTotal" class="valorTotal"></span>
             </div>
@@ -246,32 +248,32 @@
         <div class="divGlossario">
           <div class="coresGlossario" onclick="filterTable('reprovadoGerente', event, '#emp-table');" data-count="12">
             <button id="exemploVermelho" class="exemploVermelho" aria-label="Filtrar itens reprovados"></button>
-            <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
+            Reprovado
           </div>
 
           <div class="coresGlossario" onclick="filterTable('semAmbos', event, '#emp-table');" data-count="8">
             <button id="exemploRoxo" class="exemploRoxo" aria-label="Filtrar itens sem análises"></button>
-            <label for="exemploRoxo" class="labelRoxo">Sem análises</label>
+            Sem análises
           </div>
 
           <div class="coresGlossario" onclick="filterTable('semGerente', event, '#emp-table');" data-count="5">
             <button id="exemploLaranja" class="exemploLaranja" aria-label="Filtrar itens vistos pelo analista"></button>
-            <label for="exemploLaranja" class="labelLaranja">Visto pelo analista</label>
+            Visto pelo analista
           </div>
 
           <div class="coresGlossario" onclick="filterTable('semAnalista', event, '#emp-table');" data-count="3">
             <button id="exemploAzul" class="exemploAzul" aria-label="Filtrar itens vistos pelo gerente"></button>
-            <label for="exemploAzul" class="labelAzul">Visto pelo gerente</label>
+            Visto pelo gerente
           </div>
 
           <div class="coresGlossario" onclick="filterTable('avaliado', event, '#emp-table');" data-count="28">
             <button id="exemploBranco" class="exemploBranco" aria-label="Filtrar itens aprovados"></button>
-            <label for="exemploBranco" class="labelBranco">Aprovado</label>
+            Aprovado
           </div>
 
           <div class="coresGlossario" onclick="filterTable('emEspera', event, '#emp-table');" data-count="2">
             <button id="exemploRose" class="exemploRose" aria-label="Filtrar itens em espera"></button>
-            <label for="exemploRose" class="labelRose">Em Espera</label>
+            Em Espera
           </div>
         </div>
 
@@ -285,38 +287,40 @@
                   <th class="subtitles celula colMaior" col-index=1>Realizado</th>
                   <th class="ocult" col-index=2>Fábrica
                     <select class="table-filter col colMai" autocomplete="off" id="realizadoSelLista"
-                      name="realizadoSelLista" data-el="2" onchange="filter_rows()">
+                      name="realizadoSelLista" data-el="2" onchange="filter_rows()" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
                   <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
                     <select class="table-filter col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista"
-                      data-el="3" onchange="filter_rows()">
+                      data-el="3" onchange="filter_rows()" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
                   <th class="subtitles celula colMaiorX" col-index=4>Setor
                     <select class="table-filter col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista"
-                      data-el="4" onchange="filter_rows()">
+                      data-el="4" onchange="filter_rows()" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
+
                   <th class="subtitles celula colMaiorX" col-index=5>Gerente
                     <select class="table-filter col colMaiX" autocomplete="off" id="gerenteSelLista"
-                      name="gerenteSelLista" data-el="5" onchange="filter_rows()">
+                      name="gerenteSelLista" data-el="5" onchange="filter_rows('multiple')" multiple>
                       <option value="" id="selecionado"></option>
                       <option value="all"></option>
                     </select>
                   </th>
+
                   <th class="subtitles celula colMaiorX print" col-index=6>Nome do projeto
                     <select class="table-filter col colMaiX" autocomplete="off" id="projetoSelLista"
-                      name="projetoSelLista" data-el="6" onchange="filter_rows()">
+                      name="projetoSelLista" data-el="6" onchange="filter_rows()" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
                   <th class="subtitles celula colMaior" col-index=7>Turno
                     <select class="table-filter col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
-                      data-el="7" onchange="filter_rows()">
+                      data-el="7" onchange="filter_rows()" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
@@ -440,7 +444,7 @@
     </section>
 
     <div id="lista">
-      <div class="navHeaderLista col-12">
+      <!-- <div class="navHeaderLista col-12">
         <div class="col-4 d-flex ">
           <div id="divMesLista" class="divMesLista text-center">
             <h6 class="fs-6 m-0 text-white">MÊS:</h6>
@@ -458,64 +462,75 @@
         <div class="col-4 text-end pe-2 ">
           <i id="closeLista" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
         </div>
-      </div>
-
-      <!-- <div class="divGlossarioLista">
-        <div class="coresGlossarioLista">
-          <button id="exemploVermelho" class="exemploVermelho" onclick="filterReprovadoLista()"></button>
-          <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploRoxo" class="exemploRoxo" onclick="filterAmbosLista()"></button>
-          <label for="exemploRoxo" class="labelRoxo">Sem análises</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploLaranja" class="exemploLaranja" onclick="filterGerenteLista()"></button>
-          <label for="exemploLaranja" class="labelLaranja">Visto pelo analista</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploAzul" class="exemploAzul" onclick="filterAnalistaLista()"></button>
-          <label for="exemploAzul" class="labelAzul">Visto pelo gerente</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploBranco" class="exemploBranco" onclick="filterVisibleLista()"></button>
-          <label for="exemploBranco" class="labelBranco">Aprovado</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploRose" class="exemploRose" onclick="filterRoseLista()"></button>
-          <label for="exemploRose" class="labelRose">Em Espera</label>
-        </div>
       </div> -->
 
+      <div class="navHeaderLista col-12 nav-header-modern">
+        <div class="nav-header-content">
+          <div class="col-4 d-flex nav-date-filters">
+            <div id="divMesLista" class="divMesLista text-center filter-container">
+              <div class="filter-label">
+                <i class="bi bi-calendar-month filter-icon"></i>
+                <h6 class="fs-6 m-0 text-white">MÊS</h6>
+              </div>
+              <div class="select-wrapper">
+                <select name="mesLista" id="mesLista" onchange="busc()" class="modern-select"></select>
+                <i class="bi bi-chevron-down select-arrow"></i>
+              </div>
+            </div>
+            <div id="divAnoLista" class="divAnoLista text-center filter-container">
+              <div class="filter-label">
+                <i class="bi bi-calendar-year filter-icon"></i>
+                <h6 class="fs-6 m-0 text-white">ANO</h6>
+              </div>
+              <div class="select-wrapper">
+                <select name="anoLista" id="anoLista" onchange="busc()" class="modern-select"></select>
+                <i class="bi bi-chevron-down select-arrow"></i>
+              </div>
+            </div>
+          </div>
+          <div id="totalLista" class="totalLista col-4 stats-container">
+            <div class="stats-badge">
+              <i class="bi bi-file-earmark-text stats-icon"></i>
+              <span id="valorTotalLista" class="valorTotal"></span>
+            </div>
+          </div>
+          <div class="col-4 text-end pe-2 close-container">
+            <button class="close-button" aria-label="Fechar lista">
+              <i id="closeLista" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="divGlossario">
-        <div class="coresGlossario" onclick="filterTable('reprovadoGerente', event, '#emp-tableLista');" data-count="12">
+        <div class="coresGlossario" onclick="filterTable('reprovadoGerenteLista', event, '#emp-tableLista');" data-count="12">
           <button id="exemploVermelho" class="exemploVermelho" aria-label="Filtrar itens reprovados"></button>
-          <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
+          Reprovado
         </div>
 
-        <div class="coresGlossario" onclick="filterTable('semAmbos', event, '#emp-tableLista');" data-count="8">
+        <div class="coresGlossario" onclick="filterTable('semAmbosLista', event, '#emp-tableLista');" data-count="8">
           <button id="exemploRoxo" class="exemploRoxo" aria-label="Filtrar itens sem análises"></button>
-          <label for="exemploRoxo" class="labelRoxo">Sem análises</label>
+          Sem análises
         </div>
 
-        <div class="coresGlossario" onclick="filterTable('semGerente', event, '#emp-tableLista');" data-count="5">
+        <div class="coresGlossario" onclick="filterTable('semGerenteLista', event, '#emp-tableLista');" data-count="5">
           <button id="exemploLaranja" class="exemploLaranja" aria-label="Filtrar itens vistos pelo analista"></button>
-          <label for="exemploLaranja" class="labelLaranja">Visto pelo analista</label>
+          Visto pelo analista
         </div>
 
-        <div class="coresGlossario" onclick="filterTable('semAnalista', event, '#emp-tableLista');" data-count="3">
+        <div class="coresGlossario" onclick="filterTable('semAnalistaLista', event, '#emp-tableLista');" data-count="3">
           <button id="exemploAzul" class="exemploAzul" aria-label="Filtrar itens vistos pelo gerente"></button>
-          <label for="exemploAzul" class="labelAzul">Visto pelo gerente</label>
+          Visto pelo gerente
         </div>
 
-        <div class="coresGlossario" onclick="filterTable('avaliado', event, '#emp-tableLista');" data-count="28">
+        <div class="coresGlossario" onclick="filterTable('avaliadoLista', event, '#emp-tableLista');" data-count="28">
           <button id="exemploBranco" class="exemploBranco" aria-label="Filtrar itens aprovados"></button>
-          <label for="exemploBranco" class="labelBranco">Aprovado</label>
+          Aprovado
         </div>
 
-        <div class="coresGlossario" onclick="filterTable('emEspera', event, '#emp-tableLista');" data-count="2">
+        <div class="coresGlossario" onclick="filterTable('emEsperaLista', event, '#emp-tableLista');" data-count="2">
           <button id="exemploRose" class="exemploRose" aria-label="Filtrar itens em espera"></button>
-          <label for="exemploRose" class="labelRose">Em Espera</label>
+          Em Espera
         </div>
       </div>
 
@@ -683,6 +698,7 @@
   </footer>
 
   <script src="assets/js/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="assets/js/script.js"></script>
   <script src="assets/js/socket.js"></script>
   <script src="assets/js/loja.js"></script>
@@ -690,6 +706,15 @@
   <script src="assets/js/email.js" type="module"></script>
   <script src="assets/js/unidade-dass.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('.table-filter').select2({
+        placeholder: "Selecione",
+        allowClear: true,
+        width: 'resolve'
+      });
+    });
+  </script>
 </body>
 
 </html>

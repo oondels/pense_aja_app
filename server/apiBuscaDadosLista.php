@@ -1,5 +1,6 @@
 <?php
-error_reporting(E_ALL);
+error_reporting(E_ALL & ~E_DEPRECATED);
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
@@ -11,18 +12,10 @@ header("Content-Type: application/json; charset=UTF-8");
 $router = './config/ip.json';
 include_once('./config/connection.php');
 
-// Função para tratamento seguro de datas
-function formatarDataPeriodo($mes, $ano, $dia = 29)
-{
-    try {
-        $data = new DateTime("$ano-$mes-$dia");
-        return $data->format('Y-m-d');
-    } catch (Exception $e) {
-        return date('Y-m-d');
-    }
-}
-
 $queryMesAno = "SELECT DISTINCT EXTRACT(MONTH FROM createdat) AS mes, EXTRACT(YEAR FROM createdat) AS ano FROM pense_aja.pense_aja ORDER BY mes";
+
+$mesAtual = '';
+$mesAnterior = '';
 
 // Função para construir a query com parâmetros seguros
 function construirQuery($params)
@@ -64,7 +57,7 @@ function construirQuery($params)
     }
 
     // Ordenação
-    $query .= " ORDER BY id DESC";
+    $query .= " ORDER BY createdat DESC";
     $queryFilterGerentes .= " ORDER BY gerente ASC";
     $queryFilterNomes .= " ORDER BY nome ASC";
     $queryFilterSetores .= " ORDER BY setor ASC";
@@ -97,49 +90,54 @@ try {
         'options' => ['min_range' => 2000, 'max_range' => (int)date('Y') + 1]
     ]);
 
+    $mesAtual = $content['mesAtual'];
+    $mesAnterior = $content['mesAnterior'];
+
     // Determinar período
     $hoje = new DateTime();
     $diaAtual = $hoje->format('d');
     $params = [];
+    $params['dataInicio'] = $mesAnterior;
+    $params['dataFim'] = $mesAtual;
 
-    if (!$mes && !$ano) {
-        // Se não selecionou mês nem ano, usar regra 29 -> 29
-        $dataFim = new DateTime();
-        $dataInicio = new DateTime();
+    // if (!$mes && !$ano) {
+    //     // Se não selecionou mês nem ano, usar regra 29 -> 29
+    //     $dataFim = new DateTime();
+    //     $dataInicio = new DateTime();
 
-        if ($diaAtual >= 29) {
-            // De 29 do mês anterior até 29 do mês atual
-            // dataFim: 29 do mês atual
-            $dataFim->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
-            // dataInicio: 29 do mês anterior
-            $dataInicio->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
-            $dataInicio->modify('-1 month');
-        } else {
-            // Se ainda não chegou no dia 29, pega de 29 de dois meses atrás até 29 do mês anterior
-            // dataFim: 29 do mês anterior
-            $dataFim->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
-            $dataFim->modify('-1 month');
+    //     if ($diaAtual >= 29) {
+    //         // De 29 do mês anterior até 29 do mês atual
+    //         // dataFim: 29 do mês atual
+    //         $dataFim->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
+    //         // dataInicio: 29 do mês anterior
+    //         $dataInicio->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
+    //         $dataInicio->modify('-1 month');
+    //     } else {
+    //         // Se ainda não chegou no dia 29, pega de 29 de dois meses atrás até 29 do mês anterior
+    //         // dataFim: 29 do mês anterior
+    //         $dataFim->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
+    //         $dataFim->modify('-1 month');
 
-            // dataInicio: 29 de dois meses atrás
-            $dataInicio->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
-            $dataInicio->modify('-1 month');
-        }
+    //         // dataInicio: 29 de dois meses atrás
+    //         $dataInicio->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
+    //         $dataInicio->modify('-1 month');
+    //     }
 
-        $params['dataInicio'] = $dataInicio->format('Y-m-d');
-        $params['dataFim'] = $dataFim->format('Y-m-d');
-    } elseif ($mes && !$ano) {
-        // Mês específico no ano atual
-        $ano = date('Y');
-        $params['mes'] = $mes;
-        $params['ano'] = $ano;
-    } elseif ($ano && !$mes) {
-        // Ano completo
-        $params['ano'] = $ano;
-    } else {
-        // Mês e ano específicos
-        $params['mes'] = $mes;
-        $params['ano'] = $ano;
-    }
+    //     $params['dataInicio'] = $dataInicio->format('Y-m-d');
+    //     $params['dataFim'] = $dataFim->format('Y-m-d');
+    // } elseif ($mes && !$ano) {
+    //     // Mês específico no ano atual
+    //     $ano = date('Y');
+    //     $params['mes'] = $mes;
+    //     $params['ano'] = $ano;
+    // } elseif ($ano && !$mes) {
+    //     // Ano completo
+    //     $params['ano'] = $ano;
+    // } else {
+    //     // Mês e ano específicos
+    //     $params['mes'] = $mes;
+    //     $params['ano'] = $ano;
+    // }
 
     // Preparar e executar query
     $queries = construirQuery($params);

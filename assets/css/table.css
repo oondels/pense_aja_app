@@ -22,8 +22,9 @@ table {
   overflow-x: hidden !important;
 }
 
-.divTable {
-  margin-top: 20px !important;
+.divTable,
+.divTableLista {
+  margin-top: 10px !important;
   display: flex;
   justify-content: center;
   width: 100%;
@@ -34,7 +35,7 @@ table {
   height: calc(100vh - 130px) !important;
 }
 
-.divTableLista {
+/* .divTableLista {
   display: flex;
   justify-content: center;
   height: 100%;
@@ -42,7 +43,7 @@ table {
   margin-bottom: 1vh;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-}
+} */
 
 #headThead {
   width: 100% !important;
@@ -71,10 +72,11 @@ table {
   background: #ffffff;
 }
 
-#headConsulta {
+#headConsulta,
+#headConsultaLista {
   border-collapse: collapse;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  color: #ffffff;
+  color: #fff;
   width: 100% !important;
   font-family: "roboto-bold";
   font-size: 13px;
@@ -82,7 +84,8 @@ table {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-#headConsulta th {
+#headConsulta th,
+#headConsultaLista th {
   padding: 12px 8px;
   text-transform: uppercase;
   font-weight: 600;
@@ -405,6 +408,159 @@ tbody tr:hover {
   pointer-events: auto;
 }
 
+/* Estilo moderno para o cabeçalho de navegação */
+.nav-header-modern {
+  background: linear-gradient(135deg, #2c3e50 0%, #1a2a38 100%);
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-header-modern::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3498db, #5dade2, #3498db);
+  z-index: 2;
+}
+
+.nav-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+/* Estilo para os filtros de data */
+.nav-date-filters {
+  gap: 16px;
+}
+
+.filter-container {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+  transition: all 0.3s ease;
+}
+
+.filter-container:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.filter-icon {
+  color: #5dade2;
+  font-size: 16px;
+}
+
+/* Estilo para os selects */
+.select-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.modern-select {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  outline: none;
+  padding: 10px 30px 10px 15px;
+  transition: all 0.3s ease;
+  width: 100%;
+  font-size: 14px;
+}
+
+.modern-select:hover,
+.modern-select:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.select-arrow {
+  color: rgba(255, 255, 255, 0.7);
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* Estilo para o contador de estatísticas */
+.stats-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.stats-badge {
+  background: rgba(46, 204, 113, 0.2);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  border-radius: 20px;
+  display: flex;
+  color: #fff;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  transition: all 0.3s ease;
+}
+
+.stats-badge:hover {
+  background: rgba(46, 204, 113, 0.3);
+}
+
+.stats-icon {
+  color: #2ecc71;
+  font-size: 18px;
+}
+
+.valorTotal {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-size: 18px;
+}
+
+/* Estilo para o botão de fechar */
+.close-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.close-button {
+  background: rgba(231, 76, 60, 0.1);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  height: 46px;
+  width: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.close-button:hover {
+  background: rgba(231, 76, 60, 0.2);
+  transform: scale(1.1);
+}
+
 @media (max-width: 768px) {
   th,
   td {
@@ -415,5 +571,18 @@ tbody tr:hover {
   .divTable {
     max-width: 100%;
     padding: 0 10px;
+  }
+
+  .nav-header-modern {
+    padding: 15px;
+  }
+
+  .nav-date-filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .stats-badge {
+    padding: 6px 12px;
   }
 }

@@ -583,11 +583,7 @@ openLista.addEventListener("click", () => {
   setTimeout(() => {
     listaTableLista();
     dadosFiltroLista();
-  }, 500);
-  // document.getElementById("openUser").classList.add("d-none");
-  // document.getElementById("openLista").classList.add("d-none");
-  // document.getElementById("openMenu").classList.add("d-none");
-  // document.getElementById("openLoja").classList.add("d-none");
+  }, 100);
 });
 
 closeLista.addEventListener("click", () => {
@@ -779,9 +775,9 @@ function sessao() {
     document.getElementById("nome").innerText = `${nomes.toUpperCase()}`;
     document.getElementById("funcao").innerText = `${colab.toUpperCase()}!`;
   } else {
-    // document.getElementById("usuario").innerText = "Olá, Usuário!";
-    // document.getElementById("nome").innerText = "Nome gerente!";
-    // document.getElementById("funcao").innerText = "Função!";
+    document.getElementById("usuario").innerText = "Olá, Usuário!";
+    document.getElementById("nome").innerText = "Nome gerente!";
+    document.getElementById("funcao").innerText = "Função!";
   }
   if (colab == "GERENTE") {
     selecionado.innerText = nomes;

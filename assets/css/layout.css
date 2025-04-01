@@ -121,7 +121,6 @@ header #logo {
   color: #fff;
 }
 
-.valorTotal,
 .pontosColab {
   font-family: "roboto-black";
   font-weight: bold;
@@ -193,7 +192,6 @@ a {
 }
 
 .navHeader,
-.navHeaderLista,
 .navHeaderLoja {
   /* position: fixed;
   top: 12px;
@@ -203,7 +201,6 @@ a {
   display: flex;
 }
 
-.navHeaderLista,
 .navHeaderLoja {
   background: #494949;
   height: 50px;
@@ -1101,15 +1098,6 @@ input[type="checkbox"] {
     height: 5vh;
   }
 
-  .divGlossario {
-    height: 4vh;
-  }
-
-  .divGlossarioLista {
-    top: calc(150px - 60px);
-    font-size: 11px;
-  }
-
   .colMaior {
     max-width: 9.15vw;
     min-width: 9.15vw;
@@ -1160,10 +1148,6 @@ input[type="checkbox"] {
   .divItensLoja img {
     width: 14vw;
     height: 16vh;
-  }
-
-  .divGlossario {
-    margin-bottom: 1vh;
   }
 
   .inputSmall input {
@@ -1233,7 +1217,6 @@ input[type="checkbox"] {
   footer,
   aside,
   form,
-  .divGlossario,
   .table-filter,
   .action,
   .copy_right,
