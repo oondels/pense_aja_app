@@ -50,34 +50,31 @@
             </div>
           </div>
         </div>
+
         <div class="banner-right">
           <div class="button-group">
-            <button id="openLoja" class="action-button" data-bs-toggle="tooltip" data-bs-placement="top"
-              data-bs-custom-class="custom-tooltip" data-bs-title="CONSULTAR PONTOS E RETIRAR BRINDES">
+            <button id="openLoja" class="action-button">
               <div class="button-icon-container">
                 <img src="./assets/img/icons/store.png" alt="loja" class="button-icon">
               </div>
               <span class="button-label">Loja</span>
             </button>
 
-            <button id="openLista" class="action-button" onclick="obtemAnoAtualEMesAnterior()" data-bs-toggle="tooltip"
-              data-bs-placement="bottom" data-custom-class="custom-tooltip" title="LISTAR PENSE E AJA ANTERIORES">
+            <button id="openLista" class="action-button" onclick="obtemAnoAtualEMesAnterior()">
               <div class="button-icon-container">
                 <img src="./assets/img/lista.png" alt="lista" class="button-icon">
               </div>
               <span class="button-label">Listagem</span>
             </button>
 
-            <button id="openMenu" class="action-button" data-bs-toggle="tooltip" data-bs-placement="bottom"
-              data-bs-custom-class="custom-tooltip" title="CADASTRAR PENSE E AJA">
+            <button id="openMenu" class="action-button">
               <div class="button-icon-container">
                 <img src="./assets/img/icons/idea-off.png" alt="ideiaoff" class="button-icon">
               </div>
               <span class="button-label">Cadastrar</span>
             </button>
 
-            <button id="openUser" class="action-button" data-bs-toggle="tooltip" data-bs-placement="bottom"
-              data-bs-custom-class="custom-tooltip" title="LOGIN">
+            <button id="openUser" class="action-button">
               <div class="button-icon-container">
                 <!-- <img src="./assets/img/user.png" alt="user" class="button-icon"> -->
                 <img src="./assets/img/icons/login.png" alt="user" class="button-icon">
@@ -87,14 +84,13 @@
           </div>
         </div>
       </div>
+
       <div class="banner-decoration">
         <div class="decoration-circle circle-1"></div>
         <div class="decoration-circle circle-2"></div>
         <div class="decoration-circle circle-3"></div>
       </div>
     </div>
-
-
 
     <nav id="loja" class="loja">
       <div class="container-fluid itemsLoja text-center text-white font-weight-bold">
@@ -463,7 +459,8 @@
           <i id="closeLista" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
         </div>
       </div>
-      <div class="divGlossarioLista">
+
+      <!-- <div class="divGlossarioLista">
         <div class="coresGlossarioLista">
           <button id="exemploVermelho" class="exemploVermelho" onclick="filterReprovadoLista()"></button>
           <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
@@ -488,7 +485,40 @@
           <button id="exemploRose" class="exemploRose" onclick="filterRoseLista()"></button>
           <label for="exemploRose" class="labelRose">Em Espera</label>
         </div>
+      </div> -->
+
+      <div class="divGlossario">
+        <div class="coresGlossario" onclick="filterTable('reprovadoGerente', event, '#emp-tableLista');" data-count="12">
+          <button id="exemploVermelho" class="exemploVermelho" aria-label="Filtrar itens reprovados"></button>
+          <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
+        </div>
+
+        <div class="coresGlossario" onclick="filterTable('semAmbos', event, '#emp-tableLista');" data-count="8">
+          <button id="exemploRoxo" class="exemploRoxo" aria-label="Filtrar itens sem análises"></button>
+          <label for="exemploRoxo" class="labelRoxo">Sem análises</label>
+        </div>
+
+        <div class="coresGlossario" onclick="filterTable('semGerente', event, '#emp-tableLista');" data-count="5">
+          <button id="exemploLaranja" class="exemploLaranja" aria-label="Filtrar itens vistos pelo analista"></button>
+          <label for="exemploLaranja" class="labelLaranja">Visto pelo analista</label>
+        </div>
+
+        <div class="coresGlossario" onclick="filterTable('semAnalista', event, '#emp-tableLista');" data-count="3">
+          <button id="exemploAzul" class="exemploAzul" aria-label="Filtrar itens vistos pelo gerente"></button>
+          <label for="exemploAzul" class="labelAzul">Visto pelo gerente</label>
+        </div>
+
+        <div class="coresGlossario" onclick="filterTable('avaliado', event, '#emp-tableLista');" data-count="28">
+          <button id="exemploBranco" class="exemploBranco" aria-label="Filtrar itens aprovados"></button>
+          <label for="exemploBranco" class="labelBranco">Aprovado</label>
+        </div>
+
+        <div class="coresGlossario" onclick="filterTable('emEspera', event, '#emp-tableLista');" data-count="2">
+          <button id="exemploRose" class="exemploRose" aria-label="Filtrar itens em espera"></button>
+          <label for="exemploRose" class="labelRose">Em Espera</label>
+        </div>
       </div>
+
       <div class="divTableLista">
         <table class="consulta" id="emp-tableLista">
           <thead id="headTheadLista">
@@ -660,10 +690,6 @@
   <script src="assets/js/email.js" type="module"></script>
   <script src="assets/js/unidade-dass.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script>
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-  </script>
 </body>
 
 </html>

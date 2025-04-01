@@ -14,11 +14,12 @@ th {
 table {
   border-spacing: 0;
   border-collapse: collapse;
-  width: 100%;
-  table-layout: auto;
+  width: 100% !important;
+  table-layout: fixed;
   font-family: "Roboto", sans-serif;
   font-size: 13px;
   color: #333;
+  overflow-x: hidden !important;
 }
 
 .divTable {
@@ -29,7 +30,6 @@ table {
   margin: 0 auto 2rem auto;
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  overflow-x: auto;
   background-color: #ffffff;
   height: calc(100vh - 130px) !important;
 }
@@ -45,7 +45,7 @@ table {
 }
 
 #headThead {
-  width: 100%;
+  width: 100% !important;
   top: 0;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   color: #ffffff;
@@ -75,7 +75,7 @@ table {
   border-collapse: collapse;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   color: #ffffff;
-  width: 100%;
+  width: 100% !important;
   font-family: "roboto-bold";
   font-size: 13px;
   letter-spacing: 0.5px;

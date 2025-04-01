@@ -612,6 +612,8 @@ const obtemAnoAtualEMesAnterior = () => {
   var optionAno = document.createElement("option");
   optionAno.value = anoAtual;
   optionAno.text = anoAtual;
+
+  selectAnoLista.innerHTML = ''
   selectAnoLista.add(optionAno);
 
   var nomesMeses = [
@@ -632,6 +634,7 @@ const obtemAnoAtualEMesAnterior = () => {
   var optionMes = document.createElement("option");
   optionMes.value = mesAnterior;
   optionMes.text = nomesMeses[mesAnterior - 1];
+  mesLista.innerHTML = ''
   mesLista.add(optionMes);
 };
 
@@ -1119,7 +1122,6 @@ async function listaTableLista() {
   if (queryCache && Object.keys(queryCache).length > 0 && queryCache[cachedListKey]) {
     renderListaTableLista(queryCache[cachedListKey]?.payload);
   } else {
-    console.log("mostrando loading");
     showLoadingComponent();
   }
 
@@ -1129,7 +1131,7 @@ async function listaTableLista() {
   valorTotal.innerHTML = `${listaSize}<strong class="text-success fs-6"> Registros</strong>`;
 
   // Atualiza o timestamp do cache
-  if (queryCache?.cachedListKey) {
+  if (queryCache && queryCache[cachedListKey]) {
     queryCache[cachedListKey].timestamp = currentTime;
     localStorage.setItem("filterCache", JSON.stringify(queryCache));
   }
@@ -1147,6 +1149,7 @@ async function listaTableLista() {
     .post("/pense_aja/server/apiBuscaDadosLista.php", select)
     .then((response) => {
       const newCache = response.data;
+
       if (
         cachedListKey &&
         (!queryCache[cachedListKey] || newCache.dados.length > queryCache[cachedListKey].payload.length)
