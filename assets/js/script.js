@@ -161,7 +161,7 @@ const renderListaTable = (data) => {
       button.addEventListener("click", async function (event) {
         let el = event.target.id.substring(1);
         let data = { identificador: el };
-        let buscaPenseAja = await fetch("/server/apiBuscaPenseAja.php", {
+        let buscaPenseAja = await fetch("/pense_aja/server/apiBuscaPenseAja.php", {
           method: "POST",
           body: JSON.stringify(data),
           headers: {
@@ -325,7 +325,7 @@ const renderListaTable = (data) => {
             nome: sessionStorage.getItem("nome"),
             funcao: sessionStorage.getItem("funcao"),
           };
-          let reprovado = await fetch("http://" + ip + "/dass-penseaja-vdc/server/apiPostPenseAjaReprovado.php", {
+          let reprovado = await fetch("http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaReprovado.php", {
             method: "POST",
             body: JSON.stringify(dataR),
             headers: {
@@ -376,7 +376,7 @@ const renderListaTable = (data) => {
             em_espera: document.getElementById("esperar").checked,
             replicavel: document.getElementById("replicar").checked,
           };
-          let aprovado = await fetch("http://" + ip + "/dass-penseaja-vdc/server/apiPostPenseAjaAprovado.php", {
+          let aprovado = await fetch("http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaAprovado.php", {
             method: "POST",
             body: JSON.stringify(dataA),
             headers: {
@@ -403,7 +403,7 @@ const renderListaTable = (data) => {
           };
           /*Se avaliação pelo gerente e pelo analista salva ponto*/
           if (setFuncao == "ANALISTA!" && esperou == false) {
-            let pontos = await fetch("/server/apiPostPontos.php", {
+            let pontos = await fetch("/pense_aja/server/apiPostPontos.php", {
               method: "POST",
               body: JSON.stringify(dataPonto),
               headers: {
@@ -413,7 +413,7 @@ const renderListaTable = (data) => {
             event.preventDefault();
           }
           if (setFuncao == "GERENTE" && stsAnaAprovou == "APROVAR" && esperou == false) {
-            let pontos = await fetch("/server/apiPostPontos.php", {
+            let pontos = await fetch("/pense_aja/server/apiPostPontos.php", {
               method: "POST",
               body: JSON.stringify(dataPonto),
               headers: {
@@ -448,7 +448,7 @@ const renderListaTable = (data) => {
                   gerente: sessionStorage.getItem("nome"),
                   funcao: sessionStorage.getItem("funcao"),
                 };
-                let excluir = await fetch("http://" + ip + "/dass-penseaja-vdc/server/apiPostPenseAjaExcluido.php", {
+                let excluir = await fetch("http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaExcluido.php", {
                   method: "POST",
                   body: JSON.stringify(dataE),
                   headers: {
@@ -559,7 +559,7 @@ async function listaTable() {
   }
 
   try {
-    const response = await axios.get("/server/apiBuscaDados.php", {
+    const response = await axios.get("/pense_aja/server/apiBuscaDados.php", {
       headers: {
         "Content-Type": "application/json",
       },
@@ -660,7 +660,7 @@ const buscaPA_Lista = (listaSize) => {
     buttons.addEventListener("click", async function (events) {
       let el = events.target.id.substring(6);
       let data = { identificador: el };
-      let buscaPenseAjaLista = await fetch("/server/apiBuscaPenseAja.php", {
+      let buscaPenseAjaLista = await fetch("/pense_aja/server/apiBuscaPenseAja.php", {
         method: "POST",
         body: JSON.stringify(data),
         headers: {
@@ -834,7 +834,7 @@ const buscaPA_Lista = (listaSize) => {
           nome: sessionStorage.getItem("nome"),
           funcao: sessionStorage.getItem("funcao"),
         };
-        let reprovadoLista = await fetch("http://" + ip + "/dass-penseaja-vdc/server/apiPostPenseAjaReprovado.php", {
+        let reprovadoLista = await fetch("http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaReprovado.php", {
           method: "POST",
           body: JSON.stringify(dataR),
           headers: {
@@ -879,7 +879,7 @@ const buscaPA_Lista = (listaSize) => {
           em_espera: document.getElementById("esperar").checked,
           replicavel: document.getElementById("replicar").checked,
         };
-        let response = await fetch("/server/apiPostPenseAjaAprovado.php", {
+        let response = await fetch("/pense_aja/server/apiPostPenseAjaAprovado.php", {
           method: "POST",
           body: JSON.stringify(dataA),
           headers: {
@@ -904,7 +904,7 @@ const buscaPA_Lista = (listaSize) => {
           gerente: gerAprovouLista.substring(9),
         };
         if (setFuncaoLista == "ANALISTA!" && esperouLista == false) {
-          let pontosLista = await fetch("/server/apiPostPontos.php", {
+          let pontosLista = await fetch("/pense_aja/server/apiPostPontos.php", {
             method: "POST",
             body: JSON.stringify(dataPonto),
             headers: {
@@ -914,7 +914,7 @@ const buscaPA_Lista = (listaSize) => {
           event.preventDefault();
         }
         if (setFuncaoLista == "GERENTE" && stsAnaAprovouLista == "APROVAR" && esperouLista == false) {
-          let pontosLista = await fetch("/server/apiPostPontos.php", {
+          let pontosLista = await fetch("/pense_aja/server/apiPostPontos.php", {
             method: "POST",
             body: JSON.stringify(dataPonto),
             headers: {
@@ -949,7 +949,7 @@ const buscaPA_Lista = (listaSize) => {
                 gerente: sessionStorage.getItem("nome"),
                 funcao: sessionStorage.getItem("funcao"),
               };
-              fetch("http://" + ip + "/dass-penseaja-vdc/server/apiPostPenseAjaExcluido.php", {
+              fetch("http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaExcluido.php", {
                 method: "POST",
                 body: JSON.stringify(dataE),
                 headers: {
@@ -1144,7 +1144,7 @@ async function listaTableLista() {
   }
 
   await axios
-    .post("/server/apiBuscaDadosLista.php", select)
+    .post("/pense_aja/server/apiBuscaDadosLista.php", select)
     .then((response) => {
       const newCache = response.data;
       if (
@@ -1940,7 +1940,7 @@ async function dadosFiltroLista() {
   }
   let anoLista = document.getElementById("anoLista");
   let mesLista = document.getElementById("mesLista");
-  let selectMesAno = await fetch("/server/apiSelectMesAno.php", {
+  let selectMesAno = await fetch("/pense_aja/server/apiSelectMesAno.php", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

@@ -235,7 +235,7 @@ openMenu.addEventListener("click", () => {
       let iniFila = digitoMatricula.substring(0, 4);
       if (ini == "400" || ini == "401" || ini == "402" || iniFila == "2000") {
         if (digitoMatricula.length == 7) {
-          fetch("/server/apiBuscaCadastrante.php?matricula=" + digitoMatricula)
+          fetch("/pense_aja/server/apiBuscaCadastrante.php?matricula=" + digitoMatricula)
             .then((response) => response.json())
             .then((data) => {
               if (data.erro == false) {
@@ -274,7 +274,7 @@ openMenu.addEventListener("click", () => {
         }
       }
       if (digitoMatricula.length == "4") {
-        fetch("/server/apiBuscaCadastrante.php?matricula=400" + digitoMatricula)
+        fetch("/pense_aja/server/apiBuscaCadastrante.php?matricula=400" + digitoMatricula)
           .then((response) => response.json())
           .then((data) => {
             if (data.erro == false) {
@@ -308,7 +308,7 @@ openMenu.addEventListener("click", () => {
         dadosColaborador.classList.remove("dadosColaborador");
       }
       if (digitoMatricula.length == "5") {
-        fetch("/server/apiBuscaCadastrante.php?matricula=40" + digitoMatricula)
+        fetch("/pense_aja/server/apiBuscaCadastrante.php?matricula=40" + digitoMatricula)
           .then((response) => response.json())
           .then((data) => {
             if (data.erro == false) {
@@ -421,7 +421,7 @@ openMenu.addEventListener("click", () => {
         required("Descreva a situação atual!");
         return false;
       }
-      fetch("/server/apiPostPenseAja.php", {
+      fetch("/pense_aja/server/apiPostPenseAja.php", {
         method: "POST",
         body: JSON.stringify(data),
         headers: {
@@ -530,7 +530,7 @@ openUser.addEventListener("click", () => {
         alterarSenha(data);
         e.preventDefault();
       } else {
-        fetch("/server/apiCheckLogin.php", {
+        fetch("/pense_aja/server/apiCheckLogin.php", {
           method: "POST",
           body: JSON.stringify(data),
           headers: {
@@ -671,7 +671,7 @@ function alterarSenha(dados) {
     usuario: dados.usuario,
     senha: dados.senha,
   };
-  fetch("/server/apiCheckLogin.php", {
+  fetch("/pense_aja/server/apiCheckLogin.php", {
     method: "POST",
     body: JSON.stringify(data),
     headers: {
@@ -744,7 +744,7 @@ function alterarSenha(dados) {
             matricula: formValues[0],
             senha: formValues[1],
           };
-          fetch("/server/apiPutLogin.php", {
+          fetch("/pense_aja/server/apiPutLogin.php", {
             method: "POST",
             body: JSON.stringify(data),
             headers: {
