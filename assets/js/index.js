@@ -576,39 +576,40 @@ closeUser.addEventListener("click", () => {
   }, 200);
 });
 
+const listaHistorico = document.getElementById("lista");
 openLista.addEventListener("click", () => {
-  listaTableLista();
-  dadosFiltroLista();
-  lista.style.display = "flex";
-  lista.style.top = lista.offsetHeight * -1 + "px";
-  document.getElementById("openUser").classList.add("d-none");
-  document.getElementById("openLista").classList.add("d-none");
-  document.getElementById("openMenu").classList.add("d-none");
-  document.getElementById("openLoja").classList.add("d-none");
+  listaHistorico.classList.add("show");
+
   setTimeout(() => {
-    lista.style.opacity = "1";
-    lista.style.top = "0";
-  }, 100);
+    listaTableLista();
+    dadosFiltroLista();
+  }, 500);
+  // document.getElementById("openUser").classList.add("d-none");
+  // document.getElementById("openLista").classList.add("d-none");
+  // document.getElementById("openMenu").classList.add("d-none");
+  // document.getElementById("openLoja").classList.add("d-none");
 });
+
 closeLista.addEventListener("click", () => {
-  const selectM = document.getElementById("mesLista");
-  for (let i = -1; i <= selectM.options.length; i++) {
-    selectM.remove(0);
-  }
-  const selectA = document.getElementById("anoLista");
-  for (let i = -1; i <= selectA.options.length; i++) {
-    selectA.remove(0);
-  }
-  lista.style.opacity = "0";
-  lista.style.top = lista.offsetHeight * -1 + "px";
-  document.getElementById("openUser").classList.remove("d-none");
-  document.getElementById("openLista").classList.remove("d-none");
-  document.getElementById("openMenu").classList.remove("d-none");
-  document.getElementById("openLoja").classList.remove("d-none");
-  setTimeout(() => {
-    lista.removeAttribute("style");
-    openLista.removeAttribute("style");
-  }, 200);
+  listaHistorico.classList.remove("show");
+  // const selectM = document.getElementById("mesLista");
+  // for (let i = -1; i <= selectM.options.length; i++) {
+  //   selectM.remove(0);
+  // }
+  // const selectA = document.getElementById("anoLista");
+  // for (let i = -1; i <= selectA.options.length; i++) {
+  //   selectA.remove(0);
+  // }
+  // lista.style.opacity = "0";
+  // lista.style.top = lista.offsetHeight * -1 + "px";
+  // document.getElementById("openUser").classList.remove("d-none");
+  // document.getElementById("openLista").classList.remove("d-none");
+  // document.getElementById("openMenu").classList.remove("d-none");
+  // document.getElementById("openLoja").classList.remove("d-none");
+  // setTimeout(() => {
+  //   lista.removeAttribute("style");
+  //   openLista.removeAttribute("style");
+  // }, 200);
 });
 
 openLoja.addEventListener("click", () => {

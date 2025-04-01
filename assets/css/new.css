@@ -25,7 +25,7 @@ header {
   align-items: center;
   padding: 15px;
   position: relative;
-  z-index: 10;
+  /* z-index: 10; */
 }
 
 .banner-left {
@@ -231,7 +231,6 @@ header {
   height: 100%;
   overflow: hidden;
   pointer-events: none;
-  z-index: 1;
 }
 
 .decoration-circle {
@@ -260,6 +259,231 @@ header {
   height: 70px;
   top: 20px;
   right: 10%;
+}
+
+/* Glossario Pag Inicial */
+.divGlossario,
+.divGlossarioLista {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: linear-gradient(145deg, #ffc5c5, #fdd7d7);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.divGlossario::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, #b0062b, #ff335f);
+  border-radius: 2px;
+}
+
+.coresGlossario {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 30px;
+  background-color: #fff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.coresGlossario:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.coresGlossario:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.coresGlossario::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.3s ease;
+  opacity: 0.3;
+}
+
+.coresGlossario:hover::after {
+  transform: scaleX(1);
+}
+
+.coresGlossario button {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.coresGlossario label {
+  font-family: "Inter", -apple-system, sans-serif;
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: #444;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* Estilos específicos por cor */
+.exemploVermelho {
+  background-color: #ff3b30;
+}
+.labelVermelho {
+  color: #d42d24;
+}
+
+.exemploRoxo {
+  background-color: #5856d6;
+}
+.labelRoxo {
+  color: #4745aa;
+}
+
+.exemploLaranja {
+  background-color: #ff9500;
+}
+.labelLaranja {
+  color: #cc7800;
+}
+
+.exemploAzul {
+  background-color: #007aff;
+}
+.labelAzul {
+  color: #0062cc;
+}
+
+.exemploBranco {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0 !important;
+}
+.labelBranco {
+  color: #555555;
+}
+.exemploRose {
+  background-color: #ff2d55;
+}
+.labelRose {
+  color: #cc2444;
+}
+
+/* Efeito de seleção */
+.coresGlossario.active {
+  background-color: #e2e8f0;
+  color: #1e293b;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.15), inset 0 -1px 2px rgba(255, 255, 255, 0.4);
+  transform: translateY(1px);
+  transition: all 0.2s ease-in-out;
+  font-weight: 700;
+}
+
+.coresGlossario.active label {
+  color: #b0062b;
+  font-weight: 600;
+}
+
+/* Contador opcional */
+.coresGlossario[data-count]::before {
+  content: attr(data-count);
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #b0062b;
+  color: white;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(176, 6, 43, 0.3);
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.coresGlossario.has-items[data-count]::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Animação de destaque quando filtro é aplicado */
+@keyframes pulseHighlight {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.coresGlossario.highlight {
+  animation: pulseHighlight 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .divGlossario {
+    padding: 12px;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .coresGlossario {
+    padding: 4px 10px;
+  }
+
+  .coresGlossario button {
+    width: 16px;
+    height: 16px;
+  }
+
+  .coresGlossario label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .divGlossario {
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+
+  .coresGlossario {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
 }
 
 /* Animações */

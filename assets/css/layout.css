@@ -37,17 +37,11 @@
 }
 
 body {
-  display: flex;
-  flex-wrap: wrap;
-  flex: 1 1 100vw;
-  margin: 3px;
-  overflow: hidden;
+  position: relative;
 }
 
 header,
-nav,
-main,
-footer {
+nav {
   display: flex;
   margin: 2px;
 }
@@ -175,21 +169,6 @@ nav button {
   border: none;
 }
 
-main {
-  height: calc(100vh - 85px);
-  flex: 20 1 500px;
-  border-radius: 5px;
-}
-
-footer {
-  height: 23px;
-  flex: 1 1 100vw;
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 a {
   text-decoration: none;
   color: inherit;
@@ -200,14 +179,6 @@ a {
   right: 5px;
   top: 28px; */
   display: flex;
-}
-
-.footer {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  color: #ddd;
-  text-shadow: 0px 1px 3px #000;
 }
 
 .copy_right span {
@@ -353,10 +324,6 @@ h2::before {
     color: azure;
     border-color: azure;
   }
-}
-
-#lista {
-  background: linear-gradient(160deg, rgba(32, 32, 33, 1) 0%, rgba(148, 148, 156, 1) 96%, rgba(227, 231, 232, 1) 100%);
 }
 
 .loja {
@@ -737,20 +704,6 @@ input[type="number"]::-webkit-inner-spin-button {
   display: none;
 }
 
-.btnAcoes {
-  color: white;
-  padding: 3px;
-  border-radius: 3px;
-  font-weight: bold;
-  font-size: 19px;
-}
-
-.btnAcoes:hover {
-  transition: all 0.5s;
-  color: rgba(255, 255, 255, 0.473);
-  cursor: pointer;
-}
-
 /*consulta*/
 section {
   width: 100%;
@@ -782,55 +735,6 @@ section {
   width: 150px;
 }
 
-.divGlossario {
-  width: 100%;
-  height: 3vh;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: "roboto-black";
-}
-
-.divGlossarioLista {
-  width: 100%;
-  height: 3vh;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: "roboto-black";
-  /* position: relative;
-  top: calc(150px - 55px); */
-}
-
-.coresGlossario,
-.coresGlossarioLista {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 20%;
-}
-
-.coresGlossarioLista {
-  color: #fff;
-}
-
-:is(.coresGlossario, .coresGlossarioLista) button {
-  margin-right: 5px;
-  width: 2vw;
-  height: 2vh;
-  border-radius: 4px;
-}
-
-.exemploBranco {
-  border: 1px solid #0c1022;
-  transition: all 0.5s;
-}
-
-.exemploBranco:hover {
-  transition: all 0.5s;
-  transform: scale(1.2);
-  background-color: #dfdfdf;
-}
 /* Altera o estilo dos elementos para serem apresentados */
 /* em telas menores que 717px. */
 
@@ -980,19 +884,6 @@ input[type="checkbox"] {
 
   nav a {
     margin: 2%;
-  }
-
-  main {
-    order: 1;
-    height: calc(100vh - 143px);
-  }
-
-  footer {
-    order: 2;
-  }
-
-  #tbodyLista {
-    height: 82vh;
   }
 
   #closeUser,
@@ -1210,12 +1101,6 @@ input[type="checkbox"] {
     height: 5vh;
   }
 
-  .coresGlossario {
-    font-size: 15px;
-    height: 100%;
-    padding-left: 5px;
-  }
-
   .divGlossario {
     height: 4vh;
   }
@@ -1320,10 +1205,6 @@ input[type="checkbox"] {
 
   .divTableLista {
     top: calc(150px - 56px);
-  }
-
-  #tbodyLista {
-    height: 82.5vh;
   }
 
   .divItensLoja img {

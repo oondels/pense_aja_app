@@ -1,3 +1,10 @@
+main {
+  height: calc(100vh - 150px) !important;
+  flex: 20 1 500px;
+  border-radius: 5px;
+  padding: 10px;
+}
+
 /* Estilos para o componente de loading */
 .loading-cdata {
   position: fixed;

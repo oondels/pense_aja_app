@@ -64,7 +64,7 @@ const renderListaTable = (data) => {
     td_gerente.innerText = element.gerente;
     td_nome_projeto.innerHTML += `${element.nome_projeto} <div id="tool"><div id="tooltipTextBefore"><strong>SITUAÇÃO ANTERIOR: </strong>${element.situacao_anterior}</div><div id="tooltipTextAfter"><strong>SITUAÇÃO ATUAL: </strong>${element.situacao_atual}</div></div>`;
     td_turno.innerText = element.turno;
-    td_acoes.innerHTML += `<i class="btnAcoes botaoInfo bi bi-info-square" id="i${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
+    td_acoes.innerHTML += `<i class="btnAcoes botaoInfo bi bi-clipboard-check" id="i${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
 
     tr.classList.add("headConsulta", "active");
     tr.setAttribute("id", element.id);
@@ -136,6 +136,8 @@ const renderListaTable = (data) => {
       idTr.classList.add("avaliado");
     }
   });
+
+  console.log("Buscando pa...");
 
   const buscaPA = () => {
     if (!unidade) {
@@ -400,7 +402,7 @@ const renderListaTable = (data) => {
             gerente: gerAprovou.substring(9),
           };
           /*Se avaliação pelo gerente e pelo analista salva ponto*/
-          if (setFuncao == "ANALISTA" && esperou == false) {
+          if (setFuncao == "ANALISTA!" && esperou == false) {
             let pontos = await fetch("/server/apiPostPontos.php", {
               method: "POST",
               body: JSON.stringify(dataPonto),
@@ -491,7 +493,47 @@ const renderListaTable = (data) => {
       document.getElementById("a3_mae").selectedIndex = null;
     }
   };
-  // buscaPA();
+  buscaPA();
+};
+
+function activeBtn(e) {
+  // e.currentTarget.classList.toggle("active")
+  const btnsGlossario = document.querySelectorAll(".coresGlossario");
+  btnsGlossario.forEach((btn) => {
+    if (btn !== e.currentTarget) {
+      btn.classList.remove("active");
+    } else {
+      btn.classList.toggle("active");
+    }
+  });
+}
+
+const filterTable = (param, event, id) => {
+  const rows = document.querySelectorAll(`${id} tbody tr`);
+  activeBtn(event);
+  const isActive = event.currentTarget.classList.contains("active");
+
+  let countValues = 0;
+  rows.forEach((row) => {
+    if (isActive) {
+      // Exibe apenas os que possuem a classe correspondente
+      if (row.classList.contains(param)) {
+        row.style.display = "table-row";
+        countValues++;
+      } else {
+        row.style.display = "none";
+      }
+    } else {
+      countValues = rows.length
+      row.style.display = "table-row";
+    }
+  });
+
+  let valorTotal = document.getElementById("valorTotal");
+  if (!valorTotal) {
+    return;
+  }
+  valorTotal.innerHTML = `${countValues} <strong class="text-success fs-6">Registros</strong>`;
 };
 
 async function listaTable() {
@@ -508,7 +550,7 @@ async function listaTable() {
   let cachedList = getCachedData("cachedList") || {};
   const currentDate = new Date().getTime();
 
-  if (Object.keys(cachedList).length && cachedList[cachedKey].payload) {
+  if (Object.keys(cachedList).length && cachedList[cachedKey] && cachedList[cachedKey].payload) {
     console.log("Dados em cache...");
     renderListaTable(cachedList[cachedKey].payload);
   } else {
@@ -861,7 +903,7 @@ const buscaPA_Lista = (listaSize) => {
           classificacao: escolha,
           gerente: gerAprovouLista.substring(9),
         };
-        if (setFuncaoLista == "ANALISTA" && esperouLista == false) {
+        if (setFuncaoLista == "ANALISTA!" && esperouLista == false) {
           let pontosLista = await fetch("/server/apiPostPontos.php", {
             method: "POST",
             body: JSON.stringify(dataPonto),
@@ -1503,6 +1545,9 @@ function filter_rowsLista() {
 /*FIM FILTRO LISTA*/
 function soma() {
   let valorTotal = document.getElementById("valorTotal");
+  if (!valorTotal) {
+    return;
+  }
   valorTotal.innerHTML = `${
     document.querySelectorAll(".active").length
   } <strong class="text-success fs-6">Registros</strong>`;
@@ -1510,6 +1555,9 @@ function soma() {
 
 function somaLista() {
   let valorTotal = document.getElementById("valorTotalLista");
+  if (!valorTotal) {
+    return;
+  }
   valorTotal.innerHTML = `${
     document.querySelectorAll(".activeLista").length
   } <strong class="text-success fs-6">Registros</strong>`;
@@ -1590,6 +1638,7 @@ function filterGerente() {
   }
   soma();
 }
+
 function filterReprovado() {
   let lines = document.querySelectorAll("tr");
   for (let index = 0; index < lines.length; index++) {
@@ -1640,6 +1689,7 @@ function filterRose() {
   }
   soma();
 }
+
 function filterVisible() {
   let lines = document.querySelectorAll("tr");
   for (let index = 0; index < lines.length; index++) {

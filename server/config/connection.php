@@ -9,9 +9,9 @@ $dotenv->load();
 // $dbname = $_ENV['DB_NAME'];
 // $port   = $_ENV['DB_PORT'];
 
-$dsn = 'pgsql:host=pense_aja-database;port=5432;dbname=sest;';
+$dsn = 'pgsql:host=10.100.1.43;port=5432;dbname=sest;';
 $user = 'postgres';
-$password = 'wa0i4Ochu#@*';
+$password = 'gdti5s11se';
 
 //Conexão com a banco de dados
 try {

@@ -40,6 +40,14 @@
               <span class="month-label">Mês atual: </span>
               <span id="mes" class="month-value"></span>
             </div>
+
+            <div class="col-3 d-flex align-items-center">
+              <span id="usuario" class="usuario">Olá Hendrius</span>
+              <span id="nome" class="nome">HENDRIUS FELIX CERQUEIRA GOMES DE SANTANA</span>
+              <span id="funcao" class="funcao">ANALISTA!</span>
+              <span id="avaliacaoMensal" class="valorTotal"></span>
+              <span id="valorTotal" class="valorTotal"></span>
+            </div>
           </div>
         </div>
         <div class="banner-right">
@@ -85,6 +93,8 @@
         <div class="decoration-circle circle-3"></div>
       </div>
     </div>
+
+
 
     <nav id="loja" class="loja">
       <div class="container-fluid itemsLoja text-center text-white font-weight-bold">
@@ -190,107 +200,6 @@
         </div>
       </div>
     </nav>
-    <nav id="lista">
-      <div class="navHeaderLista col-12">
-        <div class="col-4 d-flex ">
-          <div id="divMesLista" class="divMesLista text-center">
-            <h6 class="fs-6 m-0 text-white">MÊS:</h6>
-            <select name="mesLista" id="mesLista" onchange="busc()"></select>
-          </div>
-          <div id="divAnoLista" class="divAnoLista text-center">
-            <h6 class="fs-6 m-0 text-white">ANO:</h6>
-            <select name="anoLista" id="anoLista" onchange="busc()">
-            </select>
-          </div>
-        </div>
-        <div id="totalLista" class="totalLista col-4 ">
-          <span id="valorTotalLista" class="valorTotal"></span>
-        </div>
-        <div class="col-4 text-end pe-2 ">
-          <i id="closeLista" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
-        </div>
-      </div>
-      <div class="divGlossarioLista">
-        <div class="coresGlossarioLista">
-          <button id="exemploVermelho" class="exemploVermelho" onclick="filterReprovadoLista()"></button>
-          <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploRoxo" class="exemploRoxo" onclick="filterAmbosLista()"></button>
-          <label for="exemploRoxo" class="labelRoxo">Sem análises</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploLaranja" class="exemploLaranja" onclick="filterGerenteLista()"></button>
-          <label for="exemploLaranja" class="labelLaranja">Visto pelo analista</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploAzul" class="exemploAzul" onclick="filterAnalistaLista()"></button>
-          <label for="exemploAzul" class="labelAzul">Visto pelo gerente</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploBranco" class="exemploBranco" onclick="filterVisibleLista()"></button>
-          <label for="exemploBranco" class="labelBranco">Aprovado</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploRose" class="exemploRose" onclick="filterRoseLista()"></button>
-          <label for="exemploRose" class="labelRose">Em Espera</label>
-        </div>
-      </div>
-      <div class="divTableLista">
-        <table class="consulta" id="emp-tableLista">
-          <thead id="headTheadLista">
-            <tr id="headConsultaLista" class="trHeadListaTR">
-              <th class="subtitles celulaLista colMenor thID">ID</th>
-              <th class="subtitles text-center celulaLista colMaior" col-index=1>Realizado</th>
-              <th class="ocult" col-index=2>Fábrica
-                <select class="table-filterLista col colMai" autocomplete="off" id="fabricaSel" name="fabricaSel"
-                  data-el="2" onchange="filter_rowsLista()">
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="subtitles text-center celulaLista nomeNormal colNome" col-index=3>Nome
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="nomeSel" name="nomeSel" data-el="3"
-                  onchange="filter_rowsLista()">
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="subtitles text-center celulaLista colMaiorX" col-index=4>Setor
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="setorSel" name="setorSel"
-                  data-el="4" onchange="filter_rowsLista()">
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="subtitles text-center celulaLista colMaiorX" col-index=5>Gerente
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="gerenteSel" name="gerenteSel"
-                  data-el="5" onchange="filter_rowsLista()">
-                  <option value="" id="selecionadoLista"></option>
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="subtitles text-center celulaLista colMaiorX print" col-index=6>Nome do projeto
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="projetoSel" name="projetoSel"
-                  data-el="6" onchange="filter_rowsLista()">
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="subtitles text-center celulaLista colMaior" col-index=7>Turno
-                <select class="table-filterLista col colMai" autocomplete="off" id="turnoSel" name="turnoSel"
-                  data-el="7" onchange="filter_rowsLista()">
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="action subtitles text-center celulaLista colMaior acoes">Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody id="tbodyLista">
-          </tbody>
-        </table>
-      </div>
-      <div id="loading-overlay">
-        <div id="loading-spinner"></div>
-      </div>
-    </nav>
     <nav id="menu">
       <div class="navConteudo container-fluid border">
         <div class="col-12 text-end">
@@ -339,28 +248,33 @@
       <div class="principal">
         <!-- Filtros Status -->
         <div class="divGlossario">
-          <div class="coresGlossario">
-            <button id="exemploVermelho" class="exemploVermelho" onclick="filterReprovado();"></button>
+          <div class="coresGlossario" onclick="filterTable('reprovadoGerente', event, '#emp-table');" data-count="12">
+            <button id="exemploVermelho" class="exemploVermelho" aria-label="Filtrar itens reprovados"></button>
             <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
           </div>
-          <div class="coresGlossario">
-            <button id="exemploRoxo" class="exemploRoxo" onclick="filterAmbos();"></button>
+
+          <div class="coresGlossario" onclick="filterTable('semAmbos', event, '#emp-table');" data-count="8">
+            <button id="exemploRoxo" class="exemploRoxo" aria-label="Filtrar itens sem análises"></button>
             <label for="exemploRoxo" class="labelRoxo">Sem análises</label>
           </div>
-          <div class="coresGlossario">
-            <button id="exemploLaranja" class="exemploLaranja" onclick="filterGerente();"></button>
+
+          <div class="coresGlossario" onclick="filterTable('semGerente', event, '#emp-table');" data-count="5">
+            <button id="exemploLaranja" class="exemploLaranja" aria-label="Filtrar itens vistos pelo analista"></button>
             <label for="exemploLaranja" class="labelLaranja">Visto pelo analista</label>
           </div>
-          <div class="coresGlossario">
-            <button id="exemploAzul" class="exemploAzul" onclick="filterAnalista();"></button>
+
+          <div class="coresGlossario" onclick="filterTable('semAnalista', event, '#emp-table');" data-count="3">
+            <button id="exemploAzul" class="exemploAzul" aria-label="Filtrar itens vistos pelo gerente"></button>
             <label for="exemploAzul" class="labelAzul">Visto pelo gerente</label>
           </div>
-          <div class="coresGlossario">
-            <button id="exemploBranco" class="exemploBranco" onclick="filterVisible();"></button>
+
+          <div class="coresGlossario" onclick="filterTable('avaliado', event, '#emp-table');" data-count="28">
+            <button id="exemploBranco" class="exemploBranco" aria-label="Filtrar itens aprovados"></button>
             <label for="exemploBranco" class="labelBranco">Aprovado</label>
           </div>
-          <div class="coresGlossario">
-            <button id="exemploRose" class="exemploRose" onclick="filterRose()"></button>
+
+          <div class="coresGlossario" onclick="filterTable('emEspera', event, '#emp-table');" data-count="2">
+            <button id="exemploRose" class="exemploRose" aria-label="Filtrar itens em espera"></button>
             <label for="exemploRose" class="labelRose">Em Espera</label>
           </div>
         </div>
@@ -528,6 +442,110 @@
         </div>
       </div>
     </section>
+
+    <div id="lista">
+      <div class="navHeaderLista col-12">
+        <div class="col-4 d-flex ">
+          <div id="divMesLista" class="divMesLista text-center">
+            <h6 class="fs-6 m-0 text-white">MÊS:</h6>
+            <select name="mesLista" id="mesLista" onchange="busc()"></select>
+          </div>
+          <div id="divAnoLista" class="divAnoLista text-center">
+            <h6 class="fs-6 m-0 text-white">ANO:</h6>
+            <select name="anoLista" id="anoLista" onchange="busc()">
+            </select>
+          </div>
+        </div>
+        <div id="totalLista" class="totalLista col-4 ">
+          <span id="valorTotalLista" class="valorTotal"></span>
+        </div>
+        <div class="col-4 text-end pe-2 ">
+          <i id="closeLista" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
+        </div>
+      </div>
+      <div class="divGlossarioLista">
+        <div class="coresGlossarioLista">
+          <button id="exemploVermelho" class="exemploVermelho" onclick="filterReprovadoLista()"></button>
+          <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
+        </div>
+        <div class="coresGlossarioLista">
+          <button id="exemploRoxo" class="exemploRoxo" onclick="filterAmbosLista()"></button>
+          <label for="exemploRoxo" class="labelRoxo">Sem análises</label>
+        </div>
+        <div class="coresGlossarioLista">
+          <button id="exemploLaranja" class="exemploLaranja" onclick="filterGerenteLista()"></button>
+          <label for="exemploLaranja" class="labelLaranja">Visto pelo analista</label>
+        </div>
+        <div class="coresGlossarioLista">
+          <button id="exemploAzul" class="exemploAzul" onclick="filterAnalistaLista()"></button>
+          <label for="exemploAzul" class="labelAzul">Visto pelo gerente</label>
+        </div>
+        <div class="coresGlossarioLista">
+          <button id="exemploBranco" class="exemploBranco" onclick="filterVisibleLista()"></button>
+          <label for="exemploBranco" class="labelBranco">Aprovado</label>
+        </div>
+        <div class="coresGlossarioLista">
+          <button id="exemploRose" class="exemploRose" onclick="filterRoseLista()"></button>
+          <label for="exemploRose" class="labelRose">Em Espera</label>
+        </div>
+      </div>
+      <div class="divTableLista">
+        <table class="consulta" id="emp-tableLista">
+          <thead id="headTheadLista">
+            <tr id="headConsultaLista" class="trHeadListaTR">
+              <th class="subtitles celulaLista colMenor thID">ID</th>
+              <th class="subtitles text-center celulaLista colMaior" col-index=1>Realizado</th>
+              <th class="ocult" col-index=2>Fábrica
+                <select class="table-filterLista col colMai" autocomplete="off" id="fabricaSel" name="fabricaSel"
+                  data-el="2" onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista nomeNormal colNome" col-index=3>Nome
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="nomeSel" name="nomeSel" data-el="3"
+                  onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaiorX" col-index=4>Setor
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="setorSel" name="setorSel"
+                  data-el="4" onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaiorX" col-index=5>Gerente
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="gerenteSel" name="gerenteSel"
+                  data-el="5" onchange="filter_rowsLista()">
+                  <option value="" id="selecionadoLista"></option>
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaiorX print" col-index=6>Nome do projeto
+                <select class="table-filterLista col colMaiX" autocomplete="off" id="projetoSel" name="projetoSel"
+                  data-el="6" onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaior" col-index=7>Turno
+                <select class="table-filterLista col colMai" autocomplete="off" id="turnoSel" name="turnoSel"
+                  data-el="7" onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+
+              <th class="action subtitles text-center celulaLista colMaior acoes">Ações
+              </th>
+            </tr>
+          </thead>
+
+          <tbody id="tbodyLista">
+          </tbody>
+        </table>
+      </div>
+      <div id="loading-overlay">
+        <div id="loading-spinner"></div>
+      </div>
+    </div>
 
     <div class="unidade-dass">
       <div class="unidade-popup-overlay"></div>
