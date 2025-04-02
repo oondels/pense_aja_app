@@ -31,7 +31,7 @@
         <div class="banner-left">
           <div class="logo-container">
             <div class="logo-circle">
-              <img src="./assets/img/lampada.png" alt="ideia" class="logo-img">
+              <img src="./assets/img/icons/dass-penseaja.png" alt="Logo Dass" class="logo-img">
             </div>
           </div>
 
@@ -71,14 +71,19 @@
 
             <button id="openMenu" class="action-button">
               <div class="button-icon-container">
-                <img src="./assets/img/icons/idea-off.png" alt="ideiaoff" class="button-icon">
+                <img
+                  id="imgPenseAja"
+                  src="./assets/img/icons/idea-off.png"
+                  alt="ideiaoff"
+                  class="button-icon"
+                  data-src-normal="./assets/img/icons/idea-off.png"
+                  data-src-hover="./assets/img/icons/idea-on.png">
               </div>
               <span class="button-label">Cadastrar</span>
             </button>
 
             <button id="openUser" class="action-button">
               <div class="button-icon-container">
-                <!-- <img src="./assets/img/user.png" alt="user" class="button-icon"> -->
                 <img src="./assets/img/icons/login.png" alt="user" class="button-icon">
               </div>
               <span class="button-label">Login</span>
@@ -94,110 +99,6 @@
       </div>
     </div>
 
-    <nav id="loja" class="loja">
-      <div class="container-fluid itemsLoja text-center text-white font-weight-bold">
-        <span>Pontuação sujeita a mudança após avaliação do gerente</span>
-        <div class="col-12 d-flex justify-content-between mb-2">
-          <div id="divLojaMatricula" class="col-4 d-flex">
-            <input type="number" class="me-2 text-center rounded" placeholder="Matrícula" id="lojaMatricula">
-            <i id="pesqLoja" class="fs-2 bi bi-search text-white"></i>
-          </div>
-          <div class="col-4">
-            <p id="pontosLoja" class="fs-2"></p>
-          </div>
-          <div class="col-4 text-end">
-            <i id="closeLoja" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
-          </div>
-        </div>
-
-        <div class="d-none">
-          <span id="nomeLoja" class="nomeLoja">Nome: </span>
-          <span id="setorLoja" class="setorLoja">Setor: </span>
-          <span id="gerenteLoja" class="gerenteLoja">Gerente: </span>
-          <span id="liderLoja" class="liderLoja">Líder: </span>
-        </div>
-
-        <div class="divItensLoja col-12">
-          <div id="divSuperior" class="col-12 h-50 d-flex justify-content-between px-3 pt-3">
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="10" data-text="bloco de notas">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/bloco.png" alt="Bloco de Notas" data-value="10">
-              </div>
-              <div class="container">
-                <p>BLOCO DE NOTAS</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="20" data-text="necessaire">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/bolsa.png" alt="Necessaire" data-value="20">
-              </div>
-              <div class="container">
-                <p>NECESSAIRE</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="30" data-text="camisa">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/camisa.png" alt="Camisa" data-value="30">
-              </div>
-              <div class="container">
-                <p>CAMISA</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="15" data-text="caneca">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/caneca.png" alt="Caneca" data-value="15">
-              </div>
-              <div class="container">
-                <p>CANECA</p>
-              </div>
-            </div>
-          </div>
-
-          <div id="divInferior" class="col-12 h-50 d-flex justify-content-between px-3">
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="4" data-text="caneta">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/caneta.png" alt="Caneta" data-value="4">
-              </div>
-              <div class="container">
-                <p>CANETA</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="5" data-text="chaveiro">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/chaveiro.png" alt="Chaveiro" data-value="5">
-              </div>
-              <div class="container">
-                <p>CHAVEIRO</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="10" data-text="copo">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/copo.png" alt="Copo" data-value="10">
-              </div>
-              <div class="container">
-                <p>COPO</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="40" data-text="tenis">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/tenis.png" alt="Tênis" data-value="40">
-              </div>
-              <div class="container">
-                <p>TÊNIS</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
     <nav id="menu">
       <div class="navConteudo container-fluid border">
         <div class="col-12 text-end">
@@ -222,6 +123,7 @@
         </form>
       </div>
     </nav>
+
     <nav id="login">
       <img src="./assets/img/semFundo.png" class="imgFundo" alt="Pense">
       <div class="navHeader" class="flex-row-reverse">
@@ -442,6 +344,191 @@
         </div>
       </div>
     </section>
+
+    <div id="loja" class="loja store-container">
+      <div class="store-wrapper">
+        <!-- Header com gradiente animado -->
+        <div class="store-header red-theme">
+          <div class="header-gradient-overlay"></div>
+          <div class="store-title-container">
+            <div class="store-logo">
+              <img src="./assets/img/icons/dass-penseaja.png" alt="Dass Pense Aja Logo">
+            </div>
+            <div class="store-title-content">
+              <h1>Loja de Recompensas</h1>
+              <span class="store-subtitle">Sistema Pense & Aja</span>
+            </div>
+          </div>
+          <div class="store-notification">
+            <div class="notification-icon">
+              <i class="bi bi-exclamation-circle-fill"></i>
+            </div>
+            <div class="notification-content">
+              <span class="notification-title">Atenção</span>
+              <span class="notification-text">Pontuação sujeita a avaliação do gerente</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de pesquisa e pontos -->
+        <div class="store-search-bar">
+          <div class="search-container" id="divLojaMatricula">
+            <i class="bi bi-person-badge search-icon"></i>
+            <input type="number" placeholder="Digite sua matrícula" id="lojaMatricula" class="search-input">
+            <button class="search-button" id="pesqLoja">
+              <i class="bi bi-search"></i>
+              <span>Buscar</span>
+            </button>
+          </div>
+          <div class="points-container">
+            <div class="points-badge">
+              <i class="bi bi-star-fill"></i>
+              <span id="pontosLoja" class="points-value">0</span>
+              <span class="points-label">pontos</span>
+            </div>
+          </div>
+          <button class="close-store-button" id="closeLoja">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <!-- Informações do usuário (inicialmente ocultas) -->
+        <div class="user-details d-none">
+          <div class="user-info-card">
+            <div class="user-avatar">
+              <i class="bi bi-person-circle text-primary"></i>
+            </div>
+            <div class="user-data">
+              <p id="nomeLoja" class="nomeLoja">Nome: </p>
+              <p id="setorLoja" class="setorLoja">Setor: </p>
+              <p id="gerenteLoja" class="gerenteLoja">Gerente: </p>
+              <p id="liderLoja" class="liderLoja">Líder: </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Produtos -->
+        <div class="store-products">
+          <h2 class="products-heading">Produtos Disponíveis</h2>
+
+          <div class="products-grid">
+            <!-- Linha 1 -->
+            <div class="product-card polaroid pontosSEM" data-value="10" data-text="bloco de notas">
+              <div class="product-badge">10 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/bloco.png" alt="Bloco de Notas" data-value="10" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Bloco de Notas</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM" data-value="20" data-text="necessaire">
+              <div class="product-badge">20 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/bolsa.png" alt="Necessaire" data-value="20" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Necessaire</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM" data-value="30" data-text="camisa">
+              <div class="product-badge">30 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/camisa.png" alt="Camisa" data-value="30" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Camisa</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM" data-value="15" data-text="caneca">
+              <div class="product-badge">15 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/caneca.png" alt="Caneca" data-value="15" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Caneca</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Linha 2 -->
+            <div class="product-card polaroid pontosSEM" data-value="4" data-text="caneta">
+              <div class="product-badge">4 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/caneta.png" alt="Caneta" data-value="4" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Caneta</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM" data-value="5" data-text="chaveiro">
+              <div class="product-badge">5 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/chaveiro.png" alt="Chaveiro" data-value="5" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Chaveiro</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM" data-value="10" data-text="copo">
+              <div class="product-badge">10 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/copo.png" alt="Copo" data-value="10" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Copo</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM premium-product" data-value="40" data-text="tenis">
+              <div class="product-badge premium-badge">40 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/tenis.png" alt="Tênis" data-value="40" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Tênis</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div id="lista">
       <!-- <div class="navHeaderLista col-12">
@@ -684,17 +771,11 @@
     </div>
   </main>
 
-  <footer class="footer h6">
-    <p class="copy_right">
-      <span>Desenvolvido por DASS SEST</span> &copy;
-      <span class="copy_right_ano">
-        <script>
-          const date = new Date();
-          document.querySelector('.copy_right_ano').innerText = date.getFullYear();
-        </script>
-      </span>
-      </span>
-    </p>
+  <footer>
+    <div class="footer-container">
+      <span>Desenvolvido por <strong>DASS Santo Estêvão</strong></span>
+      <span>&copy; <span class="current_copyright_year"></span> Todos os direitos reservados.</span>
+    </div>
   </footer>
 
   <script src="assets/js/jquery.min.js"></script>
@@ -707,6 +788,10 @@
   <script src="assets/js/unidade-dass.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Ano Copyright
+    const date = new Date();
+    document.querySelector('.current_copyright_year').innerText = date.getFullYear();
+
     $(document).ready(function() {
       $('.table-filter').select2({
         placeholder: "Selecione",

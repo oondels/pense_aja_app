@@ -1,5 +1,17 @@
 import { checkUserEmail, showEmailPopup, closeEmailPopup } from "./email.js";
 
+// Hover animação imagem cadastrar pense aja
+const penseAjaButton = document.querySelector("#openMenu");
+const img = document.querySelector("#imgPenseAja");
+
+penseAjaButton.addEventListener("mouseover", () => {
+  img.src = img.dataset.srcHover;
+});
+
+penseAjaButton.addEventListener("mouseleave", () => {
+  img.src = img.dataset.srcNormal;
+});
+
 // Pega mês atual e atualiza banner
 const month = [
   "JANEIRO",
@@ -608,27 +620,27 @@ closeLista.addEventListener("click", () => {
   }, 200);
 });
 
+const lojaContainer = document.querySelector("#loja");
 openLoja.addEventListener("click", () => {
-  loja.style.display = "block";
-  loja.style.top = loja.offsetHeight * -1 + "px";
+  lojaContainer.classList.add("active")
+
   document.getElementById("openUser").classList.add("d-none");
   document.getElementById("openLista").classList.add("d-none");
   document.getElementById("openMenu").classList.add("d-none");
   document.getElementById("openLoja").classList.add("d-none");
   document.getElementById("lojaMatricula").focus();
-  setTimeout(() => {
-    loja.style.opacity = "1";
-    loja.style.top = "0";
-    loja.style.left = "0";
-  }, 100);
+
 });
+
 closeLoja.addEventListener("click", () => {
-  loja.style.opacity = "0";
-  loja.style.top = loja.offsetHeight * -1 + "px";
+  lojaContainer.classList.remove("active")
+  document.querySelector(".user-details").classList.add("d-none")
+
   document.getElementById("openUser").classList.remove("d-none");
   document.getElementById("openLista").classList.remove("d-none");
   document.getElementById("openMenu").classList.remove("d-none");
   document.getElementById("openLoja").classList.remove("d-none");
+
   setTimeout(() => {
     loja.removeAttribute("style");
     openLoja.removeAttribute("style");
@@ -638,12 +650,10 @@ closeLoja.addEventListener("click", () => {
     document.getElementById("nomeLoja").innerText = `Nome: `;
     document.getElementById("setorLoja").innerText = `Setor: `;
     document.getElementById("gerenteLoja").innerText = `Gerente: `;
-    document.getElementById("liderLoja").innerText = `Líder: `;
-    // document.getElementById('total_PeA').innerText = '';
     document.getElementById("a").innerText = `A: `;
     document.getElementById("b").innerText = `B: `;
     document.getElementById("c").innerText = `C: `;
-    document.getElementById("informe").style.display = "none";
+    // document.getElementById("informe").style.display = "none";
     /**************************************************************** */
     const allElements = document.querySelectorAll(".polaroid");
     allElements.forEach((element) => {

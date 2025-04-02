@@ -43,11 +43,11 @@
         	WHERE MATRICULA = $matricula AND CLASSIFICACAO = 'C' GROUP BY CLASSIFICACAO,MATRICULA
         ),pontos AS (
         SELECT MATRICULA, SUM(valor)AS pontos
-        	FROM PENSE_AJA.pontos_vdc
+        	FROM PENSE_AJA.pontos
         	WHERE MATRICULA = $matricula GROUP BY MATRICULA
         ),pontos_premio AS (
         	SELECT MATRICULA, SUM(PONTOS_PREMIO_SOLICITADO) AS PONTO_PREMIO
-        	FROM PENSE_AJA.premio_vdc
+        	FROM PENSE_AJA.premio
         	WHERE MATRICULA = $matricula GROUP BY MATRICULA
         )
 

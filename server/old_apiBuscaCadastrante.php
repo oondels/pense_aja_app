@@ -23,7 +23,7 @@
     $response = "";
             $query = "SELECT lf.nome, lf.nome_setor, lf.setor_folha, lf.gerente, lf.funcao,sum(p.valor) AS valor
             FROM colaborador.lista_funcionario lf
-            LEFT JOIN pense_aja.pontos_vdc p
+            LEFT JOIN pense_aja.pontos  p
             ON lf.matricula = p.matricula
             WHERE lf.matricula = $matricula GROUP BY lf.nome, lf.nome_setor, lf.setor_folha, lf.gerente, lf.funcao";
             $result = $conn->prepare($query);

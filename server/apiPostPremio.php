@@ -32,7 +32,7 @@ ini_set('display_startup_errors', 1);
     $nomeEntregador = $_arr["nomeEntregador"];
 
 
-    $queryIn = "INSERT INTO pense_aja.premio_vdc
+    $queryIn = "INSERT INTO pense_aja.premio
     (matricula, nome, premio_solicitado, data_solicitacao, usuario_entregador, nome_entregador, data_entrega, pontos_premio_solicitado, createdat, updatedat)
     VALUES(:matricula, :nome, :premio, NOW(), :usuarioEntregador, :nomeEntregador, NOW(), :ponto, NOW(), NOW());";
     $resultIn = $conn->prepare($queryIn);

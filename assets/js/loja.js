@@ -1,11 +1,13 @@
 const pesquisar = document.getElementById('pesqLoja');
 pesquisar.addEventListener('click', () => {
+  showLoadingComponent();
   buscaColab();
 })
 
 const lojaMatricula = document.getElementById('lojaMatricula');
 lojaMatricula.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
+    showLoadingComponent();
     buscaColab();
   }
 })
@@ -43,7 +45,6 @@ document.querySelectorAll("img").forEach(function (div) {
           confirmButtonText: "SIM",
           denyButtonText: `NÃO`
         }).then(async (result) => {
-console.log(item)
           if (result.isConfirmed) {
             let brinde = await fetch("/pense_aja/server/apiPostPremio.php", {
               method: "POST",
@@ -89,23 +90,26 @@ console.log(item)
 */
 async function buscaColab() {
   let matricula = document.getElementById('lojaMatricula').value;
+
   let data = { "matricula": matricula };
   let buscaDadosColaboradorLoja = await fetch("/pense_aja/server/apiBuscaColaboradorLoja.php", {
     method: "POST",
     body: JSON.stringify(data),
     headers: {
-      "Content-type": "aplication/json; charset=UTF-8"
+      "Content-type": "application/json; charset=UTF-8"
     }
   })
+
   let resBuscaDadosColaboradorLoja = await buscaDadosColaboradorLoja.json();
   if (resBuscaDadosColaboradorLoja.erro == false) {
+    hideLoading();
     const totalPontos = parseInt(resBuscaDadosColaboradorLoja.matricula.valor) - parseInt(resBuscaDadosColaboradorLoja.matricula.valor_premio);
 
-    document.getElementById('pontosLoja').innerHTML = `${totalPontos} <strong class="text-success fs-6">Pontos</strong>`;
-    document.getElementById('nomeLoja').innerText = resBuscaDadosColaboradorLoja.matricula.nome;
-    document.getElementById('setorLoja').innerText = resBuscaDadosColaboradorLoja.matricula.setor;
-    document.getElementById('gerenteLoja').innerText = resBuscaDadosColaboradorLoja.matricula.gerente;
-    document.getElementById('liderLoja').innerText = resBuscaDadosColaboradorLoja.matricula.lider;
+    document.querySelector(".user-details").classList.remove("d-none")
+    document.getElementById('pontosLoja').innerHTML = `${totalPontos} `;
+    document.getElementById('nomeLoja').innerText = `Nome: ${resBuscaDadosColaboradorLoja.matricula.nome}`;
+    document.getElementById('setorLoja').innerText = `Setor: ${resBuscaDadosColaboradorLoja.matricula.setor}`;
+    document.getElementById('gerenteLoja').innerText = `Gerente: ${resBuscaDadosColaboradorLoja.matricula.gerente}`;
     pontos(totalPontos);
   } else if (resBuscaDadosColaboradorLoja.erro == true) {
     warningLoja("Nenhum pense e aja avaliado, encontrado para a matrícula informada.");

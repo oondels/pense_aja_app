@@ -32,7 +32,7 @@ table {
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   background-color: #ffffff;
-  height: calc(100vh - 130px) !important;
+  /* height: calc(100vh - 130px) !important; */
 }
 
 /* .divTableLista {

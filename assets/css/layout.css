@@ -38,26 +38,23 @@
 
 body {
   position: relative;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-header,
 nav {
   display: flex;
   margin: 2px;
 }
 
-header #logo {
-  display: flex;
-  flex: 0 1 200px;
-  background: #fff;
-  justify-content: center;
-  align-items: center;
-}
-
 #openMenu,
 #openLista,
-#openUser,
-#openLoja {
+#openUser {
   border: none;
   background: none;
   font-size: 30px;
@@ -191,34 +188,13 @@ a {
   font-size: 11px;
 }
 
-.navHeader,
-.navHeaderLoja {
+.navHeader {
   /* position: fixed;
   top: 12px;
   right: 5px; */
   width: calc(100vw - 12px);
   height: 60px;
   display: flex;
-}
-
-.navHeaderLoja {
-  background: #494949;
-  height: 50px;
-}
-
-.divColaboradorLoja {
-  width: calc(100vw - 12px);
-  height: 140px;
-  border-radius: 5px;
-}
-
-.divItensLoja {
-  border-radius: 5px;
-  width: calc(100vw - 12px);
-  height: calc(100vh - 50px);
-  /* display: flex;
-  flex-direction: column; */
-  overflow-y: auto;
 }
 
 /***************************************************************************/
@@ -273,10 +249,6 @@ div.container p {
   margin-top: 10px;
 }
 
-.divPontosLoja {
-  height: 35px;
-}
-
 h2 {
   letter-spacing: 1px;
   color: #00000000;
@@ -323,20 +295,11 @@ h2::before {
   }
 }
 
-.loja {
-  background-color: #00000079;
-}
-
-.itemsLoja {
-  background-color: rgb(32 32 33 / 89%);
-}
-
 .divMesLista,
 .divAnoLista,
 .divReplicLista,
 .divClassifLista,
-.divPesqLista,
-.divPesqLoja {
+.divPesqLista {
   display: block;
   border-radius: 5px;
   margin-right: 2px;
@@ -353,14 +316,9 @@ h2::before {
   letter-spacing: 1px;
 }
 
-:is(.divAnoLista, .divMesLista, .divReplicLista, .divClassifLista, .divPesqLista, .divPesqLoja) span {
+:is(.divAnoLista, .divMesLista, .divReplicLista, .divClassifLista, .divPesqLista) span {
   display: block;
   color: #fff;
-  text-align: center;
-}
-
-.lojaMatricula {
-  width: 100%;
   text-align: center;
 }
 
@@ -1109,11 +1067,6 @@ input[type="checkbox"] {
     margin-bottom: 2px;
   }
 
-  .divItensLoja img {
-    width: 20vw;
-    height: 20vh;
-  }
-
   .divSuperior {
     margin-top: 5vh;
   }
@@ -1143,11 +1096,6 @@ input[type="checkbox"] {
   .dadosColaborador input {
     font-size: 12px;
     width: 18.97vw;
-  }
-
-  .divItensLoja img {
-    width: 14vw;
-    height: 16vh;
   }
 
   .inputSmall input {
@@ -1190,18 +1138,6 @@ input[type="checkbox"] {
   .divTableLista {
     top: calc(150px - 56px);
   }
-
-  .divItensLoja img {
-    width: 15vw;
-    height: 26vh;
-  }
-
-  /* .divSuperior {
-    margin-top: 5vh;
-  }
-  .divInferior {
-    margin-top: 10vh;
-  } */
 }
 
 @media print {
@@ -1214,7 +1150,6 @@ input[type="checkbox"] {
   }
 
   header,
-  footer,
   aside,
   form,
   .table-filter,

@@ -25,13 +25,13 @@
         break;
     }
 
-    $queryCheck = "SELECT *FROM pense_aja.pontos_vdc WHERE id_pense_aja = :identificadorPenseAja";
+    $queryCheck = "SELECT *FROM pense_aja.pontos  WHERE id_pense_aja = :identificadorPenseAja";
     $resultCheck = $conn->prepare($queryCheck);
     $resultCheck->bindParam(':identificadorPenseAja', $identificadorPenseAja);
     $resultCheck->execute();
 
     if(($resultCheck) AND ($resultCheck->rowCount() != 0)) {
-        $queryUp= "UPDATE pense_aja.pontos_vdc SET valor = :valor, gerente = :gerente, classificacao = :classificacao, updatedat = NOW() WHERE id_pense_aja = :identificadorPenseAja";
+        $queryUp= "UPDATE pense_aja.pontos  SET valor = :valor, gerente = :gerente, classificacao = :classificacao, updatedat = NOW() WHERE id_pense_aja = :identificadorPenseAja";
         echo $queryUp;
         $resultUp = $conn->prepare($queryUp);
         $resultUp->bindParam(':valor', $valor);
@@ -40,7 +40,7 @@
         $resultUp->bindParam(':identificadorPenseAja', $identificadorPenseAja);
         $resultUp->execute();
     } else {
-        $queryIn = "INSERT INTO pense_aja.pontos_vdc
+        $queryIn = "INSERT INTO pense_aja.pontos
         (id_pense_aja, matricula, nome, valor, gerente, classificacao, createdat, updatedat)
         VALUES(:identificadorPenseAja, :matricula, :nome, :valor, :gerente, :classificacao, NOW(), NOW());";
         $resultIn = $conn->prepare($queryIn);
