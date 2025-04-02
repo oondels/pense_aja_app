@@ -189,13 +189,13 @@
                   <th class="subtitles celula colMaior" col-index=1>Realizado</th>
                   <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
                     <select class="table-filter col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista"
-                      data-el="3" onchange="filter_rows()" multiple>
+                      data-el="3" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
                   <th class="subtitles celula colMaiorX" col-index=4>Setor
                     <select class="table-filter col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista"
-                      data-el="4" onchange="filter_rows()" multiple>
+                      data-el="4" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
@@ -210,13 +210,13 @@
 
                   <th class="subtitles celula colMaiorX print" col-index=6>Nome do projeto
                     <select class="table-filter col colMaiX" autocomplete="off" id="projetoSelLista"
-                      name="projetoSelLista" data-el="6" onchange="filter_rows()" multiple>
+                      name="projetoSelLista" data-el="6" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
                   <th class="subtitles celula colMaior" col-index=7>Turno
                     <select class="table-filter col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
-                      data-el="7" onchange="filter_rows()" multiple>
+                      data-el="7" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
@@ -613,7 +613,7 @@
               </th>
               <th class="subtitles text-center celulaLista colMaiorX" col-index=4>Setor
                 <select class="table-filterLista col colMaiX" autocomplete="off" id="setorSel" name="setorSel"
-                  data-el="4" onchange="filter_rowsLista()">
+                  data-el="4" onchange="filter_rows('.table-filterLista', '#emp-tableLista')">
                   <option value="all"></option>
                 </select>
               </th>

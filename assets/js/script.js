@@ -14,7 +14,6 @@ function showLoadingComponent(element) {
 
 function hideLoading(element) {
   if (!components.get(element)) {
-    console.log("Elemento não encontrado, não é possível esconder o loading.");
     return;
   }
 
@@ -1182,8 +1181,8 @@ async function listaTableLista() {
   const queryCache = JSON.parse(localStorage.getItem("filterCache")) || {};
 
   if (queryCache && Object.keys(queryCache).length > 0 && queryCache[cachedListKey]) {
-    console.log("Dados em cache...");
     renderListaTableLista(queryCache[cachedListKey]?.payload);
+    updateSelectOptionsLista(queryCache[cachedListKey]?.filters);
   } else {
     showLoadingComponent("listaTableLista");
   }
@@ -1193,27 +1192,10 @@ async function listaTableLista() {
   let valorTotal = document.getElementById("valorTotalLista");
   valorTotal.innerHTML = `${listaSize} Registros`;
 
-  // Verifica se os dados estão em cache e se a última consulta foi feita a menos de 3 minutos
-  if (queryCache[cachedListKey] && currentTime - queryCache[cachedListKey].timestamp < 180000) {
-    buscaPA_Lista(listaSize);
-    updateSelectOptionsLista(queryCache[cachedListKey].filters);
-    console.log("Não pesquisar, dados em cache");
-
-    // Atualiza o timestamp do cache
-    if (queryCache && queryCache[cachedListKey]) {
-      queryCache[cachedListKey].timestamp = currentTime;
-      localStorage.setItem("filterCache", JSON.stringify(queryCache));
-    }
-    return;
-  }
-  showLoadingComponent("listaTableLista");
-  console.log("Pesquisando dados no servidor...");
-
   await axios
     .post("/pense_aja/server/apiBuscaDadosLista.php", select)
     .then((response) => {
       const newCache = response.data;
-      console.log(newCache);
 
       if (typeof newCache !== "object") {
         throw new Error("Formato de resposta inválido");
@@ -1224,23 +1206,35 @@ async function listaTableLista() {
         ((!queryCache[cachedListKey] && newCache && newCache.dados) ||
           newCache.dados.length > queryCache[cachedListKey].payload.length)
       ) {
-        console.log("Atualizando cache com novos dados");
+        Swal.fire({
+          icon: "success",
+          title: "Sucesso",
+          html: `<div style = "display:flex;text-align:center;flex-direction:column">
+                  <div><strong>Novos registros encontrados.</strong> Atualizando lista!</div>
+                </div>`,
+          showConfirmButton: false,
+          showCloseButton: true,
+          timer: 2100,
+        });
+
         queryCache[cachedListKey] = { payload: newCache.dados, timestamp: currentTime, filters: newCache.filters };
         localStorage.setItem("filterCache", JSON.stringify(queryCache));
         renderListaTableLista(queryCache[cachedListKey].payload);
+        updateSelectOptionsLista(newCache.filters);
         listaSize = queryCache[cachedListKey].payload.length;
       }
 
       listaSize = newCache.dados.length;
       valorTotal.innerHTML = `${listaSize} Registros`;
-      updateSelectOptionsLista(newCache.filters);
-      hideLoading("listaTableLista");
       buscaPA_Lista(listaSize);
     })
     .catch((error) => {
       buscaPA_Lista(listaSize);
       required("Filtro inválido");
       console.error("Erro ao buscar dados da lista do pense aja: ", error);
+    })
+    .finally(() => {
+      hideLoading("listaTableLista");
     });
 }
 
@@ -1515,8 +1509,8 @@ function updateSelectOptions(unique_col_values_dict) {
   });
 }
 
-function filter_rows() {
-  const allFilters = document.querySelectorAll(".table-filter");
+function filter_rows(tableSelect, tableId) {
+  const allFilters = document.querySelectorAll(tableSelect);
   const filter_value_dict = {};
 
   allFilters.forEach((filter_i) => {
@@ -1528,8 +1522,7 @@ function filter_rows() {
       filter_value_dict[col_index] = selectedOptions;
     }
   });
-
-  const rows = document.querySelectorAll("#emp-table tbody tr");
+  const rows = document.querySelectorAll(tableId + " tbody tr");
 
   rows.forEach((row) => {
     let display_row = true;
@@ -1555,19 +1548,15 @@ function filter_rows() {
     }
   });
 
-  soma(); // Atualiza somatório ou algo relacionado às linhas visíveis
+  if (tableId === '#emp-table') {
+    soma();
+  } else {
+    // ! Verificar delay atualizar quantidade ativa de pense e aja.
+    console.log(rows.length);
+
+    valorTotal.innerHTML = `${rows.length} Registros`;
+  }
 }
-
-// function updateSelectOptionsLista(unique_col_values_dict) {
-//   allFilters = document.querySelectorAll(".table-filterLista");
-//   allFilters.forEach((filter_i) => {
-//     col_index = filter_i.parentElement.getAttribute("col-index");
-
-//     unique_col_values_dict[col_index].sort().forEach((i) => {
-//       filter_i.innerHTML = filter_i.innerHTML + `\n\n<option value="${i}">${i}</option>`;
-//     });
-//   });
-// }
 
 function updateSelectOptionsLista(unique_col_values_dict) {
   const allFilters = document.querySelectorAll(".table-filterLista");
