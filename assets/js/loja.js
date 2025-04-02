@@ -1,13 +1,13 @@
 const pesquisar = document.getElementById('pesqLoja');
 pesquisar.addEventListener('click', () => {
-  showLoadingComponent();
+  showLoadingComponent("searchColab");
   buscaColab();
 })
 
 const lojaMatricula = document.getElementById('lojaMatricula');
 lojaMatricula.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
-    showLoadingComponent();
+    showLoadingComponent("searchColab");
     buscaColab();
   }
 })
@@ -101,8 +101,8 @@ async function buscaColab() {
   })
 
   let resBuscaDadosColaboradorLoja = await buscaDadosColaboradorLoja.json();
+  hideLoading("searchColab");
   if (resBuscaDadosColaboradorLoja.erro == false) {
-    hideLoading();
     const totalPontos = parseInt(resBuscaDadosColaboradorLoja.matricula.valor) - parseInt(resBuscaDadosColaboradorLoja.matricula.valor_premio);
 
     document.querySelector(".user-details").classList.remove("d-none")

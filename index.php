@@ -102,7 +102,7 @@
     <nav id="menu">
       <div class="navConteudo container-fluid border">
         <div class="col-12 text-end">
-          <i id="closeMenu" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
+          <span id="closeMenu" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></span>
         </div>
 
         <form id="cadastroForm">
@@ -187,12 +187,6 @@
                 <tr id="headConsulta" class="trHead">
                   <th class="subtitles celula colMenor thID">ID</th>
                   <th class="subtitles celula colMaior" col-index=1>Realizado</th>
-                  <th class="ocult" col-index=2>Fábrica
-                    <select class="table-filter col colMai" autocomplete="off" id="realizadoSelLista"
-                      name="realizadoSelLista" data-el="2" onchange="filter_rows()" multiple>
-                      <option value="all"></option>
-                    </select>
-                  </th>
                   <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
                     <select class="table-filter col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista"
                       data-el="3" onchange="filter_rows()" multiple>
@@ -244,8 +238,12 @@
           <div class="modal-content modalForm">
             <div class="modal-header">
               <h5 class="modal-title" id="staticBackdropLabel"></h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+              <button type="button" id="btnClose" class="btn-close"
+                data-bs-dismiss="modal"><i class="bi bi-x"></i>
+              </button>
             </div>
+
             <div class="modal-body mBody">
               <div class="dadosCadastrante">
                 <div id="colaborador" class="row text-start colaborador">
@@ -388,7 +386,7 @@
             </div>
           </div>
           <button class="close-store-button" id="closeLoja">
-            <i class="bi bi-x-lg"></i>
+            <span class="bi bi-x-lg"></span>
           </button>
         </div>
 
@@ -531,26 +529,6 @@
     </div>
 
     <div id="lista">
-      <!-- <div class="navHeaderLista col-12">
-        <div class="col-4 d-flex ">
-          <div id="divMesLista" class="divMesLista text-center">
-            <h6 class="fs-6 m-0 text-white">MÊS:</h6>
-            <select name="mesLista" id="mesLista" onchange="busc()"></select>
-          </div>
-          <div id="divAnoLista" class="divAnoLista text-center">
-            <h6 class="fs-6 m-0 text-white">ANO:</h6>
-            <select name="anoLista" id="anoLista" onchange="busc()">
-            </select>
-          </div>
-        </div>
-        <div id="totalLista" class="totalLista col-4 ">
-          <span id="valorTotalLista" class="valorTotal"></span>
-        </div>
-        <div class="col-4 text-end pe-2 ">
-          <i id="closeLista" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
-        </div>
-      </div> -->
-
       <div class="navHeaderLista col-12 nav-header-modern">
         <div class="nav-header-content">
           <div class="col-4 d-flex nav-date-filters">
@@ -582,8 +560,8 @@
             </div>
           </div>
           <div class="col-4 text-end pe-2 close-container">
-            <button class="close-button" aria-label="Fechar lista">
-              <i id="closeLista" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
+            <button class="close-button">
+              <span id="closeLista" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></span>
             </button>
           </div>
         </div>
@@ -627,12 +605,6 @@
             <tr id="headConsultaLista" class="trHeadListaTR">
               <th class="subtitles celulaLista colMenor thID">ID</th>
               <th class="subtitles text-center celulaLista colMaior" col-index=1>Realizado</th>
-              <th class="ocult" col-index=2>Fábrica
-                <select class="table-filterLista col colMai" autocomplete="off" id="fabricaSel" name="fabricaSel"
-                  data-el="2" onchange="filter_rowsLista()">
-                  <option value="all"></option>
-                </select>
-              </th>
               <th class="subtitles text-center celulaLista nomeNormal colNome" col-index=3>Nome
                 <select class="table-filterLista col colMaiX" autocomplete="off" id="nomeSel" name="nomeSel" data-el="3"
                   onchange="filter_rowsLista()">

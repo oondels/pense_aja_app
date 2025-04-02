@@ -35,16 +35,6 @@ table {
   /* height: calc(100vh - 130px) !important; */
 }
 
-/* .divTableLista {
-  display: flex;
-  justify-content: center;
-  height: 100%;
-  border-radius: 12px;
-  margin-bottom: 1vh;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-} */
-
 #headThead {
   width: 100% !important;
   top: 0;

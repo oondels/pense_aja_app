@@ -600,6 +600,7 @@ openLista.addEventListener("click", () => {
 
 closeLista.addEventListener("click", () => {
   listaHistorico.classList.remove("show");
+
   const selectM = document.getElementById("mesLista");
   for (let i = -1; i <= selectM.options.length; i++) {
     selectM.remove(0);
@@ -608,12 +609,14 @@ closeLista.addEventListener("click", () => {
   for (let i = -1; i <= selectA.options.length; i++) {
     selectA.remove(0);
   }
+
   lista.style.opacity = "0";
   lista.style.top = lista.offsetHeight * -1 + "px";
   document.getElementById("openUser").classList.remove("d-none");
   document.getElementById("openLista").classList.remove("d-none");
   document.getElementById("openMenu").classList.remove("d-none");
   document.getElementById("openLoja").classList.remove("d-none");
+
   setTimeout(() => {
     lista.removeAttribute("style");
     openLista.removeAttribute("style");

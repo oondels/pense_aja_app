@@ -1,11 +1,26 @@
 const unidade = localStorage.getItem("unidadeDass");
 
-function showLoadingComponent() {
+// ! Tentar corrigir para so fechar o loading se fizer snetido
+let components = new Map();
+function showLoadingComponent(element) {
+  if (components.has(element)) {
+    console.log("componente ja presente");
+    return;
+  }
+
   document.querySelector(".loading-cdata").classList.remove("hidden");
+  components.set(element, true);
 }
 
-function hideLoading() {
+function hideLoading(element) {
+  if (!components.get(element)) {
+    console.log("Elemento não encontrado, não é possível esconder o loading.");
+    return;
+  }
+
+  components.set(element, false);
   document.querySelector(".loading-cdata").classList.add("hidden");
+  return;
 }
 
 function lerURL(URL) {
@@ -156,16 +171,20 @@ const renderListaTable = (data) => {
       }
 
       button.addEventListener("click", async function (event) {
+        // Reseta Modal
+        showLoadingComponent("buscaPa");
+        limpaModal();
+
         let el = event.target.id.substring(1);
         let data = { identificador: el };
         let buscaPenseAja = await fetch("/pense_aja/server/apiBuscaPenseAja.php", {
           method: "POST",
           body: JSON.stringify(data),
           headers: {
-            "Content-type": "aplication/json; charset=UTF-8",
+            "Content-type": "application/json; charset=UTF-8",
           },
         });
-        let resBuscaPenseAja = await buscaPenseAja.json();
+
         let tituloProjeto = document.getElementById("staticBackdropLabel");
         let matriculaModal = document.getElementById("matriculaModal");
         let nomeModal = document.getElementById("nomeModal");
@@ -178,12 +197,15 @@ const renderListaTable = (data) => {
         let elimPerdaModal = document.getElementById("elimPerdaModal");
         let amortizacaoModal = document.getElementById("amortizacaoModal");
         let outGanhosModal = document.getElementById("outGanhosModal");
-        let turno;
         let ids = document.getElementById("id");
         let statusGerente = document.getElementById("status_gerente");
         let statusAnalista = document.getElementById("status_analista");
         let gerAprovador = document.getElementById("gerAprovador");
         let anaAprovador = document.getElementById("anaAprovador");
+        let turno;
+
+        let resBuscaPenseAja = await buscaPenseAja.json();
+
         if (resBuscaPenseAja.erro == false) {
           switch (resBuscaPenseAja.penseAja.turno) {
             case "A":
@@ -278,11 +300,13 @@ const renderListaTable = (data) => {
             document.getElementById("c").checked = false;
           }
         }
+
         if (resBuscaPenseAja.penseAja.a3_mae != "") {
           document.getElementById("escolha").innerText = resBuscaPenseAja.penseAja.a3_mae;
         } else {
           document.getElementById("escolha").innerText = "Selecione";
         }
+
         if (
           document.getElementById("funcao").innerText === "ANALISTA!" &&
           gerAprovador.innerText != "Gerente: Ainda não avaliou!"
@@ -297,16 +321,20 @@ const renderListaTable = (data) => {
           document.getElementById("c").disabled = false;
           document.getElementById("a3_mae").disabled = false;
         }
+
         if (resBuscaPenseAja.penseAja.em_espera == "1") {
           document.getElementById("esperar").checked = true;
         } else {
           document.getElementById("esperar").checked = false;
         }
+
         if (resBuscaPenseAja.penseAja.replicavel == "1") {
           document.getElementById("replicar").checked = true;
         } else {
           document.getElementById("replicar").checked = false;
         }
+
+        hideLoading("buscaPa");
         /*Pense e aja reprovado*/
         let reprovar = document.getElementById("reprovar");
         reprovar.addEventListener("click", async function (event) {
@@ -339,6 +367,7 @@ const renderListaTable = (data) => {
             error("Erro ao gravar avaliação, verifique!");
           }
         });
+
         /*Pense e aja aprovado*/
         let aprovar = document.getElementById("aprovar");
         aprovar.addEventListener("click", async function (event) {
@@ -426,6 +455,7 @@ const renderListaTable = (data) => {
             event.preventDefault();
           }
         });
+
         /*Pense e aja excluído*/
         let excluir = document.getElementById("excluir");
         excluir.addEventListener("click", function (event) {
@@ -479,10 +509,12 @@ const renderListaTable = (data) => {
         });
       });
     });
+
     let btnClose = document.getElementById("btnClose");
     btnClose.addEventListener("click", () => {
       limpaModal();
     });
+
     function limpaModal() {
       document.getElementById("staticBackdropLabel").innerHTML = "";
       document.getElementById("matriculaModal").innerHTML = "";
@@ -561,7 +593,7 @@ async function listaTable() {
     renderListaTable(cachedList[cachedKey].payload);
   } else {
     console.log("Dados não encontrados em cache, buscando no servidor...");
-    showLoadingComponent();
+    showLoadingComponent("listaTable");
   }
 
   try {
@@ -597,7 +629,7 @@ async function listaTable() {
     console.error("Erro ao buscar dados do pense aja!", error);
     return;
   } finally {
-    hideLoading();
+    hideLoading("listaTable");
   }
 }
 
@@ -614,8 +646,7 @@ const obtemAnoAtualEMesAnterior = () => {
     anoAtual -= 1;
   }
 
-
-  selectAnoLista.innerHTML = ""
+  selectAnoLista.innerHTML = "";
   for (let ano = anoAtual; ano >= 2024; ano--) {
     var optionAno = document.createElement("option");
     optionAno.value = ano;
@@ -1154,7 +1185,7 @@ async function listaTableLista() {
     console.log("Dados em cache...");
     renderListaTableLista(queryCache[cachedListKey]?.payload);
   } else {
-    showLoadingComponent();
+    showLoadingComponent("listaTableLista");
   }
 
   // Atualizar Quantidade de registros aqui e nao na funcao somaLista()
@@ -1162,22 +1193,20 @@ async function listaTableLista() {
   let valorTotal = document.getElementById("valorTotalLista");
   valorTotal.innerHTML = `${listaSize} Registros`;
 
-  // Atualiza o timestamp do cache
-  if (queryCache && queryCache[cachedListKey]) {
-    console.log("Atualizando timestamp");
-
-    queryCache[cachedListKey].timestamp = currentTime;
-    localStorage.setItem("filterCache", JSON.stringify(queryCache));
-  }
-
   // Verifica se os dados estão em cache e se a última consulta foi feita a menos de 3 minutos
   if (queryCache[cachedListKey] && currentTime - queryCache[cachedListKey].timestamp < 180000) {
-    showLoadingComponent();
     buscaPA_Lista(listaSize);
     updateSelectOptionsLista(queryCache[cachedListKey].filters);
     console.log("Não pesquisar, dados em cache");
+
+    // Atualiza o timestamp do cache
+    if (queryCache && queryCache[cachedListKey]) {
+      queryCache[cachedListKey].timestamp = currentTime;
+      localStorage.setItem("filterCache", JSON.stringify(queryCache));
+    }
     return;
   }
+  showLoadingComponent("listaTableLista");
   console.log("Pesquisando dados no servidor...");
 
   await axios
@@ -1205,11 +1234,10 @@ async function listaTableLista() {
       listaSize = newCache.dados.length;
       valorTotal.innerHTML = `${listaSize} Registros`;
       updateSelectOptionsLista(newCache.filters);
-      hideLoading();
+      hideLoading("listaTableLista");
       buscaPA_Lista(listaSize);
     })
     .catch((error) => {
-      hideLoading();
       buscaPA_Lista(listaSize);
       required("Filtro inválido");
       console.error("Erro ao buscar dados da lista do pense aja: ", error);
@@ -1487,55 +1515,13 @@ function updateSelectOptions(unique_col_values_dict) {
   });
 }
 
-// function filter_rows() {
-//   allFilters = document.querySelectorAll(".table-filter");
-//   var filter_value_dict = {};
-
-//   allFilters.forEach((filter_i) => {
-//     col_index = filter_i.parentElement.getAttribute("col-index");
-//     value = filter_i.value;
-//     if (value != "all") {
-//       filter_value_dict[col_index] = value;
-//     }
-//   });
-
-//   var col_cell_value_dict = {};
-//   const rows = document.querySelectorAll("#emp-table tbody tr");
-//   rows.forEach((row) => {
-//     var display_row = true;
-//     allFilters.forEach((filter_i) => {
-//       col_index = filter_i.parentElement.getAttribute("col-index");
-//       col_cell_value_dict[col_index] = row.querySelector("td:nth-child(" + col_index + ")").innerHTML;
-//     });
-
-//     for (var col_i in filter_value_dict) {
-//       filter_value = filter_value_dict[col_i];
-//       row_cell_value = col_cell_value_dict[col_i];
-
-//       if (row_cell_value.indexOf(filter_value) == -1 && filter_value != "all") {
-//         display_row = false;
-//         break;
-//       }
-//     }
-
-//     if (display_row == true) {
-//       row.style.display = "table-row";
-//       row.classList.add("active");
-//     } else {
-//       row.style.display = "none";
-//       row.classList.remove("active");
-//     }
-//   });
-//   soma();
-// }
-
 function filter_rows() {
   const allFilters = document.querySelectorAll(".table-filter");
   const filter_value_dict = {};
 
   allFilters.forEach((filter_i) => {
     const col_index = filter_i.parentElement.getAttribute("col-index");
-    const selectedOptions = Array.from(filter_i.selectedOptions).map(opt => opt.value);
+    const selectedOptions = Array.from(filter_i.selectedOptions).map((opt) => opt.value);
 
     // Só adiciona se houver seleções e não incluir apenas 'all'
     if (selectedOptions.length > 0 && !selectedOptions.includes("all")) {
@@ -1553,7 +1539,7 @@ function filter_rows() {
       const cell_value = row.querySelector("td:nth-child(" + col_index + ")").innerText;
 
       // Verifica se o valor da célula casa com pelo menos um dos selecionados
-      const match = selected_values.some(value => cell_value.includes(value));
+      const match = selected_values.some((value) => cell_value.includes(value));
       if (!match) {
         display_row = false;
         break;
@@ -1642,9 +1628,7 @@ function soma() {
   if (!valorTotal) {
     return;
   }
-  valorTotal.innerHTML = `${
-    document.querySelectorAll(".active").length
-  } Registros`;
+  valorTotal.innerHTML = `${document.querySelectorAll(".active").length} Registros`;
 }
 
 function somaLista() {
@@ -1652,9 +1636,7 @@ function somaLista() {
   if (!valorTotal) {
     return;
   }
-  valorTotal.innerHTML = `${
-    document.querySelectorAll(".activeLista").length
-  } Registros`;
+  valorTotal.innerHTML = `${document.querySelectorAll(".activeLista").length} Registros`;
 }
 
 function filterAmbos() {
