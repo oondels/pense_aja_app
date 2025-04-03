@@ -1,6 +1,5 @@
 const unidade = localStorage.getItem("unidadeDass");
 
-// ! Tentar corrigir para so fechar o loading se fizer snetido
 let components = new Map();
 function showLoadingComponent(element) {
   if (components.has(element)) {
@@ -675,7 +674,6 @@ const obtemAnoAtualEMesAnterior = () => {
   mesLista.add(optionMes);
 };
 
-// ! Verificar porque essa funcao trava o app
 const buscaPA_Lista = (listaSize) => {
   let selecionadoLista = document.getElementById("selecionadoLista");
   let nomesLista = sessionStorage.getItem("nome");
@@ -1510,6 +1508,8 @@ function updateSelectOptions(unique_col_values_dict) {
 }
 
 function filter_rows(tableSelect, tableId) {
+  let valorTotalLista = document.getElementById("valorTotalLista")
+
   const allFilters = document.querySelectorAll(tableSelect);
   const filter_value_dict = {};
 
@@ -1524,6 +1524,7 @@ function filter_rows(tableSelect, tableId) {
   });
   const rows = document.querySelectorAll(tableId + " tbody tr");
 
+  let count = 0
   rows.forEach((row) => {
     let display_row = true;
 
@@ -1540,6 +1541,7 @@ function filter_rows(tableSelect, tableId) {
     }
 
     if (display_row) {
+      count++
       row.style.display = "table-row";
       row.classList.add("active");
     } else {
@@ -1548,13 +1550,10 @@ function filter_rows(tableSelect, tableId) {
     }
   });
 
-  if (tableId === '#emp-table') {
+  if (tableId === "#emp-table") {
     soma();
   } else {
-    // ! Verificar delay atualizar quantidade ativa de pense e aja.
-    console.log(rows.length);
-
-    valorTotal.innerHTML = `${rows.length} Registros`;
+    valorTotalLista.innerHTML = `${count} Registros`;
   }
 }
 

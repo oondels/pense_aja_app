@@ -188,20 +188,20 @@
                   <th class="subtitles celula colMenor thID">ID</th>
                   <th class="subtitles celula colMaior" col-index=1>Realizado</th>
                   <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
-                    <select class="table-filter col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista"
+                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista"
                       data-el="3" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
                   <th class="subtitles celula colMaiorX" col-index=4>Setor
-                    <select class="table-filter col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista"
+                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista"
                       data-el="4" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
 
                   <th class="subtitles celula colMaiorX" col-index=5>Gerente
-                    <select class="table-filter col colMaiX" autocomplete="off" id="gerenteSelLista"
+                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="gerenteSelLista"
                       name="gerenteSelLista" data-el="5" onchange="filter_rows('multiple')" multiple>
                       <option value="" id="selecionado"></option>
                       <option value="all"></option>
@@ -209,13 +209,13 @@
                   </th>
 
                   <th class="subtitles celula colMaiorX print" col-index=6>Nome do projeto
-                    <select class="table-filter col colMaiX" autocomplete="off" id="projetoSelLista"
+                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="projetoSelLista"
                       name="projetoSelLista" data-el="6" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
                   <th class="subtitles celula colMaior" col-index=7>Turno
-                    <select class="table-filter col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
+                    <select class="table-filter select-modern col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
                       data-el="7" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
@@ -229,7 +229,6 @@
             </table>
           </div>
         </div>
-
       </div>
 
       <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
@@ -606,32 +605,32 @@
               <th class="subtitles celulaLista colMenor thID">ID</th>
               <th class="subtitles text-center celulaLista colMaior" col-index=1>Realizado</th>
               <th class="subtitles text-center celulaLista nomeNormal colNome" col-index=3>Nome
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="nomeSel" name="nomeSel" data-el="3"
+                <select class="table-filterLista select-modern col colMaiX" autocomplete="off" id="nomeSel" name="nomeSel" data-el="3"
                   onchange="filter_rowsLista()">
                   <option value="all"></option>
                 </select>
               </th>
               <th class="subtitles text-center celulaLista colMaiorX" col-index=4>Setor
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="setorSel" name="setorSel"
-                  data-el="4" onchange="filter_rows('.table-filterLista', '#emp-tableLista')">
+                <select class="table-filterLista select-modern col colMaiX" autocomplete="off" id="setorSel" name="setorSel"
+                  data-el="4" onchange="filter_rows('.table-filterLista', '#emp-tableLista')" multiple>
                   <option value="all"></option>
                 </select>
               </th>
               <th class="subtitles text-center celulaLista colMaiorX" col-index=5>Gerente
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="gerenteSel" name="gerenteSel"
-                  data-el="5" onchange="filter_rowsLista()">
+                <select class="table-filterLista select-modern col colMaiX" autocomplete="off" id="gerenteSel" name="gerenteSel"
+                  data-el="5" onchange="filter_rowsLista()" multiple>
                   <option value="" id="selecionadoLista"></option>
                   <option value="all"></option>
                 </select>
               </th>
               <th class="subtitles text-center celulaLista colMaiorX print" col-index=6>Nome do projeto
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="projetoSel" name="projetoSel"
+                <select class="table-filterLista select-modern col colMaiX" autocomplete="off" id="projetoSel" name="projetoSel"
                   data-el="6" onchange="filter_rowsLista()">
                   <option value="all"></option>
                 </select>
               </th>
               <th class="subtitles text-center celulaLista colMaior" col-index=7>Turno
-                <select class="table-filterLista col colMai" autocomplete="off" id="turnoSel" name="turnoSel"
+                <select class="table-filterLista select-modern col colMai" autocomplete="off" id="turnoSel" name="turnoSel"
                   data-el="7" onchange="filter_rowsLista()">
                   <option value="all"></option>
                 </select>
@@ -766,6 +765,12 @@
 
     $(document).ready(function() {
       $('.table-filter').select2({
+        placeholder: "Selecione",
+        allowClear: true,
+        width: 'resolve'
+      });
+
+      $('.table-filterLista').select2({
         placeholder: "Selecione",
         allowClear: true,
         width: 'resolve'
