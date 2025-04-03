@@ -7,7 +7,7 @@
     include_once('./config/connection.php');
 
     $response = "";
-    $query = "SELECT *FROM pense_aja.pense_aja_vdc
+    $query = "SELECT *FROM pense_aja.pense_aja
               WHERE DATE_PART('MONTH',createdat) = DATE_PART('MONTH',current_date)
               ORDER BY id DESC";
     $result = $conn->prepare($query);

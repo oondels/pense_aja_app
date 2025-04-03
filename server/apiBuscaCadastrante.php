@@ -22,13 +22,13 @@
     $response = "";
     $query = "WITH colaborador AS (
         SELECT lf.nome, lf.nome_setor, lf.setor_folha, lf.gerente, lf.funcao,SUM(p.valor) AS valor
-                    FROM colaborador.lista_funcionario_vdc lf
-                    LEFT JOIN pense_aja.pontos_vdc p
+                    FROM colaborador.lista_funcionario  lf
+                    LEFT JOIN pense_aja.pontos  p
                     ON lf.matricula = p.matricula
                     WHERE lf.matricula = $matricula GROUP BY lf.nome, lf.nome_setor, lf.setor_folha, lf.gerente, lf.funcao
         ), lider AS (
-        SELECT DISTINCT lf.nome AS nome_lider, lf.nome_setor AS setor_lider FROM colaborador.lista_funcionario_vdc lf LEFT JOIN colaborador.lista_funcionario_vdc lf2 ON lf.nome_setor = lf2.nome_setor WHERE lf.funcao LIKE 'LIDER%'
-        AND lf.nome_setor IN (SELECT nome_setor FROM colaborador.lista_funcionario_vdc WHERE matricula = $matricula))
+        SELECT DISTINCT lf.nome AS nome_lider, lf.nome_setor AS setor_lider FROM colaborador.lista_funcionario  lf LEFT JOIN colaborador.lista_funcionario  lf2 ON lf.nome_setor = lf2.nome_setor WHERE lf.funcao LIKE 'LIDER%'
+        AND lf.nome_setor IN (SELECT nome_setor FROM colaborador.lista_funcionario  WHERE matricula = $matricula))
         SELECT DISTINCT c.*, l.nome_lider FROM colaborador c LEFT JOIN lider l ON  c.nome_setor = l.setor_lider;";
 
     $result = $conn->prepare($query);

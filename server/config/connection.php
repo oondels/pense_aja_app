@@ -1,7 +1,7 @@
 <?php
-require __DIR__ . '/../../vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+// require __DIR__ . '/../../vendor/autoload.php';
+// $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+// $dotenv->load();
 
 // $host   = $_ENV['DB_HOST'];
 // $user   = $_ENV['DB_USER'];
@@ -9,9 +9,9 @@ $dotenv->load();
 // $dbname = $_ENV['DB_NAME'];
 // $port   = $_ENV['DB_PORT'];
 
-$dsn = 'pgsql:host=pense_aja-database;port=5432;dbname=sest;';
+$dsn = 'pgsql:host=10.100.1.43;port=5432;dbname=sest;';
 $user = 'postgres';
-$password = 'wa0i4Ochu#@*';
+$password = 'gdti5s11se';
 
 //Conexão com a banco de dados
 try {

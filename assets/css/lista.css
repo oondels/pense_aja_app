@@ -8,15 +8,6 @@
   background: #494949;
 }
 
-.divGlossarioLista {
-  width: 100%;
-  height: 3vh;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: "roboto-black";
-}
-
 #lista {
   background: linear-gradient(180deg, rgba(32, 32, 33, 1) 5%, rgba(148, 148, 156, 1) 60%, rgba(227, 231, 232, 1) 100%);
 }

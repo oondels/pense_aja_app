@@ -1,4 +1,4 @@
-p {
+/* p {
   margin: 0;
 }
 
@@ -117,28 +117,6 @@ strong {
 
 .divisaoAmais {
   height: 18vh;
-}
-
-#anteriorModal,
-#elimPerdaModal {
-  border: 1px solid #2c2c2c;
-  border-radius: 5px;
-  padding: 5px;
-  margin-bottom: 1vh;
-  margin-top: 1vh;
-  background-color: #ffffffbd;
-  box-shadow: 1px 1px 0 0 #fff;
-}
-
-#atualModal,
-#outGanhosModal,
-#amortizacaoModal {
-  /* border: 1px solid #2c2c2c;
-  border-radius: 5px;
-  padding: 5px; */
-  margin-bottom: 1vh;
-  background-color: #ffffffbd;
-  box-shadow: 1px 1px 0 0 #fff;
 }
 
 #avaliacao {
@@ -497,4 +475,4 @@ input[type="checkbox"]:checked {
 .classificacaoC {
   width: 40%;
   padding-right: 1%;
-}
+} */

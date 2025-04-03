@@ -11,7 +11,7 @@
     $identificador = $_arr['identificador'];
 
     $response = "";
-    $query = "SELECT *FROM pense_aja.pense_aja_vdc
+    $query = "SELECT *FROM pense_aja.pense_aja
     WHERE id = :identificador";
 
     $result = $conn->prepare($query);

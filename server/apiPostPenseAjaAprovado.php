@@ -18,7 +18,7 @@
     $response = "";
 
 if ($funcao == 'ANALISTA' || $funcao == 'ASSISTENTE') {
-    $query = "UPDATE pense_aja.pense_aja_vdc SET status_analista = :status1, analista_avaliador = :nome, classificacao = :escolha, a3_mae = :a3_mae, data_avaanalista = NOW(), updatedat = NOW(), em_espera = :em_espera, replicavel = :replicavel WHERE id = :identificador";
+    $query = "UPDATE pense_aja.pense_aja SET status_analista = :status1, analista_avaliador = :nome, classificacao = :escolha, a3_mae = :a3_mae, data_avaanalista = NOW(), updatedat = NOW(), em_espera = :em_espera, replicavel = :replicavel WHERE id = :identificador";
     $result = $conn->prepare($query);
     $result->bindParam(':identificador', $identificador);
     $result->bindParam(':status1', $status);
@@ -43,7 +43,7 @@ if ($funcao == 'ANALISTA' || $funcao == 'ASSISTENTE') {
     echo json_encode($response);
 }
 if ($funcao == 'GERENTE' || $funcao == 'GERENTE MARCA') {
-    $query = "UPDATE pense_aja.pense_aja_vdc SET status_gerente = :status1, gerente_aprovador = :nome, classificacao = :escolha, a3_mae = :a3_mae, data_aprogerente = NOW(), updatedat = NOW(), em_espera = :em_espera, replicavel = :replicavel  WHERE id = :identificador";
+    $query = "UPDATE pense_aja.pense_aja SET status_gerente = :status1, gerente_aprovador = :nome, classificacao = :escolha, a3_mae = :a3_mae, data_aprogerente = NOW(), updatedat = NOW(), em_espera = :em_espera, replicavel = :replicavel  WHERE id = :identificador";
     $result = $conn->prepare($query);
     $result->bindParam(':identificador', $identificador);
     $result->bindParam(':status1', $status);

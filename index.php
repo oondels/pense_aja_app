@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=0.7, user-scalable=no">
   <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./assets/img/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="./bootstrap/icons/font/bootstrap-icons.css">
   <link rel="stylesheet" type="text/css" href="assets/css/layout.css">
   <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
@@ -13,6 +14,9 @@
   <link rel="stylesheet" href="./assets/css/email.css">
   <link rel="stylesheet" href="./assets/css/unidade-dass.css">
   <link rel="stylesheet" href="./assets/css/main.css">
+  <link rel="stylesheet" href="./assets/css/new.css">
+  <link rel="stylesheet" href="./assets/css/table.css">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="./assets/js/sweetalert2.all.min.js"></script>
 
@@ -21,252 +25,85 @@
 
 <body onload="listaTable()">
   <header>
-    <div class="col-12 d-flex">
-      <div class="logo col-1">
-        <a href="./" id="logo"><img src="./assets/img/lampada.png" alt="ideia" width="50"></a>
-      </div>
-      <div class="col-3 d-flex align-items-center">
-        <span id="usuario" class="usuario"></span>
-        <span id="nome" class="nome"></span>
-        <span id="funcao" class="funcao"></span>
-      </div>
-      <div class="col-3 d-flex justify-content-between">
-        <div class="col-5">
-          <span id="valorTotal" class="valorTotal"></span>
+    <!-- Itens Menu Principal -->
+    <div class="banner-wrapper">
+      <div class="banner-container">
+        <div class="banner-left">
+          <div class="logo-container">
+            <div class="logo-circle">
+              <img src="./assets/img/icons/dass-penseaja.png" alt="Logo Dass" class="logo-img">
+            </div>
+          </div>
+
+          <div class="banner-titles">
+            <h1 class="main-title">Pense <span class="highlight">&</span> Aja</h1>
+            <p class="tagline">Transformando ideias em <span class="highlight-text">ações</span></p>
+            <div class="current-month">
+              <span class="month-label">Mês atual: </span>
+              <span id="mes" class="month-value"></span>
+            </div>
+
+            <div class="col-3 d-flex align-items-center">
+              <span id="usuario" class="usuario"></span>
+              <span id="nome" class="nome"></span>
+              <span id="funcao" class="funcao">\</span>
+              <span id="avaliacaoMensal" class="valorTotal"></span>
+              <span id="valorTotal" class="valorTotal"></span>
+            </div>
+          </div>
         </div>
-        <div class="col-5">
-          <span id="avaliacaoMensal" class="valorTotal"></span>
+
+        <div class="banner-right">
+          <div class="button-group">
+            <button id="openLoja" class="action-button">
+              <div class="button-icon-container">
+                <img src="./assets/img/icons/store.png" alt="loja" class="button-icon">
+              </div>
+              <span class="button-label">Loja</span>
+            </button>
+
+            <button id="openLista" class="action-button" onclick="obtemAnoAtualEMesAnterior()">
+              <div class="button-icon-container">
+                <img src="./assets/img/lista.png" alt="lista" class="button-icon">
+              </div>
+              <span class="button-label">Listagem</span>
+            </button>
+
+            <button id="openMenu" class="action-button">
+              <div class="button-icon-container">
+                <img
+                  id="imgPenseAja"
+                  src="./assets/img/icons/idea-off.png"
+                  alt="ideiaoff"
+                  class="button-icon"
+                  data-src-normal="./assets/img/icons/idea-off.png"
+                  data-src-hover="./assets/img/icons/idea-on.png">
+              </div>
+              <span class="button-label">Cadastrar</span>
+            </button>
+
+            <button id="openUser" class="action-button">
+              <div class="button-icon-container">
+                <img src="./assets/img/icons/login.png" alt="user" class="button-icon">
+              </div>
+              <span class="button-label">Login</span>
+            </button>
+          </div>
         </div>
       </div>
-      <div class="buttons col-5 d-flex justify-content-end">
-        <button id="openLoja" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
-          data-bs-title="CONSULTAR PONTOS E RETIRAR BRINDES"><img src="./assets/img/loja-virtual.png" alt="loja"
-            width="50" height="50"></button>
-        <button id="openLista" onclick="obtemAnoAtualEMesAnterior()" data-bs-toggle="tooltip" data-bs-placement="bottom"
-          data-custom-class="custom-tooltip" title="LISTAR PENSE E AJA ANTERIORES"><img src="./assets/img/lista.png"
-            alt="lista" width="50" height="50"></button>
-        <button id="openMenu" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip"
-          title="CADASTRAR PENSE E AJA"><img src="./assets/img/ideiaOff.png" alt="ideiaoff" width="50"
-            height="50"></button>
-        <button id="openUser" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip"
-          title="LOGIN"><img src="./assets/img/user.png" alt="user" width="50" height="50"></button>
+
+      <div class="banner-decoration">
+        <div class="decoration-circle circle-1"></div>
+        <div class="decoration-circle circle-2"></div>
+        <div class="decoration-circle circle-3"></div>
       </div>
     </div>
 
-    <nav id="loja" class="loja">
-      <div class="container-fluid itemsLoja text-center text-white font-weight-bold">
-        <span>Pontuação sujeita a mudança após avaliação do gerente</span>
-        <div class="col-12 d-flex justify-content-between mb-2">
-          <div id="divLojaMatricula" class="col-4 d-flex">
-            <input type="number" class="me-2 text-center rounded" placeholder="Matrícula" id="lojaMatricula">
-            <i id="pesqLoja" class="fs-2 bi bi-search text-white"></i>
-          </div>
-          <div class="col-4">
-            <p id="pontosLoja" class="fs-2"></p>
-          </div>
-          <div class="col-4 text-end">
-            <i id="closeLoja" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
-          </div>
-        </div>
-
-        <div class="d-none">
-          <span id="nomeLoja" class="nomeLoja">Nome: </span>
-          <span id="setorLoja" class="setorLoja">Setor: </span>
-          <span id="gerenteLoja" class="gerenteLoja">Gerente: </span>
-          <span id="liderLoja" class="liderLoja">Líder: </span>
-        </div>
-
-        <div class="divItensLoja col-12">
-          <div id="divSuperior" class="col-12 h-50 d-flex justify-content-between px-3 pt-3">
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="10" data-text="bloco de notas">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/bloco.png" alt="Bloco de Notas" data-value="10">
-              </div>
-              <div class="container">
-                <p>BLOCO DE NOTAS</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="20" data-text="necessaire">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/bolsa.png" alt="Necessaire" data-value="20">
-              </div>
-              <div class="container">
-                <p>NECESSAIRE</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="30" data-text="camisa">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/camisa.png" alt="Camisa" data-value="30">
-              </div>
-              <div class="container">
-                <p>CAMISA</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="15" data-text="caneca">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/caneca.png" alt="Caneca" data-value="15">
-              </div>
-              <div class="container">
-                <p>CANECA</p>
-              </div>
-            </div>
-          </div>
-
-          <div id="divInferior" class="col-12 h-50 d-flex justify-content-between px-3">
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="4" data-text="caneta">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/caneta.png" alt="Caneta" data-value="4">
-              </div>
-              <div class="container">
-                <p>CANETA</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="5" data-text="chaveiro">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/chaveiro.png" alt="Chaveiro" data-value="5">
-              </div>
-              <div class="container">
-                <p>CHAVEIRO</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="10" data-text="copo">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/copo.png" alt="Copo" data-value="10">
-              </div>
-              <div class="container">
-                <p>COPO</p>
-              </div>
-            </div>
-            <div class="polaroid pontosSEM col-3 d-flex justify-content-between flex-column align-items-center"
-              data-value="40" data-text="tenis">
-              <div class="d-flex justify-content-center align-items-center w-100 h-100">
-                <img width="180" src="./assets/img/tenis.png" alt="Tênis" data-value="40">
-              </div>
-              <div class="container">
-                <p>TÊNIS</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <nav id="lista">
-      <div class="navHeaderLista col-12">
-        <div class="col-4 d-flex ">
-          <div id="divMesLista" class="divMesLista text-center">
-            <h6 class="fs-6 m-0 text-white">MÊS:</h6>
-            <select name="mesLista" id="mesLista" onchange="busc()"></select>
-          </div>
-          <div id="divAnoLista" class="divAnoLista text-center">
-            <h6 class="fs-6 m-0 text-white">ANO:</h6>
-            <select name="anoLista" id="anoLista" onchange="busc()">
-            </select>
-          </div>
-        </div>
-        <div id="totalLista" class="totalLista col-4 ">
-          <span id="valorTotalLista" class="valorTotal"></span>
-        </div>
-        <div class="col-4 text-end pe-2 ">
-          <i id="closeLista" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
-        </div>
-      </div>
-      <div class="divGlossarioLista">
-        <div class="coresGlossarioLista">
-          <button id="exemploVermelho" class="exemploVermelho" onclick="filterReprovadoLista()"></button>
-          <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploRoxo" class="exemploRoxo" onclick="filterAmbosLista()"></button>
-          <label for="exemploRoxo" class="labelRoxo">Sem análises</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploLaranja" class="exemploLaranja" onclick="filterGerenteLista()"></button>
-          <label for="exemploLaranja" class="labelLaranja">Visto pelo analista</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploAzul" class="exemploAzul" onclick="filterAnalistaLista()"></button>
-          <label for="exemploAzul" class="labelAzul">Visto pelo gerente</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploBranco" class="exemploBranco" onclick="filterVisibleLista()"></button>
-          <label for="exemploBranco" class="labelBranco">Aprovado</label>
-        </div>
-        <div class="coresGlossarioLista">
-          <button id="exemploRose" class="exemploRose" onclick="filterRoseLista()"></button>
-          <label for="exemploRose" class="labelRose">Em Espera</label>
-        </div>
-      </div>
-      <div class="divTableLista">
-        <table class="consulta" id="emp-tableLista">
-          <thead id="headTheadLista">
-            <tr id="headConsultaLista" class="trHeadListaTR">
-              <th class="subtitles celulaLista colMenor thID">ID</th>
-              <th class="subtitles text-center celulaLista colMaior" col-index=1>Realizado</th>
-              <th class="ocult" col-index=2>Fábrica
-                <select class="table-filterLista col colMai" autocomplete="off" id="fabricaSel" name="fabricaSel"
-                  data-el="2" onchange="filter_rowsLista()">
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="subtitles text-center celulaLista nomeNormal colNome" col-index=3>Nome
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="nomeSel" name="nomeSel" data-el="3"
-                  onchange="filter_rowsLista()">
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="subtitles text-center celulaLista colMaiorX" col-index=4>Setor
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="setorSel" name="setorSel"
-                  data-el="4" onchange="filter_rowsLista()">
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="subtitles text-center celulaLista colMaiorX" col-index=5>Gerente
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="gerenteSel" name="gerenteSel"
-                  data-el="5" onchange="filter_rowsLista()">
-                  <option value="" id="selecionadoLista"></option>
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="subtitles text-center celulaLista colMaiorX print" col-index=6>Nome do projeto
-                <select class="table-filterLista col colMaiX" autocomplete="off" id="projetoSel" name="projetoSel"
-                  data-el="6" onchange="filter_rowsLista()">
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="subtitles text-center celulaLista colMaior" col-index=7>Turno
-                <select class="table-filterLista col colMai" autocomplete="off" id="turnoSel" name="turnoSel"
-                  data-el="7" onchange="filter_rowsLista()">
-                  <option value="all"></option>
-                </select>
-              </th>
-              <th class="action subtitles text-center celulaLista colMaior acoes">Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody id="tbodyLista">
-          </tbody>
-        </table>
-      </div>
-      <div id="loading-overlay">
-        <div id="loading-spinner"></div>
-      </div>
-    </nav>
     <nav id="menu">
       <div class="navConteudo container-fluid border">
-
-
         <div class="col-12 text-end">
-          <i id="closeMenu" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></i>
+          <span id="closeMenu" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></span>
         </div>
-
 
         <form id="cadastroForm">
           <div id="dadosColaborador" class="inputSmall"></div>
@@ -286,6 +123,7 @@
         </form>
       </div>
     </nav>
+
     <nav id="login">
       <img src="./assets/img/semFundo.png" class="imgFundo" alt="Pense">
       <div class="navHeader" class="flex-row-reverse">
@@ -304,117 +142,107 @@
       </div>
     </nav>
   </header>
+
   <main>
     <section class="text-center">
       <div class="principal">
-        <div class="text-center bg-body-tertiary" id="divTitle">
-          <div class="container-fluid" id="titles">
-            <h1 id="titleText" class="m-0 fs-3">PENSE & AJA -
-              <span id="mes">
-                <script>
-                  const month = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
-                  const data = new Date();
-                  const dia = data.getDate();
-                  const mes = data.getMonth();
-                  const proximo = mes + 1;
-                  if (dia >= 29) {
-                    let nomeMes = month[proximo];
-                    document.querySelector('#mes').innerText = nomeMes;
-                  } else {
-                    let nomeMes = month[mes];
-                    document.querySelector('#mes').innerText = nomeMes;
-                  }
-                </script>
-              </span>
-            </h1>
-          </div>
-        </div>
+        <!-- Filtros Status -->
         <div class="divGlossario">
-          <div class="coresGlossario">
-            <button id="exemploVermelho" class="exemploVermelho" onclick="filterReprovado();"></button>
-            <label for="exemploVermelho" class="labelVermelho">Reprovado</label>
+          <div class="coresGlossario" onclick="filterTable('reprovadoGerente', event, '#emp-table');" data-count="12">
+            <button id="exemploVermelho" class="exemploVermelho" aria-label="Filtrar itens reprovados"></button>
+            Reprovado
           </div>
-          <div class="coresGlossario">
-            <button id="exemploRoxo" class="exemploRoxo" onclick="filterAmbos();"></button>
-            <label for="exemploRoxo" class="labelRoxo">Sem análises</label>
+
+          <div class="coresGlossario" onclick="filterTable('semAmbos', event, '#emp-table');" data-count="8">
+            <button id="exemploRoxo" class="exemploRoxo" aria-label="Filtrar itens sem análises"></button>
+            Sem análises
           </div>
-          <div class="coresGlossario">
-            <button id="exemploLaranja" class="exemploLaranja" onclick="filterGerente();"></button>
-            <label for="exemploLaranja" class="labelLaranja">Visto pelo analista</label>
+
+          <div class="coresGlossario" onclick="filterTable('semGerente', event, '#emp-table');" data-count="5">
+            <button id="exemploLaranja" class="exemploLaranja" aria-label="Filtrar itens vistos pelo analista"></button>
+            Visto pelo analista
           </div>
-          <div class="coresGlossario">
-            <button id="exemploAzul" class="exemploAzul" onclick="filterAnalista();"></button>
-            <label for="exemploAzul" class="labelAzul">Visto pelo gerente</label>
+
+          <div class="coresGlossario" onclick="filterTable('semAnalista', event, '#emp-table');" data-count="3">
+            <button id="exemploAzul" class="exemploAzul" aria-label="Filtrar itens vistos pelo gerente"></button>
+            Visto pelo gerente
           </div>
-          <div class="coresGlossario">
-            <button id="exemploBranco" class="exemploBranco" onclick="filterVisible();"></button>
-            <label for="exemploBranco" class="labelBranco">Aprovado</label>
+
+          <div class="coresGlossario" onclick="filterTable('avaliado', event, '#emp-table');" data-count="28">
+            <button id="exemploBranco" class="exemploBranco" aria-label="Filtrar itens aprovados"></button>
+            Aprovado
           </div>
-          <div class="coresGlossario">
-            <button id="exemploRose" class="exemploRose" onclick="filterRose()"></button>
-            <label for="exemploRose" class="labelRose">Em Espera</label>
+
+          <div class="coresGlossario" onclick="filterTable('emEspera', event, '#emp-table');" data-count="2">
+            <button id="exemploRose" class="exemploRose" aria-label="Filtrar itens em espera"></button>
+            Em Espera
           </div>
         </div>
-        <div class="divTable">
-          <table class="consulta" id="emp-table">
-            <thead id="headThead">
-              <tr id="headConsulta" class="trHead">
-                <th class="subtitles celula colMenor thID">ID</th>
-                <th class="subtitles celula colMaior" col-index=1>Realizado</th>
-                <th class="ocult" col-index=2>Fábrica
-                  <select class="table-filter col colMai" autocomplete="off" id="realizadoSelLista"
-                    name="realizadoSelLista" data-el="2" onchange="filter_rows()">
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
-                  <select class="table-filter col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista"
-                    data-el="3" onchange="filter_rows()">
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="subtitles celula colMaiorX" col-index=4>Setor
-                  <select class="table-filter col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista"
-                    data-el="4" onchange="filter_rows()">
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="subtitles celula colMaiorX" col-index=5>Gerente
-                  <select class="table-filter col colMaiX" autocomplete="off" id="gerenteSelLista"
-                    name="gerenteSelLista" data-el="5" onchange="filter_rows()">
-                    <option value="" id="selecionado"></option>
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="subtitles celula colMaiorX print" col-index=6>Nome do projeto
-                  <select class="table-filter col colMaiX" autocomplete="off" id="projetoSelLista"
-                    name="projetoSelLista" data-el="6" onchange="filter_rows()">
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="subtitles celula colMaior" col-index=7>Turno
-                  <select class="table-filter col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
-                    data-el="7" onchange="filter_rows()">
-                    <option value="all"></option>
-                  </select>
-                </th>
-                <th class="action subtitles celula colMaior acoes">Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody id="tbody">
-            </tbody>
-          </table>
+
+        <!-- Tabela -->
+        <div style="display: flex; justify-content: center;">
+          <div class="divTable">
+            <table class="consulta" id="emp-table">
+              <thead id="headThead">
+                <tr id="headConsulta" class="trHead">
+                  <th class="subtitles celula colMenor thID">ID</th>
+                  <th class="subtitles celula colMaior" col-index=1>Realizado</th>
+                  <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
+                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista"
+                      data-el="3" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
+                      <option value="all"></option>
+                    </select>
+                  </th>
+                  <th class="subtitles celula colMaiorX" col-index=4>Setor
+                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista"
+                      data-el="4" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
+                      <option value="all"></option>
+                    </select>
+                  </th>
+
+                  <th class="subtitles celula colMaiorX" col-index=5>Gerente
+                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="gerenteSelLista"
+                      name="gerenteSelLista" data-el="5" onchange="filter_rows('multiple')" multiple>
+                      <option value="" id="selecionado"></option>
+                      <option value="all"></option>
+                    </select>
+                  </th>
+
+                  <th class="subtitles celula colMaiorX print" col-index=6>Nome do projeto
+                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="projetoSelLista"
+                      name="projetoSelLista" data-el="6" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
+                      <option value="all"></option>
+                    </select>
+                  </th>
+                  <th class="subtitles celula colMaior" col-index=7>Turno
+                    <select class="table-filter select-modern col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
+                      data-el="7" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
+                      <option value="all"></option>
+                    </select>
+                  </th>
+                  <th class="action subtitles celula colMaior acoes">Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+
       <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-xl modal-dialog modal-dialog-scrollable modal-fullscreen-lg-down modalBack">
           <div class="modal-content modalForm">
             <div class="modal-header">
               <h5 class="modal-title" id="staticBackdropLabel"></h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+              <button type="button" id="btnClose" class="btn-close"
+                data-bs-dismiss="modal"><i class="bi bi-x"></i>
+              </button>
             </div>
+
             <div class="modal-body mBody">
               <div class="dadosCadastrante">
                 <div id="colaborador" class="row text-start colaborador">
@@ -514,6 +342,314 @@
       </div>
     </section>
 
+    <div id="loja" class="loja store-container">
+      <div class="store-wrapper">
+        <!-- Header com gradiente animado -->
+        <div class="store-header red-theme">
+          <div class="header-gradient-overlay"></div>
+          <div class="store-title-container">
+            <div class="store-logo">
+              <img src="./assets/img/icons/dass-penseaja.png" alt="Dass Pense Aja Logo">
+            </div>
+            <div class="store-title-content">
+              <h1>Loja de Recompensas</h1>
+              <span class="store-subtitle">Sistema Pense & Aja</span>
+            </div>
+          </div>
+          <div class="store-notification">
+            <div class="notification-icon">
+              <i class="bi bi-exclamation-circle-fill"></i>
+            </div>
+            <div class="notification-content">
+              <span class="notification-title">Atenção</span>
+              <span class="notification-text">Pontuação sujeita a avaliação do gerente</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de pesquisa e pontos -->
+        <div class="store-search-bar">
+          <div class="search-container" id="divLojaMatricula">
+            <i class="bi bi-person-badge search-icon"></i>
+            <input type="number" placeholder="Digite sua matrícula" id="lojaMatricula" class="search-input">
+            <button class="search-button" id="pesqLoja">
+              <i class="bi bi-search"></i>
+              <span>Buscar</span>
+            </button>
+          </div>
+          <div class="points-container">
+            <div class="points-badge">
+              <i class="bi bi-star-fill"></i>
+              <span id="pontosLoja" class="points-value">0</span>
+              <span class="points-label">pontos</span>
+            </div>
+          </div>
+          <button class="close-store-button" id="closeLoja">
+            <span class="bi bi-x-lg"></span>
+          </button>
+        </div>
+
+        <!-- Informações do usuário (inicialmente ocultas) -->
+        <div class="user-details d-none">
+          <div class="user-info-card">
+            <div class="user-avatar">
+              <i class="bi bi-person-circle text-primary"></i>
+            </div>
+            <div class="user-data">
+              <p id="nomeLoja" class="nomeLoja">Nome: </p>
+              <p id="setorLoja" class="setorLoja">Setor: </p>
+              <p id="gerenteLoja" class="gerenteLoja">Gerente: </p>
+              <p id="liderLoja" class="liderLoja">Líder: </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Produtos -->
+        <div class="store-products">
+          <h2 class="products-heading">Produtos Disponíveis</h2>
+
+          <div class="products-grid">
+            <!-- Linha 1 -->
+            <div class="product-card polaroid pontosSEM" data-value="10" data-text="bloco de notas">
+              <div class="product-badge">10 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/bloco.png" alt="Bloco de Notas" data-value="10" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Bloco de Notas</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM" data-value="20" data-text="necessaire">
+              <div class="product-badge">20 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/bolsa.png" alt="Necessaire" data-value="20" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Necessaire</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM" data-value="30" data-text="camisa">
+              <div class="product-badge">30 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/camisa.png" alt="Camisa" data-value="30" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Camisa</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM" data-value="15" data-text="caneca">
+              <div class="product-badge">15 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/caneca.png" alt="Caneca" data-value="15" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Caneca</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Linha 2 -->
+            <div class="product-card polaroid pontosSEM" data-value="4" data-text="caneta">
+              <div class="product-badge">4 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/caneta.png" alt="Caneta" data-value="4" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Caneta</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM" data-value="5" data-text="chaveiro">
+              <div class="product-badge">5 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/chaveiro.png" alt="Chaveiro" data-value="5" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Chaveiro</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM" data-value="10" data-text="copo">
+              <div class="product-badge">10 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/copo.png" alt="Copo" data-value="10" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Copo</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="product-card polaroid pontosSEM premium-product" data-value="40" data-text="tenis">
+              <div class="product-badge premium-badge">40 pts</div>
+              <div class="product-image-container">
+                <img src="./assets/img/tenis.png" alt="Tênis" data-value="40" class="product-image">
+              </div>
+              <div class="product-info">
+                <h3 class="product-name">Tênis</h3>
+                <button class="product-button">
+                  <span>Resgatar</span>
+                  <i class="bi bi-bag-plus"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="lista">
+      <div class="navHeaderLista col-12 nav-header-modern">
+        <div class="nav-header-content">
+          <div class="col-4 d-flex nav-date-filters">
+            <div id="divMesLista" class="divMesLista text-center filter-container">
+              <div class="filter-label">
+                <i class="bi bi-calendar-month filter-icon"></i>
+                <h6 class="fs-6 m-0 text-white">MÊS</h6>
+              </div>
+              <div class="select-wrapper">
+                <select name="mesLista" id="mesLista" onchange="busc()" class="modern-select"></select>
+                <i class="bi bi-chevron-down select-arrow"></i>
+              </div>
+            </div>
+            <div id="divAnoLista" class="divAnoLista text-center filter-container">
+              <div class="filter-label">
+                <i class="bi bi-calendar-year filter-icon"></i>
+                <h6 class="fs-6 m-0 text-white">ANO</h6>
+              </div>
+              <div class="select-wrapper">
+                <select name="anoLista" id="anoLista" onchange="busc()" class="modern-select"></select>
+                <i class="bi bi-chevron-down select-arrow"></i>
+              </div>
+            </div>
+          </div>
+          <div id="totalLista" class="totalLista col-4 stats-container">
+            <div class="stats-badge">
+              <i class="bi bi-file-earmark-text stats-icon"></i>
+              <span id="valorTotalLista" class="valorTotal"></span>
+            </div>
+          </div>
+          <div class="col-4 text-end pe-2 close-container">
+            <button class="close-button">
+              <span id="closeLista" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="divGlossario">
+        <div class="coresGlossario" onclick="filterTable('reprovadoGerenteLista', event, '#emp-tableLista');" data-count="12">
+          <button id="exemploVermelho" class="exemploVermelho" aria-label="Filtrar itens reprovados"></button>
+          Reprovado
+        </div>
+
+        <div class="coresGlossario" onclick="filterTable('semAmbosLista', event, '#emp-tableLista');" data-count="8">
+          <button id="exemploRoxo" class="exemploRoxo" aria-label="Filtrar itens sem análises"></button>
+          Sem análises
+        </div>
+
+        <div class="coresGlossario" onclick="filterTable('semGerenteLista', event, '#emp-tableLista');" data-count="5">
+          <button id="exemploLaranja" class="exemploLaranja" aria-label="Filtrar itens vistos pelo analista"></button>
+          Visto pelo analista
+        </div>
+
+        <div class="coresGlossario" onclick="filterTable('semAnalistaLista', event, '#emp-tableLista');" data-count="3">
+          <button id="exemploAzul" class="exemploAzul" aria-label="Filtrar itens vistos pelo gerente"></button>
+          Visto pelo gerente
+        </div>
+
+        <div class="coresGlossario" onclick="filterTable('avaliadoLista', event, '#emp-tableLista');" data-count="28">
+          <button id="exemploBranco" class="exemploBranco" aria-label="Filtrar itens aprovados"></button>
+          Aprovado
+        </div>
+
+        <div class="coresGlossario" onclick="filterTable('emEsperaLista', event, '#emp-tableLista');" data-count="2">
+          <button id="exemploRose" class="exemploRose" aria-label="Filtrar itens em espera"></button>
+          Em Espera
+        </div>
+      </div>
+
+      <div class="divTableLista">
+        <table class="consulta" id="emp-tableLista">
+          <thead id="headTheadLista">
+            <tr id="headConsultaLista" class="trHeadListaTR">
+              <th class="subtitles celulaLista colMenor thID">ID</th>
+              <th class="subtitles text-center celulaLista colMaior" col-index=1>Realizado</th>
+              <th class="subtitles text-center celulaLista nomeNormal colNome" col-index=3>Nome
+                <select class="table-filterLista select-modern col colMaiX" autocomplete="off" id="nomeSel" name="nomeSel" data-el="3"
+                  onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaiorX" col-index=4>Setor
+                <select class="table-filterLista select-modern col colMaiX" autocomplete="off" id="setorSel" name="setorSel"
+                  data-el="4" onchange="filter_rows('.table-filterLista', '#emp-tableLista')" multiple>
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaiorX" col-index=5>Gerente
+                <select class="table-filterLista select-modern col colMaiX" autocomplete="off" id="gerenteSel" name="gerenteSel"
+                  data-el="5" onchange="filter_rowsLista()" multiple>
+                  <option value="" id="selecionadoLista"></option>
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaiorX print" col-index=6>Nome do projeto
+                <select class="table-filterLista select-modern col colMaiX" autocomplete="off" id="projetoSel" name="projetoSel"
+                  data-el="6" onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+              <th class="subtitles text-center celulaLista colMaior" col-index=7>Turno
+                <select class="table-filterLista select-modern col colMai" autocomplete="off" id="turnoSel" name="turnoSel"
+                  data-el="7" onchange="filter_rowsLista()">
+                  <option value="all"></option>
+                </select>
+              </th>
+
+              <th class="action subtitles text-center celulaLista colMaior acoes">Ações
+              </th>
+            </tr>
+          </thead>
+
+          <tbody id="tbodyLista">
+          </tbody>
+        </table>
+      </div>
+      <div id="loading-overlay">
+        <div id="loading-spinner"></div>
+      </div>
+    </div>
+
     <div class="unidade-dass">
       <div class="unidade-popup-overlay"></div>
       <div class="unidade-popup">
@@ -604,21 +740,17 @@
         </div>
       </div>
     </div>
-
   </main>
-  <footer class="footer h6">
-    <p class="copy_right">
-      <span>Desenvolvido por DASS SEST</span> &copy;
-      <span class="copy_right_ano">
-        <script>
-          const date = new Date();
-          document.querySelector('.copy_right_ano').innerText = date.getFullYear();
-        </script>
-      </span>
-      </span>
-    </p>
+
+  <footer>
+    <div class="footer-container">
+      <span>Desenvolvido por <strong>DASS Santo Estêvão</strong></span>
+      <span>&copy; <span class="current_copyright_year"></span> Todos os direitos reservados.</span>
+    </div>
   </footer>
+
   <script src="assets/js/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="assets/js/script.js"></script>
   <script src="assets/js/socket.js"></script>
   <script src="assets/js/loja.js"></script>
@@ -627,8 +759,23 @@
   <script src="assets/js/unidade-dass.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
   <script>
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    // Ano Copyright
+    const date = new Date();
+    document.querySelector('.current_copyright_year').innerText = date.getFullYear();
+
+    $(document).ready(function() {
+      $('.table-filter').select2({
+        placeholder: "Selecione",
+        allowClear: true,
+        width: 'resolve'
+      });
+
+      $('.table-filterLista').select2({
+        placeholder: "Selecione",
+        allowClear: true,
+        width: 'resolve'
+      });
+    });
   </script>
 </body>
 

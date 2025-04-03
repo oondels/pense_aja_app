@@ -25,7 +25,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #F4F4F4;
+  background-color: #f4f4f4;
 }
 
 * {
@@ -37,39 +37,24 @@
 }
 
 body {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+  height: 100%;
   display: flex;
-  flex-wrap: wrap;
-  flex: 1 1 100vw;
-  margin: 3px;
-  overflow: hidden;
+  flex-direction: column;
 }
 
-header,
-nav,
-main,
-footer {
+nav {
   display: flex;
   margin: 2px;
 }
 
-header {
-  height: 50px;
-  flex: 1 1 100vw;
-  border-radius: 5px;
-}
-
-header #logo {
-  display: flex;
-  flex: 0 1 200px;
-  background: #fff;
-  justify-content: center;
-  align-items: center;
-}
-
 #openMenu,
 #openLista,
-#openUser,
-#openLoja {
+#openUser {
   border: none;
   background: none;
   font-size: 30px;
@@ -106,7 +91,7 @@ header #logo {
   width: 100%;
   border-radius: 10px;
   margin-left: 1%;
-  background-color: #B0062B;
+  background-color: #b0062b;
   box-shadow: 0.2em 0.2em 0em 0em #2c2c2c;
 }
 
@@ -133,7 +118,6 @@ header #logo {
   color: #fff;
 }
 
-.valorTotal,
 .pontosColab {
   font-family: "roboto-black";
   font-weight: bold;
@@ -143,7 +127,7 @@ header #logo {
   text-align: center;
   align-items: center;
   border-radius: 5px;
-  box-shadow: .1em .1em 0em 0em #2c2c2c;
+  box-shadow: 0.1em 0.1em 0em 0em #2c2c2c;
   background: #fff;
 }
 
@@ -181,21 +165,6 @@ nav button {
   border: none;
 }
 
-main {
-  height: calc(100vh - 85px);
-  flex: 20 1 500px;
-  border-radius: 5px;
-}
-
-footer {
-  height: 23px;
-  flex: 1 1 100vw;
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 a {
   text-decoration: none;
   color: inherit;
@@ -206,14 +175,6 @@ a {
   right: 5px;
   top: 28px; */
   display: flex;
-}
-
-.footer {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  color: #ddd;
-  text-shadow: 0px 1px 3px #000;
 }
 
 .copy_right span {
@@ -227,36 +188,13 @@ a {
   font-size: 11px;
 }
 
-.navHeader,
-.navHeaderLista,
-.navHeaderLoja {
+.navHeader {
   /* position: fixed;
   top: 12px;
   right: 5px; */
   width: calc(100vw - 12px);
   height: 60px;
   display: flex;
-}
-
-.navHeaderLista,
-.navHeaderLoja {
-  background: #494949;
-  height: 50px;
-}
-
-.divColaboradorLoja {
-  width: calc(100vw - 12px);
-  height: 140px;
-  border-radius: 5px;
-}
-
-.divItensLoja {
-  border-radius: 5px;
-  width: calc(100vw - 12px);
-  height: calc(100vh - 50px);
-  /* display: flex;
-  flex-direction: column; */
-  overflow-y: auto;
 }
 
 /***************************************************************************/
@@ -275,14 +213,15 @@ div.polaroid:active {
 .pontosSEM {
   box-shadow: none;
   filter: grayscale(1);
-  transition: all ease-in-out .4s;
+  transition: all ease-in-out 0.4s;
 }
 
 .pontosOK {
-  box-shadow: 0px 0px 9px 6px rgb(255 255 255), 0px 0px 20px 2px rgb(255 248 248), inset 0px 0px 15px 2px rgb(255, 255, 255);
+  box-shadow: 0px 0px 9px 6px rgb(255 255 255), 0px 0px 20px 2px rgb(255 248 248),
+    inset 0px 0px 15px 2px rgb(255, 255, 255);
   filter: grayscale(0);
   cursor: pointer;
-  transition: all ease-in-out .4s;
+  transition: all ease-in-out 0.4s;
 }
 
 div.container {
@@ -300,7 +239,6 @@ div.container p {
 
 /****************************************************************************************************/
 
-
 :is(.dados, .letra, .quantidade, .pontosClassif) span {
   font-size: 13.2px;
   font-weight: bold;
@@ -311,15 +249,11 @@ div.container p {
   margin-top: 10px;
 }
 
-.divPontosLoja {
-  height: 35px;
-}
-
 h2 {
   letter-spacing: 1px;
   color: #00000000;
   background-color: #00000000;
-  -webkit-text-stroke: .1vw #2f2c2cad;
+  -webkit-text-stroke: 0.1vw #2f2c2cad;
 }
 
 h2::before {
@@ -347,7 +281,6 @@ h2::before {
 }
 
 @keyframes animate {
-
   0%,
   10%,
   100% {
@@ -362,24 +295,11 @@ h2::before {
   }
 }
 
-#lista {
-  background: linear-gradient(160deg, rgba(32, 32, 33, 1) 0%, rgba(148, 148, 156, 1) 96%, rgba(227, 231, 232, 1) 100%)
-}
-
-.loja {
-  background-color: #00000079;
-}
-
-.itemsLoja {
-  background-color: rgb(32 32 33 / 89%)
-}
-
 .divMesLista,
 .divAnoLista,
 .divReplicLista,
 .divClassifLista,
-.divPesqLista,
-.divPesqLoja {
+.divPesqLista {
   display: block;
   border-radius: 5px;
   margin-right: 2px;
@@ -396,14 +316,9 @@ h2::before {
   letter-spacing: 1px;
 }
 
-:is(.divAnoLista, .divMesLista, .divReplicLista, .divClassifLista, .divPesqLista, .divPesqLoja) span {
+:is(.divAnoLista, .divMesLista, .divReplicLista, .divClassifLista, .divPesqLista) span {
   display: block;
   color: #fff;
-  text-align: center;
-}
-
-.lojaMatricula {
-  width: 100%;
   text-align: center;
 }
 
@@ -413,19 +328,19 @@ h2::before {
   transform: translate(-50%);
   color: #fff;
   cursor: pointer;
-  transition: color .4s ease-out;
+  transition: color 0.4s ease-out;
 }
 
 .icone:hover {
   color: #daa520;
   filter: drop-shadow(0 0 6px #fff);
-  transition: all .4s ease-out;
+  transition: all 0.4s ease-out;
 }
 
 .icone:active {
   color: #fff;
   filter: none;
-  transition: all .1s ease-out;
+  transition: all 0.1s ease-out;
 }
 
 .navConteudo {
@@ -582,7 +497,7 @@ h2::before {
   width: 11vw;
   height: 8vh;
   border-radius: 10px;
-  background-color: #B0062B;
+  background-color: #b0062b;
   font-family: "roboto-black";
 }
 
@@ -730,7 +645,7 @@ input[type="number"]::-webkit-inner-spin-button {
   font-weight: bold;
 }
 
-.dadosColaborador>.matricula {
+.dadosColaborador > .matricula {
   background-color: white;
   color: black;
   font-weight: bold;
@@ -742,20 +657,6 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .thID {
   display: none;
-}
-
-.btnAcoes {
-  color: white;
-  padding: 3px;
-  border-radius: 3px;
-  font-weight: bold;
-  font-size: 19px;
-}
-
-.btnAcoes:hover {
-  transition: all .5s;
-  color: rgba(255, 255, 255, 0.473);
-  cursor: pointer;
 }
 
 /*consulta*/
@@ -787,367 +688,6 @@ section {
 
 .divLogo img {
   width: 150px;
-}
-
-.divGlossario {
-  width: 100%;
-  height: 3vh;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: "roboto-black";
-}
-
-.divGlossarioLista {
-  width: 100%;
-  height: 3vh;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: "roboto-black";
-  /* position: relative;
-  top: calc(150px - 55px); */
-}
-
-.coresGlossario,
-.coresGlossarioLista {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 20%;
-}
-
-.coresGlossarioLista {
-  color: #fff;
-}
-
-:is(.coresGlossario, .coresGlossarioLista) button {
-  margin-right: 5px;
-  width: 2vw;
-  height: 2vh;
-  border-radius: 4px;
-}
-
-.exemploBranco {
-  border: 1px solid #0c1022;
-  transition: all .5s;
-}
-
-.exemploBranco:hover {
-  transition: all .5s;
-  transform: scale(1.2);
-  background-color: #dfdfdf;
-}
-
-.divTable {
-  display: flex;
-  justify-content: center;
-  height: calc(100vh - 140px);
-  width: 100%;
-  border-radius: 10px;
-  margin-bottom: 1vh;
-}
-
-.divTableLista {
-  display: flex;
-  justify-content: center;
-  height: 100%;
-  border-radius: 10px;
-  margin-bottom: 1vh;
-  /* position: relative;
-  top: calc(150px - 52px); */
-}
-
-#headThead {
-  width: 100%;
-}
-
-.consulta {
-  display: flex;
-  justify-content: flex-start;
-  flex-direction: column;
-  width: 100%;
-}
-
-.consultaComLogin {
-  display: flex;
-  justify-content: flex-start;
-  flex-direction: column;
-  width: 90.9%;
-  border-radius: 5px;
-  border-collapse: collapse;
-}
-
-#headConsulta {
-  border-collapse: collapse;
-  background-color: #0c1022;
-  color: aliceblue;
-  width: 100%;
-
-}
-
-tr:hover {
-  background-color: #2c2c2c56;
-  color: white;
-  font-weight: bold;
-}
-
-/*start - Estilizar coluna separadamente*/
-.colMenor {
-  max-width: 3.59vw;
-  min-width: 3.59vw;
-  font-size: 11px;
-  letter-spacing: .5px;
-}
-
-.colMen {
-  width: 3vw;
-  letter-spacing: .5px;
-}
-
-.data select {
-  font-size: 10px;
-}
-
-.colMedio {
-  max-width: 4.11vw;
-  min-width: 4.11vw;
-  font-size: 11px;
-  letter-spacing: .5px;
-}
-
-.colMed {
-  width: 3vw;
-  letter-spacing: .5px;
-}
-
-.colMaior {
-  max-width: 9.2vw;
-  min-width: 9.2vw;
-  font-size: 10px;
-  letter-spacing: .5px;
-}
-
-.colMai {
-  width: 8.3vw;
-  letter-spacing: .5px;
-}
-
-.colMaiorX {
-  max-width: 18vw;
-  min-width: 18vw;
-  font-size: 10px;
-  letter-spacing: .5px;
-}
-
-.colNomeComLogin {
-  max-width: 18vw;
-  min-width: 18vw;
-  font-size: 10px;
-  letter-spacing: .5px;
-}
-
-.colNome {
-  max-width: 18vw;
-  min-width: 18vw;
-  font-size: 10px;
-  letter-spacing: .5px;
-}
-
-.colMaiX {
-  width: 17vw;
-  letter-spacing: .5px;
-}
-
-.divSelect {
-  display: flex;
-  justify-self: center;
-  align-items: center;
-  flex-direction: row;
-}
-
-.celula {
-  height: 4vh;
-  border: 1px solid #0000002e;
-}
-
-.celulaLista {
-  border-top: 1px solid #fff;
-  height: 4vh;
-  color: #fff;
-}
-
-.content {
-  font-family: "roboto-regular";
-  font-size: 12px;
-  text-align: center;
-}
-
-.data {
-  width: 10vw;
-}
-
-tbody {
-  height: 85vh;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-table {
-  border-spacing: 0px;
-  table-layout: fixed;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-td,
-th {
-  word-wrap: break-word;
-}
-
-#modDif,
-#metDif {
-  position: relative;
-  cursor: pointer;
-  padding: 2px;
-}
-
-#tooltipText {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
-  background-color: #0c1022b2;
-  color: #fff;
-  font-weight: bold;
-  letter-spacing: 2px;
-  word-spacing: 1px;
-  border-radius: 4px;
-  white-space: nowrap;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-
-#modDif:hover #tooltipText,
-#metDif:hover #tooltipText {
-  visibility: visible;
-  opacity: 1;
-}
-
-/*end - Estilizar coluna separadamente*/
-.subClassificacao {
-  display: flex;
-  width: 100%;
-  justify-content: center;
-  gap: 15%;
-  margin-bottom: 50px;
-}
-
-.a3_mae {
-  text-align: center;
-}
-
-.exemploAzul,
-.semAnalista,
-.semAnalistaLista {
-  background-color: #00CEFFbd;
-  transition: all .5s;
-}
-
-.exemploLaranja,
-.semGerente,
-.semGerenteLista {
-  background-color: #ff4d00bd;
-  color: rgb(255, 255, 255);
-  transition: all .5s;
-}
-
-.exemploRoxo,
-.semAmbos,
-.semAmbosLista {
-  background-color: #42008dbd;
-  color: rgb(255, 255, 255);
-  transition: all .5s;
-}
-
-.exemploBranco,
-.avaliado,
-.avaliadoLista {
-  background-color: #fff;
-}
-
-.exemploRose,
-.emEspera,
-.emEsperaLista {
-  background-color: #ffff00;
-  font-weight: bold;
-  color: #800;
-}
-
-.exemploVermelho,
-.reprovadoGerente,
-.reprovadoGerenteLista {
-  background-color: #c20000bd;
-  border-color: #c20000bd;
-  color: rgb(255, 255, 255);
-  transition: all .5s;
-}
-
-.exemploAzul:hover {
-  background-color: #00ccff80;
-  border-color: #00ccff80;
-  transform: scale(1.2);
-  transition: all .5s;
-}
-
-.exemploLaranja:hover {
-  background-color: #ff4d0080;
-  border-color: #00ccff80;
-  transform: scale(1.2);
-  transition: all .5s;
-}
-
-.exemploRoxo:hover {
-  background-color: #42008d80;
-  border-color: #42008d80;
-  transform: scale(1.2);
-  transition: all .5s;
-}
-
-.exemploVermelho:hover {
-  background-color: #c2000080;
-  border-color: #c2000080;
-  transform: scale(1.2);
-  transition: all .5s;
-}
-
-.footer {
-  background-color: #0c1022;
-}
-
-.lblSpan {
-  font-weight: bold;
-  /* display: flex;
-  align-items: center;
-  margin-right: 5px; */
-  color: #fff;
-  letter-spacing: 1px;
-  text-shadow: 1px 1px 4px #000;
-}
-
-.textarea {
-  width: 25%;
-  height: 7vh;
-  color: black;
-  font-weight: bold;
-  font-size: 14px;
-  text-align: center;
-  text-align: center;
-  resize: none;
-  height: 60px;
-  vertical-align: middle;
-  line-height: 29px;
 }
 
 /* Altera o estilo dos elementos para serem apresentados */
@@ -1192,7 +732,7 @@ th {
   display: none;
   border-width: 7px;
   border-style: groove;
-  Border-color: gainsboro;
+  border-color: gainsboro;
 }
 
 #tooltipTextAfter,
@@ -1213,7 +753,7 @@ th {
   margin-top: 1px;
   border-width: 7px;
   border-style: groove;
-  Border-color: gainsboro;
+  border-color: gainsboro;
 }
 
 #nomeProjeto:hover #tooltipTextBefore,
@@ -1225,7 +765,7 @@ th {
 
 /* Loading */
 #loading-overlay {
-  transition: all .5s;
+  transition: all 0.5s;
   position: fixed;
   top: 0;
   left: 0;
@@ -1239,7 +779,7 @@ th {
 }
 
 #loading-spinner {
-  transition: all .5s;
+  transition: all 0.5s;
   border: 5px solid #f3f3f3;
   border-top: 5px solid #0c1022bd;
   border-radius: 50%;
@@ -1268,14 +808,13 @@ th {
   --bs-tooltip-bg: var(--bs-primary);
 }
 
-input[type=checkbox] {
+input[type="checkbox"] {
   cursor: pointer;
   accent-color: #228b22;
   transition: all 0.2s linear;
 }
 
 @media only screen and (max-width: 860px) {
-
   #openMenu,
   #openLista,
   #openUser,
@@ -1300,19 +839,6 @@ input[type=checkbox] {
 
   nav a {
     margin: 2%;
-  }
-
-  main {
-    order: 1;
-    height: calc(100vh - 143px);
-  }
-
-  footer {
-    order: 2;
-  }
-
-  #tbodyLista {
-    height: 82vh;
   }
 
   #closeUser,
@@ -1341,7 +867,6 @@ input[type=checkbox] {
   }
 
   .dadosColaborador {
-
     display: flex;
     justify-content: space-between;
     flex-direction: column;
@@ -1353,7 +878,7 @@ input[type=checkbox] {
     gap: 10px;
     background-color: #494949;
     border-radius: 10px;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .dadosColaborador input {
@@ -1371,7 +896,7 @@ input[type=checkbox] {
     padding-right: 1vw;
     background-color: #494949;
     border-radius: 10px;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .inputSmall {
@@ -1381,7 +906,7 @@ input[type=checkbox] {
     align-items: normal;
     height: 8vh;
     padding-right: 0;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
     width: 100%;
     gap: 0;
   }
@@ -1445,7 +970,7 @@ input[type=checkbox] {
     flex-direction: column;
     height: 25vh;
     padding-right: 0;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .outrosGanhos {
@@ -1453,7 +978,7 @@ input[type=checkbox] {
     flex-direction: column;
     height: 14vh;
     padding-right: 0;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .planoAcao {
@@ -1461,7 +986,7 @@ input[type=checkbox] {
     flex-direction: column;
     height: 36vh;
     padding-right: 0;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .labelSmall {
@@ -1470,7 +995,7 @@ input[type=checkbox] {
     height: 4vh;
     padding-right: 0;
     margin-bottom: 1vh;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
     width: 100%;
   }
 
@@ -1502,7 +1027,7 @@ input[type=checkbox] {
   .divInputsOutrosGanhos {
     height: 0;
     overflow: hidden;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   .surgeDeCima,
@@ -1514,7 +1039,7 @@ input[type=checkbox] {
     justify-content: center;
     flex-direction: column;
     align-items: center;
-    transition: height .5s, visibility .5s;
+    transition: height 0.5s, visibility 0.5s;
   }
 
   #saveCad {
@@ -1528,22 +1053,7 @@ input[type=checkbox] {
   #saveCad button {
     width: 100%;
     margin-bottom: 1vh;
-    height: 5vh
-  }
-
-  .coresGlossario {
-    font-size: 15px;
-    height: 100%;
-    padding-left: 5px;
-  }
-
-  .divGlossario {
-    height: 4vh;
-  }
-
-  .divGlossarioLista {
-    top: calc(150px - 60px);
-    font-size: 11px;
+    height: 5vh;
   }
 
   .colMaior {
@@ -1555,11 +1065,6 @@ input[type=checkbox] {
     width: 100%;
     height: 5.9vh;
     margin-bottom: 2px;
-  }
-
-  .divItensLoja img {
-    width: 20vw;
-    height: 20vh;
   }
 
   .divSuperior {
@@ -1577,7 +1082,6 @@ input[type=checkbox] {
     left: 32%;
     text-align: center;
   }
-
 }
 
 @media only screen and (min-width: 861px) and (max-width: 1366px) {
@@ -1592,15 +1096,6 @@ input[type=checkbox] {
   .dadosColaborador input {
     font-size: 12px;
     width: 18.97vw;
-  }
-
-  .divItensLoja img {
-    width: 14vw;
-    height: 16vh;
-  }
-
-  .divGlossario {
-    margin-bottom: 1vh;
   }
 
   .inputSmall input {
@@ -1625,7 +1120,7 @@ input[type=checkbox] {
   #closeUser,
   #closeMenu,
   #closeLista {
-    top: 32px
+    top: 32px;
   }
 
   .dadosColaborador input {
@@ -1634,32 +1129,15 @@ input[type=checkbox] {
 }
 
 @media only screen and (min-width: 1920px) and (min-height: 920px) {
-
   #closeUser,
   #closeMenu,
   #closeLista {
-    top: 28px
+    top: 28px;
   }
 
   .divTableLista {
     top: calc(150px - 56px);
   }
-
-  #tbodyLista {
-    height: 82.5vh;
-  }
-
-  .divItensLoja img {
-    width: 15vw;
-    height: 26vh;
-  }
-
-  /* .divSuperior {
-    margin-top: 5vh;
-  }
-  .divInferior {
-    margin-top: 10vh;
-  } */
 }
 
 @media print {
@@ -1672,10 +1150,8 @@ input[type=checkbox] {
   }
 
   header,
-  footer,
   aside,
   form,
-  .divGlossario,
   .table-filter,
   .action,
   .copy_right,
@@ -1690,7 +1166,7 @@ input[type=checkbox] {
   }
 
   a:after {
-    content: "(" attr(href)")";
+    content: "(" attr(href) ")";
   }
 
   .print {

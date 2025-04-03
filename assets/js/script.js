@@ -1,11 +1,24 @@
 const unidade = localStorage.getItem("unidadeDass");
 
-function showLoadingComponent() {
+let components = new Map();
+function showLoadingComponent(element) {
+  if (components.has(element)) {
+    console.log("componente ja presente");
+    return;
+  }
+
   document.querySelector(".loading-cdata").classList.remove("hidden");
+  components.set(element, true);
 }
 
-function hideLoading() {
+function hideLoading(element) {
+  if (!components.get(element)) {
+    return;
+  }
+
+  components.set(element, false);
   document.querySelector(".loading-cdata").classList.add("hidden");
+  return;
 }
 
 function lerURL(URL) {
@@ -47,7 +60,6 @@ const renderListaTable = (data) => {
 
   data.forEach((element) => {
     let tr = tbody.insertRow();
-
     let td_id = tr.insertCell();
     let td_realizado = tr.insertCell();
     let td_nome = tr.insertCell();
@@ -64,7 +76,7 @@ const renderListaTable = (data) => {
     td_gerente.innerText = element.gerente;
     td_nome_projeto.innerHTML += `${element.nome_projeto} <div id="tool"><div id="tooltipTextBefore"><strong>SITUAÇÃO ANTERIOR: </strong>${element.situacao_anterior}</div><div id="tooltipTextAfter"><strong>SITUAÇÃO ATUAL: </strong>${element.situacao_atual}</div></div>`;
     td_turno.innerText = element.turno;
-    td_acoes.innerHTML += `<i class="btnAcoes botaoInfo bi bi-info-square" id="i${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
+    td_acoes.innerHTML += `<i class="btnAcoes botaoInfo bi bi-clipboard-check" id="i${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
 
     tr.classList.add("headConsulta", "active");
     tr.setAttribute("id", element.id);
@@ -90,8 +102,8 @@ const renderListaTable = (data) => {
     td_nome_projeto.setAttribute("id", "nomeProjeto");
     td_turno.classList.add("celula", "content", "colMaior", "center");
     td_acoes.classList.add("action", "celula", "content", "colMaior", "acoes", "center");
+
     /*Busca Aprovador*/
-    //setTimeout(() => {
     let gerenteAprovador;
     let analistaAvaliador;
     let idLinha;
@@ -157,16 +169,20 @@ const renderListaTable = (data) => {
       }
 
       button.addEventListener("click", async function (event) {
+        // Reseta Modal
+        showLoadingComponent("buscaPa");
+        limpaModal();
+
         let el = event.target.id.substring(1);
         let data = { identificador: el };
-        let buscaPenseAja = await fetch("/server/apiBuscaPenseAja.php", {
+        let buscaPenseAja = await fetch("/pense_aja/server/apiBuscaPenseAja.php", {
           method: "POST",
           body: JSON.stringify(data),
           headers: {
-            "Content-type": "aplication/json; charset=UTF-8",
+            "Content-type": "application/json; charset=UTF-8",
           },
         });
-        let resBuscaPenseAja = await buscaPenseAja.json();
+
         let tituloProjeto = document.getElementById("staticBackdropLabel");
         let matriculaModal = document.getElementById("matriculaModal");
         let nomeModal = document.getElementById("nomeModal");
@@ -179,12 +195,15 @@ const renderListaTable = (data) => {
         let elimPerdaModal = document.getElementById("elimPerdaModal");
         let amortizacaoModal = document.getElementById("amortizacaoModal");
         let outGanhosModal = document.getElementById("outGanhosModal");
-        let turno;
         let ids = document.getElementById("id");
         let statusGerente = document.getElementById("status_gerente");
         let statusAnalista = document.getElementById("status_analista");
         let gerAprovador = document.getElementById("gerAprovador");
         let anaAprovador = document.getElementById("anaAprovador");
+        let turno;
+
+        let resBuscaPenseAja = await buscaPenseAja.json();
+
         if (resBuscaPenseAja.erro == false) {
           switch (resBuscaPenseAja.penseAja.turno) {
             case "A":
@@ -279,11 +298,13 @@ const renderListaTable = (data) => {
             document.getElementById("c").checked = false;
           }
         }
+
         if (resBuscaPenseAja.penseAja.a3_mae != "") {
           document.getElementById("escolha").innerText = resBuscaPenseAja.penseAja.a3_mae;
         } else {
           document.getElementById("escolha").innerText = "Selecione";
         }
+
         if (
           document.getElementById("funcao").innerText === "ANALISTA!" &&
           gerAprovador.innerText != "Gerente: Ainda não avaliou!"
@@ -298,16 +319,20 @@ const renderListaTable = (data) => {
           document.getElementById("c").disabled = false;
           document.getElementById("a3_mae").disabled = false;
         }
+
         if (resBuscaPenseAja.penseAja.em_espera == "1") {
           document.getElementById("esperar").checked = true;
         } else {
           document.getElementById("esperar").checked = false;
         }
+
         if (resBuscaPenseAja.penseAja.replicavel == "1") {
           document.getElementById("replicar").checked = true;
         } else {
           document.getElementById("replicar").checked = false;
         }
+
+        hideLoading("buscaPa");
         /*Pense e aja reprovado*/
         let reprovar = document.getElementById("reprovar");
         reprovar.addEventListener("click", async function (event) {
@@ -323,13 +348,16 @@ const renderListaTable = (data) => {
             nome: sessionStorage.getItem("nome"),
             funcao: sessionStorage.getItem("funcao"),
           };
-          let reprovado = await fetch("http://" + ip + "/dass-penseaja-vdc/server/apiPostPenseAjaReprovado.php", {
-            method: "POST",
-            body: JSON.stringify(dataR),
-            headers: {
-              "Content-type": "aplication/json; charset=UTF-8",
-            },
-          });
+          let reprovado = await fetch(
+            "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaReprovado.php",
+            {
+              method: "POST",
+              body: JSON.stringify(dataR),
+              headers: {
+                "Content-type": "aplication/json; charset=UTF-8",
+              },
+            }
+          );
           let resReprovado = await reprovado.json();
           if (resReprovado.erro == false) {
             success("Avaliado");
@@ -337,6 +365,7 @@ const renderListaTable = (data) => {
             error("Erro ao gravar avaliação, verifique!");
           }
         });
+
         /*Pense e aja aprovado*/
         let aprovar = document.getElementById("aprovar");
         aprovar.addEventListener("click", async function (event) {
@@ -374,13 +403,16 @@ const renderListaTable = (data) => {
             em_espera: document.getElementById("esperar").checked,
             replicavel: document.getElementById("replicar").checked,
           };
-          let aprovado = await fetch("http://" + ip + "/dass-penseaja-vdc/server/apiPostPenseAjaAprovado.php", {
-            method: "POST",
-            body: JSON.stringify(dataA),
-            headers: {
-              "Content-type": "aplication/json; charset=UTF-8",
-            },
-          });
+          let aprovado = await fetch(
+            "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaAprovado.php",
+            {
+              method: "POST",
+              body: JSON.stringify(dataA),
+              headers: {
+                "Content-type": "aplication/json; charset=UTF-8",
+              },
+            }
+          );
           let resAprovado = await aprovado.json();
           if (resAprovado.erro == false) {
             success("Avaliado");
@@ -400,8 +432,8 @@ const renderListaTable = (data) => {
             gerente: gerAprovou.substring(9),
           };
           /*Se avaliação pelo gerente e pelo analista salva ponto*/
-          if (setFuncao == "ANALISTA" && esperou == false) {
-            let pontos = await fetch("/server/apiPostPontos.php", {
+          if (setFuncao == "ANALISTA!" && esperou == false) {
+            let pontos = await fetch("/pense_aja/server/apiPostPontos.php", {
               method: "POST",
               body: JSON.stringify(dataPonto),
               headers: {
@@ -411,7 +443,7 @@ const renderListaTable = (data) => {
             event.preventDefault();
           }
           if (setFuncao == "GERENTE" && stsAnaAprovou == "APROVAR" && esperou == false) {
-            let pontos = await fetch("/server/apiPostPontos.php", {
+            let pontos = await fetch("/pense_aja/server/apiPostPontos.php", {
               method: "POST",
               body: JSON.stringify(dataPonto),
               headers: {
@@ -421,6 +453,7 @@ const renderListaTable = (data) => {
             event.preventDefault();
           }
         });
+
         /*Pense e aja excluído*/
         let excluir = document.getElementById("excluir");
         excluir.addEventListener("click", function (event) {
@@ -446,13 +479,16 @@ const renderListaTable = (data) => {
                   gerente: sessionStorage.getItem("nome"),
                   funcao: sessionStorage.getItem("funcao"),
                 };
-                let excluir = await fetch("http://" + ip + "/dass-penseaja-vdc/server/apiPostPenseAjaExcluido.php", {
-                  method: "POST",
-                  body: JSON.stringify(dataE),
-                  headers: {
-                    "Content-type": "aplication/json; charset=UTF-8",
-                  },
-                });
+                let excluir = await fetch(
+                  "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaExcluido.php",
+                  {
+                    method: "POST",
+                    body: JSON.stringify(dataE),
+                    headers: {
+                      "Content-type": "aplication/json; charset=UTF-8",
+                    },
+                  }
+                );
                 let resExcluir = excluir.json();
                 if (resExcluir.erro == false) {
                   success("Excluido");
@@ -471,10 +507,12 @@ const renderListaTable = (data) => {
         });
       });
     });
+
     let btnClose = document.getElementById("btnClose");
     btnClose.addEventListener("click", () => {
       limpaModal();
     });
+
     function limpaModal() {
       document.getElementById("staticBackdropLabel").innerHTML = "";
       document.getElementById("matriculaModal").innerHTML = "";
@@ -494,38 +532,94 @@ const renderListaTable = (data) => {
   buscaPA();
 };
 
+function activeBtn(e) {
+  // e.currentTarget.classList.toggle("active")
+  const btnsGlossario = document.querySelectorAll(".coresGlossario");
+  btnsGlossario.forEach((btn) => {
+    if (btn !== e.currentTarget) {
+      btn.classList.remove("active");
+    } else {
+      btn.classList.toggle("active");
+    }
+  });
+}
+
+const filterTable = (param, event, id) => {
+  const rows = document.querySelectorAll(`${id} tbody tr`);
+  activeBtn(event);
+  const isActive = event.currentTarget.classList.contains("active");
+
+  let countValues = 0;
+  rows.forEach((row) => {
+    if (isActive) {
+      // Exibe apenas os que possuem a classe correspondente
+      if (row.classList.contains(param)) {
+        row.style.display = "table-row";
+        countValues++;
+      } else {
+        row.style.display = "none";
+      }
+    } else {
+      countValues = rows.length;
+      row.style.display = "table-row";
+    }
+  });
+
+  let valorTotal = document.getElementById("valorTotal");
+  if (!valorTotal) {
+    return;
+  }
+  valorTotal.innerHTML = `${countValues} Registros`;
+};
+
 async function listaTable() {
+  const mesAnterior = new Date().getMonth() - 1;
+  const mesAtual = new Date().getMonth();
+  const anoAtual = new Date().getFullYear();
+
   if (!unidade) {
     console.log("Informe sua matricula para definição da unidade");
     return;
   }
 
-  const cachedList = getCachedData("cachedList");
-  if (cachedList) {
-    renderListaTable(cachedList.payload);
+  const cachedKey = `${mesAnterior}-${mesAtual}-${anoAtual}`;
+  let cachedList = getCachedData("cachedList") || {};
+  const currentDate = new Date().getTime();
+
+  if (Object.keys(cachedList).length && cachedList[cachedKey] && cachedList[cachedKey].payload) {
+    console.log("Dados em cache...");
+    renderListaTable(cachedList[cachedKey].payload);
   } else {
-    showLoadingComponent();
+    console.log("Dados não encontrados em cache, buscando no servidor...");
+    showLoadingComponent("listaTable");
   }
 
   try {
-    const response = await axios.get("/server/apiBuscaDados.php", {
+    const response = await axios.get("/pense_aja/server/apiBuscaDados.php", {
       headers: {
         "Content-Type": "application/json",
       },
     });
 
     const resBuscaDados = response.data;
-
     if (resBuscaDados.erro == false) {
-      const newCache = resBuscaDados.dados;
-
-      // Se os novos dados forem maior que o em cache, atualiza o cache e renderiza a tabela
-      if (!cachedList || resBuscaDados.dados.length > cachedList.payload.length) {
-        const currentDate = new Date().getTime();
-        localStorage.setItem("cachedList", JSON.stringify({ payload: resBuscaDados.dados, timestamp: currentDate }));
-
-        renderListaTable(newCache);
+      if (!Object.keys(cachedList).length) {
+        renderListaTable(resBuscaDados.dados);
       }
+
+      const newCache = {
+        payload: resBuscaDados.dados,
+        timestamp: currentDate,
+      };
+      cachedList[cachedKey] = newCache;
+
+      // Verifica se os dados do servidor são mais recentes que os do cache
+      if (cachedList && resBuscaDados && resBuscaDados.dados.length > cachedList[cachedKey].payload.length) {
+        console.log("Dados novos encontrados, atualizando cache...");
+        renderListaTable(cachedList[cachedKey].payload);
+      }
+
+      localStorage.setItem("cachedList", JSON.stringify(cachedList));
     } else {
       soma();
     }
@@ -533,7 +627,7 @@ async function listaTable() {
     console.error("Erro ao buscar dados do pense aja!", error);
     return;
   } finally {
-    hideLoading();
+    hideLoading("listaTable");
   }
 }
 
@@ -543,7 +637,6 @@ const obtemAnoAtualEMesAnterior = () => {
 
   var dataAtual = new Date();
   var anoAtual = dataAtual.getFullYear();
-
   var mesAnterior = dataAtual.getMonth();
 
   if (mesAnterior === 0) {
@@ -551,10 +644,13 @@ const obtemAnoAtualEMesAnterior = () => {
     anoAtual -= 1;
   }
 
-  var optionAno = document.createElement("option");
-  optionAno.value = anoAtual;
-  optionAno.text = anoAtual;
-  selectAnoLista.add(optionAno);
+  selectAnoLista.innerHTML = "";
+  for (let ano = anoAtual; ano >= 2024; ano--) {
+    var optionAno = document.createElement("option");
+    optionAno.value = ano;
+    optionAno.text = ano;
+    selectAnoLista.add(optionAno);
+  }
 
   var nomesMeses = [
     "Janeiro",
@@ -574,23 +670,25 @@ const obtemAnoAtualEMesAnterior = () => {
   var optionMes = document.createElement("option");
   optionMes.value = mesAnterior;
   optionMes.text = nomesMeses[mesAnterior - 1];
+  mesLista.innerHTML = "";
   mesLista.add(optionMes);
 };
 
-// ! Verificar porque essa funcao trava o app
 const buscaPA_Lista = (listaSize) => {
   let selecionadoLista = document.getElementById("selecionadoLista");
   let nomesLista = sessionStorage.getItem("nome");
   let colabLista = sessionStorage.getItem("funcao");
+
   if (listaSize !== 0) {
     if (colabLista == "GERENTE") {
       selecionadoLista.innerText = nomesLista;
       selecionadoLista.value = nomesLista;
     } else {
-      selecionadoLista.innerText = "";
-      selecionadoLista.value = "";
+      if (selecionadoLista) {
+        selecionadoLista.innerText = "";
+        selecionadoLista.value = "";
+      }
     }
-    getUniqueValuesFromColumnLista();
     filter_rowsLista();
     hideLoading();
   }
@@ -600,7 +698,7 @@ const buscaPA_Lista = (listaSize) => {
     buttons.addEventListener("click", async function (events) {
       let el = events.target.id.substring(6);
       let data = { identificador: el };
-      let buscaPenseAjaLista = await fetch("/server/apiBuscaPenseAja.php", {
+      let buscaPenseAjaLista = await fetch("/pense_aja/server/apiBuscaPenseAja.php", {
         method: "POST",
         body: JSON.stringify(data),
         headers: {
@@ -774,13 +872,16 @@ const buscaPA_Lista = (listaSize) => {
           nome: sessionStorage.getItem("nome"),
           funcao: sessionStorage.getItem("funcao"),
         };
-        let reprovadoLista = await fetch("http://" + ip + "/dass-penseaja-vdc/server/apiPostPenseAjaReprovado.php", {
-          method: "POST",
-          body: JSON.stringify(dataR),
-          headers: {
-            "Content-type": "aplication/json; charset=UTF-8",
-          },
-        });
+        let reprovadoLista = await fetch(
+          "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaReprovado.php",
+          {
+            method: "POST",
+            body: JSON.stringify(dataR),
+            headers: {
+              "Content-type": "aplication/json; charset=UTF-8",
+            },
+          }
+        );
         let resReprovadoLista = await reprovadoLista.json();
         if (resReprovadoLista.erro == false) {
           successLista("Avaliado");
@@ -819,7 +920,7 @@ const buscaPA_Lista = (listaSize) => {
           em_espera: document.getElementById("esperar").checked,
           replicavel: document.getElementById("replicar").checked,
         };
-        let response = await fetch("/server/apiPostPenseAjaAprovado.php", {
+        let response = await fetch("/pense_aja/server/apiPostPenseAjaAprovado.php", {
           method: "POST",
           body: JSON.stringify(dataA),
           headers: {
@@ -843,8 +944,8 @@ const buscaPA_Lista = (listaSize) => {
           classificacao: escolha,
           gerente: gerAprovouLista.substring(9),
         };
-        if (setFuncaoLista == "ANALISTA" && esperouLista == false) {
-          let pontosLista = await fetch("/server/apiPostPontos.php", {
+        if (setFuncaoLista == "ANALISTA!" && esperouLista == false) {
+          let pontosLista = await fetch("/pense_aja/server/apiPostPontos.php", {
             method: "POST",
             body: JSON.stringify(dataPonto),
             headers: {
@@ -854,7 +955,7 @@ const buscaPA_Lista = (listaSize) => {
           event.preventDefault();
         }
         if (setFuncaoLista == "GERENTE" && stsAnaAprovouLista == "APROVAR" && esperouLista == false) {
-          let pontosLista = await fetch("/server/apiPostPontos.php", {
+          let pontosLista = await fetch("/pense_aja/server/apiPostPontos.php", {
             method: "POST",
             body: JSON.stringify(dataPonto),
             headers: {
@@ -889,7 +990,7 @@ const buscaPA_Lista = (listaSize) => {
                 gerente: sessionStorage.getItem("nome"),
                 funcao: sessionStorage.getItem("funcao"),
               };
-              fetch("http://" + ip + "/dass-penseaja-vdc/server/apiPostPenseAjaExcluido.php", {
+              fetch("http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaExcluido.php", {
                 method: "POST",
                 body: JSON.stringify(dataE),
                 headers: {
@@ -950,7 +1051,25 @@ async function listaTableLista() {
   let selectReplicavel = document.getElementById("replicLista");
   let selectClassificacao = document.getElementById("classifLista");
 
+  // Obter o ano atual e processar o mês selecionado
+  const anoAtual = new Date().getFullYear();
+  const mesSelecionado = parseInt(selectMes);
+
+  // Configurar o mês atual (dia 28)
+  const mesAtual = new Date(anoAtual, mesSelecionado - 1, 28);
+  let mesAnteriorNum = mesSelecionado - 1;
+  let anoMesAnterior = anoAtual;
+
+  // Se for janeiro (mês 1), o mês anterior é dezembro (12) do ano anterior
+  if (mesAnteriorNum === 0) {
+    mesAnteriorNum = 12;
+    anoMesAnterior = anoAtual - 1;
+  }
+  const mesAnterior = new Date(anoMesAnterior, mesAnteriorNum - 1, 28);
+
   const select = {
+    mesAtual: mesAtual,
+    mesAnterior: mesAnterior,
     selectMes: selectMes,
     selectAno: selectAno,
     selectReplicavel: selectReplicavel,
@@ -1003,6 +1122,7 @@ async function listaTableLista() {
       td_nome_projeto.setAttribute("id", "nomeProjetos");
       td_turno.classList.add("celula", "content", "colMaior", "center");
       td_acoes.classList.add("action", "celula", "content", "colMaior", "acoes", "center");
+
       setTimeout(() => {
         let gerenteAprovadorLista;
         let analistaAvaliadorLista;
@@ -1016,35 +1136,37 @@ async function listaTableLista() {
         statusGerenteLista = element.status_gerente;
         emEsperaLista = element.em_espera;
         idTrLista = document.getElementById(idLinhaLista);
-        if (gerenteAprovadorLista == "" && analistaAvaliadorLista != "") {
+
+        if (!gerenteAprovadorLista && analistaAvaliadorLista !== "") {
           idTrLista.classList.add("semGerenteLista");
         } else {
           idTrLista.classList.remove("semGerenteLista");
         }
-        if (gerenteAprovadorLista != "" && analistaAvaliadorLista == "") {
+        if (gerenteAprovadorLista !== "" && analistaAvaliadorLista === "") {
           idTrLista.classList.add("semAnalistaLista");
         } else {
           idTrLista.classList.remove("semAnalistaLista");
         }
-        if (gerenteAprovadorLista == "" && analistaAvaliadorLista == "") {
-          idTrLista.classList.add("semAmbosLista");
+        if (!gerenteAprovadorLista && !analistaAvaliadorLista) {
+          const row = document.getElementById(element.id);
+          row.classList.add("semAmbosLista");
         } else {
           idTrLista.classList.remove("semAmbosLista");
         }
-        if (statusGerenteLista == "REPROVAR") {
+        if (statusGerenteLista === "REPROVAR") {
           idTrLista.classList.remove("semAnalistaLista");
           idTrLista.classList.remove("semGerenteLista");
           idTrLista.classList.remove("semAmbosLista");
           idTrLista.classList.add("reprovadoGerenteLista");
         }
-        if (emEsperaLista == "1") {
+        if (emEsperaLista === "1") {
           idTrLista.classList.remove("semAnalistaLista");
           idTrLista.classList.remove("semGerenteLista");
           idTrLista.classList.remove("semAmbosLista");
           idTrLista.classList.remove("reprovadoGerenteLista");
           idTrLista.classList.add("emEsperaLista");
         }
-        if (gerenteAprovadorLista != "" && analistaAvaliadorLista != "") {
+        if (gerenteAprovadorLista !== "" && analistaAvaliadorLista !== "") {
           idTrLista.classList.add("avaliadoLista");
         }
       }, 150);
@@ -1058,51 +1180,59 @@ async function listaTableLista() {
 
   if (queryCache && Object.keys(queryCache).length > 0 && queryCache[cachedListKey]) {
     renderListaTableLista(queryCache[cachedListKey]?.payload);
+    updateSelectOptionsLista(queryCache[cachedListKey]?.filters);
   } else {
-    showLoadingComponent();
+    showLoadingComponent("listaTableLista");
   }
 
   // Atualizar Quantidade de registros aqui e nao na funcao somaLista()
   let listaSize = queryCache[cachedListKey]?.payload.length || 0;
   let valorTotal = document.getElementById("valorTotalLista");
-  valorTotal.innerHTML = `${listaSize}<strong class="text-success fs-6"> Registros</strong>`;
-
-  // Atualiza o timestamp do cache
-  if (queryCache?.cachedListKey) {
-    queryCache[cachedListKey].timestamp = currentTime;
-    localStorage.setItem("filterCache", JSON.stringify(queryCache));
-  }
-
-  // Verifica se os dados estão em cache e se a última consulta foi feita a menos de 3 minutos
-  if (queryCache[cachedListKey] && currentTime - queryCache[cachedListKey].timestamp < 180000) {
-    showLoadingComponent();
-    buscaPA_Lista(listaSize);
-    console.log("Não pesquisar, dados em cache");
-    return;
-  }
+  valorTotal.innerHTML = `${listaSize} Registros`;
 
   await axios
-    .post("/server/apiBuscaDadosLista.php", select)
+    .post("/pense_aja/server/apiBuscaDadosLista.php", select)
     .then((response) => {
       const newCache = response.data;
+
+      if (typeof newCache !== "object") {
+        throw new Error("Formato de resposta inválido");
+      }
+
       if (
         cachedListKey &&
-        (!queryCache[cachedListKey] || newCache.dados.length > queryCache[cachedListKey].payload.length)
+        ((!queryCache[cachedListKey] && newCache && newCache.dados) ||
+          newCache.dados.length > queryCache[cachedListKey].payload.length)
       ) {
-        console.log("Atualizando cache com novos dados");
-        queryCache[cachedListKey] = { payload: newCache.dados, timestamp: currentTime };
+        Swal.fire({
+          icon: "success",
+          title: "Sucesso",
+          html: `<div style = "display:flex;text-align:center;flex-direction:column">
+                  <div><strong>Novos registros encontrados.</strong> Atualizando lista!</div>
+                </div>`,
+          showConfirmButton: false,
+          showCloseButton: true,
+          timer: 2100,
+        });
+
+        queryCache[cachedListKey] = { payload: newCache.dados, timestamp: currentTime, filters: newCache.filters };
         localStorage.setItem("filterCache", JSON.stringify(queryCache));
         renderListaTableLista(queryCache[cachedListKey].payload);
+        updateSelectOptionsLista(newCache.filters);
         listaSize = queryCache[cachedListKey].payload.length;
       }
+
+      listaSize = newCache.dados.length;
+      valorTotal.innerHTML = `${listaSize} Registros`;
+      buscaPA_Lista(listaSize);
     })
     .catch((error) => {
+      buscaPA_Lista(listaSize);
       required("Filtro inválido");
       console.error("Erro ao buscar dados da lista do pense aja: ", error);
     })
     .finally(() => {
-      hideLoading();
-      buscaPA_Lista(listaSize);
+      hideLoading("listaTableLista");
     });
 }
 
@@ -1113,6 +1243,7 @@ const delet = Swal.mixin({
   },
   buttonsStyling: false,
 });
+
 let success = function (message) {
   Swal.fire({
     icon: "success",
@@ -1211,6 +1342,7 @@ let success = function (message) {
     }
   });
 };
+
 let successLista = function (message) {
   Swal.fire({
     icon: "success",
@@ -1374,33 +1506,42 @@ function updateSelectOptions(unique_col_values_dict) {
     });
   });
 }
-function filter_rows() {
-  allFilters = document.querySelectorAll(".table-filter");
-  var filter_value_dict = {};
+
+function filter_rows(tableSelect, tableId) {
+  let valorTotalLista = document.getElementById("valorTotalLista")
+
+  const allFilters = document.querySelectorAll(tableSelect);
+  const filter_value_dict = {};
+
   allFilters.forEach((filter_i) => {
-    col_index = filter_i.parentElement.getAttribute("col-index");
-    value = filter_i.value;
-    if (value != "all") {
-      filter_value_dict[col_index] = value;
+    const col_index = filter_i.parentElement.getAttribute("col-index");
+    const selectedOptions = Array.from(filter_i.selectedOptions).map((opt) => opt.value);
+
+    // Só adiciona se houver seleções e não incluir apenas 'all'
+    if (selectedOptions.length > 0 && !selectedOptions.includes("all")) {
+      filter_value_dict[col_index] = selectedOptions;
     }
   });
-  var col_cell_value_dict = {};
-  const rows = document.querySelectorAll("#emp-table tbody tr");
+  const rows = document.querySelectorAll(tableId + " tbody tr");
+
+  let count = 0
   rows.forEach((row) => {
-    var display_row = true;
-    allFilters.forEach((filter_i) => {
-      col_index = filter_i.parentElement.getAttribute("col-index");
-      col_cell_value_dict[col_index] = row.querySelector("td:nth-child(" + col_index + ")").innerHTML;
-    });
-    for (var col_i in filter_value_dict) {
-      filter_value = filter_value_dict[col_i];
-      row_cell_value = col_cell_value_dict[col_i];
-      if (row_cell_value.indexOf(filter_value) == -1 && filter_value != "all") {
+    let display_row = true;
+
+    for (const col_index in filter_value_dict) {
+      const selected_values = filter_value_dict[col_index];
+      const cell_value = row.querySelector("td:nth-child(" + col_index + ")").innerText;
+
+      // Verifica se o valor da célula casa com pelo menos um dos selecionados
+      const match = selected_values.some((value) => cell_value.includes(value));
+      if (!match) {
         display_row = false;
         break;
       }
     }
-    if (display_row == true) {
+
+    if (display_row) {
+      count++
       row.style.display = "table-row";
       row.classList.add("active");
     } else {
@@ -1408,110 +1549,28 @@ function filter_rows() {
       row.classList.remove("active");
     }
   });
-  soma();
-}
-/*FILTRO LISTA*/
-// function getUniqueValuesFromColumnLista() {
-//   var unique_col_values_dict = {};
-//   allFilters = document.querySelectorAll(".table-filterLista");
-//   allFilters.forEach((filter_i) => {
-//     col_index = filter_i.parentElement.getAttribute("col-index");
-//     const rows = document.querySelectorAll("#emp-tableLista > tbody > tr");
-//     rows.forEach((row) => {
-//       cell_value = row.querySelector("td:nth-child(" + col_index + ")").innerHTML;
-//       if (col_index in unique_col_values_dict) {
-//         if (unique_col_values_dict[col_index].includes(cell_value)) {
-//         } else {
-//           unique_col_values_dict[col_index].push(cell_value);
-//         }
-//       } else {
-//         unique_col_values_dict[col_index] = new Array(cell_value);
-//       }
-//     });
-//   });
-//   for (i in unique_col_values_dict) {
-//   }
-//   updateSelectOptionsLista(unique_col_values_dict);
-// }
 
-function getUniqueValuesFromColumnLista() {
-  const uniqueValues = {};
-  // Busca os filtros e inicializa o conjunto para cada coluna
-  const filters = Array.from(document.querySelectorAll(".table-filterLista"));
-  filters.forEach((filter) => {
-    const colIndex = filter.parentElement.getAttribute("col-index");
-    if (colIndex) {
-      uniqueValues[colIndex] = new Set();
-    }
-  });
-
-  // Busca todas as linhas da tabela apenas uma vez
-  const rows = document.querySelectorAll("#emp-tableLista > tbody > tr");
-  rows.forEach((row) => {
-    filters.forEach((filter) => {
-      const colIndex = filter.parentElement.getAttribute("col-index");
-      const cell = row.querySelector(`td:nth-child(${colIndex})`);
-      if (cell) {
-        uniqueValues[colIndex].add(cell.innerHTML);
-      }
-    });
-  });
-
-  // Converte os Sets para arrays
-  const uniqueValuesDict = {};
-  for (const col in uniqueValues) {
-    uniqueValuesDict[col] = Array.from(uniqueValues[col]);
+  if (tableId === "#emp-table") {
+    soma();
+  } else {
+    valorTotalLista.innerHTML = `${count} Registros`;
   }
-  updateSelectOptionsLista(uniqueValuesDict);
 }
 
 function updateSelectOptionsLista(unique_col_values_dict) {
-  allFilters = document.querySelectorAll(".table-filterLista");
+  const allFilters = document.querySelectorAll(".table-filterLista");
   allFilters.forEach((filter_i) => {
-    col_index = filter_i.parentElement.getAttribute("col-index");
+    // Limpa as opções atuais
+    filter_i.innerHTML = "";
+
+    filter_i.innerHTML += `<option value="all"></option>`;
+
+    const col_index = filter_i.parentElement.getAttribute("col-index");
     unique_col_values_dict[col_index].sort().forEach((i) => {
-      filter_i.innerHTML = filter_i.innerHTML + `\n\n<option value="${i}">${i}</option>`;
+      filter_i.innerHTML += `<option value="${i}">${i}</option>`;
     });
   });
 }
-
-// function filter_rowsLista() {
-//   allFilters = document.querySelectorAll(".table-filterLista");
-//   var filter_value_dict = {};
-//   allFilters.forEach((filter_i) => {
-//     col_index = filter_i.parentElement.getAttribute("col-index");
-//     value = filter_i.value;
-//     if (value != "all") {
-//       filter_value_dict[col_index] = value;
-//     }
-//   });
-//   var col_cell_value_dict = {};
-//   const rows = document.querySelectorAll("#emp-tableLista tbody tr");
-//   rows.forEach((row) => {
-//     var display_row = true;
-//     allFilters.forEach((filter_i) => {
-//       col_index = filter_i.parentElement.getAttribute("col-index");
-//       col_cell_value_dict[col_index] = row.querySelector("td:nth-child(" + col_index + ")").innerHTML;
-//     });
-//     for (var col_i in filter_value_dict) {
-//       filter_value = filter_value_dict[col_i];
-//       row_cell_value = col_cell_value_dict[col_i];
-//       if (row_cell_value.indexOf(filter_value) == -1 && filter_value != "all") {
-//         display_row = false;
-//         break;
-//       }
-//     }
-//     if (display_row == true) {
-//       row.style.display = "table-row";
-//       row.classList.add("activeLista");
-//     } else {
-//       row.style.display = "none";
-//       row.classList.remove("activeLista");
-//     }
-//   });
-//   somaLista();
-//   showLoading("none");
-// }
 
 function filter_rowsLista() {
   const filters = Array.from(document.querySelectorAll(".table-filterLista"));
@@ -1554,16 +1613,18 @@ function filter_rowsLista() {
 /*FIM FILTRO LISTA*/
 function soma() {
   let valorTotal = document.getElementById("valorTotal");
-  valorTotal.innerHTML = `${
-    document.querySelectorAll(".active").length
-  } <strong class="text-success fs-6">Registros</strong>`;
+  if (!valorTotal) {
+    return;
+  }
+  valorTotal.innerHTML = `${document.querySelectorAll(".active").length} Registros`;
 }
 
 function somaLista() {
   let valorTotal = document.getElementById("valorTotalLista");
-  valorTotal.innerHTML = `${
-    document.querySelectorAll(".activeLista").length
-  } <strong class="text-success fs-6">Registros</strong>`;
+  if (!valorTotal) {
+    return;
+  }
+  valorTotal.innerHTML = `${document.querySelectorAll(".activeLista").length} Registros`;
 }
 
 function filterAmbos() {
@@ -1641,6 +1702,7 @@ function filterGerente() {
   }
   soma();
 }
+
 function filterReprovado() {
   let lines = document.querySelectorAll("tr");
   for (let index = 0; index < lines.length; index++) {
@@ -1691,6 +1753,7 @@ function filterRose() {
   }
   soma();
 }
+
 function filterVisible() {
   let lines = document.querySelectorAll("tr");
   for (let index = 0; index < lines.length; index++) {
@@ -1899,6 +1962,7 @@ function ativaBtnLista() {
     }
   }
 }
+
 /*ATIVA BTN*/
 let empTable = document.getElementById("emp-table");
 let nomeNormal = document.getElementsByClassName("nomeNormal");
@@ -1934,24 +1998,16 @@ function ativaBtn() {
   }
 }
 
-async function dadosFiltroLista() {
-  if (!unidade) {
-    console.log("Informe sua matricula para definição da unidade");
-    return;
-  }
-  let anoLista = document.getElementById("anoLista");
-  let mesLista = document.getElementById("mesLista");
-  let selectMesAno = await fetch("/server/apiSelectMesAno.php", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  let resSelectMesAno = await selectMesAno.json();
-  let mes = new Array();
-  let dadosMes = resSelectMesAno.dados;
+function dadosFiltroLista() {
+  const anoLista = document.getElementById("anoLista");
+  const mesLista = document.getElementById("mesLista");
 
-  let mesForm = [
+  const selectedYear = parseInt(anoLista.value);
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1;
+
+  const meses = [
     "Janeiro",
     "Fevereiro",
     "Março",
@@ -1965,31 +2021,35 @@ async function dadosFiltroLista() {
     "Novembro",
     "Dezembro",
   ];
-  let mesFormatado;
+  const previousSelectedMes = mesLista.value;
 
-  let ano = new Array();
-  let dadosAno = resSelectMesAno.dados;
+  let opcoes = ``;
 
-  for (let i = 0; i < dadosMes.length; i++) {
-    mes.push(dadosMes[i].mes);
-  }
-  let semRepMes = [...new Set(mes)];
-  mesLista.innerHTML += `<option value=></option>`;
-  for (let index = 0; index < semRepMes.length; index++) {
-    mesFormatado = mesForm[semRepMes[index] - 1];
-    mesLista.innerHTML += `<option value=${semRepMes[index]}>${mesFormatado}</option>`;
+  if (isNaN(selectedYear)) {
+    mesLista.innerHTML = opcoes;
+    return;
   }
 
-  for (let i = 0; i < dadosAno.length; i++) {
-    ano.push(dadosAno[i].ano);
+  // Se o ano for inferior ao atual, retorna todos os meses
+  if (selectedYear < currentYear) {
+    for (let m = 1; m <= 12; m++) {
+      opcoes += `<option value="${m}">${meses[m - 1]}</option>`;
+    }
+  } else if (selectedYear === currentYear) {
+    // Ano atual: retorna somente os meses até o mês corrente
+    for (let m = 1; m <= currentMonth; m++) {
+      opcoes += `<option value="${m}">${meses[m - 1]}</option>`;
+    }
   }
-  let semRepAno = [...new Set(ano)];
-  semRepAno.sort();
-  anoLista.innerHTML += `<option value=></option>`;
-  for (let index = 0; index < semRepAno.length; index++) {
-    anoLista.innerHTML += `<option value=${semRepAno[index]}>${semRepAno[index]}</option>`;
-  }
+
+  mesLista.innerHTML = opcoes;
+
+  mesLista.value = previousSelectedMes;
 }
+
+// Atualiza os meses sempre que o ano for alterado
+document.getElementById("anoLista").addEventListener("change", dadosFiltroLista);
+
 function busc() {
   let tbodyL = document.getElementById("tbodyLista");
   tbodyL.innerText = "";

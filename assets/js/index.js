@@ -1,5 +1,46 @@
 import { checkUserEmail, showEmailPopup, closeEmailPopup } from "./email.js";
 
+// Hover animação imagem cadastrar pense aja
+const penseAjaButton = document.querySelector("#openMenu");
+const img = document.querySelector("#imgPenseAja");
+
+penseAjaButton.addEventListener("mouseover", () => {
+  img.src = img.dataset.srcHover;
+});
+
+penseAjaButton.addEventListener("mouseleave", () => {
+  img.src = img.dataset.srcNormal;
+});
+
+// Pega mês atual e atualiza banner
+const month = [
+  "JANEIRO",
+  "FEVEREIRO",
+  "MARÇO",
+  "ABRIL",
+  "MAIO",
+  "JUNHO",
+  "JULHO",
+  "AGOSTO",
+  "SETEMBRO",
+  "OUTUBRO",
+  "NOVEMBRO",
+  "DEZEMBRO",
+];
+const data = new Date();
+const dia = data.getDate();
+const mes = data.getMonth();
+const proximo = mes + 1;
+const mesElement = document.querySelector("#mes");
+
+if (dia >= 29) {
+  let nomeMes = month[proximo % 12]; // Garantindo que não ultrapasse o índice máximo
+  mesElement.innerText = nomeMes;
+} else {
+  let nomeMes = month[mes];
+  mesElement.innerText = nomeMes;
+}
+
 // Sweet Alert
 let success = function (message) {
   Swal.fire({
@@ -206,7 +247,7 @@ openMenu.addEventListener("click", () => {
       let iniFila = digitoMatricula.substring(0, 4);
       if (ini == "400" || ini == "401" || ini == "402" || iniFila == "2000") {
         if (digitoMatricula.length == 7) {
-          fetch("/server/apiBuscaCadastrante.php?matricula=" + digitoMatricula)
+          fetch("/pense_aja/server/apiBuscaCadastrante.php?matricula=" + digitoMatricula)
             .then((response) => response.json())
             .then((data) => {
               if (data.erro == false) {
@@ -245,7 +286,7 @@ openMenu.addEventListener("click", () => {
         }
       }
       if (digitoMatricula.length == "4") {
-        fetch("/server/apiBuscaCadastrante.php?matricula=400" + digitoMatricula)
+        fetch("/pense_aja/server/apiBuscaCadastrante.php?matricula=400" + digitoMatricula)
           .then((response) => response.json())
           .then((data) => {
             if (data.erro == false) {
@@ -279,7 +320,7 @@ openMenu.addEventListener("click", () => {
         dadosColaborador.classList.remove("dadosColaborador");
       }
       if (digitoMatricula.length == "5") {
-        fetch("/server/apiBuscaCadastrante.php?matricula=40" + digitoMatricula)
+        fetch("/pense_aja/server/apiBuscaCadastrante.php?matricula=40" + digitoMatricula)
           .then((response) => response.json())
           .then((data) => {
             if (data.erro == false) {
@@ -392,7 +433,7 @@ openMenu.addEventListener("click", () => {
         required("Descreva a situação atual!");
         return false;
       }
-      fetch("/server/apiPostPenseAja.php", {
+      fetch("/pense_aja/server/apiPostPenseAja.php", {
         method: "POST",
         body: JSON.stringify(data),
         headers: {
@@ -501,7 +542,7 @@ openUser.addEventListener("click", () => {
         alterarSenha(data);
         e.preventDefault();
       } else {
-        fetch("/server/apiCheckLogin.php", {
+        fetch("/pense_aja/server/apiCheckLogin.php", {
           method: "POST",
           body: JSON.stringify(data),
           headers: {
@@ -547,21 +588,19 @@ closeUser.addEventListener("click", () => {
   }, 200);
 });
 
+const listaHistorico = document.getElementById("lista");
 openLista.addEventListener("click", () => {
-  listaTableLista();
-  dadosFiltroLista();
-  lista.style.display = "flex";
-  lista.style.top = lista.offsetHeight * -1 + "px";
-  document.getElementById("openUser").classList.add("d-none");
-  document.getElementById("openLista").classList.add("d-none");
-  document.getElementById("openMenu").classList.add("d-none");
-  document.getElementById("openLoja").classList.add("d-none");
+  listaHistorico.classList.add("show");
+
   setTimeout(() => {
-    lista.style.opacity = "1";
-    lista.style.top = "0";
+    listaTableLista();
+    dadosFiltroLista();
   }, 100);
 });
+
 closeLista.addEventListener("click", () => {
+  listaHistorico.classList.remove("show");
+
   const selectM = document.getElementById("mesLista");
   for (let i = -1; i <= selectM.options.length; i++) {
     selectM.remove(0);
@@ -570,39 +609,41 @@ closeLista.addEventListener("click", () => {
   for (let i = -1; i <= selectA.options.length; i++) {
     selectA.remove(0);
   }
+
   lista.style.opacity = "0";
   lista.style.top = lista.offsetHeight * -1 + "px";
   document.getElementById("openUser").classList.remove("d-none");
   document.getElementById("openLista").classList.remove("d-none");
   document.getElementById("openMenu").classList.remove("d-none");
   document.getElementById("openLoja").classList.remove("d-none");
+
   setTimeout(() => {
     lista.removeAttribute("style");
     openLista.removeAttribute("style");
   }, 200);
 });
 
+const lojaContainer = document.querySelector("#loja");
 openLoja.addEventListener("click", () => {
-  loja.style.display = "block";
-  loja.style.top = loja.offsetHeight * -1 + "px";
+  lojaContainer.classList.add("active")
+
   document.getElementById("openUser").classList.add("d-none");
   document.getElementById("openLista").classList.add("d-none");
   document.getElementById("openMenu").classList.add("d-none");
   document.getElementById("openLoja").classList.add("d-none");
   document.getElementById("lojaMatricula").focus();
-  setTimeout(() => {
-    loja.style.opacity = "1";
-    loja.style.top = "0";
-    loja.style.left = "0";
-  }, 100);
+
 });
+
 closeLoja.addEventListener("click", () => {
-  loja.style.opacity = "0";
-  loja.style.top = loja.offsetHeight * -1 + "px";
+  lojaContainer.classList.remove("active")
+  document.querySelector(".user-details").classList.add("d-none")
+
   document.getElementById("openUser").classList.remove("d-none");
   document.getElementById("openLista").classList.remove("d-none");
   document.getElementById("openMenu").classList.remove("d-none");
   document.getElementById("openLoja").classList.remove("d-none");
+
   setTimeout(() => {
     loja.removeAttribute("style");
     openLoja.removeAttribute("style");
@@ -612,12 +653,10 @@ closeLoja.addEventListener("click", () => {
     document.getElementById("nomeLoja").innerText = `Nome: `;
     document.getElementById("setorLoja").innerText = `Setor: `;
     document.getElementById("gerenteLoja").innerText = `Gerente: `;
-    document.getElementById("liderLoja").innerText = `Líder: `;
-    // document.getElementById('total_PeA').innerText = '';
     document.getElementById("a").innerText = `A: `;
     document.getElementById("b").innerText = `B: `;
     document.getElementById("c").innerText = `C: `;
-    document.getElementById("informe").style.display = "none";
+    // document.getElementById("informe").style.display = "none";
     /**************************************************************** */
     const allElements = document.querySelectorAll(".polaroid");
     allElements.forEach((element) => {
@@ -641,7 +680,7 @@ function alterarSenha(dados) {
     usuario: dados.usuario,
     senha: dados.senha,
   };
-  fetch("/server/apiCheckLogin.php", {
+  fetch("/pense_aja/server/apiCheckLogin.php", {
     method: "POST",
     body: JSON.stringify(data),
     headers: {
@@ -714,7 +753,7 @@ function alterarSenha(dados) {
             matricula: formValues[0],
             senha: formValues[1],
           };
-          fetch("/server/apiPutLogin.php", {
+          fetch("/pense_aja/server/apiPutLogin.php", {
             method: "POST",
             body: JSON.stringify(data),
             headers: {

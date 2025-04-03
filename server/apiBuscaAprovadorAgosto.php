@@ -19,7 +19,7 @@ include_once('./config/connection.php');
         }
 
 $response = "";
-            $query = "SELECT *FROM pense_aja.pense_aja_vdc
+            $query = "SELECT *FROM pense_aja.pense_aja
             WHERE createdat BETWEEN '$mesAnterior' AND '$mesAtual' AND excluido = ''
             ORDER BY id DESC";
 $result = $conn->prepare($query);

@@ -27,27 +27,27 @@
 
     $query ="WITH colaborador AS (
         SELECT lf.MATRICULA,lf.NOME,lf.SETOR, lf.GERENTE, lf.LIDER, lf.STATUS_ANALISTA
-            FROM PENSE_AJA.pense_aja_vdc lf
+            FROM PENSE_AJA.pense_aja lf
             WHERE lf.MATRICULA = $matricula GROUP BY lf.NOME, lf.SETOR, lf.GERENTE,lf.MATRICULA,lf.LIDER,lf.STATUS_ANALISTA
         ), classificacao_a AS (
         SELECT MATRICULA, COUNT(CLASSIFICACAO) AS classific_a
-        	FROM PENSE_AJA.pense_aja_vdc
+        	FROM PENSE_AJA.pense_aja
         	WHERE MATRICULA = $matricula AND CLASSIFICACAO = 'A' GROUP BY CLASSIFICACAO,MATRICULA
         ), classificacao_b AS (
         SELECT MATRICULA, COUNT(CLASSIFICACAO) AS classific_b
-        	FROM PENSE_AJA.pense_aja_vdc
+        	FROM PENSE_AJA.pense_aja
         	WHERE MATRICULA = $matricula AND CLASSIFICACAO = 'B' GROUP BY CLASSIFICACAO,MATRICULA
         ),classificacao_c AS (
         SELECT MATRICULA, COUNT(CLASSIFICACAO) AS classific_c
-        	FROM PENSE_AJA.pense_aja_vdc
+        	FROM PENSE_AJA.pense_aja
         	WHERE MATRICULA = $matricula AND CLASSIFICACAO = 'C' GROUP BY CLASSIFICACAO,MATRICULA
         ),pontos AS (
         SELECT MATRICULA, SUM(valor)AS pontos
-        	FROM PENSE_AJA.pontos_vdc
+        	FROM PENSE_AJA.pontos
         	WHERE MATRICULA = $matricula GROUP BY MATRICULA
         ),pontos_premio AS (
         	SELECT MATRICULA, SUM(PONTOS_PREMIO_SOLICITADO) AS PONTO_PREMIO
-        	FROM PENSE_AJA.premio_vdc
+        	FROM PENSE_AJA.premio
         	WHERE MATRICULA = $matricula GROUP BY MATRICULA
         )
 
