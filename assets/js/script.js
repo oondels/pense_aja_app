@@ -161,7 +161,6 @@ const renderListaTable = (data) => {
       filter_rows();
     }
     ativaBtn();
-    soma();
     document.querySelectorAll("i").forEach((button) => {
       if (!unidade) {
         console.log("Informe sua matricula para definição da unidade");
@@ -573,6 +572,7 @@ const filterTable = (param, event, id) => {
 };
 
 async function listaTable() {
+  let penseAjaCount = document.getElementById("valorTotal");
   const mesAnterior = new Date().getMonth() - 1;
   const mesAtual = new Date().getMonth();
   const anoAtual = new Date().getFullYear();
@@ -587,10 +587,9 @@ async function listaTable() {
   const currentDate = new Date().getTime();
 
   if (Object.keys(cachedList).length && cachedList[cachedKey] && cachedList[cachedKey].payload) {
-    console.log("Dados em cache...");
     renderListaTable(cachedList[cachedKey].payload);
+    penseAjaCount.innerHTML = `${cachedList[cachedKey].payload.length} Registros`;
   } else {
-    console.log("Dados não encontrados em cache, buscando no servidor...");
     showLoadingComponent("listaTable");
   }
 
@@ -611,23 +610,37 @@ async function listaTable() {
         payload: resBuscaDados.dados,
         timestamp: currentDate,
       };
-      cachedList[cachedKey] = newCache;
 
       // Verifica se os dados do servidor são mais recentes que os do cache
       if (cachedList && resBuscaDados && resBuscaDados.dados.length > cachedList[cachedKey].payload.length) {
-        console.log("Dados novos encontrados, atualizando cache...");
+        console.log("Atauliznado...");
+
+        Swal.fire({
+          icon: "success",
+          title: "Sucesso",
+          html: `<div style = "display:flex;text-align:center;flex-direction:column; z-index:2 !important;">
+                  <div><strong>Novos registros encontrados.</strong> Atualizando lista!</div>
+                </div>`,
+          showConfirmButton: false,
+          showCloseButton: true,
+          timer: 20000,
+          customClass: {
+            container: "swal-container-custom",
+            popup: "swal-popup-custom",
+          },
+        });
         renderListaTable(cachedList[cachedKey].payload);
       }
 
+      cachedList[cachedKey] = newCache;
       localStorage.setItem("cachedList", JSON.stringify(cachedList));
-    } else {
-      soma();
     }
   } catch (error) {
     console.error("Erro ao buscar dados do pense aja!", error);
     return;
   } finally {
     hideLoading("listaTable");
+    penseAjaCount.innerHTML = `${cachedList[cachedKey].payload.length || resBuscaDados.dados.length} Registros`;
   }
 }
 
@@ -1194,6 +1207,7 @@ async function listaTableLista() {
     .post("/pense_aja/server/apiBuscaDadosLista.php", select)
     .then((response) => {
       const newCache = response.data;
+      console.log(newCache);
 
       if (typeof newCache !== "object") {
         throw new Error("Formato de resposta inválido");
@@ -1508,7 +1522,7 @@ function updateSelectOptions(unique_col_values_dict) {
 }
 
 function filter_rows(tableSelect, tableId) {
-  let valorTotalLista = document.getElementById("valorTotalLista")
+  let valorTotalLista = document.getElementById("valorTotalLista");
 
   const allFilters = document.querySelectorAll(tableSelect);
   const filter_value_dict = {};
@@ -1524,7 +1538,7 @@ function filter_rows(tableSelect, tableId) {
   });
   const rows = document.querySelectorAll(tableId + " tbody tr");
 
-  let count = 0
+  let count = 0;
   rows.forEach((row) => {
     let display_row = true;
 
@@ -1541,7 +1555,7 @@ function filter_rows(tableSelect, tableId) {
     }
 
     if (display_row) {
-      count++
+      count++;
       row.style.display = "table-row";
       row.classList.add("active");
     } else {

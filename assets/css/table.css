@@ -396,6 +396,16 @@ tbody tr:hover {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+  z-index: 50 !important;
+}
+
+/* Aviso de tabela da pag. principal */
+.swal-container-custom {
+  z-index: 1 !important; /* menor que 50 da sua tela */
+}
+
+.swal-popup-custom {
+  z-index: 2 !important; /* só o popup interno */
 }
 
 /* Estilo moderno para o cabeçalho de navegação */
