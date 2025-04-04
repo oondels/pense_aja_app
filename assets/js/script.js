@@ -594,26 +594,26 @@ async function listaTable() {
   }
 
   try {
-    const response = await axios.get("/pense_aja/server/apiBuscaDados.php", {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await axios.get("http://10.110.20.192:2512/pense-aja/SEST");
 
     const resBuscaDados = response.data;
     if (resBuscaDados.erro == false) {
-      if (!Object.keys(cachedList).length) {
-        renderListaTable(resBuscaDados.dados);
-      }
-
       const newCache = {
         payload: resBuscaDados.dados,
         timestamp: currentDate,
       };
 
+      if (!Object.keys(cachedList).length) {
+        renderListaTable(resBuscaDados.dados);
+        cachedList[cachedKey] = newCache;
+
+        localStorage.setItem("cachedList", JSON.stringify(cachedList));
+        return;
+      }
+
       // Verifica se os dados do servidor são mais recentes que os do cache
       if (cachedList && resBuscaDados && resBuscaDados.dados.length > cachedList[cachedKey].payload.length) {
-        console.log("Atauliznado...");
+        console.log("Atualizando...");
 
         Swal.fire({
           icon: "success",
@@ -629,10 +629,10 @@ async function listaTable() {
             popup: "swal-popup-custom",
           },
         });
-        renderListaTable(cachedList[cachedKey].payload);
+        cachedList[cachedKey] = newCache;
+        renderListaTable(resBuscaDados.dados);
       }
 
-      cachedList[cachedKey] = newCache;
       localStorage.setItem("cachedList", JSON.stringify(cachedList));
     }
   } catch (error) {
@@ -640,7 +640,7 @@ async function listaTable() {
     return;
   } finally {
     hideLoading("listaTable");
-    penseAjaCount.innerHTML = `${cachedList[cachedKey].payload.length || resBuscaDados.dados.length} Registros`;
+    penseAjaCount.innerHTML = `${cachedList[cachedKey]?.payload.length || resBuscaDados.dados.length} Registros`;
   }
 }
 
@@ -651,11 +651,7 @@ const obtemAnoAtualEMesAnterior = () => {
   var dataAtual = new Date();
   var anoAtual = dataAtual.getFullYear();
   var mesAnterior = dataAtual.getMonth();
-
-  if (mesAnterior === 0) {
-    mesAnterior = 12;
-    anoAtual -= 1;
-  }
+  console.log(mesAnterior);
 
   selectAnoLista.innerHTML = "";
   for (let ano = anoAtual; ano >= 2024; ano--) {
@@ -682,7 +678,7 @@ const obtemAnoAtualEMesAnterior = () => {
 
   var optionMes = document.createElement("option");
   optionMes.value = mesAnterior;
-  optionMes.text = nomesMeses[mesAnterior - 1];
+  optionMes.text = nomesMeses[mesAnterior];
   mesLista.innerHTML = "";
   mesLista.add(optionMes);
 };
@@ -1061,33 +1057,6 @@ async function listaTableLista() {
   tbody.innerText = "";
   let selectMes = document.getElementById("mesLista").value;
   let selectAno = document.getElementById("anoLista").value;
-  let selectReplicavel = document.getElementById("replicLista");
-  let selectClassificacao = document.getElementById("classifLista");
-
-  // Obter o ano atual e processar o mês selecionado
-  const anoAtual = new Date().getFullYear();
-  const mesSelecionado = parseInt(selectMes);
-
-  // Configurar o mês atual (dia 28)
-  const mesAtual = new Date(anoAtual, mesSelecionado - 1, 28);
-  let mesAnteriorNum = mesSelecionado - 1;
-  let anoMesAnterior = anoAtual;
-
-  // Se for janeiro (mês 1), o mês anterior é dezembro (12) do ano anterior
-  if (mesAnteriorNum === 0) {
-    mesAnteriorNum = 12;
-    anoMesAnterior = anoAtual - 1;
-  }
-  const mesAnterior = new Date(anoMesAnterior, mesAnteriorNum - 1, 28);
-
-  const select = {
-    mesAtual: mesAtual,
-    mesAnterior: mesAnterior,
-    selectMes: selectMes,
-    selectAno: selectAno,
-    selectReplicavel: selectReplicavel,
-    selectClassificacao: selectClassificacao,
-  };
 
   const renderListaTableLista = (data) => {
     tbody.innerHTML = "";
@@ -1204,10 +1173,28 @@ async function listaTableLista() {
   valorTotal.innerHTML = `${listaSize} Registros`;
 
   await axios
-    .post("/pense_aja/server/apiBuscaDadosLista.php", select)
+    .get("http://10.110.20.192:2512/pense-aja/history/SEST", {
+      params: {
+        selectedMonth: Number(selectMes),
+        selectedYear: selectAno,
+      },
+    })
     .then((response) => {
       const newCache = response.data;
-      console.log(newCache);
+
+      if (newCache.dados.length === 0) {
+        Swal.fire({
+          icon: "warning",
+          title: "Erro",
+          html: `<div style = "display:flex;text-align:center;flex-direction:column">
+                  <div><strong>Registros não encontrados.</strong></div>
+                </div>`,
+          showConfirmButton: false,
+          showCloseButton: true,
+          timer: 2100,
+        });
+        return;
+      }
 
       if (typeof newCache !== "object") {
         throw new Error("Formato de resposta inválido");
@@ -2019,7 +2006,7 @@ function dadosFiltroLista() {
   const selectedYear = parseInt(anoLista.value);
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth() + 1;
+  const currentMonth = currentDate.getMonth();
 
   const meses = [
     "Janeiro",
@@ -2036,7 +2023,6 @@ function dadosFiltroLista() {
     "Dezembro",
   ];
   const previousSelectedMes = mesLista.value;
-
   let opcoes = ``;
 
   if (isNaN(selectedYear)) {
@@ -2046,13 +2032,13 @@ function dadosFiltroLista() {
 
   // Se o ano for inferior ao atual, retorna todos os meses
   if (selectedYear < currentYear) {
-    for (let m = 1; m <= 12; m++) {
-      opcoes += `<option value="${m}">${meses[m - 1]}</option>`;
+    for (let m = 0; m <= 11; m++) {
+      opcoes += `<option value="${m}">${meses[m]}</option>`;
     }
   } else if (selectedYear === currentYear) {
     // Ano atual: retorna somente os meses até o mês corrente
-    for (let m = 1; m <= currentMonth; m++) {
-      opcoes += `<option value="${m}">${meses[m - 1]}</option>`;
+    for (let m = 0; m <= currentMonth; m++) {
+      opcoes += `<option value="${m}">${meses[m]}</option>`;
     }
   }
 

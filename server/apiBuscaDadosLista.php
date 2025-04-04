@@ -100,45 +100,6 @@ try {
     $params['dataInicio'] = $mesAnterior;
     $params['dataFim'] = $mesAtual;
 
-    // if (!$mes && !$ano) {
-    //     // Se não selecionou mês nem ano, usar regra 29 -> 29
-    //     $dataFim = new DateTime();
-    //     $dataInicio = new DateTime();
-
-    //     if ($diaAtual >= 29) {
-    //         // De 29 do mês anterior até 29 do mês atual
-    //         // dataFim: 29 do mês atual
-    //         $dataFim->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
-    //         // dataInicio: 29 do mês anterior
-    //         $dataInicio->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
-    //         $dataInicio->modify('-1 month');
-    //     } else {
-    //         // Se ainda não chegou no dia 29, pega de 29 de dois meses atrás até 29 do mês anterior
-    //         // dataFim: 29 do mês anterior
-    //         $dataFim->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
-    //         $dataFim->modify('-1 month');
-
-    //         // dataInicio: 29 de dois meses atrás
-    //         $dataInicio->setDate($dataFim->format('Y'), $dataFim->format('m'), 29);
-    //         $dataInicio->modify('-1 month');
-    //     }
-
-    //     $params['dataInicio'] = $dataInicio->format('Y-m-d');
-    //     $params['dataFim'] = $dataFim->format('Y-m-d');
-    // } elseif ($mes && !$ano) {
-    //     // Mês específico no ano atual
-    //     $ano = date('Y');
-    //     $params['mes'] = $mes;
-    //     $params['ano'] = $ano;
-    // } elseif ($ano && !$mes) {
-    //     // Ano completo
-    //     $params['ano'] = $ano;
-    // } else {
-    //     // Mês e ano específicos
-    //     $params['mes'] = $mes;
-    //     $params['ano'] = $ano;
-    // }
-
     // Preparar e executar query
     $queries = construirQuery($params);
     $stmt = $conn->prepare($queries['query']);
