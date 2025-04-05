@@ -515,77 +515,77 @@ closeMenu.addEventListener("click", () => {
     dadosColaborador.classList.add("inputSmall");
   }, 200);
 });
-openUser.addEventListener("click", () => {
-  sessionStorage.clear();
-  login.style.display = "flex";
-  login.style.left = login.offsetWidth * -1 + "px";
-  setTimeout(() => {
-    login.style.opacity = "1";
-    login.style.left = "0";
-    document.getElementById("openUser").classList.add("d-none");
-    document.getElementById("openLista").classList.add("d-none");
-    document.getElementById("openMenu").classList.add("d-none");
-    document.getElementById("openLoja").classList.add("d-none");
-    elemLogin.adcElemento();
-    document.getElementById("usuarioInput").focus();
-    const enviar = document.getElementById("btnLogin");
-    enviar.addEventListener("click", (e) => {
-      if (document.getElementById("usuarioInput").value == "") {
-        errorCracha();
-        return false;
-      }
-      const data = {
-        usuario: document.getElementById("usuarioInput").value.trim(),
-        senha: document.getElementById("password").value,
-      };
-      if (data.senha.length === 5 && data.senha === "12345") {
-        alterarSenha(data);
-        e.preventDefault();
-      } else {
-        fetch("/pense_aja/server/apiCheckLogin.php", {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.message === "sucess") {
-              sessionStorage.setItem("matricula", data.matricula.matricula);
-              sessionStorage.setItem("haveEmail", data.matricula.haveEmail);
-              sessionStorage.setItem("email", data.matricula.email);
-              sessionStorage.setItem("usuario", data.matricula.usuario);
-              sessionStorage.setItem("nome", data.matricula.nome);
-              sessionStorage.setItem("funcao", data.matricula.funcao);
-              sessionStorage.setItem("avaliacao_mensal", data.matricula.avaliacao_mensal);
 
-              checkUserEmail();
-              return loginSuccess("Login realizado");
-            } else {
-              return error("Usuário ou senha não conferem, verifique!");
-            }
-          });
-        e.preventDefault();
-      }
-    });
-  }, 10);
+// Login
+const loginContainer = document.querySelector("#login-popup");
+const openLogin = document.querySelector("#openUser");
+openLogin.addEventListener("click", () => {
+  loginContainer.classList.remove("hidden");
 });
-closeUser.addEventListener("click", () => {
-  login.style.opacity = "0";
-  login.style.left = login.offsetWidth * -1 + "px";
-  document.getElementById("openUser").classList.remove("d-none");
-  document.getElementById("openLista").classList.remove("d-none");
-  document.getElementById("openMenu").classList.remove("d-none");
-  document.getElementById("openLoja").classList.remove("d-none");
-  setTimeout(() => {
-    login.removeAttribute("style");
-    openUser.removeAttribute("style");
-    elemLogin.remElemento();
-    sessao();
-    listaTable();
-    ativaBtn();
-  }, 200);
+
+const closeLogin = document.querySelector("#login-close");
+closeLogin.addEventListener("click", () => {
+  loginContainer.classList.add("hidden");
+});
+
+const revealPassword = document.querySelector("#toggle-password");
+revealPassword.addEventListener("click", () => {
+  const passwordInput = document.querySelector("#login-password");
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+  } else {
+    passwordInput.type = "password";
+  }
+});
+
+// Realiza Login
+const loginButton = document.querySelector(".login-btn")
+loginButton.addEventListener("click", () => {
+  const username = document.querySelector("#login-user").value;
+  const password = document.querySelector("#login-password").value;
+
+})
+
+// Esqueci Senha
+const forgotPassword = document.querySelector(".forgot-password");
+forgotPassword.addEventListener("click", () => {
+  document.querySelector(".forgot-container").classList.remove("hidden");
+});
+
+const passwordInput = document.querySelector("#forgot-password");
+const passwordInputConfirm = document.querySelector("#forgot-password-confirm");
+const revealForgotPass = document.querySelectorAll(".forgot-pass");
+revealForgotPass.forEach((element) => {
+  element.addEventListener("click", () => {
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      passwordInputConfirm.type = "text";
+    } else {
+      passwordInput.type = "password";
+      passwordInputConfirm.type = "password";
+    }
+  });
+});
+
+// Verifica se senhas estão iguais
+function checkPasswordsEqual() {
+  const changePassword = document.querySelector("#changePassButton");
+  if (passwordInput.value !== passwordInputConfirm.value) {
+    passwordInputConfirm.classList.add("diff");
+    passwordInput.classList.add("diff");
+    changePassword.classList.add("diff")
+  } else {
+    passwordInputConfirm.classList.remove("diff");
+    passwordInput.classList.remove("diff");
+    changePassword.classList.remove("diff");
+  }
+}
+passwordInput.addEventListener("input", checkPasswordsEqual);
+passwordInputConfirm.addEventListener("input", checkPasswordsEqual);
+
+const closeForgotPass = document.querySelector("#forgot-close");
+closeForgotPass.addEventListener("click", () => {
+  document.querySelector(".forgot-container").classList.add("hidden");
 });
 
 const listaHistorico = document.getElementById("lista");
@@ -625,19 +625,18 @@ closeLista.addEventListener("click", () => {
 
 const lojaContainer = document.querySelector("#loja");
 openLoja.addEventListener("click", () => {
-  lojaContainer.classList.add("active")
+  lojaContainer.classList.add("active");
 
   document.getElementById("openUser").classList.add("d-none");
   document.getElementById("openLista").classList.add("d-none");
   document.getElementById("openMenu").classList.add("d-none");
   document.getElementById("openLoja").classList.add("d-none");
   document.getElementById("lojaMatricula").focus();
-
 });
 
 closeLoja.addEventListener("click", () => {
-  lojaContainer.classList.remove("active")
-  document.querySelector(".user-details").classList.add("d-none")
+  lojaContainer.classList.remove("active");
+  document.querySelector(".user-details").classList.add("d-none");
 
   document.getElementById("openUser").classList.remove("d-none");
   document.getElementById("openLista").classList.remove("d-none");

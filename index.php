@@ -123,24 +123,6 @@
         </form>
       </div>
     </nav>
-
-    <nav id="login">
-      <img src="./assets/img/semFundo.png" class="imgFundo" alt="Pense">
-      <div class="navHeader" class="flex-row-reverse">
-        <button id="closeUser"><img src="./assets/img/userC.png" alt="userC" width="50" height="50"></button>
-      </div>
-      <div class="navConteudo container-fluid mt-4">
-        <div id="container" class="row align-items-center">
-          <div id="subContainer" class="col-md-10 mx-auto col-lg-5">
-            <form id="loginForm" class="p-4 p-md-5 border rounded-3">
-              <div id="user" class="form-floating mb-3"></div>
-              <div id="pass" class="form-floating mb-3"></div>
-              <div id="save"></div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </nav>
   </header>
 
   <main>
@@ -340,6 +322,100 @@
         </div>
       </div>
     </section>
+
+    <!-- Login Popup -->
+    <div id="login-popup" class="login-popup hidden">
+      <div class="login-overlay"></div>
+      <div class="login-container">
+        <div class="login-header">
+          <div class="unidade-popup-icon login-imagem">
+            <img src="./assets/img/dass.png"></img>
+          </div>
+          <h2>Login</h2>
+          <button class="login-close" id="login-close">&times;</button>
+        </div>
+
+        <div class="login-form">
+          <div class="login-field">
+            <label for="login-user">Usuário</label>
+            <div class="input-with-icon">
+              <span class="bi bi-person-fill input-icon"></span>
+              <input type="text" id="login-user" name="user" placeholder="Digite seu usuário">
+            </div>
+          </div>
+          <div class="login-field">
+            <label for="login-password">Senha</label>
+            <div class="input-with-icon">
+              <span class="bi bi-lock-fill input-icon"></span>
+              <input type="password" id="login-password" name="password" placeholder="Digite sua senha">
+              <span class="bi bi-eye-slash toggle-password" id="toggle-password"></span>
+            </div>
+          </div>
+          <div class="login-extra">
+            <a href="#" class="forgot-password">Esqueci minha senha</a>
+          </div>
+          <div class="login-actions">
+            <button class="login-btn">Entrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Esqueci minha senha -->
+    <div class="forgot-container hidden">
+      <div class="forgot-header">
+        <h2>Recuperar Senha</h2>
+        <button class="forgot-close" id="forgot-close">&times;</button>
+      </div>
+
+      <div class="forgot-form">
+        <div class="forgot-field">
+          <label for="forgot-matricula">Matrícula</label>
+          <div class="input-with-icon">
+            <span class="bi bi-person-fill input-icon"></span>
+            <input type="number" id="forgot-matricula" name="matricula" placeholder="Digite sua matrícula">
+          </div>
+        </div>
+
+        <div class="forgot-field">
+          <label for="forgot-unidade">Unidade Dass</label>
+          <div class="input-with-icon">
+            <span class="bi bi-building input-icon"></span>
+            <input type="text" id="forgot-unidade" name="unidade" placeholder="Digite sua Unidade Dass">
+          </div>
+        </div>
+
+        <div class="forgot-field">
+          <label for="forgot-codbarra">Código de Barras</label>
+          <div class="input-with-icon">
+            <span class="bi bi-upc-scan input-icon"></span>
+            <input type="number" id="forgot-codbarra" name="codbarra" placeholder="Digite o código de barras">
+          </div>
+        </div>
+
+        <div class="forgot-field">
+          <label for="forgot-password">Nova Senha</label>
+          <div class="input-with-icon">
+            <span class="bi bi-lock-fill input-icon"></span>
+            <input type="password" id="forgot-password" name="password" placeholder="Digite a nova senha">
+            <span class="bi bi-eye-slash toggle-password forgot-pass" id="forgot-toggle-password"></span>
+          </div>
+        </div>
+
+        <div class="forgot-field">
+          <label for="forgot-password-confirm">Repetir Senha</label>
+          <div class="input-with-icon">
+            <span class="bi bi-lock-fill input-icon"></span>
+            <input type="password" id="forgot-password-confirm" name="confirm_password" placeholder="Repita a nova senha">
+            <span class="bi bi-eye-slash toggle-password forgot-pass" id="forgot-toggle-password-confirm"></span>
+          </div>
+        </div>
+
+        <div class="forgot-actions">
+          <button class="forgot-btn" id="changePassButton">Redefinir Senha</button>
+        </div>
+      </div>
+    </div>
 
     <div id="loja" class="loja store-container">
       <div class="store-wrapper">

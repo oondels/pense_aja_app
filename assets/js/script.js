@@ -71,7 +71,7 @@ const renderListaTable = (data) => {
     let td_acoes = tr.insertCell();
 
     td_id.innerText = element.id;
-    td_realizado.innerText = element.data_realizada;
+    td_realizado.innerText = element.criado;
     td_nome.innerText = element.nome;
     td_setor.innerText = element.setor;
     td_gerente.innerText = element.gerente;

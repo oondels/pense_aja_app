@@ -249,24 +249,6 @@ div.container p {
   margin-top: 10px;
 }
 
-h2 {
-  letter-spacing: 1px;
-  color: #00000000;
-  background-color: #00000000;
-  -webkit-text-stroke: 0.1vw #2f2c2cad;
-}
-
-h2::before {
-  content: attr(data-text);
-  position: absolute;
-  height: 30%;
-  color: white;
-  -webkit-text-stroke: 0vw #5d5d62;
-  animation: animate 7s linear infinite;
-  clip-path: fill-box;
-  text-wrap: nowrap;
-}
-
 #informe {
   background-color: firebrick;
   color: white;
@@ -368,11 +350,6 @@ h2::before {
   position: fixed;
   top: 28px;
   right: 10px;
-}
-
-#loginForm {
-  margin-top: calc(648px - 480px);
-  background-color: rgba(120, 118, 122, 0.37);
 }
 
 #cadastroForm {
@@ -851,10 +828,6 @@ input[type="checkbox"] {
     background-size: 100% 100%;
   }
 
-  #loginForm {
-    margin-top: calc(648px - 480px);
-  }
-
   .perdas {
     font-size: 11px;
     color: #fff;
@@ -1085,10 +1058,6 @@ input[type="checkbox"] {
 }
 
 @media only screen and (min-width: 861px) and (max-width: 1366px) {
-  #loginForm {
-    margin-top: calc(648px - 550px);
-  }
-
   .divUsuarioAviso {
     width: 40%;
   }
@@ -1113,10 +1082,6 @@ input[type="checkbox"] {
 }
 
 @media only screen and (min-width: 1367px) and (max-width: 1400px) and (min-height: 900px) {
-  #loginForm {
-    margin-top: calc(648px - 550px);
-  }
-
   #closeUser,
   #closeMenu,
   #closeLista {

@@ -987,6 +987,346 @@ footer {
   animation-delay: 0.8s;
 }
 
+/* Login */
+.login-popup.hidden {
+  display: none !important;
+}
+
+.login-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.login-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+/* Container central do popup */
+.login-container {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  width: 350px;
+  max-width: 90%;
+  z-index: 2;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: slideDown 0.5s ease-out;
+}
+
+/* Cabeçalho */
+.login-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: linear-gradient(135deg, #d9534f, #e74c3c);
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  color: #fff;
+}
+
+.login-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.login-logo {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 10px;
+}
+
+.unidade-popup-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #ffffff;
+  margin-bottom: 20px;
+  transform: scale(0);
+  animation: popInScale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+    pulseEffect2 2s infinite cubic-bezier(0.66, 0, 0, 1) 1s;
+  animation-delay: 0.3s;
+  box-shadow: 0 5px 15px rgba(176, 6, 43, 0.3);
+  border: 2px solid rgba(176, 6, 43, 0.2);
+  overflow: hidden;
+  padding: 0;
+}
+
+@keyframes pulseEffect2 {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 1);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(176, 6, 43, 0);
+  }
+}
+
+/* Botão de fechar */
+.login-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 2px 8px;
+  transition: background 0.3s;
+}
+
+.login-close:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* Formulário */
+.login-form {
+  padding: 25px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-field label {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.login-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border-color 0.3s ease;
+}
+
+.login-field input:focus {
+  outline: none;
+  border-color: #e74c3c;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-icon .input-icon {
+  position: absolute;
+  left: 12px;
+  color: #aaa;
+  font-size: 18px;
+}
+
+.input-with-icon input {
+  padding-left: 36px;
+}
+
+.input-with-icon .toggle-password {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 18px;
+}
+
+/* Link "Esqueci minha senha" */
+.login-extra {
+  text-align: right;
+}
+
+.login-extra .forgot-password {
+  font-size: 13px;
+  color: #e74c3c;
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+
+.login-extra .forgot-password:hover {
+  opacity: 0.8;
+}
+
+/* Ações do formulário */
+.login-actions {
+  text-align: center;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #e74c3c, #d9534f);
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.login-btn:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Forgot Password */
+.forgot-container.hidden {
+  display: none !important;
+}
+
+.forgot-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  background: #fff;
+  border-radius: 12px;
+  width: 350px;
+  max-width: 90%;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.forgot-header {
+  background: linear-gradient(135deg, #d9534f, #e74c3c);
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  color: #fff;
+}
+
+.forgot-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.forgot-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 2px 8px;
+  transition: background 0.3s;
+}
+
+.forgot-close:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.forgot-form {
+  padding: 25px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#forgot-password-confirm.diff {
+  background-color: rgb(253, 217, 217);
+}
+
+#forgot-password.diff {
+  background-color: rgb(253, 217, 217);
+}
+
+#changePassButton.diff {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.forgot-field label {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.forgot-field input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border-color 0.3s;
+}
+
+.forgot-field input:focus {
+  outline: none;
+  border-color: #e74c3c;
+}
+
+.forgot-actions {
+  text-align: center;
+}
+
+.forgot-btn {
+  background: linear-gradient(135deg, #e74c3c, #d9534f);
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.forgot-btn:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 /* Ajustes para dispositivos móveis */
 @media (max-width: 768px) {
   .store-search-bar {
