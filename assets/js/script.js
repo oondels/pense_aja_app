@@ -1,4 +1,6 @@
 const unidade = localStorage.getItem("unidadeDass");
+// import ip from "./ip.js"
+
 
 let components = new Map();
 function showLoadingComponent(element) {
@@ -28,7 +30,6 @@ function lerURL(URL) {
 
   return http.responseText;
 }
-let ip = "localhost";
 
 function showLoading(estado = "flex") {
   if (!unidade) {
@@ -157,7 +158,6 @@ const renderListaTable = (data) => {
 
     let line = document.querySelectorAll(".active").length;
     if (line !== 0) {
-      getUniqueValuesFromColumn();
       filter_rows();
     }
     ativaBtn();
@@ -588,23 +588,40 @@ async function listaTable() {
 
   if (Object.keys(cachedList).length && cachedList[cachedKey] && cachedList[cachedKey].payload) {
     renderListaTable(cachedList[cachedKey].payload);
+    updateSelectOptionsLista(cachedList[cachedKey].filters, ".table-filter");
     penseAjaCount.innerHTML = `${cachedList[cachedKey].payload.length} Registros`;
   } else {
     showLoadingComponent("listaTable");
   }
 
+  let resBuscaDados
   try {
     const response = await axios.get("http://10.110.20.192:2512/pense-aja/SEST");
 
-    const resBuscaDados = response.data;
+    resBuscaDados = response.data;
+    if (resBuscaDados.dados.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Aviso",
+        html: `<div style = "display:flex;text-align:center;flex-direction:column">
+                <div><strong>Registros não encontrados.</strong></div>
+              </div>`,
+        showConfirmButton: false,
+        showCloseButton: true,
+        timer: 2100,
+      });
+      return;
+    }
     if (resBuscaDados.erro == false) {
       const newCache = {
         payload: resBuscaDados.dados,
         timestamp: currentDate,
+        filters: resBuscaDados.filters
       };
 
       if (!Object.keys(cachedList).length) {
         renderListaTable(resBuscaDados.dados);
+        updateSelectOptionsLista(resBuscaDados.filters, ".table-filter");
         cachedList[cachedKey] = newCache;
 
         localStorage.setItem("cachedList", JSON.stringify(cachedList));
@@ -631,6 +648,7 @@ async function listaTable() {
         });
         cachedList[cachedKey] = newCache;
         renderListaTable(resBuscaDados.dados);
+        updateSelectOptionsLista(resBuscaDados.filters, ".table-filter");
       }
 
       localStorage.setItem("cachedList", JSON.stringify(cachedList));
@@ -640,7 +658,7 @@ async function listaTable() {
     return;
   } finally {
     hideLoading("listaTable");
-    penseAjaCount.innerHTML = `${cachedList[cachedKey]?.payload.length || resBuscaDados.dados.length} Registros`;
+    penseAjaCount.innerHTML = `${cachedList[cachedKey]?.payload.length || resBuscaDados.dados.length || 0}  Registros`;
   }
 }
 
@@ -1162,7 +1180,7 @@ async function listaTableLista() {
 
   if (queryCache && Object.keys(queryCache).length > 0 && queryCache[cachedListKey]) {
     renderListaTableLista(queryCache[cachedListKey]?.payload);
-    updateSelectOptionsLista(queryCache[cachedListKey]?.filters);
+    updateSelectOptionsLista(queryCache[cachedListKey]?.filters, ".table-filterLista");
   } else {
     showLoadingComponent("listaTableLista");
   }
@@ -1219,7 +1237,7 @@ async function listaTableLista() {
         queryCache[cachedListKey] = { payload: newCache.dados, timestamp: currentTime, filters: newCache.filters };
         localStorage.setItem("filterCache", JSON.stringify(queryCache));
         renderListaTableLista(queryCache[cachedListKey].payload);
-        updateSelectOptionsLista(newCache.filters);
+        updateSelectOptionsLista(newCache.filters, ".table-filterLista");
         listaSize = queryCache[cachedListKey].payload.length;
       }
 
@@ -1475,33 +1493,10 @@ let required = function (message) {
   return false;
 };
 
-/*FIM LISTA*/
-function getUniqueValuesFromColumn() {
-  var unique_col_values_dict = {};
-  allFilters = document.querySelectorAll(".table-filter");
-  allFilters.forEach((filter_i) => {
-    col_index = filter_i.parentElement.getAttribute("col-index");
-    const rows = document.querySelectorAll("#emp-table > tbody > tr");
-    rows.forEach((row) => {
-      cell_value = row.querySelector("td:nth-child(" + col_index + ")").innerHTML;
-      if (col_index in unique_col_values_dict) {
-        if (unique_col_values_dict[col_index].includes(cell_value)) {
-        } else {
-          unique_col_values_dict[col_index].push(cell_value);
-        }
-      } else {
-        unique_col_values_dict[col_index] = new Array(cell_value);
-      }
-    });
-  });
-  for (i in unique_col_values_dict) {
-  }
-  updateSelectOptions(unique_col_values_dict);
-}
 function updateSelectOptions(unique_col_values_dict) {
-  allFilters = document.querySelectorAll(".table-filter");
+  const allFilters = document.querySelectorAll(".table-filter");
   allFilters.forEach((filter_i) => {
-    col_index = filter_i.parentElement.getAttribute("col-index");
+    const col_index = filter_i.parentElement.getAttribute("col-index");
     unique_col_values_dict[col_index].sort().forEach((i) => {
       filter_i.innerHTML = filter_i.innerHTML + `\n\n<option value="${i}">${i}</option>`;
     });
@@ -1558,8 +1553,8 @@ function filter_rows(tableSelect, tableId) {
   }
 }
 
-function updateSelectOptionsLista(unique_col_values_dict) {
-  const allFilters = document.querySelectorAll(".table-filterLista");
+function updateSelectOptionsLista(unique_col_values_dict, param) {
+  const allFilters = document.querySelectorAll(param);
   allFilters.forEach((filter_i) => {
     // Limpa as opções atuais
     filter_i.innerHTML = "";

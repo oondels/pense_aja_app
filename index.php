@@ -188,8 +188,7 @@
                   <th class="subtitles celula colMenor thID">ID</th>
                   <th class="subtitles celula colMaior" col-index=1>Realizado</th>
                   <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
-                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista"
-                      data-el="3" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
+                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista" data-el="3" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
