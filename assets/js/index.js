@@ -1,4 +1,5 @@
 import { checkUserEmail, showEmailPopup, closeEmailPopup } from "./email.js";
+import ip from "./ip.js";
 
 // Hover animação imagem cadastrar pense aja
 const penseAjaButton = document.querySelector("#openMenu");
@@ -137,31 +138,52 @@ let success = function (message) {
     }
   });
 };
-let loginSuccess = function (message) {
-  Swal.fire({
-    icon: "success",
-    title: "Sucesso",
-    html: `<div style = "display:flex;text-align:center;flex-direction:column">
-            <div><strong>${message}</strong> com sucesso!</div>
-          </div>`,
-    showConfirmButton: false,
-    showCloseButton: true,
-    timer: 2100,
-  }).then(function () {
-    document.getElementById("login").style.opacity = "0";
-    document.getElementById("login").style.left = document.getElementById("login").offsetWidth * -1 + "px";
-    document.getElementById("login").removeAttribute("style");
-    openUser.removeAttribute("style");
-    document.getElementById("openUser").classList.remove("d-none");
-    document.getElementById("openLista").classList.remove("d-none");
-    document.getElementById("openMenu").classList.remove("d-none");
-    document.getElementById("openLoja").classList.remove("d-none");
-    elemLogin.remElemento();
-    sessao();
-    ativaBtn();
-    listaTable();
+
+function showNotification(title, message, type = "info", duration = 3000) {
+  const notification = document.getElementById("notification");
+  const iconContainer = notification.querySelector(".notification-icon");
+  const titleContainer = notification.querySelector(".notification-title");
+  const messageContainer = notification.querySelector(".notification-message");
+
+  const typeMapping = {
+    success: {
+      icon: '<i class="bi bi-check-circle-fill"></i>',
+      bg: "linear-gradient(135deg, #56ab2f, #a8e063)",
+    },
+    error: {
+      icon: '<i class="bi bi-x-circle-fill"></i>',
+      bg: "linear-gradient(135deg, #e52d27, #b31217)",
+    },
+    info: {
+      icon: '<i class="bi bi-info-circle-fill"></i>',
+      bg: "linear-gradient(135deg, #1e3c72, #2a5298)",
+    },
+    warning: {
+      icon: '<i class="bi bi-exclamation-triangle-fill"></i>',
+      bg: "linear-gradient(135deg, #f7971e, #ffd200)",
+    },
+  };
+
+  const config = typeMapping[type] || typeMapping.info;
+
+  iconContainer.innerHTML = config.icon;
+  titleContainer.textContent = title;
+  messageContainer.textContent = message;
+  notification.style.background = config.bg;
+
+  notification.classList.remove("hidden");
+  requestAnimationFrame(() => {
+    notification.classList.add("show");
   });
-};
+
+  setTimeout(() => {
+    notification.classList.remove("show");
+    setTimeout(() => {
+      notification.classList.add("hidden");
+    }, 500);
+  }, duration);
+}
+
 let error = function (message) {
   Swal.fire({
     icon: "error",
@@ -539,12 +561,58 @@ revealPassword.addEventListener("click", () => {
 });
 
 // Realiza Login
-const loginButton = document.querySelector(".login-btn")
-loginButton.addEventListener("click", () => {
+const login = () => {
+  const loading = document.querySelector(".spinner");
+  const warning = document.querySelector(".warning-content");
   const username = document.querySelector("#login-user").value;
   const password = document.querySelector("#login-password").value;
 
-})
+  if (!username || !password) {
+    warning.classList.remove("hidden");
+    setTimeout(() => {
+      warning.classList.add("hidden");
+    }, 2000);
+    return;
+  }
+  loading.classList.remove("hidden");
+
+  axios
+    .post(`http://10.100.1.43:3041/login`, { usuario: username, senha: password })
+    .then((response) => {
+      const data = response.data;
+      // sessionStorage.setItem("matricula", data.matricula);
+      // sessionStorage.setItem("haveEmail", data.haveEmail);
+      // sessionStorage.setItem("email", data.email);
+      // sessionStorage.setItem("usuario", data.usuario);
+      // sessionStorage.setItem("nome", data.nome);
+      // sessionStorage.setItem("funcao", data.funcao);
+      // sessionStorage.setItem("avaliacao_mensal", data.avaliacao_mensal);
+
+      checkUserEmail();
+      showNotification("Sucesso!", "Login realizado com sucesso!", "success", 1500);
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    })
+    .catch((error) => {
+      showNotification("Errp", "Usuario ou senha incorretos", "warning", 1500);
+
+      console.error("Falha ao executar login:", error);
+    })
+    .finally(() => {
+      loading.classList.add("hidden");
+    });
+};
+
+const loginButton = document.querySelector(".login-btn");
+const loginPassInput = document.querySelector("#login-password");
+loginButton.addEventListener("click", login);
+loginPassInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    login();
+  }
+});
 
 // Esqueci Senha
 const forgotPassword = document.querySelector(".forgot-password");
@@ -573,7 +641,7 @@ function checkPasswordsEqual() {
   if (passwordInput.value !== passwordInputConfirm.value) {
     passwordInputConfirm.classList.add("diff");
     passwordInput.classList.add("diff");
-    changePassword.classList.add("diff")
+    changePassword.classList.add("diff");
   } else {
     passwordInputConfirm.classList.remove("diff");
     passwordInput.classList.remove("diff");

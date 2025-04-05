@@ -1,6 +1,5 @@
 const unidade = localStorage.getItem("unidadeDass");
-// import ip from "./ip.js"
-
+import ip from "./ip.js"
 
 let components = new Map();
 function showLoadingComponent(element) {
@@ -640,7 +639,7 @@ async function listaTable() {
                 </div>`,
           showConfirmButton: false,
           showCloseButton: true,
-          timer: 20000,
+          timer: 2100,
           customClass: {
             container: "swal-container-custom",
             popup: "swal-popup-custom",
@@ -661,6 +660,8 @@ async function listaTable() {
     penseAjaCount.innerHTML = `${cachedList[cachedKey]?.payload.length || resBuscaDados.dados.length || 0}  Registros`;
   }
 }
+window.listaTable = listaTable;
+
 
 const obtemAnoAtualEMesAnterior = () => {
   var selectAnoLista = document.getElementById("anoLista");

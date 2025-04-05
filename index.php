@@ -350,12 +350,18 @@
               <input type="password" id="login-password" name="password" placeholder="Digite sua senha">
               <span class="bi bi-eye-slash toggle-password" id="toggle-password"></span>
             </div>
+            <div class="warning-container">
+              <span class="warning-content hidden">Dados ausentes!</span>
+            </div>
           </div>
           <div class="login-extra">
             <a href="#" class="forgot-password">Esqueci minha senha</a>
           </div>
           <div class="login-actions">
-            <button class="login-btn">Entrar</button>
+            <button class="login-btn">
+              <span class="btn-text">Entrar</span>
+              <span class="spinner hidden"></span>
+            </button>
           </div>
         </div>
       </div>
@@ -815,6 +821,16 @@
         </div>
       </div>
     </div>
+
+    <div id="notification" class="notification hidden">
+      <div class="notification-inner">
+        <div class="notification-icon"></div>
+        <div class="notification-content">
+          <h3 class="notification-title"></h3>
+          <p class="notification-message"></p>
+        </div>
+      </div>
+    </div>
   </main>
 
   <footer>
@@ -826,7 +842,7 @@
 
   <script src="assets/js/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-  <script src="assets/js/script.js"></script>
+  <script type="module" src="assets/js/script.js"></script>
   <script src="assets/js/socket.js"></script>
   <script src="assets/js/loja.js"></script>
   <script src="assets/js/index.js" type="module"></script>
