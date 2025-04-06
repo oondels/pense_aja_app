@@ -595,7 +595,7 @@ async function listaTable() {
 
   let resBuscaDados
   try {
-    const response = await axios.get("http://10.110.20.192:2512/pense-aja/SEST");
+    const response = await axios.get("http://192.168.1.16:2512/pense-aja/SEST");
 
     resBuscaDados = response.data;
     if (resBuscaDados.dados.length === 0) {
@@ -670,7 +670,6 @@ const obtemAnoAtualEMesAnterior = () => {
   var dataAtual = new Date();
   var anoAtual = dataAtual.getFullYear();
   var mesAnterior = dataAtual.getMonth();
-  console.log(mesAnterior);
 
   selectAnoLista.innerHTML = "";
   for (let ano = anoAtual; ano >= 2024; ano--) {
@@ -701,6 +700,7 @@ const obtemAnoAtualEMesAnterior = () => {
   mesLista.innerHTML = "";
   mesLista.add(optionMes);
 };
+window.obtemAnoAtualEMesAnterior =obtemAnoAtualEMesAnterior
 
 const buscaPA_Lista = (listaSize) => {
   let selecionadoLista = document.getElementById("selecionadoLista");
@@ -1192,7 +1192,7 @@ async function listaTableLista() {
   valorTotal.innerHTML = `${listaSize} Registros`;
 
   await axios
-    .get("http://10.110.20.192:2512/pense-aja/history/SEST", {
+    .get("http://192.168.1.16:2512/pense-aja/history/SEST", {
       params: {
         selectedMonth: Number(selectMes),
         selectedYear: selectAno,
@@ -1255,6 +1255,7 @@ async function listaTableLista() {
       hideLoading("listaTableLista");
     });
 }
+window.listaTableLista  =listaTableLista
 
 const delet = Swal.mixin({
   customClass: {
@@ -2042,6 +2043,7 @@ function dadosFiltroLista() {
 
   mesLista.value = previousSelectedMes;
 }
+window.dadosFiltroLista  =dadosFiltroLista
 
 // Atualiza os meses sempre que o ano for alterado
 document.getElementById("anoLista").addEventListener("change", dadosFiltroLista);
@@ -2051,3 +2053,4 @@ function busc() {
   tbodyL.innerText = "";
   listaTableLista();
 }
+window.busc = busc

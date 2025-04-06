@@ -323,7 +323,7 @@
       </div>
     </section>
 
-    <!-- Login Popup -->
+    <!-- Login -->
     <div id="login-popup" class="login-popup hidden">
       <div class="login-overlay"></div>
       <div class="login-container">
@@ -361,6 +361,34 @@
             <button class="login-btn">
               <span class="btn-text">Entrar</span>
               <span class="spinner hidden"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout -->
+    <div id="logout-popup" class="login-popup hidden">
+      <div class="login-overlay"></div>
+      <div class="login-container">
+        <div class="login-header">
+          <div class="unidade-popup-icon login-imagem">
+            <img src="./assets/img/dass.png"></img>
+          </div>
+          <h2>Dass Pense&Aja</h2>
+          <button class="login-close" id="logout-close">&times;</button>
+        </div>
+
+        <div class="login-form">
+          <div class="login-field">
+            <label for="login-user">Usuário: <span class="usuario-name"></span></label>
+            <label for="login-user">Matrícula: <span class="user-matricula"></span></label>
+          </div>
+
+          <div class="login-actions">
+            <button type="button" id="logout" class="btn btn-outline-danger">
+              Sair
+              <span class="spinner-logout hidden"></span>
             </button>
           </div>
         </div>

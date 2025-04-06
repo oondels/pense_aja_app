@@ -540,9 +540,24 @@ closeMenu.addEventListener("click", () => {
 
 // Login
 const loginContainer = document.querySelector("#login-popup");
-const openLogin = document.querySelector("#openUser");
-openLogin.addEventListener("click", () => {
-  loginContainer.classList.remove("hidden");
+const logoutContainer = document.querySelector("#logout-popup");
+const userButton = document.querySelector("#openUser");
+userButton.addEventListener("click", () => {
+  let container;
+  const userData = sessionStorage.getItem("usuario");
+
+  if (userData) {
+    setTimeout(() => {
+      document.querySelector(".usuario-name").innerHTML = userData;
+      document.querySelector(".user-matricula").innerHTML = sessionStorage.getItem("matricula");
+    }, 100);
+
+    container = logoutContainer;
+  } else {
+    container = loginContainer;
+  }
+
+  container.classList.remove("hidden");
 });
 
 const closeLogin = document.querySelector("#login-close");
@@ -560,7 +575,7 @@ revealPassword.addEventListener("click", () => {
   }
 });
 
-// Realiza Login
+// Realizar Login
 const login = () => {
   const loading = document.querySelector(".spinner");
   const warning = document.querySelector(".warning-content");
@@ -577,23 +592,24 @@ const login = () => {
   loading.classList.remove("hidden");
 
   axios
-    .post(`http://10.100.1.43:3041/login`, { usuario: username, senha: password })
+    .post(`http://192.168.1.16:2399/auth/login`, { usuario: username, senha: password })
     .then((response) => {
       const data = response.data;
-      // sessionStorage.setItem("matricula", data.matricula);
-      // sessionStorage.setItem("haveEmail", data.haveEmail);
-      // sessionStorage.setItem("email", data.email);
-      // sessionStorage.setItem("usuario", data.usuario);
-      // sessionStorage.setItem("nome", data.nome);
-      // sessionStorage.setItem("funcao", data.funcao);
-      // sessionStorage.setItem("avaliacao_mensal", data.avaliacao_mensal);
+
+      const decoded = JSON.parse(atob(data.userData));
+      sessionStorage.setItem("matricula", decoded.matricula);
+      sessionStorage.setItem("haveEmail", decoded.haveEmail);
+      sessionStorage.setItem("usuario", decoded.usuario);
+      sessionStorage.setItem("nome", decoded.nome);
+      sessionStorage.setItem("funcao", decoded.funcao);
+      // sessionStorage.setItem("avaliacao_mensal", decoded.avaliacao_mensal);
 
       checkUserEmail();
       showNotification("Sucesso!", "Login realizado com sucesso!", "success", 1500);
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1500);
     })
     .catch((error) => {
       showNotification("Errp", "Usuario ou senha incorretos", "warning", 1500);
@@ -618,6 +634,11 @@ loginPassInput.addEventListener("keydown", (event) => {
 const forgotPassword = document.querySelector(".forgot-password");
 forgotPassword.addEventListener("click", () => {
   document.querySelector(".forgot-container").classList.remove("hidden");
+});
+
+const closeForgotPass = document.querySelector("#forgot-close");
+closeForgotPass.addEventListener("click", () => {
+  document.querySelector(".forgot-container").classList.add("hidden");
 });
 
 const passwordInput = document.querySelector("#forgot-password");
@@ -651,9 +672,19 @@ function checkPasswordsEqual() {
 passwordInput.addEventListener("input", checkPasswordsEqual);
 passwordInputConfirm.addEventListener("input", checkPasswordsEqual);
 
-const closeForgotPass = document.querySelector("#forgot-close");
-closeForgotPass.addEventListener("click", () => {
-  document.querySelector(".forgot-container").classList.add("hidden");
+// Logout
+const logoutButton = document.querySelector("#logout");
+logoutButton.addEventListener("click", () => {
+  const loading = document.querySelector(".spinner-logout");
+  loading.classList.remove("hidden");
+
+  sessionStorage.clear();
+  // axios.post("http://192.168.1.16:2399/auth/logout");
+});
+
+const closeLogout = document.querySelector("#logout-close");
+closeLogout.addEventListener("click", () => {
+  logoutContainer.classList.add("hidden");
 });
 
 const listaHistorico = document.getElementById("lista");
