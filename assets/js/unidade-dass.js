@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     axios
-      .get(`${ip}:3041/api/check-user-registration/${matricula}`)
+      .get(`http://10.110.20.192:2399/api/check-user-registration/${matricula}`)
       .then((response) => {
         const message = response.data.message;
         const unidade = response.data.unidade;

@@ -98,31 +98,6 @@
         <div class="decoration-circle circle-3"></div>
       </div>
     </div>
-
-    <nav id="menu">
-      <div class="navConteudo container-fluid border">
-        <div class="col-12 text-end">
-          <span id="closeMenu" class="bi bi-x-circle-fill text-danger fs-2 cursor-pointer"></span>
-        </div>
-
-        <form id="cadastroForm">
-          <div id="dadosColaborador" class="inputSmall"></div>
-          <div id="cabProjeto" class="cabProjeto"></div>
-          <div class="insereDados">
-            <div id="sitAnterior" class="sitAnterior"></div>
-            <div id="sitAtual" class="sitAtual"></div>
-          </div>
-          <div id="elimPerda" class="elimPerda"></div>
-          <div class="col-12 d-flex opcionais mb-2">
-            <div id="amortizacao" class="labelSmall col-6 d-flex justify-content-center flex-column"></div>
-            <div id="outrosGanhos" class="labelSmall col-6 d-flex justify-content-center flex-column"></div>
-          </div>
-          <div id="saveCad"></div>
-          <div class="codigoInput" id="codigoInput"></div>
-          <input type="text" id="fabrica" class="ocult">
-        </form>
-      </div>
-    </nav>
   </header>
 
   <main>
@@ -160,6 +135,8 @@
             Em Espera
           </div>
         </div>
+
+        <button id="protected-route">Rota protegida</button>
 
         <!-- Tabela -->
         <div style="display: flex; justify-content: center;">
@@ -759,6 +736,130 @@
       </div>
     </div>
 
+    <!-- Cadastro Popup -->
+    <div id="penseaja-popup" class="penseaja-popup hidden">
+      <div class="penseaja-overlay"></div>
+      <div class="penseaja-container">
+        <div class="penseaja-header">
+          <div class="penseaja-header-content">
+            <div class="penseaja-header-left">
+              <div class="penseaja-icon-wrapper">
+                <img src="./assets/img/icons/dass-penseaja.png" alt="Ícone Cadastro" class="penseaja-icon">
+              </div>
+
+              <div class="penseaja-title-container">
+                <h2>Cadastro Pense<span class="penseaja-highlight">&</span>Aja</h2>
+                <span class="penseaja-subtitle">Transformando ideias em ações</span>
+              </div>
+            </div>
+
+            <button id="penseaja-close" class="penseaja-close-button" aria-label="Fechar" onclick="document.querySelector('#penseaja-popup').classList.add('hidden')">
+
+              <span class="bi bi-x"></span>
+            </button>
+          </div>
+          <div class="penseaja-header-accent"></div>
+        </div>
+
+        <div id="penseaja-form" class="penseaja-form">
+          <!-- Campo de Matrícula -->
+          <div class="penseaja-field">
+            <label for="penseaja-matricula">Matrícula</label>
+
+            <div class="penseaja-input-container">
+              <input type="number" id="penseaja-matricula" placeholder="Digite sua matrícula">
+              <span class="penseaja-spinner hidden"></span>
+            </div>
+          </div>
+
+          <div class="user-penseaja-info hidden">
+            <div class="user-penseaja-avatar">
+              <span class="bi bi-person-circle"></span>
+            </div>
+            <div class="user-penseaja-details">
+              <div class="user-detail">
+                <span class="detail-label">Nome:</span>
+                <span class="user-name"></span>
+              </div>
+              <div class="user-detail">
+                <span class="detail-label">Gerente:</span>
+                <span class="user-gerente"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção de Projeto e Data -->
+          <div class="penseaja-profile-section">
+            <div class="penseaja-field-group">
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="penseaja-projeto">Nome do projeto</label>
+                  <input type="text" id="penseaja-projeto" placeholder="Ex: Melhoria do processo">
+                </div>
+
+                <div class="col-md-6">
+                  <label for="penseaja-data">Data</label>
+                  <input type="date" id="penseaja-data" min="<?php echo date('Y-m-d'); ?>">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Situações -->
+          <div class="penseaja-field">
+            <label for="penseaja-anterior">Situação anterior</label>
+            <textarea id="penseaja-anterior" placeholder="Descreva a situação anterior..."></textarea>
+          </div>
+
+          <div class="penseaja-field">
+            <label for="penseaja-atual">Situação atual</label>
+            <textarea id="penseaja-atual" placeholder="Descreva a situação atual..."></textarea>
+          </div>
+
+          <!-- Checkboxes de Registros -->
+          <div class="penseaja-checkboxes">
+            <div class="penseaja-checkbox">
+              <input type="checkbox" id="penseaja-cb1">
+              <label for="penseaja-cb1">Superprodução</label>
+            </div>
+            <div class="penseaja-checkbox">
+              <input type="checkbox" id="penseaja-cb2">
+              <label for="penseaja-cb2">Transporte</label>
+            </div>
+            <div class="penseaja-checkbox">
+              <input type="checkbox" id="penseaja-cb3">
+              <label for="penseaja-cb3">Processamento</label>
+            </div>
+            <div class="penseaja-checkbox">
+              <input type="checkbox" id="penseaja-cb4">
+              <label for="penseaja-cb4">Movimento</label>
+            </div>
+            <div class="penseaja-checkbox">
+              <input type="checkbox" id="penseaja-cb5">
+              <label for="penseaja-cb5">Estoque</label>
+            </div>
+            <div class="penseaja-checkbox">
+              <input type="checkbox" id="penseaja-cb6">
+              <label for="penseaja-cb6">Espera</label>
+            </div>
+            <div class="penseaja-checkbox">
+              <input type="checkbox" id="penseaja-cb7">
+              <label for="penseaja-cb7">Talento</label>
+            </div>
+            <div class="penseaja-checkbox">
+              <input type="checkbox" id="penseaja-cb8">
+              <label for="penseaja-cb8">Retrabalho</label>
+            </div>
+          </div>
+          <!-- Ação -->
+          <button type="button" class="penseaja-submit-button">
+            <span>Salvar</span>
+            <span class="bi bi-save"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="unidade-dass">
       <div class="unidade-popup-overlay"></div>
       <div class="unidade-popup">
@@ -794,13 +895,11 @@
         <div class="email-popup-content">
           <div class="email-popup-header">
             <div class="email-popup-icon">
-              <!-- <svg viewBox="0 0 24 24" width="32" height="32">
-                <path fill="currentColor" d="M20,4H4C2.9,4,2,4.9,2,6v12c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V6C22,4.9,21.1,4,20,4z M20,8l-8,5L4,8V6l8,5l8-5V8z"/>
-              </svg> -->
               <svg viewBox="0 0 24 24" width="32" height="32">
                 <path fill="currentColor" d="M12,22c1.1,0,2-0.9,2-2h-4C10,21.1,10.9,22,12,22z M18,16v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-0.83-0.67-1.5-1.5-1.5 S10.5,3.17,10.5,4v0.68C7.63,5.36,6,7.92,6,11v5l-2,2v1h16v-1L18,16z" />
               </svg>
             </div>
+
             <h3>Mantenha-se conectado</h3>
             <button class="email-popup-close">
               <svg viewBox="0 0 24 24" width="24" height="24">
@@ -820,7 +919,10 @@
           <div class="email-popup-footer">
             <button class="email-popup-button secondary" id="email-skip">Agora não</button>
             <button class="email-popup-button danger" id="email-no-email">Não tenho email!</button>
-            <button class="email-popup-button primary" id="email-submit">Continuar</button>
+            <button class="email-popup-button primary" id="email-submit">
+              Continuar
+              <div id="email-loading" class="spinner hidden"></div>
+            </button>
           </div>
           <div class="email-popup-copyright">
             <div>
@@ -876,6 +978,7 @@
   <script src="assets/js/index.js" type="module"></script>
   <script src="assets/js/email.js" type="module"></script>
   <script src="assets/js/unidade-dass.js" type="module"></script>
+  <script src="assets/js/registerPenseAja.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
   <script>
     // Ano Copyright

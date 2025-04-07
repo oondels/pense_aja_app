@@ -1,0 +1,36 @@
+{
+  "name": "pense-aja",
+  "version": "1.0.0",
+  "main": "penseAja.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/penseAja.js",
+    "dev": "nodemon --watch './**/*.ts' --exec ts-node ./penseAja.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.14.1",
+    "redis": "^4.7.0",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.14.0",
+    "@types/pg": "^8.11.11",
+    "@types/winston": "^2.4.4",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  }
+}

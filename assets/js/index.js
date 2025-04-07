@@ -1,17 +1,4 @@
-import { checkUserEmail, showEmailPopup, closeEmailPopup } from "./email.js";
 import ip from "./ip.js";
-
-// Hover animação imagem cadastrar pense aja
-const penseAjaButton = document.querySelector("#openMenu");
-const img = document.querySelector("#imgPenseAja");
-
-penseAjaButton.addEventListener("mouseover", () => {
-  img.src = img.dataset.srcHover;
-});
-
-penseAjaButton.addEventListener("mouseleave", () => {
-  img.src = img.dataset.srcNormal;
-});
 
 // Pega mês atual e atualiza banner
 const month = [
@@ -35,7 +22,7 @@ const proximo = mes + 1;
 const mesElement = document.querySelector("#mes");
 
 if (dia >= 29) {
-  let nomeMes = month[proximo % 12]; // Garantindo que não ultrapasse o índice máximo
+  let nomeMes = month[proximo % 12];
   mesElement.innerText = nomeMes;
 } else {
   let nomeMes = month[mes];
@@ -58,14 +45,12 @@ let success = function (message) {
     enviar();
     document.getElementById("openUser").classList.remove("d-none");
     document.getElementById("openLista").classList.remove("d-none");
-    document.getElementById("openMenu").classList.remove("d-none");
     document.getElementById("openLoja").classList.remove("d-none");
     /****************************************/
     if (document.getElementById("matriculaInput")) {
       menu.style.opacity = "0";
       menu.style.right = menu.offsetWidth * -1 + "px";
       menu.removeAttribute("style");
-      openMenu.removeAttribute("style");
       // document.getElementById('total').style.display = 'flex';
       document.getElementById("pontosColab").innerText = "0";
       dadosColaborador.classList.add("inputSmall");
@@ -183,6 +168,7 @@ function showNotification(title, message, type = "info", duration = 3000) {
     }, 500);
   }, duration);
 }
+window.showNotification = showNotification
 
 let error = function (message) {
   Swal.fire({
@@ -246,298 +232,6 @@ import Login from "./login.js";
 const elemLogin = new Login();
 const elemCadastro = new Cadastro();
 
-openMenu.addEventListener("click", () => {
-  menu.style.display = "flex";
-  menu.style.right = menu.offsetWidth * -1 + "px";
-  document.getElementById("openUser").classList.add("d-none");
-  document.getElementById("openLista").classList.add("d-none");
-  document.getElementById("openMenu").classList.add("d-none");
-  document.getElementById("openLoja").classList.add("d-none");
-  setTimeout(() => {
-    menu.style.opacity = "1";
-    menu.style.right = "0";
-    // document.getElementById('total').style.display = 'none';
-    elemCadastro.adcElemento();
-    document.getElementById("matriculaInput").focus();
-    const digMatricula = document.getElementById("matriculaInput");
-    let divInputCompleteColaborador = document.getElementById("divInputCompleteColaborador");
-    let dadosColaborador = document.getElementById("dadosColaborador");
-    digMatricula.addEventListener("keyup", (e) => {
-      let digitoMatricula = e.target.value;
-      if (digitoMatricula == "") return;
-      let ini = digitoMatricula.substring(0, 3);
-      let iniFila = digitoMatricula.substring(0, 4);
-      if (ini == "400" || ini == "401" || ini == "402" || iniFila == "2000") {
-        if (digitoMatricula.length == 7) {
-          fetch("/pense_aja/server/apiBuscaCadastrante.php?matricula=" + digitoMatricula)
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.erro == false) {
-                document.getElementById("nomeInput").value = data.matricula.nome;
-                document.getElementById("setorInput").value = data.matricula.setor;
-                document.getElementById("codigoInput").value = data.matricula.codigo;
-                document.getElementById("liderInput").value =
-                  data.matricula.lider != null ? data.matricula.lider : data.matricula.gerente;
-                document.getElementById("gerenteInput").value = data.matricula.gerente;
-                if (data.matricula.valor == null) {
-                  document.getElementById("pontosColab").innerText = "0";
-                } else {
-                  document.getElementById(
-                    "pontosColab"
-                  ).innerText = `Histórico total de pontos: ${data.matricula.valor}`;
-                }
-                //Surgir campos de verificação
-                divInputCompleteColaborador.classList.add("surgeDeCima");
-                dadosColaborador.classList.remove("inputSmall");
-                dadosColaborador.classList.add("dadosColaborador");
-              } else {
-                return required("Matrícula não encotrada na lista de funcionário, verifique se digitou corretamente!");
-              }
-            });
-        } else {
-          document.getElementById("nomeInput").value = "";
-          document.getElementById("setorInput").value = "";
-          document.getElementById("codigoInput").value = "";
-          document.getElementById("liderInput").value = "";
-          document.getElementById("gerenteInput").value = "";
-          document.getElementById("pontosColab").innerText = "0";
-          //Retira campos de verificação
-          divInputCompleteColaborador.classList.remove("surgeDeCima");
-          dadosColaborador.classList.add("inputSmall");
-          dadosColaborador.classList.remove("dadosColaborador");
-        }
-      }
-      if (digitoMatricula.length == "4") {
-        fetch("/pense_aja/server/apiBuscaCadastrante.php?matricula=400" + digitoMatricula)
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.erro == false) {
-              document.getElementById("nomeInput").value = data.matricula.nome;
-              document.getElementById("setorInput").value = data.matricula.setor;
-              document.getElementById("codigoInput").value = data.matricula.codigo;
-              document.getElementById("liderInput").value =
-                data.matricula.lider != null ? data.matricula.lider : data.matricula.gerente;
-              document.getElementById("gerenteInput").value = data.matricula.gerente;
-              if (data.matricula.valor == null) {
-                document.getElementById("pontosColab").innerText = "0";
-              } else {
-                document.getElementById("pontosColab").innerText = data.matricula.valor;
-              }
-              //Surgir campos de verificação
-              divInputCompleteColaborador.classList.add("surgeDeCima");
-              dadosColaborador.classList.remove("inputSmall");
-              dadosColaborador.classList.add("dadosColaborador");
-            }
-          });
-      } else {
-        document.getElementById("nomeInput").value = "";
-        document.getElementById("setorInput").value = "";
-        document.getElementById("codigoInput").value = "";
-        document.getElementById("liderInput").value = "";
-        document.getElementById("gerenteInput").value = "";
-        document.getElementById("pontosColab").innerText = "0";
-        //Retira campos de verificação
-        divInputCompleteColaborador.classList.remove("surgeDeCima");
-        dadosColaborador.classList.add("inputSmall");
-        dadosColaborador.classList.remove("dadosColaborador");
-      }
-      if (digitoMatricula.length == "5") {
-        fetch("/pense_aja/server/apiBuscaCadastrante.php?matricula=40" + digitoMatricula)
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.erro == false) {
-              document.getElementById("nomeInput").value = data.matricula.nome;
-              document.getElementById("setorInput").value = data.matricula.setor;
-              document.getElementById("codigoInput").value = data.matricula.codigo;
-              //console.log(data.matricula.codigo);
-              document.getElementById("liderInput").value =
-                data.matricula.lider != null ? data.matricula.lider : data.matricula.gerente;
-              document.getElementById("gerenteInput").value = data.matricula.gerente;
-              if (data.matricula.valor == null) {
-                document.getElementById("pontosColab").innerText = "0";
-              } else {
-                document.getElementById("pontosColab").innerText = data.matricula.valor;
-              }
-              //Surgir campos de verificação
-              divInputCompleteColaborador.classList.add("surgeDeCima");
-              dadosColaborador.classList.remove("inputSmall");
-              dadosColaborador.classList.add("dadosColaborador");
-            }
-          });
-      } else {
-        document.getElementById("nomeInput").value = "";
-        document.getElementById("setorInput").value = "";
-        document.getElementById("codigoInput").value = "";
-        document.getElementById("liderInput").value = "";
-        document.getElementById("gerenteInput").value = "";
-        document.getElementById("pontosColab").innerText = "0";
-        //Retira campos de verificação
-        divInputCompleteColaborador.classList.remove("surgeDeCima");
-        dadosColaborador.classList.add("inputSmall");
-        dadosColaborador.classList.remove("dadosColaborador");
-      }
-    });
-    const enviar = document.getElementById("btnLogin");
-    enviar.addEventListener("click", (e) => {
-      if (document.getElementById("nomeInput").value == "") {
-        errorCracha();
-        return false;
-      }
-      e.preventDefault();
-      let fabrica = document.getElementById("fabrica");
-      let codigoFinalFabrica = document.getElementById("codigoInput").value.split(" ")[3].substring(1);
-      let codigoInicioSetor = document.getElementById("codigoInput").value.split(" ")[1];
-
-      if (codigoInicioSetor == "20") {
-        fabrica.value = codigoFinalFabrica;
-      }
-      if (codigoInicioSetor == "01" || codigoInicioSetor == "05") {
-        fabrica.value = "Apoio";
-      }
-      if (codigoInicioSetor == "05" && codigoFinalFabrica == "15") {
-        fabrica.value = "Aprendizes";
-      }
-      let setor = document.getElementById("setorInput").value;
-      let turno;
-      switch (setor.slice(-1)) {
-        case "A":
-          turno = "A";
-          break;
-        case "B":
-          turno = "B";
-          break;
-        case "C":
-          turno = "C";
-          break;
-        default:
-          turno = "N";
-          break;
-      }
-      const data = {
-        matricula: document.getElementById("matriculaInput").value,
-        nome: document.getElementById("nomeInput").value,
-        turno: turno,
-        setor: document.getElementById("setorInput").value,
-        fabrica: document.getElementById("fabrica").value,
-        lider: document.getElementById("liderInput").value,
-        gerente: document.getElementById("gerenteInput").value,
-        nomeProjeto: document.getElementById("nomeProjeto").value,
-        dataProjeto: document.getElementById("dataProjeto").value,
-        situacaoAnterior: document.getElementById("situacaoAnterior").value,
-        situacaoAtual: document.getElementById("situacaoAtual").value,
-        superProducao: document.getElementById("superProducao").checked,
-        transporte: document.getElementById("transporte").checked,
-        processamento: document.getElementById("processamento").checked,
-        movimento: document.getElementById("movimento").checked,
-        estoque: document.getElementById("estoque").checked,
-        espera: document.getElementById("espera").checked,
-        talento: document.getElementById("talento").checked,
-        retrabalho: document.getElementById("retrabalho").checked,
-        valorA: document.getElementById("valorAInput").value,
-        valorB: document.getElementById("valorBInput").value,
-        valorAmortizado: document.getElementById("valorAmortizadoInput").value,
-        outrosGanhos: document.getElementById("outGanhos").value,
-      };
-      //Verificação dos inputs
-      if (data.nomeProjeto == "") {
-        required("Informe o nome do projeto!");
-        return false;
-      }
-      if (data.dataProjeto == "") {
-        required("Informe a data que o projeto foi realizado");
-        return false;
-      }
-      if (data.situacaoAnterior == "") {
-        required("Descreva a situação anterior!");
-        return false;
-      }
-      if (data.situacaoAtual == "") {
-        required("Descreva a situação atual!");
-        return false;
-      }
-      fetch("/pense_aja/server/apiPostPenseAja.php", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-type": "aplication/json; charset=UTF-8",
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.message == "sucess") {
-            window.location.reload();
-            return success("Pense & Aja cadastrado");
-          } else if (data.message == "error") {
-            return error("Erro ao cadastrar, verifique!");
-          } else if (data.message == "existe") {
-            return warning("Pense & Aja já cadastrado com esse nome para o mesmo colaborador!");
-          }
-        });
-      e.preventDefault();
-    });
-    let checkAmortizaGanho = document.getElementById("checkAmortizaGanho");
-    let divInputsAmortiza = document.getElementById("divInputsAmortiza");
-    let amortizacao = document.getElementById("amortizacao");
-
-    checkAmortizaGanho.addEventListener("change", function () {
-      if (checkAmortizaGanho.checked) {
-        divInputsAmortiza.classList.add("surgeDaEsquerda");
-        amortizacao.classList.remove("labelSmall");
-        amortizacao.classList.add("amortizacao");
-      } else {
-        divInputsAmortiza.classList.remove("surgeDaEsquerda");
-        amortizacao.classList.add("labelSmall");
-        amortizacao.classList.remove("amortizacao");
-      }
-    });
-    let checkOutrosGanho = document.getElementById("checkOutrosGanho");
-    let divInputsOutrosGanhos = document.getElementById("divInputsOutrosGanhos");
-    let outrosGanhos = document.getElementById("outrosGanhos");
-
-    checkOutrosGanho.addEventListener("change", function () {
-      if (checkOutrosGanho.checked) {
-        divInputsOutrosGanhos.classList.add("surgeDaEsquerda");
-        outrosGanhos.classList.remove("labelSmall");
-        outrosGanhos.classList.add("outrosGanhos");
-      } else {
-        divInputsOutrosGanhos.classList.remove("surgeDaEsquerda");
-        outrosGanhos.classList.add("labelSmall");
-        outrosGanhos.classList.remove("outrosGanhos");
-      }
-    });
-    let valorA = document.getElementById("valorAInput");
-    let valorB = document.getElementById("valorBInput");
-    valorA.addEventListener("keyup", (e) => {
-      let valor_a = e.target.value;
-      let valor_b = valorB.value;
-      let amortiza = parseFloat(valor_a) / parseFloat(valor_b);
-      document.getElementById("valorAmortizadoInput").value = amortiza.toFixed(2);
-    });
-    valorB.addEventListener("keyup", (e) => {
-      let valor_b = e.target.value;
-      let valor_a = valorA.value;
-      let amortiza = parseFloat(valor_a) / parseFloat(valor_b);
-      document.getElementById("valorAmortizadoInput").value = amortiza.toFixed(2);
-    });
-  }, 10);
-});
-closeMenu.addEventListener("click", () => {
-  menu.style.opacity = "0";
-  menu.style.right = menu.offsetWidth * -1 + "px";
-  document.getElementById("openUser").classList.remove("d-none");
-  document.getElementById("openLista").classList.remove("d-none");
-  document.getElementById("openMenu").classList.remove("d-none");
-  document.getElementById("openLoja").classList.remove("d-none");
-  setTimeout(() => {
-    menu.removeAttribute("style");
-    openMenu.removeAttribute("style");
-    // document.getElementById('total').style.display = 'block';
-    elemCadastro.remElemento();
-    document.getElementById("pontosColab").innerText = "0";
-    dadosColaborador.classList.add("inputSmall");
-  }, 200);
-});
-
 // Login
 const loginContainer = document.querySelector("#login-popup");
 const logoutContainer = document.querySelector("#logout-popup");
@@ -575,6 +269,20 @@ revealPassword.addEventListener("click", () => {
   }
 });
 
+axios.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Realizar Login
 const login = () => {
   const loading = document.querySelector(".spinner");
@@ -592,9 +300,10 @@ const login = () => {
   loading.classList.remove("hidden");
 
   axios
-    .post(`http://192.168.1.16:2399/auth/login`, { usuario: username, senha: password })
+    .post(`http://10.110.20.192:2399/auth/login`, { usuario: username, senha: password })
     .then((response) => {
       const data = response.data;
+      sessionStorage.setItem("token", data.token);
 
       const decoded = JSON.parse(atob(data.userData));
       sessionStorage.setItem("matricula", decoded.matricula);
@@ -602,19 +311,15 @@ const login = () => {
       sessionStorage.setItem("usuario", decoded.usuario);
       sessionStorage.setItem("nome", decoded.nome);
       sessionStorage.setItem("funcao", decoded.funcao);
-      // sessionStorage.setItem("avaliacao_mensal", decoded.avaliacao_mensal);
 
-      checkUserEmail();
       showNotification("Sucesso!", "Login realizado com sucesso!", "success", 1500);
-
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 1500);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1900);
     })
-    .catch((error) => {
-      showNotification("Errp", "Usuario ou senha incorretos", "warning", 1500);
-
-      console.error("Falha ao executar login:", error);
+    .catch(() => {
+      showNotification("Erro", "Usuario ou senha incorretos.", "warning", 1500);
+      // console.error("Falha ao executar login:", error);
     })
     .finally(() => {
       loading.classList.add("hidden");
@@ -678,9 +383,37 @@ logoutButton.addEventListener("click", () => {
   const loading = document.querySelector(".spinner-logout");
   loading.classList.remove("hidden");
 
-  sessionStorage.clear();
-  // axios.post("http://192.168.1.16:2399/auth/logout");
+  axios
+    .post("http://10.110.20.192:2399/auth/logout")
+    .then(() => {
+      console.log("Logout realizado com sucesso!");
+      sessionStorage.clear();
+
+      setTimeout(() => window.location.reload(), 1000);
+    })
+    .catch((error) => {
+      showNotification("Erro", "Erro ao efetuar logout. Tente novamente mais tarde!", "warning", 3000);
+      console.error("Erro ao efetuar logout: ", error);
+    })
+    .finally(() => {
+      loading.classList.add("hidden");
+    });
 });
+
+const testeProtectedRoute = async () => {
+  axios
+    .get("http://10.110.20.192:2512/pense-aja/protected")
+    .then((response) => {
+      console.log(response.data);
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 401) {
+        showNotification("Acesso negado", error.response.data.message, "warning", 4000);
+      }
+      console.error("Error: ", error);
+    });
+};
+document.querySelector("#protected-route").addEventListener("click", testeProtectedRoute);
 
 const closeLogout = document.querySelector("#logout-close");
 closeLogout.addEventListener("click", () => {
@@ -713,7 +446,6 @@ closeLista.addEventListener("click", () => {
   lista.style.top = lista.offsetHeight * -1 + "px";
   document.getElementById("openUser").classList.remove("d-none");
   document.getElementById("openLista").classList.remove("d-none");
-  document.getElementById("openMenu").classList.remove("d-none");
   document.getElementById("openLoja").classList.remove("d-none");
 
   setTimeout(() => {
@@ -728,7 +460,6 @@ openLoja.addEventListener("click", () => {
 
   document.getElementById("openUser").classList.add("d-none");
   document.getElementById("openLista").classList.add("d-none");
-  document.getElementById("openMenu").classList.add("d-none");
   document.getElementById("openLoja").classList.add("d-none");
   document.getElementById("lojaMatricula").focus();
 });
@@ -739,7 +470,6 @@ closeLoja.addEventListener("click", () => {
 
   document.getElementById("openUser").classList.remove("d-none");
   document.getElementById("openLista").classList.remove("d-none");
-  document.getElementById("openMenu").classList.remove("d-none");
   document.getElementById("openLoja").classList.remove("d-none");
 
   setTimeout(() => {

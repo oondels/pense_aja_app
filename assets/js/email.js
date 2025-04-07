@@ -4,14 +4,15 @@ const emailOverlay = document.querySelector(".email-popup-overlay");
 export const checkUserEmail = () => {
   const email = sessionStorage.getItem("haveEmail");
   const usuario = sessionStorage.getItem("usuario");
+  const emailProvided = localStorage.getItem("emailProvided");
 
   // Verificar se o email já foi coletado
-  if (usuario && !email) {
+  if (usuario && email === "false" && emailProvided !== "true") {
     setTimeout(() => {
-      // Reiniciar a animação do ícone e Força reflow
       const animatedElements = document.querySelectorAll(
         ".email-popup-icon, .email-popup-header h3, .email-popup-body p, .email-input-container, .email-popup-footer"
       );
+
       animatedElements.forEach((element) => {
         element.style.animation = "none";
         void element.offsetWidth;
@@ -19,7 +20,7 @@ export const checkUserEmail = () => {
       });
 
       showEmailPopup();
-    }, 3000);
+    }, 1500);
   }
 };
 
@@ -44,6 +45,9 @@ document.addEventListener("DOMContentLoaded", function () {
     yearElement.textContent = currentYear;
   }
 
+  // Faz verificacao do email do usuario
+  checkUserEmail();
+
   // Elementos do popup
   const emailInput = document.getElementById("email-input");
   const emailSubmit = document.getElementById("email-submit");
@@ -62,7 +66,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return email.includes("@grupodass.com.br");
   }
 
-  function submitEmail() {
+  async function submitEmail() {
+    const emailLoading = document.querySelector("#email-loading");
+    emailLoading.classList.remove("hidden");
     const email = emailInput.value.trim();
 
     if (!email) {
@@ -96,36 +102,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let message = "";
     let error = false;
-    axios
-      .put("http://localhost:3041/api/user-email", {
-        newEmail: email,
-        matricula: userMatricula,
-      })
-      .then((response) => {
-        message = response.data.message;
-      })
-      .catch((error) => {
-        console.error("Erro ao cadastrar email do usuário: ", error);
-        message = error.response ? error.response.data.message : "Erro desconhecido";
-        error = true;
-      });
 
-    emailInput.value = "";
-    validationMessage.textContent = "";
+    try {
+      const response = await axios.put(`http://10.110.20.192:2399/user/email/${userMatricula}`, { email: email });
 
-    closeEmailPopup();
-    setTimeout(() => {
-      Swal.fire({
-        icon: error ? "warning" : "success",
-        title: error ? "Erro" : "Sucesso",
-        html: `<div style = "display:flex;text-align:center;flex-direction:column">
-                    <div><strong>${message || "Erro Desconhecido!"}</strong></div>
-                  </div>`,
-        showConfirmButton: false,
-        showCloseButton: true,
-        timer: 1500,
-      });
-    }, 700);
+      message = response.data.message;
+      localStorage.setItem("emailProvided", "true");
+    } catch (error) {
+      console.error("Erro ao cadastrar email do usuário: ", error);
+      message = error.response ? error.response.data.message : "Erro desconhecido";
+      error = true;
+    } finally {
+      emailLoading.classList.add("hidden");
+      emailInput.value = "";
+      validationMessage.textContent = "";
+
+      closeEmailPopup();
+      setTimeout(() => {
+        Swal.fire({
+          icon: error ? "warning" : "success",
+          title: error ? "Erro" : "Sucesso",
+          html: `<div style = "display:flex;text-align:center;flex-direction:column">
+                      <div><strong>${message || "Erro Desconhecido!"}</strong></div>
+                    </div>`,
+          showConfirmButton: false,
+          showCloseButton: true,
+          timer: 1500,
+        });
+      }, 300);
+    }
   }
 
   function animateShake(element) {

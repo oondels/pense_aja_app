@@ -1,0 +1,16 @@
+import path from "path";
+import dotenv from "dotenv";
+const envFile = process.env.DEV_ENV ? ".env" : ".env.production";
+dotenv.config({ path: path.resolve(__dirname, "../../", envFile) });
+
+const vars = {
+  IP: process.env.IP,
+  PORT: process.env.PORT,
+  PASS: process.env.PASS,
+  USERS: process.env.USERS,
+  DBASE: process.env.DBASE,
+  RABBITMQ_URL: process.env.RABBITMQ_URL,
+  JWT_SECRET: process.env.JWT_SECRET || 'default_value',
+};
+
+export default vars;

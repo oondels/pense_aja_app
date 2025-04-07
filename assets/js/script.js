@@ -569,6 +569,7 @@ const filterTable = (param, event, id) => {
   }
   valorTotal.innerHTML = `${countValues} Registros`;
 };
+window.filterTable = filterTable;
 
 async function listaTable() {
   let penseAjaCount = document.getElementById("valorTotal");
@@ -595,7 +596,7 @@ async function listaTable() {
 
   let resBuscaDados
   try {
-    const response = await axios.get("http://192.168.1.16:2512/pense-aja/SEST");
+    const response = await axios.get("http://10.110.20.192:2512/pense-aja/SEST");
 
     resBuscaDados = response.data;
     if (resBuscaDados.dados.length === 0) {
@@ -1192,7 +1193,7 @@ async function listaTableLista() {
   valorTotal.innerHTML = `${listaSize} Registros`;
 
   await axios
-    .get("http://192.168.1.16:2512/pense-aja/history/SEST", {
+    .get("http://10.110.20.192:2512/pense-aja/history/SEST", {
       params: {
         selectedMonth: Number(selectMes),
         selectedYear: selectAno,
@@ -1283,7 +1284,6 @@ let success = function (message) {
       menu.style.opacity = "0";
       menu.style.right = menu.offsetWidth * -1 + "px";
       menu.removeAttribute("style");
-      openMenu.removeAttribute("style");
       document.getElementById("total").style.display = "flex";
       document.getElementById("pontosColab").innerText = "0";
       dadosColaborador.classList.add("inputSmall");

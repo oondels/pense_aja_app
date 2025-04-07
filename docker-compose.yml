@@ -7,14 +7,11 @@ services:
       - .:/var/www/html/
     networks:
       - pense_aja_network
+
   pense_aja-database:
     image: postgres:16
     container_name: pense_aja-database
     restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 35435#@*
-      POSTGRES_DB: sest
     ports:
       - "5433:5432"
     volumes:
