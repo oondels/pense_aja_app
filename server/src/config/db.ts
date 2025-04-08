@@ -9,13 +9,25 @@ const pool = new Pool({
   database: dotenv.DBASE,
 });
 
-pool
-  .connect()
-  .then(() => {
-    console.log("Connected to PostgreSQL database");
-  })
-  .catch((err: any) => {
-    console.error("Connection error", err.stack);
-  });
+let development = false;
+const connectDatabase = async () => {
+  development = dotenv.DEV_ENV === "development";
+
+  let client = null;
+  try {
+    client = await pool.connect();
+
+    if (development) console.log("Conected to database.");
+  } catch (error) {
+    console.error("Error connecting on database: ", error);
+  } finally {
+    if (client) {
+      client.release();
+
+      if (development) console.log("Cliente liberado");
+    }
+  }
+};
+connectDatabase();
 
 export default pool;

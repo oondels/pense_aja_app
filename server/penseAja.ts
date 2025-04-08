@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from 'cookie-parser';
 import penseAjaRoutes from "./src/routes/pense-aja";
 import UserPenseajaRoute from "./src/routes/user-penseaja"
+import dotenv from "./src/config/dotenv"
 
 const app = express();
 const port = 2512;
@@ -23,5 +24,5 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 app.listen(port, () => {
-  console.log(`Pense Aja API is running at port: ${port}`);
+  console.log(`Pense Aja API is running at port: ${port} on ${dotenv.DEV_ENV} mode!`);
 });
