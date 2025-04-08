@@ -18,11 +18,22 @@ interface selectFilter {
   selectedYear?: string;
 }
 
+interface penseAjaData {
+  nome: string;
+  createDate: string | Date;
+  situationBefore: string;
+  situationNow: string;
+  registration: string | number;
+  dassOffice: string;
+  perdas?: Array<string>;
+}
+
 const turnoMap: Record<string, string> = {
   A: "1° Turno",
   B: "2° Turno",
   C: "3° Turno",
 };
+
 export const PenseAjaService = {
   async getCurrentMonthData(dassOffice: string) {
     const currentDate = new Date();
@@ -65,16 +76,16 @@ export const PenseAjaService = {
       const filterQuery = await client.query(
         `
         SELECT
-          (SELECT array_agg(DISTINCT gerente) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
-          AS gerentes,
-          (SELECT array_agg(DISTINCT nome) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
-          AS nomes,
-          (SELECT array_agg(DISTINCT setor) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
-          AS setores,
-          (SELECT array_agg(DISTINCT nome_projeto) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
-          AS projetos,
-          (SELECT array_agg(DISTINCT turno) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
-          AS turnos
+        (SELECT array_agg(DISTINCT gerente) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+        AS gerentes,
+        (SELECT array_agg(DISTINCT nome) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+        AS nomes,
+        (SELECT array_agg(DISTINCT setor) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+        AS setores,
+        (SELECT array_agg(DISTINCT nome_projeto) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+        AS projetos,
+        (SELECT array_agg(DISTINCT turno) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+        AS turnos
       `,
         [startDate, endDate]
       );
@@ -200,4 +211,6 @@ export const PenseAjaService = {
       throw error;
     }
   },
+
+  async createPenseAja(data: penseAjaData){}
 };

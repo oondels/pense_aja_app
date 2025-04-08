@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="./assets/css/main.css">
   <link rel="stylesheet" href="./assets/css/new.css">
   <link rel="stylesheet" href="./assets/css/table.css">
+  <link rel="stylesheet" href="./assets/css/register.css">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="./assets/js/sweetalert2.all.min.js"></script>
@@ -243,15 +244,15 @@
                     <h5 id="lblclass" class="lblclass">CLASSIFICAÇÃO</h5>
                     <div id="subClassificacao" class="subClassificacao">
                       <div id="classificacaoA" class="classificacaoA">
-                        <label for="a"><i>(A)</i></label>&nbsp;
+                        <label for="a"><i>A</i></label>&nbsp;
                         <input type='radio' id="a" class="radio" name='op' value='a'>
                       </div>
                       <div id="classificacaoB" class="classificacaoB">
-                        <label for="b"><i>(B)</i></label>&nbsp;
+                        <label for="b"><i>B</i></label>&nbsp;
                         <input type='radio' id="b" class="radio" name='op' value='b'>
                       </div>
                       <div id="classificacaoC" class="classificacaoC">
-                        <label for="c"><i>(C)</i></label>&nbsp;
+                        <label for="c"><i>C</i></label>&nbsp;
                         <input type='radio' id="c" class="radio" name='op' value='c'>
                       </div>
                     </div>
@@ -430,7 +431,6 @@
 
     <div id="loja" class="loja store-container">
       <div class="store-wrapper">
-        <!-- Header com gradiente animado -->
         <div class="store-header red-theme">
           <div class="header-gradient-overlay"></div>
           <div class="store-title-container">
@@ -475,7 +475,7 @@
           </button>
         </div>
 
-        <!-- Informações do usuário (inicialmente ocultas) -->
+        <!-- Informações do usuário -->
         <div class="user-details d-none">
           <div class="user-info-card">
             <div class="user-avatar">
@@ -495,7 +495,6 @@
           <h2 class="products-heading">Produtos Disponíveis</h2>
 
           <div class="products-grid">
-            <!-- Linha 1 -->
             <div class="product-card polaroid pontosSEM" data-value="10" data-text="bloco de notas">
               <div class="product-badge">10 pts</div>
               <div class="product-image-container">
@@ -552,7 +551,6 @@
               </div>
             </div>
 
-            <!-- Linha 2 -->
             <div class="product-card polaroid pontosSEM" data-value="4" data-text="caneta">
               <div class="product-badge">4 pts</div>
               <div class="product-image-container">
@@ -736,7 +734,7 @@
       </div>
     </div>
 
-    <!-- Cadastro Popup -->
+    <!-- Cadastro Pense Aja -->
     <div id="penseaja-popup" class="penseaja-popup hidden">
       <div class="penseaja-overlay"></div>
       <div class="penseaja-container">
@@ -762,7 +760,6 @@
         </div>
 
         <div id="penseaja-form" class="penseaja-form">
-          <!-- Campo de Matrícula -->
           <div class="penseaja-field">
             <label for="penseaja-matricula">Matrícula</label>
 
@@ -789,7 +786,7 @@
           </div>
 
           <!-- Seção de Projeto e Data -->
-          <div class="penseaja-profile-section">
+          <div class="penseaja-profile-section mt-2">
             <div class="penseaja-field-group">
               <div class="row">
                 <div class="col-md-6">
@@ -816,46 +813,319 @@
             <textarea id="penseaja-atual" placeholder="Descreva a situação atual..."></textarea>
           </div>
 
-          <!-- Checkboxes de Registros -->
-          <div class="penseaja-checkboxes">
-            <div class="penseaja-checkbox">
-              <input type="checkbox" id="penseaja-cb1">
-              <label for="penseaja-cb1">Superprodução</label>
-            </div>
-            <div class="penseaja-checkbox">
-              <input type="checkbox" id="penseaja-cb2">
-              <label for="penseaja-cb2">Transporte</label>
-            </div>
-            <div class="penseaja-checkbox">
-              <input type="checkbox" id="penseaja-cb3">
-              <label for="penseaja-cb3">Processamento</label>
-            </div>
-            <div class="penseaja-checkbox">
-              <input type="checkbox" id="penseaja-cb4">
-              <label for="penseaja-cb4">Movimento</label>
-            </div>
-            <div class="penseaja-checkbox">
-              <input type="checkbox" id="penseaja-cb5">
-              <label for="penseaja-cb5">Estoque</label>
-            </div>
-            <div class="penseaja-checkbox">
-              <input type="checkbox" id="penseaja-cb6">
-              <label for="penseaja-cb6">Espera</label>
-            </div>
-            <div class="penseaja-checkbox">
-              <input type="checkbox" id="penseaja-cb7">
-              <label for="penseaja-cb7">Talento</label>
-            </div>
-            <div class="penseaja-checkbox">
-              <input type="checkbox" id="penseaja-cb8">
-              <label for="penseaja-cb8">Retrabalho</label>
+          <!-- AI button -->
+          <div class="tooltip-container">
+            <button id="ai-button" class="ai-enhance-button" type="button">
+              <div class="ai-enhance-icon">
+                <i class="bi bi-robot"></i>
+                <i class="bi bi-stars icon-spark"></i>
+              </div>
+              <span>Melhorar texto com IA</span>
+              <div class="ai-enhance-effect"></div>
+            </button>
+            <div class="ai-tooltip">
+              <strong>
+                <span class="lamp-icon bi bi-lightbulb"></span>
+                Dica inteligente!
+              </strong>
+              Revise seu texto com inteligência artificial para facilitar a avaliação!
             </div>
           </div>
-          <!-- Ação -->
+
+          <!-- 8 Perdas -->
+          <div class="oito-perdas">
+            <span class="mt-3">
+              <strong>8 Perdas!</strong>
+            </span>
+
+            <div class="penseaja-checkboxes">
+              <div class="penseaja-checkbox">
+                <input type="checkbox" id="penseaja-cb1">
+                <label for="penseaja-cb1">Superprodução</label>
+              </div>
+
+              <div class="penseaja-checkbox">
+                <input type="checkbox" id="penseaja-cb2">
+                <label for="penseaja-cb2">Transporte</label>
+              </div>
+
+              <div class="penseaja-checkbox">
+                <input type="checkbox" id="penseaja-cb3">
+                <label for="penseaja-cb3">Processamento</label>
+              </div>
+
+              <div class="penseaja-checkbox">
+                <input type="checkbox" id="penseaja-cb4">
+                <label for="penseaja-cb4">Movimento</label>
+              </div>
+
+              <div class="penseaja-checkbox">
+                <input type="checkbox" id="penseaja-cb5">
+                <label for="penseaja-cb5">Estoque</label>
+              </div>
+
+              <div class="penseaja-checkbox">
+                <input type="checkbox" id="penseaja-cb6">
+                <label for="penseaja-cb6">Espera</label>
+              </div>
+
+              <div class="penseaja-checkbox">
+                <input type="checkbox" id="penseaja-cb7">
+                <label for="penseaja-cb7">Talento</label>
+              </div>
+
+              <div class="penseaja-checkbox">
+                <input type="checkbox" id="penseaja-cb8">
+                <label for="penseaja-cb8">Retrabalho</label>
+              </div>
+            </div>
+          </div>
+
           <button type="button" class="penseaja-submit-button">
             <span>Salvar</span>
             <span class="bi bi-save"></span>
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cálculo de ganhos Pense e Aja -->
+    <div class="calculator-container">
+      <div class="calculator-overlay"></div>
+      <div class="penseaja-field gains-calculator">
+        <h4 class="section-title">
+          <i class="bi bi-calculator"></i> Cálculo de Ganhos
+          <span class="subtitle">Quantifique o impacto da sua melhoria</span>
+        </h4>
+
+        <div class="calculator-tabs">
+          <button class="tab-button active" data-tab="financial">
+            <i class="bi bi-cash-coin"></i> Financeiro
+          </button>
+          <button class="tab-button" data-tab="time">
+            <i class="bi bi-hourglass-split"></i> Tempo
+          </button>
+          <button class="tab-button" data-tab="quality">
+            <i class="bi bi-award"></i> Qualidade
+          </button>
+        </div>
+
+        <div class="tab-content active" id="financial-tab">
+          <div class="input-cards-container">
+            <div class="input-card">
+              <div class="card-header">
+                <i class="bi bi-currency-dollar"></i>
+                <h5>Investimento</h5>
+                <div class="tooltip-icon" data-tooltip="Quanto foi gasto para implementar essa melhoria">
+                  <i class="bi bi-question-circle"></i>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="input-group">
+                  <span class="input-prefix">R$</span>
+                  <input type="number" id="investment-amount" placeholder="0,00" min="0" step="0.01">
+                </div>
+                <div class="input-helper">Considere materiais, mão de obra, etc.</div>
+              </div>
+            </div>
+
+            <div class="input-card">
+              <div class="card-header">
+                <i class="bi bi-graph-up-arrow"></i>
+                <h5>Economia Mensal</h5>
+                <div class="tooltip-icon" data-tooltip="Quanto será economizado por mês com essa melhoria">
+                  <i class="bi bi-question-circle"></i>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="input-group">
+                  <span class="input-prefix">R$</span>
+                  <input type="number" id="monthly-savings" placeholder="0,00" min="0" step="0.01">
+                </div>
+                <div class="time-selector">
+                  <label>
+                    <input type="radio" name="savings-period" value="monthly" checked> Mensal
+                  </label>
+                  <label>
+                    <input type="radio" name="savings-period" value="annual"> Anual
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="results-card">
+            <div class="results-header">
+              <h5>Resultados</h5>
+              <button class="refresh-button" id="recalculate">
+                <i class="bi bi-arrow-repeat"></i>
+              </button>
+            </div>
+
+            <div class="results-body">
+              <div class="result-item">
+                <span class="result-label">Tempo para amortização:</span>
+                <span class="result-value" id="payback-time">-</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">Retorno após 1 ano:</span>
+                <span class="result-value" id="roi-one-year">-</span>
+              </div>
+            </div>
+
+            <div class="result-chart-container">
+              <canvas id="roi-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="time-tab">
+          <div class="time-savings-container">
+            <div class="input-card">
+              <div class="card-header">
+                <i class="bi bi-clock-history"></i>
+                <h5>Tempo Anterior</h5>
+              </div>
+              <div class="card-body">
+                <div class="time-input-group">
+                  <input type="number" id="hours-before" placeholder="0" min="0">
+                  <span class="time-label">hora(s)</span>
+                  <input type="number" id="minutes-before" placeholder="0" min="0" max="59">
+                  <span class="time-label">min</span>
+                </div>
+                <div class="input-helper">Tempo gasto antes da melhoria</div>
+              </div>
+            </div>
+
+            <div class="input-card">
+              <div class="card-header">
+                <i class="bi bi-clock"></i>
+                <h5>Tempo Atual</h5>
+              </div>
+              <div class="card-body">
+                <div class="time-input-group">
+                  <input type="number" id="hours-after" placeholder="0" min="0">
+                  <span class="time-label">hora(s)</span>
+                  <input type="number" id="minutes-after" placeholder="0" min="0" max="59">
+                  <span class="time-label">min</span>
+                </div>
+                <div class="input-helper">Tempo gasto após a melhoria</div>
+              </div>
+            </div>
+
+            <div class="input-card">
+              <div class="card-header">
+                <i class="bi bi-calendar3"></i>
+                <h5>Frequência</h5>
+              </div>
+              <div class="card-body">
+                <div class="frequency-input">
+                  <input type="number" id="frequency-value" placeholder="1" min="1">
+                  <span>vez(es) por</span>
+                  <select id="frequency-period">
+                    <option value="dia">dia</option>
+                    <option value="semana">semana</option>
+                    <option value="mes">mês</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="results-card">
+            <div class="results-header">
+              <h5>Economia de Tempo</h5>
+            </div>
+
+            <div class="results-body">
+              <div class="result-item">
+                <span class="result-label">Economia por vez:</span>
+                <span class="result-value" id="time-saving-per-instance">-</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">Economia mensal:</span>
+                <span class="result-value" id="time-saving-monthly">-</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">Economia anual:</span>
+                <span class="result-value" id="time-saving-yearly">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="quality-tab">
+          <div class="quality-metrics-container">
+            <div class="input-card">
+              <div class="card-header">
+                <i class="bi bi-exclamation-triangle"></i>
+                <h5>Redução de Defeitos</h5>
+              </div>
+              <div class="card-body">
+                <div class="before-after-inputs">
+                  <div class="input-group">
+                    <label>Antes:</label>
+                    <input type="number" id="defects-before" placeholder="0" min="0">
+                    <span class="input-suffix">%</span>
+                  </div>
+                  <div class="input-group">
+                    <label>Depois:</label>
+                    <input type="number" id="defects-after" placeholder="0" min="0">
+                    <span class="input-suffix">%</span>
+                  </div>
+                </div>
+                <div class="input-helper">% de itens com defeitos antes e depois</div>
+              </div>
+            </div>
+
+            <div class="input-card">
+              <div class="card-header">
+                <i class="bi bi-stars"></i>
+                <h5>Satisfação do Cliente</h5>
+              </div>
+              <div class="card-body">
+                <div class="before-after-inputs">
+                  <div class="input-group">
+                    <label>Antes:</label>
+                    <input type="number" id="satisfaction-before" placeholder="0" min="0" max="10" step="0.1">
+                    <span class="input-suffix">/10</span>
+                  </div>
+                  <div class="input-group">
+                    <label>Depois:</label>
+                    <input type="number" id="satisfaction-after" placeholder="0" min="0" max="10" step="0.1">
+                    <span class="input-suffix">/10</span>
+                  </div>
+                </div>
+                <div class="input-helper">Avaliação média de satisfação</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="results-card">
+            <div class="results-header">
+              <h5>Impacto na Qualidade</h5>
+            </div>
+
+            <div class="results-body">
+              <div class="result-item">
+                <span class="result-label">Redução de defeitos:</span>
+                <span class="result-value" id="defect-reduction">-</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">Aumento na satisfação:</span>
+                <span class="result-value" id="satisfaction-increase">-</span>
+              </div>
+            </div>
+
+            <div class="quality-chart-container">
+              <canvas id="quality-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="calculator-tip">
+          <i class="bi bi-lightbulb"></i>
+          <p>Os resultados dessa avaliação ajudarão a equipe a entender melhor o impacto da sua melhoria.</p>
         </div>
       </div>
     </div>
@@ -865,7 +1135,7 @@
       <div class="unidade-popup">
         <div class="unidade-popup-content">
           <div class="unidade-popup-header">
-            <div class="unidade-popup-icon">
+            <div class="unidade-popup-icon-dass">
               <img src="./assets/img/dass.png"></img>
             </div>
             <h3>Bem-vindo ao Sistema Pense & Aja!</h3>
@@ -980,25 +1250,5 @@
   <script src="assets/js/unidade-dass.js" type="module"></script>
   <script src="assets/js/registerPenseAja.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // Ano Copyright
-    const date = new Date();
-    document.querySelector('.current_copyright_year').innerText = date.getFullYear();
-
-    $(document).ready(function() {
-      $('.table-filter').select2({
-        placeholder: "Selecione",
-        allowClear: true,
-        width: 'resolve'
-      });
-
-      $('.table-filterLista').select2({
-        placeholder: "Selecione",
-        allowClear: true,
-        width: 'resolve'
-      });
-    });
-  </script>
 </body>
-
 </html>

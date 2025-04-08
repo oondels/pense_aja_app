@@ -50,4 +50,13 @@ router.get("/history/:dassOffice", async (req: Request, res: Response, next: Nex
   }
 });
 
+router.post("/:dassOffice", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { dassOffice } = req.params;
+
+  } catch (error) {
+    next(error)
+  }
+})
+
 export default router;

@@ -1,5 +1,22 @@
 import ip from "./ip.js";
 
+const date = new Date();
+document.querySelector(".current_copyright_year").innerText = date.getFullYear();
+
+$(document).ready(function () {
+  $(".table-filter").select2({
+    placeholder: "Selecione",
+    allowClear: true,
+    width: "resolve",
+  });
+
+  $(".table-filterLista").select2({
+    placeholder: "Selecione",
+    allowClear: true,
+    width: "resolve",
+  });
+});
+
 // Pega mês atual e atualiza banner
 const month = [
   "JANEIRO",
@@ -168,7 +185,7 @@ function showNotification(title, message, type = "info", duration = 3000) {
     }, 500);
   }, duration);
 }
-window.showNotification = showNotification
+window.showNotification = showNotification;
 
 let error = function (message) {
   Swal.fire({

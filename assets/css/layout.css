@@ -171,9 +171,6 @@ a {
 }
 
 .buttons {
-  /* position: fixed;
-  right: 5px;
-  top: 28px; */
   display: flex;
 }
 
@@ -189,15 +186,11 @@ a {
 }
 
 .navHeader {
-  /* position: fixed;
-  top: 12px;
-  right: 5px; */
   width: calc(100vw - 12px);
   height: 60px;
   display: flex;
 }
 
-/***************************************************************************/
 div.polaroid {
   width: 20vw;
   background-color: #ffffff26;
@@ -236,8 +229,6 @@ div.container {
 div.container p {
   text-shadow: 2px 3px 2px black;
 }
-
-/****************************************************************************************************/
 
 :is(.dados, .letra, .quantidade, .pontosClassif) span {
   font-size: 13.2px;
@@ -636,7 +627,6 @@ input[type="number"]::-webkit-inner-spin-button {
   display: none;
 }
 
-/*consulta*/
 section {
   width: 100%;
 }
@@ -666,9 +656,6 @@ section {
 .divLogo img {
   width: 150px;
 }
-
-/* Altera o estilo dos elementos para serem apresentados */
-/* em telas menores que 717px. */
 
 .center {
   text-align: center;

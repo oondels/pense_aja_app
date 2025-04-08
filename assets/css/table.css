@@ -115,7 +115,6 @@ tbody tr:hover {
   background-color: rgba(0, 0, 0, 0.01);
 } */
 
-/*start - Estilizar coluna separadamente*/
 .colMenor {
   max-width: 3.59vw;
   min-width: 3.59vw;
@@ -301,8 +300,6 @@ tbody tr:hover {
   transform: translateX(-50%) translateY(-5px);
 }
 
-/*end - Estilizar coluna separadamente*/
-
 /* Status colors with modern styling */
 .semAnalista,
 .semAnalistaLista {
@@ -401,14 +398,13 @@ tbody tr:hover {
 
 /* Aviso de tabela da pag. principal */
 .swal-container-custom {
-  z-index: 1 !important; /* menor que 50 da sua tela */
+  z-index: 1 !important;
 }
 
 .swal-popup-custom {
-  z-index: 2 !important; /* só o popup interno */
+  z-index: 2 !important;
 }
 
-/* Estilo moderno para o cabeçalho de navegação */
 .nav-header-modern {
   background: linear-gradient(135deg, #2c3e50 0%, #1a2a38 100%);
   border-radius: 12px 12px 0 0;
@@ -502,7 +498,6 @@ tbody tr:hover {
   pointer-events: none;
 }
 
-/* Estilo para o contador de estatísticas */
 .stats-container {
   display: flex;
   justify-content: center;

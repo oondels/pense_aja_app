@@ -56,28 +56,26 @@
 
 .spinner-text {
   position: absolute;
-  width: 200px; /* Aumentado para acomodar todas as letras */
+  width: 200px;
   text-align: center;
   top: 140%;
   left: 50%;
-  transform: translateX(-50%) translateY(-50%); /* Centraliza horizontalmente e verticalmente */
+  transform: translateX(-50%) translateY(-50%);
   font-family: Arial, sans-serif;
   font-weight: bold;
   color: #333;
-  white-space: nowrap; /* Impede quebra de linha */
+  white-space: nowrap;
 }
 
-/* Ajuste no tamanho e espaçamento das letras */
 .spinner-text span {
   display: inline-block;
   opacity: 0.2;
   font-size: 14px;
-  letter-spacing: 1px; /* Espaçamento entre letras */
-  margin-right: -1px; /* Compensação para o espaçamento */
+  letter-spacing: 1px;
+  margin-right: -1px;
   animation: pulse-text 1.2s ease-in-out infinite alternate !important;
 }
 
-/* Cada letra tem um pequeno atraso de animação */
 .spinner-text span:nth-child(1) {
   animation-delay: 0s;
 }
@@ -762,22 +760,22 @@ hr {
 
 /* Adiciona ícones aos botões */
 .btn-outline-success::before {
-  content: "\f633"; /* Ícone check */
+  content: "\f633";
   font-family: "Bootstrap-icons";
 }
 
 .btn-outline-danger::before {
-  content: "\f623"; /* Ícone X */
+  content: "\f623";
   font-family: "Bootstrap-icons";
 }
 
 .btn-outline-warning::before {
-  content: "\f5de"; /* Ícone lixeira */
+  content: "\f5de";
   font-family: "Bootstrap-icons";
 }
 
 .btn-outline-secondary::before {
-  content: "\f129"; /* Ícone seta esquerda */
+  content: "\f129";
   font-family: "Bootstrap-icons";
 }
 
@@ -845,11 +843,6 @@ hr {
   }
 }
 
-/* ==============================================
-   MODAL PREMIUM - DESIGN SOFISTICADO
-   ============================================== */
-
-/* Efeito de backdrop premium */
 .modal-backdrop {
   background: linear-gradient(135deg, rgba(27, 38, 44, 0.95), rgba(34, 46, 52, 0.98));
   backdrop-filter: blur(10px);
@@ -920,7 +913,7 @@ hr {
 
 /* Ícone do título */
 .modal-title::before {
-  content: "\f4cb"; /* Ícone do Bootstrap */
+  content: "\f4cb";
   font-family: "Bootstrap-icons";
   position: absolute;
   left: 0;
@@ -958,19 +951,12 @@ hr {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* ==============================================
-   CORPO DO MODAL
-   ============================================== */
 .modal-body.mBody {
   padding: 30px;
   background-color: #f8f9fc;
   background-image: radial-gradient(circle at 50% 0, rgba(255, 255, 255, 0.8), transparent 60%),
     radial-gradient(circle at 100% 100%, rgba(176, 6, 43, 0.05), transparent 40%);
 }
-
-/* ==============================================
-   CARDS PARA SEÇÕES DO MODAL
-   ============================================== */
 
 /* Container para dados do cadastrante */
 .dadosCadastrante {
@@ -998,7 +984,7 @@ hr {
 
 /* Ícone do cabeçalho */
 .dadosCadastrante::after {
-  content: "\f4d3"; /* Ícone pessoa */
+  content: "\f4d3";
   font-family: "Bootstrap-icons";
   position: absolute;
   top: 20px;
@@ -1074,9 +1060,7 @@ hr {
   letter-spacing: 0.7px;
 }
 
-/* ==============================================
-   SEPARADOR
-   ============================================== */
+/* Separador */
 hr {
   border: 0;
   height: 1px;
@@ -1097,9 +1081,7 @@ hr::after {
   transform: translateX(-50%);
 }
 
-/* ==============================================
-   SEÇÃO DE AVALIADORES
-   ============================================== */
+/* Avaliadores */
 .avaliadores {
   background-color: white;
   border-radius: 16px;
@@ -1128,7 +1110,7 @@ hr::after {
 }
 
 .avaliadores::after {
-  content: "\f4d5"; /* Ícone pessoa check */
+  content: "\f4d5";
   font-family: "Bootstrap-icons";
   position: absolute;
   top: 20px;
@@ -1185,7 +1167,6 @@ hr::after {
   content: "Analista";
 }
 
-/* Indicadores coloridos no topo */
 .gerAprovador::after,
 .anaAprovador::after {
   content: "";
@@ -1205,9 +1186,7 @@ hr::after {
   background: linear-gradient(to right, #1565c0, #42a5f5);
 }
 
-/* ==============================================
-   SEÇÃO DE AVALIAÇÃO
-   ============================================== */
+/* Avaliação */
 .avaliacao {
   background-color: white;
   border-radius: 16px;
@@ -1233,7 +1212,7 @@ hr::after {
 }
 
 .avaliacao::after {
-  content: "\f586"; /* Ícone estrela */
+  content: "\f586";
   font-family: "Bootstrap-icons";
   position: absolute;
   top: 20px;
@@ -1433,9 +1412,7 @@ hr::after {
   outline: none;
 }
 
-/* ==============================================
-   FOOTER DO MODAL
-   ============================================== */
+/* Footer */
 .modal-footer {
   padding: 24px 30px;
   background-color: #f8f9fc;
@@ -1519,7 +1496,7 @@ hr::after {
 /* Adicionar o símbolo de check */
 .flagEsperar input:checked + label::after,
 .flagReplicar input:checked + label::after {
-  content: "\2713"; /* Símbolo de check */
+  content: "\2713";
   position: absolute;
   left: 6px;
   top: 0px;
@@ -1528,9 +1505,6 @@ hr::after {
   font-weight: bold;
 }
 
-/* ==============================================
-   BOTÕES DO FOOTER
-   ============================================== */
 /* Container de botões */
 .modal-footer .btn {
   padding: 12px 24px;
@@ -1568,31 +1542,29 @@ hr::after {
 }
 
 .btn-outline-success::before {
-  content: "\f633"; /* Ícone check */
+  content: "\f633";
   font-family: "Bootstrap-icons";
   font-size: 16px;
 }
 
-/* Botão Reprovar */
 .btn-outline-danger {
   background: linear-gradient(145deg, #c62828, #d32f2f);
   color: white;
 }
 
 .btn-outline-danger::before {
-  content: "\f623"; /* Ícone X */
+  content: "\f623";
   font-family: "Bootstrap-icons";
   font-size: 16px;
 }
 
-/* Botão Excluir */
 .btn-outline-warning {
   background: linear-gradient(145deg, #f57f17, #ff8f00);
   color: white;
 }
 
 .btn-outline-warning::before {
-  content: "\f5de"; /* Ícone lixeira */
+  content: "\f5de";
   font-family: "Bootstrap-icons";
   font-size: 16px;
 }
@@ -1604,16 +1576,12 @@ hr::after {
 }
 
 .btn-outline-secondary::before {
-  content: "\f129"; /* Ícone seta esquerda */
+  content: "\f129";
   font-family: "Bootstrap-icons";
   font-size: 16px;
 }
 
-/* ==============================================
-   RESPONSIVIDADE
-   ============================================== */
 @media (max-width: 768px) {
-  /* Ajustes para telas menores */
   .modal-body.mBody {
     padding: 20px;
   }

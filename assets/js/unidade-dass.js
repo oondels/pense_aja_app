@@ -51,23 +51,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     axios
-      .get(`http://10.110.20.192:2399/api/check-user-registration/${matricula}`)
+      .get(`http://10.110.20.192:2512/user/unidade/${matricula}`)
       .then((response) => {
         const message = response.data.message;
-        const unidade = response.data.unidade;
+        const unidade = response.data.dassOffice;
 
         localStorage.setItem("unidadeDass", unidade);
-        Swal.fire({
-          icon: "success",
-          title: "Matrícula Validada!",
-          text: message || "Matrícula validada com sucesso!",
-          timer: 2000,
-          showConfirmButton: false,
-        });
+        showNotification("Sucesso!", message || "Matrícula validada com sucesso!", "success", 2000);
 
         closeUnidadePopup();
         setTimeout(() => {
-          window.location.reload()
+          window.location.reload();
         }, 2000);
       })
       .catch((error) => {
