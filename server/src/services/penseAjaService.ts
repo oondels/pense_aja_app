@@ -11,7 +11,7 @@ const checkDassOffice = (dassOffice: string) => {
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString("pt-BR");
-}
+};
 
 interface selectFilter {
   selectedMonth?: string;
@@ -97,7 +97,7 @@ export const PenseAjaService = {
       const filtersData = filterQuery.rows[0];
       filtersData.turnos = filtersData.turnos.map((filter: string) => {
         return turnoMap[filter] || "Comercial";
-      })
+      });
 
       const filters = {
         "3": filtersData.nomes,
@@ -105,7 +105,7 @@ export const PenseAjaService = {
         "5": filtersData.gerentes,
         "6": filtersData.projetos,
         "7": filtersData.turnos,
-      }
+      };
 
       const dados = result.rows;
       result.rows.forEach((row) => {
@@ -208,9 +208,22 @@ export const PenseAjaService = {
     } catch (error) {
       const messageError = error instanceof Error ? error.message : "Erro desconhecido!";
       logger.error("Pense-aja", `Erro ao consultar registros da tabela de histórico: ${messageError}`);
+
       throw error;
     }
   },
 
-  async createPenseAja(data: penseAjaData){}
+  async createPenseAja(data: penseAjaData) {
+    const client = await pool.connect();
+
+    try {
+    } catch (error) {
+      const messageError = error instanceof Error ? error.message : "Erro desconhecido!";
+      logger.error("Pense-aja", `Erro ao registrar pense aja: ${messageError}`);
+
+      throw error;
+    } finally {
+      client.release();
+    }
+  },
 };
