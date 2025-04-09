@@ -317,7 +317,7 @@ const login = () => {
   loading.classList.remove("hidden");
 
   axios
-    .post(`http://10.110.20.192:2399/auth/login`, { usuario: username, senha: password })
+    .post(`http://10.110.30.193:2399/auth/login`, { usuario: username, senha: password })
     .then((response) => {
       const data = response.data;
       sessionStorage.setItem("token", data.token);
@@ -401,9 +401,8 @@ logoutButton.addEventListener("click", () => {
   loading.classList.remove("hidden");
 
   axios
-    .post("http://10.110.20.192:2399/auth/logout")
+    .post("http://10.110.30.193:2399/auth/logout")
     .then(() => {
-      console.log("Logout realizado com sucesso!");
       sessionStorage.clear();
 
       setTimeout(() => window.location.reload(), 1000);
@@ -419,7 +418,7 @@ logoutButton.addEventListener("click", () => {
 
 const testeProtectedRoute = async () => {
   axios
-    .get("http://10.110.20.192:2512/pense-aja/protected")
+    .get("http://10.110.30.193:2512/pense-aja/protected")
     .then((response) => {
       console.log(response.data);
     })
