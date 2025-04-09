@@ -581,7 +581,7 @@ async function listaTable() {
     console.log("Informe sua matricula para definição da unidade");
     return;
   }
-
+  
   const cachedKey = `${mesAnterior}-${mesAtual}-${anoAtual}`;
   let cachedList = getCachedData("cachedList") || {};
   const currentDate = new Date().getTime();
@@ -596,7 +596,7 @@ async function listaTable() {
 
   let resBuscaDados
   try {
-    const response = await axios.get("http://10.110.20.192:2512/pense-aja/SEST");
+    const response = await axios.get(`http://10.110.30.193:2512/pense-aja/${unidade}`);
 
     resBuscaDados = response.data;
     if (resBuscaDados.dados.length === 0) {
@@ -1193,7 +1193,7 @@ async function listaTableLista() {
   valorTotal.innerHTML = `${listaSize} Registros`;
 
   await axios
-    .get("http://10.110.20.192:2512/pense-aja/history/SEST", {
+    .get(`http://10.110.30.193:2512/pense-aja/history/${unidade}`, {
       params: {
         selectedMonth: Number(selectMes),
         selectedYear: selectAno,

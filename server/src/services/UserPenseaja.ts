@@ -11,19 +11,20 @@ const checkDassOffice = (dassOffice: string) => {
 
 export const UserPenseaja = {
   async getUserData(registration: number, dassOffice: string) {
-    const client = await pool.connect();
+    checkDassOffice(dassOffice);
 
+    const client = await pool.connect();
     try {
-      checkDassOffice(dassOffice);
+      const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
 
       const query = await client.query(
         `
         SELECT
           lf.nome, lf.nome_setor, lf.gerente, lf.funcao
         FROM
-          colaborador.lista_funcionario${dassOffice !== "SEST" ? "_" + dassOffice : ""} lf
+          colaborador.lista_funcionario${office} lf
         LEFT JOIN
-          pense_aja.pontos p ON lf.matricula = p.matricula
+          pense_aja.pontos${office} p ON lf.matricula = p.matricula
         WHERE
           lf.matricula = $1;
       `,

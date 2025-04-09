@@ -1,5 +1,6 @@
 import logger from "../utils/logger";
 import pool from "../config/db";
+import { CustomError } from "../types/CustomError";
 
 const checkDassOffice = (dassOffice: string) => {
   const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF"];
@@ -11,21 +12,32 @@ const checkDassOffice = (dassOffice: string) => {
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString("pt-BR");
-}
+};
 
-interface selectFilter {
+interface SelectFilter {
   selectedMonth?: string;
   selectedYear?: string;
 }
 
-interface penseAjaData {
+interface PenseAjaData {
   nome: string;
   createDate: string | Date;
   situationBefore: string;
   situationNow: string;
   registration: string | number;
-  dassOffice: string;
-  perdas?: Array<string>;
+  perdas: Array<string>;
+  userName: string;
+  gerente: string;
+  setor: string;
+  turno: string;
+  a3Mae?: string;
+  valorA?: string;
+  valorB?: string;
+  valorAmortizado?: string;
+  outrosGanhos?: string;
+  ganhos?: Array<string>;
+  ganhoDetalhes?: string;
+  areaMelhoria: string
 }
 
 const turnoMap: Record<string, string> = {
@@ -57,7 +69,8 @@ export const PenseAjaService = {
     checkDassOffice(dassOffice);
     const client = await pool.connect();
     try {
-      let dbName = dassOffice === "SEST" ? "pense_aja" : `pense_aja_${dassOffice}`;
+      let dbName =
+        dassOffice === "SEST" ? "pense_aja" : `pense_aja_${dassOffice}`;
       const result = await client.query(
         `
         SELECT
@@ -97,7 +110,7 @@ export const PenseAjaService = {
       const filtersData = filterQuery.rows[0];
       filtersData.turnos = filtersData.turnos.map((filter: string) => {
         return turnoMap[filter] || "Comercial";
-      })
+      });
 
       const filters = {
         "3": filtersData.nomes,
@@ -105,7 +118,7 @@ export const PenseAjaService = {
         "5": filtersData.gerentes,
         "6": filtersData.projetos,
         "7": filtersData.turnos,
-      }
+      };
 
       const dados = result.rows;
       result.rows.forEach((row) => {
@@ -115,16 +128,20 @@ export const PenseAjaService = {
 
       return { dados: dados, filters: filters };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido!";
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro desconhecido!";
 
-      logger.error("Pense-aja", `Erro ao consultar registros da tabela inicial: ${errorMessage}`);
+      logger.error(
+        "Pense-aja",
+        `Erro ao consultar registros da tabela inicial: ${errorMessage}`
+      );
       throw error;
     } finally {
       await client.release();
     }
   },
 
-  async getHistoryData(dassOffice: string, filter: selectFilter) {
+  async getHistoryData(dassOffice: string, filter: SelectFilter) {
     checkDassOffice(dassOffice);
 
     const client = await pool.connect();
@@ -145,7 +162,8 @@ export const PenseAjaService = {
       const firstDate = new Date(firstYear, firstMonth, 28);
       const lastDate = new Date(selectedYear, selectedMonth, 28);
 
-      let dbName = dassOffice === "SEST" ? "pense_aja" : `pense_aja_${dassOffice}`;
+      let dbName =
+        dassOffice === "SEST" ? "pense_aja" : `pense_aja_${dassOffice}`;
 
       const historyQuery = await client.query(
         `
@@ -165,15 +183,15 @@ export const PenseAjaService = {
       const filterQuery = await client.query(
         `
         SELECT
-          (SELECT array_agg(DISTINCT gerente) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+          (SELECT array_agg(DISTINCT gerente) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
           AS gerentes,
-          (SELECT array_agg(DISTINCT nome) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+          (SELECT array_agg(DISTINCT nome) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
           AS nomes,
-          (SELECT array_agg(DISTINCT setor) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+          (SELECT array_agg(DISTINCT setor) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
           AS setores,
-          (SELECT array_agg(DISTINCT nome_projeto) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+          (SELECT array_agg(DISTINCT nome_projeto) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
           AS projetos,
-          (SELECT array_agg(DISTINCT turno) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+          (SELECT array_agg(DISTINCT turno) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
           AS turnos
       `,
         [firstDate, lastDate]
@@ -187,7 +205,7 @@ export const PenseAjaService = {
       const history = historyQuery.rows || [];
 
       // Atualizar referencia de turno
-      if (Object.keys(filterData).length > 0) {
+      if (Object.keys(filterData).length > 0 && filterData.turnos) {
         filterData.turnos = filterData.turnos.map((turno: string) => {
           return turnoMap[turno] || "Comercial";
         });
@@ -206,11 +224,106 @@ export const PenseAjaService = {
 
       return result;
     } catch (error) {
-      const messageError = error instanceof Error ? error.message : "Erro desconhecido!";
-      logger.error("Pense-aja", `Erro ao consultar registros da tabela de histórico: ${messageError}`);
+      const messageError =
+        error instanceof Error ? error.message : "Erro desconhecido!";
+      logger.error(
+        "Pense-aja",
+        `Erro ao consultar registros da tabela de histórico: ${messageError}`
+      );
+
       throw error;
     }
   },
 
-  async createPenseAja(data: penseAjaData){}
+  async createPenseAja(data: PenseAjaData, dassOffice: string) {
+    checkDassOffice(dassOffice);
+
+    if (
+      !data.nome ||
+      !data.createDate ||
+      !data.situationBefore ||
+      !data.situationNow ||
+      !data.registration ||
+      !data.userName ||
+      !data.gerente ||
+      !data.setor ||
+      !data.turno ||
+      !data.areaMelhoria
+    ) {
+      throw new Error("Campos obrigatórios ausentes ou inválidos.");
+    }
+
+    if (!data.perdas) {
+      data.perdas = []
+    }
+
+    const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
+    const perdasLean: Record<string, string> = {
+      Superprodução: "super_producao",
+      Transporte: "transporte",
+      Processamento: "processamento",
+      Movimento: "movimento",
+      Estoque: "estoque",
+      Espera: "espera",
+      Talento: "talento",
+      Retrabalho: "retrabalho",
+    };
+
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      const perdasSelecionads = new Set(data.perdas);
+      const colunasPerdas = Object.keys(perdasLean);
+      // Atualiza dados de seleção
+      const perdasValores = colunasPerdas.map((perda) =>
+        perdasSelecionads.has(perda) ? 1 : 0
+      );
+
+      // Parâmetros
+      const params = [
+        data.registration,
+        data.userName,
+        data.turno,
+        data.setor,
+        data.gerente,
+        data.nome,
+        data.createDate,
+        data.situationBefore,
+        data.situationNow,
+        ...perdasValores,
+        data.a3Mae || "",
+        JSON.stringify(data.ganhos),
+        data.ganhoDetalhes || "",
+        data.areaMelhoria
+      ];
+
+      const newPenseAja = await client.query(`
+        INSERT INTO pense_aja.pense_aja${office} (
+          matricula, nome, turno, setor, gerente, nome_projeto, data_realizada,
+          situacao_anterior, situacao_atual, super_producao, transporte, processamento, movimento,
+          estoque, espera, talento, retrabalho,
+          a3_mae, ganhos, outros_ganhos, fabrica, createdat, updatedat, lider, excluido
+        ) VALUES
+         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, NOW(), NOW(), '', '')
+        RETURNING id;`, params);
+
+      if (newPenseAja.rows.length === 0) {
+        await client.query("ROLLBACK")
+        throw new CustomError("Erro ao registrar pense aja.", 400, "Erro ao inserir no banco de dados.");
+      }
+
+      await client.query("COMMIT")
+      return newPenseAja.rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK")
+      const messageError =
+        error instanceof Error ? error.message : "Erro desconhecido!";
+      logger.error("Pense-aja", `Erro ao registrar pense aja: ${messageError}`);
+
+      throw new CustomError("Erro ao registrar pense aja.");
+    } finally {
+      client.release();
+    }
+  },
 };
