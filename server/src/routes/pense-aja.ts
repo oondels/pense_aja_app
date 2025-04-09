@@ -12,7 +12,6 @@ router.get("/protected", verifyToken, (req: Request, res: Response) => {
   res.status(200).json({ message: "Protected route accessed!" });
 });
 
-// Antigo apiBuscaDados.php
 router.get("/:dassOffice", async (req: Request, res: Response) => {
   try {
     const { dassOffice } = req.params;
@@ -29,7 +28,6 @@ router.get("/:dassOffice", async (req: Request, res: Response) => {
   }
 });
 
-// Antigo apiBuscaDados.php
 router.get("/history/:dassOffice", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { dassOffice } = req.params;
@@ -53,14 +51,12 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
   try {
     const { dassOffice } = req.params;
     const penseajaData = req.body;
-
-    const newPenseAja = PenseAjaService.createPenseAja(penseajaData);
+    
+    await PenseAjaService.createPenseAja(penseajaData, dassOffice);
 
     res.status(201).json({ message: "Pense aja cadastrado com sucesso!" });
   } catch (error) {
-    // next(error);
-    // ! continuar daqui
-    throw new CustomError("Erro ao cadastrar pense aja.")
+    next(error);
   }
 });
 

@@ -24,18 +24,22 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   const message = error.message || "Erro interno no servidor.";
   const details = error.details || null;
 
-  console.error(`Erro no método ${req.method} em ${req.originalUrl} - ${message}  `);
-  if (details) console.error("Detalhes do erro: ", details);
+  console.error(
+    `Erro no método ${req.method} em ${req.originalUrl} - ${message}  `
+  );
+  if (details) {
+    console.error("Detalhes do erro: ", details);
+  }
 
-  res
-    .status(statusCode)
-    .json({
-      message: message + " Contate a equipe de automação!",
-      ...(process.env.DEV_ENV === "development" && details && { details }),
-    });
-    return;
+  res.status(statusCode).json({
+    message: message + " Contate a equipe de automação!",
+    ...(process.env.DEV_ENV === "development" && details && { details }),
+  });
+  return;
 });
 
 app.listen(port, () => {
-  console.log(`Pense Aja API is running at port: ${port} on ${dotenv.DEV_ENV} mode!`);
+  console.log(
+    `Pense Aja API is running at port: ${port} on ${dotenv.DEV_ENV} mode!`
+  );
 });

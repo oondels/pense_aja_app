@@ -17,14 +17,14 @@ const connectDatabase = async () => {
   try {
     client = await pool.connect();
 
-    if (development) console.log("Conected to database.");
+    if (development) console.log(`Conected to database on ${dotenv.IP}`);
   } catch (error) {
     console.error("Error connecting on database: ", error);
   } finally {
     if (client) {
       client.release();
 
-      if (development) console.log("Cliente liberado");
+      if (development) console.log("Client released");
     }
   }
 };
