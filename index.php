@@ -10,7 +10,6 @@
   <link rel="stylesheet" type="text/css" href="assets/css/layout.css">
   <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="./assets/css/sweetalert2.min.css">
-  <link rel="stylesheet" href="./assets/css/modal.css">
   <link rel="stylesheet" href="./assets/css/email.css">
   <link rel="stylesheet" href="./assets/css/unidade-dass.css">
   <link rel="stylesheet" href="./assets/css/main.css">
@@ -786,7 +785,7 @@
           </div>
 
           <!-- Seção de Projeto e Data -->
-          <div class="penseaja-profile-section mt-2">
+          <div class="penseaja-profile-section oito-perdas mt-3">
             <div class="penseaja-field-group">
               <div class="row">
                 <div class="col-md-6">
@@ -796,24 +795,39 @@
 
                 <div class="col-md-6">
                   <label for="penseaja-data">Data</label>
-                  <input type="date" id="penseaja-data" min="<?php echo date('Y-m-d'); ?>">
+                  <input type="date" id="penseaja-data" min="<?php echo date('Y-m-d'); ?>" value="<?php echo date('Y-m-d'); ?>">
                 </div>
               </div>
+
+              <div class="row">
+                <div>
+                  <label for="penseaja-projeto-area">Onde será implementado essa melhoria?</label>
+                  <select id="penseaja-projeto-area" class="form-select">
+                    <option value="" selected disabled>Selecione a área</option>
+                    <option value="Montagem">Montagem</option>
+                    <option value="Apoio">Apoio</option>
+                    <option value="Costura">Costura</option>
+                    <option value="Manutencao">Manutenção</option>
+                  </select>
+                </div>
+              </div>
+              Colocar opção de fabrica
             </div>
           </div>
 
           <!-- Situações -->
-          <div class="penseaja-field">
-            <label for="penseaja-anterior">Situação anterior</label>
-            <textarea id="penseaja-anterior" placeholder="Descreva a situação anterior..."></textarea>
-          </div>
+          <div class="oito-perdas">
+            <div class="penseaja-field">
+              <label for="penseaja-anterior">Situação anterior</label>
+              <textarea id="penseaja-anterior" placeholder="Descreva a situação anterior..."></textarea>
+            </div>
 
-          <div class="penseaja-field">
-            <label for="penseaja-atual">Situação atual</label>
-            <textarea id="penseaja-atual" placeholder="Descreva a situação atual..."></textarea>
-          </div>
+            <div class="penseaja-field">
+              <label for="penseaja-atual">Situação atual</label>
+              <textarea id="penseaja-atual" placeholder="Descreva a situação atual..."></textarea>
+            </div>
 
-          <!-- AI button -->
+            <!-- AI button -->
           <div class="tooltip-container">
             <button id="ai-button" class="ai-enhance-button" type="button">
               <div class="ai-enhance-icon">
@@ -831,9 +845,10 @@
               Revise seu texto com inteligência artificial para facilitar a avaliação!
             </div>
           </div>
+          </div>
 
           <!-- 8 Perdas -->
-          <div class="oito-perdas">
+          <div class="oito-perdas mt-3">
             <span class="mt-3">
               <strong>8 Perdas!</strong>
             </span>
@@ -877,6 +892,48 @@
               <div class="penseaja-checkbox">
                 <input type="checkbox" id="penseaja-cb8">
                 <label for="penseaja-cb8">Retrabalho</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ganhos Pense Aja -->
+          <div class="ganhos-penseaja">
+            <div class="penseaja-checkbox-ganho-ask">
+              <input type="checkbox" id="ganho-penseaja" />
+              <label for="ganho-penseaja" class="ganhos-penseaja-label">O que ganhei com essa melhoria?</label>
+            </div>
+
+            <div id="ganhos-form" class="hidden">
+              <label for="ganhos-descricao">Descreva os ganhos obtidos</label>
+              <div class="ganhos-tipos">
+                <div class="penseaja-checkboxes">
+                  <div class="row">
+                    <div class="penseaja-checkbox-ganho col-md-6">
+                      <input type="checkbox" id="ganho-dinheiro">
+                      <label for="ganho-dinheiro">Dinheiro</label>
+                    </div>
+
+                    <div class="penseaja-checkbox-ganho col-md-6">
+                      <input type="checkbox" id="ganho-tempo">
+                      <label for="ganho-tempo">Tempo</label>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="penseaja-checkbox-ganho col-md-6">
+                      <input type="checkbox" id="ganho-processo">
+                      <label for="ganho-processo">Processo</label>
+                    </div>
+
+                    <div class="penseaja-checkbox-ganho col-md-6">
+                      <input type="checkbox" id="ganho-qualidade">
+                      <label for="ganho-qualidade">Qualidade</label>
+                    </div>
+                  </div>
+                </div>
+
+                <textarea id="ganhos-descricao" placeholder="Explique detalhadamente quais ganhos foram obtidos com sua melhoria..."></textarea>
+                <div class="input-helper">Mencione dados, números e resultados que demonstram o impacto positivo da sua ideia.</div>
               </div>
             </div>
           </div>
@@ -1222,6 +1279,7 @@
       </div>
     </div>
 
+    <!-- Notificação -->
     <div id="notification" class="notification hidden">
       <div class="notification-inner">
         <div class="notification-icon"></div>
@@ -1251,4 +1309,5 @@
   <script src="assets/js/registerPenseAja.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

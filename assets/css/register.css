@@ -597,7 +597,6 @@
   gap: 12px;
   margin: 1.5rem 0;
 }
-
 .penseaja-checkbox {
   display: flex;
   align-items: center;
@@ -648,6 +647,120 @@
 }
 
 .penseaja-checkbox label {
+  font-size: 14px;
+  color: #444;
+  cursor: pointer;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.penseaja-checkbox-ganho-ask {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.penseaja-checkbox-ganho-ask:hover {
+  background-color: rgba(239, 83, 80, 0.05);
+}
+
+.penseaja-checkbox-ganho-ask input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.penseaja-checkbox-ganho-ask input[type="checkbox"]:checked {
+  background-color: #ef5350;
+  border-color: #ef5350;
+}
+
+.penseaja-checkbox-ganho-ask input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.penseaja-checkbox-ganho-ask input[type="checkbox"]:hover {
+  border-color: #ef5350;
+  transform: scale(1.05);
+}
+
+.penseaja-checkbox-ganho label {
+  font-size: 14px;
+  color: #444;
+  cursor: pointer;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.penseaja-checkbox-ganho {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.penseaja-checkbox-ganho:hover {
+  background-color: rgba(239, 83, 80, 0.05);
+}
+
+.penseaja-checkbox-ganho input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.penseaja-checkbox-ganho input[type="checkbox"]:checked {
+  background-color: #ef5350;
+  border-color: #ef5350;
+}
+
+.penseaja-checkbox-ganho input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.penseaja-checkbox-ganho input[type="checkbox"]:hover {
+  border-color: #ef5350;
+  transform: scale(1.05);
+}
+
+.penseaja-checkbox-ganho label {
   font-size: 14px;
   color: #444;
   cursor: pointer;
@@ -1127,6 +1240,18 @@
   margin: 0;
   font-size: 14px;
   color: #555;
+}
+
+.ganhos-penseaja {
+  margin-top: 15px;
+  padding: 1.2rem;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.03);
+}
+
+#ganhos-form {
+  margin-top: 10px;
 }
 
 /* Animações e efeitos */

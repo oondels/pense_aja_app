@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
     img.src = img.dataset.srcNormal;
   });
 
+  // Dados do cadastrante
+  let userData = null;
   const getUserData = async (matricula) => {
     if (!dassOffice) {
       showNotification("Warning", "Unidade Dass não informada.", "warning");
@@ -21,16 +23,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const userInfo = document.querySelector(".user-penseaja-info");
 
     try {
-      const userData = await axios.get(`http://10.110.20.192:2512/user/${matricula}`, {
-        params: { dassOffice: dassOffice },
-      });
+      userData = await axios.get(
+        `http://10.110.30.193:2512/user/${matricula}`,
+        {
+          params: { dassOffice: dassOffice },
+        }
+      );
+      userData = userData.data;
       userInfo.classList.remove("hidden");
 
       // Atualiza dados do usuario
-      document.querySelector(".user-name").innerHTML = userData.data.nome;
-      document.querySelector(".user-gerente").innerHTML = userData.data.gerente;
+      document.querySelector(".user-name").innerHTML = userData.nome;
+      document.querySelector(".user-gerente").innerHTML = userData.gerente;
     } catch (error) {
-      showNotification("Error", "Erro ao buscar dados do funcionário. Tente novamente mais tarde!", "error");
+      showNotification(
+        "Error",
+        "Erro ao buscar dados do funcionário. Tente novamente mais tarde!",
+        "error"
+      );
       console.error("Erro ao buscar dados do funcionário: ", error);
     } finally {
       matriculaLoading.classList.add("hidden");
@@ -40,10 +50,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Abrir cadastro pense e aja
   const matriculaInput = document.querySelector("#penseaja-matricula");
+  const matriculaLoading = document.querySelector(".penseaja-spinner");
   penseAjaButton.addEventListener("click", () => {
     const matriculaUserLogado = sessionStorage.getItem("matricula");
     if (matriculaUserLogado) {
       matriculaInput.value = matriculaUserLogado;
+      matriculaLoading.classList.remove("hidden");
 
       getUserData(matriculaUserLogado);
     }
@@ -79,40 +91,124 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Ganhos Pense Aja
+  const formGanhos = document.querySelector("#ganhos-form");
+  function mostrarCampoGanho() {
+    const valorSelecionado = document.getElementById("ganho-penseaja");
+
+    if (valorSelecionado.checked) {
+      formGanhos.classList.remove("hidden");
+      return;
+    }
+    formGanhos.classList.add("hidden");
+  }
+  const ganhoSelect = document.getElementById("ganho-penseaja");
+  ganhoSelect.addEventListener("change", mostrarCampoGanho);
+
   const registerPenseAja = async (matricula) => {
+    const areaMelhoria = document.querySelector("#penseaja-projeto-area").value
     const projectName = document.querySelector("#penseaja-projeto").value;
     const projectDate = document.querySelector("#penseaja-data").value;
     const situationBefore = document.querySelector("#penseaja-anterior").value;
     const situationNow = document.querySelector("#penseaja-atual").value;
-    const checkboxes = document.querySelectorAll(".penseaja-checkbox input:checked");
-    const selectedCheckboxes = Array.from(checkboxes).map((checkbox) => checkbox.nextElementSibling.innerText);
+    const checkboxes = document.querySelectorAll(
+      ".penseaja-checkbox input:checked"
+    );
+    const selectedCheckboxes = Array.from(checkboxes).map(
+      (checkbox) => checkbox.nextElementSibling.innerText
+    );
+    const ganhos = document.querySelectorAll(
+      ".penseaja-checkbox-ganho input:checked"
+    );
+    const selectedGanhos = Array.from(ganhos).map(
+      (checkbox) => checkbox.nextElementSibling.innerText
+    );
+    const ganhoDetalhes = document.querySelector("#ganhos-descricao").value
+    // if (!dassOffice) {
+    //   showNotification(
+    //     "Warning",
+    //     "Unidade do colaborador não encontrada.",
+    //     "warning"
+    //   );
+    //   return;
+    // }
 
-    if (!dassOffice) {
-      showNotification("Warning", "Unidade do colaborador não encontrada.", "warning");
-      return;
-    }
+    // if (!projectName || !projectDate || !situationBefore || !situationNow) {
+    //   showNotification(
+    //     "Warning",
+    //     "Preencha todos os campos necessários.",
+    //     "warning"
+    //   );
+    //   return;
+    // }
 
-    if (!projectName || !projectDate || !situationBefore || !situationNow) {
-      showNotification("Warning", "Preencha todos os campos necessários.", "warning");
-      return;
-    }
+    // if (!userData) {
+    //   showNotification(
+    //     "Warning",
+    //     "Dados do usuário não encontrados.",
+    //     "warning"
+    //   );
+    //   return;
+    // }
 
     try {
-      const response = await axios.post(`http://10.110.20.192:2512/${dassOffice}`, {
-        nome: projectName,
-        createDate: projectDate,
-        situationBefore: situationBefore,
-        situationNow: situationNow,
-        perdas: selectedCheckboxes || [],
-        registration: matricula,
-        dassOffice: dassOffice
-      });
+      let turno;
+      switch (userData.nome_setor.slice(-1)) {
+        case "A":
+          turno = "A";
+          break;
+        case "B":
+          turno = "B";
+          break;
+        case "C":
+          turno = "C";
+        default:
+          turno = "N";
+          break;
+      }
+
+      const response = await axios.post(
+        `http://10.110.30.193:2512/pense-aja/${dassOffice}`,
+        {
+          registration: matricula,
+          userName: userData.nome,
+          turno: turno,
+          setor: userData.nome_setor,
+          gerente: userData.gerente,
+          nome: projectName,
+          createDate: projectDate,
+          situationBefore: situationBefore,
+          situationNow: situationNow,
+          perdas: selectedCheckboxes || [],
+          ganhos: selectedGanhos || [],
+          ganhoDetalhes: ganhoDetalhes || "",
+          areaMelhoria: areaMelhoria 
+        }
+      );
+
+      showNotification(
+        "Sucesso!",
+        response.data.message || "Pense e Aja cadastrado com sucesso!",
+        "success"
+      );
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (error) {
       console.error("Erro ao cadastrar pense aja: ", error);
-      showNotification("Error", "Erro ao buscar dados do funcionário. Tente novamente mais tarde!", "error");
+
+      showNotification(
+        "Error",
+        error.respons.data.message ||
+          "Erro ao cadastrar Pense e Aja. Tente novamente mais tarde!",
+        "error"
+      );
     }
   };
 
   const registerButton = document.querySelector(".penseaja-submit-button");
-  registerButton.addEventListener("click", () => registerPenseAja(matriculaInput.value));
+  registerButton.addEventListener("click", () =>
+    registerPenseAja(matriculaInput.value)
+  );
 });
