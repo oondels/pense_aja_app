@@ -1,5 +1,5 @@
 const unidade = localStorage.getItem("unidadeDass");
-import ip from "./ip.js"
+import ip from "./ip.js";
 
 let components = new Map();
 function showLoadingComponent(element) {
@@ -37,7 +37,6 @@ function showLoading(estado = "flex") {
   document.getElementById("loading-overlay").style.display = `${estado}`;
 }
 
-/*****************************************************************************/
 const getCachedData = (cacheKey, _) => {
   const raw = localStorage.getItem(cacheKey);
 
@@ -76,16 +75,18 @@ const renderListaTable = (data) => {
     td_gerente.innerText = element.gerente;
     td_nome_projeto.innerHTML += `${element.nome_projeto} <div id="tool"><div id="tooltipTextBefore"><strong>SITUAÇÃO ANTERIOR: </strong>${element.situacao_anterior}</div><div id="tooltipTextAfter"><strong>SITUAÇÃO ATUAL: </strong>${element.situacao_atual}</div></div>`;
     td_turno.innerText = element.turno;
-    td_acoes.innerHTML += `<i class="btnAcoes botaoInfo bi bi-clipboard-check" id="i${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
+    td_acoes.innerHTML += `<span class="btnEvaluateLista btnAcoes botaoInfo bi bi-clipboard-check" id="i${element.id}"></span>`;
 
     tr.classList.add("headConsulta", "active");
     tr.setAttribute("id", element.id);
     td_id.classList.add("thID");
 
     const data = new Date(element.criado);
-    const hora = `${data.getHours() < 10 ? "0" + data.getHours() : data.getHours()}:${
-      data.getMinutes() < 10 ? "0" + data.getMinutes() : data.getMinutes()
-    }:${data.getSeconds() < 10 ? "0" + data.getSeconds() : data.getSeconds()}`;
+    const hora = `${
+      data.getHours() < 10 ? "0" + data.getHours() : data.getHours()
+    }:${data.getMinutes() < 10 ? "0" + data.getMinutes() : data.getMinutes()}:${
+      data.getSeconds() < 10 ? "0" + data.getSeconds() : data.getSeconds()
+    }`;
     const criado = data.toLocaleDateString().replace(new RegExp("/", "g"), "-");
 
     td_realizado.classList.add("celula", "content", "colMaior", "center");
@@ -101,7 +102,14 @@ const renderListaTable = (data) => {
     td_nome_projeto.classList.add("celula", "content", "colMaiorX");
     td_nome_projeto.setAttribute("id", "nomeProjeto");
     td_turno.classList.add("celula", "content", "colMaior", "center");
-    td_acoes.classList.add("action", "celula", "content", "colMaior", "acoes", "center");
+    td_acoes.classList.add(
+      "action",
+      "celula",
+      "content",
+      "colMaior",
+      "acoes",
+      "center"
+    );
 
     /*Busca Aprovador*/
     let gerenteAprovador;
@@ -149,389 +157,58 @@ const renderListaTable = (data) => {
     }
   });
 
-  const buscaPA = () => {
-    if (!unidade) {
-      console.log("Informe sua matricula para definição da unidade");
-      return;
-    }
-
-    let line = document.querySelectorAll(".active").length;
-    if (line !== 0) {
-      filter_rows();
-    }
+  const avaliarContainer = document.querySelector(".avaliar-container");
+  const avaliarContent = document.querySelector(".avaliar-content");
+  const LoadButtons = () => {
     ativaBtn();
-    document.querySelectorAll("i").forEach((button) => {
-      if (!unidade) {
-        console.log("Informe sua matricula para definição da unidade");
-        return;
-      }
 
-      button.addEventListener("click", async function (event) {
-        // Reseta Modal
-        showLoadingComponent("buscaPa");
-        limpaModal();
+    // Avaliar pense e aja
+    const evaluateButtons = document.querySelectorAll("span.btnEvaluateLista");
+    const dassOffice = localStorage.getItem("unidadeDass");
 
-        let el = event.target.id.substring(1);
-        let data = { identificador: el };
-        let buscaPenseAja = await fetch("/pense_aja/server/apiBuscaPenseAja.php", {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          },
-        });
+    // Botões avaliação lista
+    evaluateButtons.forEach((button) => {
+      button.addEventListener("click", async (event) => {
+        let penseAjaId = event.target.id.substring(1);
 
-        let tituloProjeto = document.getElementById("staticBackdropLabel");
-        let matriculaModal = document.getElementById("matriculaModal");
-        let nomeModal = document.getElementById("nomeModal");
-        let setorModal = document.getElementById("setorModal");
-        let liderModal = document.getElementById("liderModal");
-        let turnoModal = document.getElementById("turnoModal");
-        let dataModal = document.getElementById("dataModal");
-        let anteriorModal = document.getElementById("anteriorModal");
-        let atualModal = document.getElementById("atualModal");
-        let elimPerdaModal = document.getElementById("elimPerdaModal");
-        let amortizacaoModal = document.getElementById("amortizacaoModal");
-        let outGanhosModal = document.getElementById("outGanhosModal");
-        let ids = document.getElementById("id");
-        let statusGerente = document.getElementById("status_gerente");
-        let statusAnalista = document.getElementById("status_analista");
-        let gerAprovador = document.getElementById("gerAprovador");
-        let anaAprovador = document.getElementById("anaAprovador");
-        let turno;
+        // Ativando popup de avaliação
+        avaliarContainer.classList.add("active");
+        avaliarContent.classList.add("active");
 
-        let resBuscaPenseAja = await buscaPenseAja.json();
-
-        if (resBuscaPenseAja.erro == false) {
-          switch (resBuscaPenseAja.penseAja.turno) {
-            case "A":
-              turno = "1º";
-              break;
-            case "B":
-              turno = "2º";
-              break;
-            case "C":
-              turno = "3º";
-              break;
-            default:
-              turno = "Comercial";
-              break;
-          }
-          tituloProjeto.innerHTML = resBuscaPenseAja.penseAja.nome_projeto;
-          matriculaModal.innerHTML = `<strong>Matrícula: </strong>${resBuscaPenseAja.penseAja.matricula}`;
-          nomeModal.innerHTML = `<strong>Usuário: </strong>${resBuscaPenseAja.penseAja.nome}`;
-          setorModal.innerHTML = `<strong>Setor: </strong>${resBuscaPenseAja.penseAja.setor}`;
-          liderModal.innerHTML = `<strong>Líder: </strong>${resBuscaPenseAja.penseAja.lider}`;
-          turnoModal.innerHTML = `<strong>Turno: </strong>${turno}`;
-          dataModal.innerHTML = `<strong>Data Realização: </strong>${resBuscaPenseAja.penseAja.data_realizada}`;
-          anteriorModal.innerHTML = `<strong>Situação Anterior: </strong>${resBuscaPenseAja.penseAja.situacao_anterior}`;
-          atualModal.innerHTML = `<strong>Situação Atual: </strong>${resBuscaPenseAja.penseAja.situacao_atual}`;
-          elimPerdaModal.innerHTML =
-            "<strong>Eliminação de Perdas: </strong>" +
-            `${
-              resBuscaPenseAja.penseAja.super_producao != ""
-                ? " | " + resBuscaPenseAja.penseAja.super_producao.toUpperCase()
-                : ""
-            }` +
-            `${
-              resBuscaPenseAja.penseAja.transporte != ""
-                ? " | " + resBuscaPenseAja.penseAja.transporte.toUpperCase()
-                : ""
-            }` +
-            `${
-              resBuscaPenseAja.penseAja.processamento != ""
-                ? " | " + resBuscaPenseAja.penseAja.processamento.toUpperCase()
-                : ""
-            }` +
-            `${
-              resBuscaPenseAja.penseAja.movimento != "" ? " | " + resBuscaPenseAja.penseAja.movimento.toUpperCase() : ""
-            }` +
-            `${
-              resBuscaPenseAja.penseAja.estoque != "" ? " | " + resBuscaPenseAja.penseAja.estoque.toUpperCase() : ""
-            }` +
-            `${resBuscaPenseAja.penseAja.espera != "" ? " | " + resBuscaPenseAja.penseAja.espera.toUpperCase() : ""}` +
-            `${
-              resBuscaPenseAja.penseAja.talento != "" ? " | " + resBuscaPenseAja.penseAja.talento.toUpperCase() : ""
-            }` +
-            `${
-              resBuscaPenseAja.penseAja.retrabalho != ""
-                ? " | " + resBuscaPenseAja.penseAja.retrabalho.toUpperCase()
-                : ""
-            }`;
-          if (parseInt(resBuscaPenseAja.penseAja.valor_a) != 0 || parseInt(resBuscaPenseAja.penseAja.valor_b) != 0) {
-            amortizacaoModal.innerHTML = `<strong>Cálculo de Amortização: </strong>
-          ${resBuscaPenseAja.penseAja.valor_a} / ${resBuscaPenseAja.penseAja.valor_b} = ${resBuscaPenseAja.penseAja.valor_amortizado}`;
-          } else {
-            amortizacaoModal.innerHTML = "";
-          }
-          if (resBuscaPenseAja.penseAja.outros_ganhos != "") {
-            outGanhosModal.innerHTML = `<strong>Outros ganhos: </strong> ${resBuscaPenseAja.penseAja.outros_ganhos}`;
-          }
-          ids.innerHTML = `<strong>ID: </strong>${resBuscaPenseAja.penseAja.id}`;
-          statusGerente.innerHTML = `${resBuscaPenseAja.penseAja.status_gerente}`;
-          statusAnalista.innerHTML = `${resBuscaPenseAja.penseAja.status_analista}`;
-          gerAprovador.innerHTML =
-            '<strong class="strongM">Gerente: </strong>' +
-            `${
-              resBuscaPenseAja.penseAja.gerente_aprovador != ""
-                ? resBuscaPenseAja.penseAja.gerente_aprovador
-                : "Ainda não avaliou!"
-            }`;
-          anaAprovador.innerHTML =
-            '<strong class="strongM">Analista: </strong>' +
-            `${
-              resBuscaPenseAja.penseAja.analista_avaliador != ""
-                ? resBuscaPenseAja.penseAja.analista_avaliador
-                : "Ainda não avaliou!"
-            }`;
-          if (
-            resBuscaPenseAja.penseAja.classificacao == "A" ||
-            resBuscaPenseAja.penseAja.classificacao == "B" ||
-            resBuscaPenseAja.penseAja.classificacao == "C"
-          ) {
-            document.getElementById(resBuscaPenseAja.penseAja.classificacao.toLowerCase()).checked = true;
-          } else {
-            document.getElementById("a").checked = false;
-            document.getElementById("b").checked = false;
-            document.getElementById("c").checked = false;
-          }
-        }
-
-        if (resBuscaPenseAja.penseAja.a3_mae != "") {
-          document.getElementById("escolha").innerText = resBuscaPenseAja.penseAja.a3_mae;
-        } else {
-          document.getElementById("escolha").innerText = "Selecione";
-        }
-
-        if (
-          document.getElementById("funcao").innerText === "ANALISTA!" &&
-          gerAprovador.innerText != "Gerente: Ainda não avaliou!"
-        ) {
-          document.getElementById("a").disabled = true;
-          document.getElementById("b").disabled = true;
-          document.getElementById("c").disabled = true;
-          document.getElementById("a3_mae").disabled = false;
-        } else {
-          document.getElementById("a").disabled = false;
-          document.getElementById("b").disabled = false;
-          document.getElementById("c").disabled = false;
-          document.getElementById("a3_mae").disabled = false;
-        }
-
-        if (resBuscaPenseAja.penseAja.em_espera == "1") {
-          document.getElementById("esperar").checked = true;
-        } else {
-          document.getElementById("esperar").checked = false;
-        }
-
-        if (resBuscaPenseAja.penseAja.replicavel == "1") {
-          document.getElementById("replicar").checked = true;
-        } else {
-          document.getElementById("replicar").checked = false;
-        }
-
-        hideLoading("buscaPa");
-        /*Pense e aja reprovado*/
-        let reprovar = document.getElementById("reprovar");
-        reprovar.addEventListener("click", async function (event) {
-          if (!unidade) {
-            console.log("Informe sua matricula para definição da unidade");
-            return;
-          }
-
-          event.preventDefault();
-          const dataR = {
-            identificador: document.getElementById("id").innerText.substring(4),
-            status: "reprovar",
-            nome: sessionStorage.getItem("nome"),
-            funcao: sessionStorage.getItem("funcao"),
-          };
-          let reprovado = await fetch(
-            "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaReprovado.php",
+        try {
+          const response = await axios.get(
+            `${ip}:2512/pense-aja/id/${penseAjaId}`,
             {
-              method: "POST",
-              body: JSON.stringify(dataR),
-              headers: {
-                "Content-type": "aplication/json; charset=UTF-8",
-              },
+              params: { dassOffice: dassOffice },
             }
           );
-          let resReprovado = await reprovado.json();
-          if (resReprovado.erro == false) {
-            success("Avaliado");
-          } else {
-            error("Erro ao gravar avaliação, verifique!");
-          }
-        });
 
-        /*Pense e aja aprovado*/
-        let aprovar = document.getElementById("aprovar");
-        aprovar.addEventListener("click", async function (event) {
-          if (!unidade) {
-            console.log("Informe sua matricula para definição da unidade");
-            return;
-          }
-
-          event.preventDefault();
-          let gerAprovou = document.getElementById("gerAprovador").innerText;
-          let stsGerAprovou = document.getElementById("status_gerente").innerText;
-          let stsAnaAprovou = document.getElementById("status_analista").innerText;
-          let esperou = document.getElementById("esperar").checked;
-          let op = document.getElementsByClassName("radio");
-          let escolha = "";
-          for (let i = 0; i < op.length; ++i) {
-            if (op[i].checked == true) {
-              escolha = op[i].value;
-            }
-          }
-          if (escolha == "") {
-            required("Classificação obrigatória, por favor selecione um tipo!");
-            return false;
-          }
-          const dataA = {
-            identificador: document.getElementById("id").innerText.substring(4),
-            status: "aprovar",
-            nome: sessionStorage.getItem("nome"),
-            funcao: sessionStorage.getItem("funcao"),
-            escolha: escolha,
-            a3Mae:
-              document.getElementById("a3_mae").childNodes[1].innerText == "Selecione"
-                ? ""
-                : document.getElementById("a3_mae").childNodes[1].innerText,
-            em_espera: document.getElementById("esperar").checked,
-            replicavel: document.getElementById("replicar").checked,
-          };
-          let aprovado = await fetch(
-            "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaAprovado.php",
-            {
-              method: "POST",
-              body: JSON.stringify(dataA),
-              headers: {
-                "Content-type": "aplication/json; charset=UTF-8",
-              },
-            }
+          console.log(response.data);
+        } catch (error) {
+          showNotification(
+            "Erro",
+            "Erro ao avaliar pense e aja. Entre em contato com a equipe de suporte.",
+            "error",
+            2500
           );
-          let resAprovado = await aprovado.json();
-          if (resAprovado.erro == false) {
-            success("Avaliado");
-          } else {
-            error("Erro ao gravar avaliação, verifique!");
-          }
-
-          let setFuncao = sessionStorage.getItem("funcao");
-          const dataPonto = {
-            idPenseAja: document.getElementById("id").innerText.substring(4),
-            matricula: document.getElementById("matriculaModal").innerText.substring(11),
-            nome:
-              setFuncao == "GERENTE"
-                ? sessionStorage.getItem("nome")
-                : document.getElementById("nomeModal").innerText.substring(9),
-            classificacao: escolha,
-            gerente: gerAprovou.substring(9),
-          };
-          /*Se avaliação pelo gerente e pelo analista salva ponto*/
-          if (setFuncao == "ANALISTA!" && esperou == false) {
-            let pontos = await fetch("/pense_aja/server/apiPostPontos.php", {
-              method: "POST",
-              body: JSON.stringify(dataPonto),
-              headers: {
-                "Content-type": "aplication/json; charset=UTF-8",
-              },
-            });
-            event.preventDefault();
-          }
-          if (setFuncao == "GERENTE" && stsAnaAprovou == "APROVAR" && esperou == false) {
-            let pontos = await fetch("/pense_aja/server/apiPostPontos.php", {
-              method: "POST",
-              body: JSON.stringify(dataPonto),
-              headers: {
-                "Content-type": "aplication/json; charset=UTF-8",
-              },
-            });
-            event.preventDefault();
-          }
-        });
-
-        /*Pense e aja excluído*/
-        let excluir = document.getElementById("excluir");
-        excluir.addEventListener("click", function (event) {
-          if (!unidade) {
-            console.log("Informe sua matricula para definição da unidade");
-            return;
-          }
-
-          delet
-            .fire({
-              title: "Você tem certeza?",
-              text: "Não será possível reverter após confirmar!",
-              icon: "warning",
-              showCancelButton: true,
-              confirmButtonText: "Sim, excluir!",
-              cancelButtonText: "Não, cancelar!",
-              reverseButtons: true,
-            })
-            .then(async (result) => {
-              if (result.isConfirmed) {
-                const dataE = {
-                  identificador: document.getElementById("id").innerText.substring(4),
-                  gerente: sessionStorage.getItem("nome"),
-                  funcao: sessionStorage.getItem("funcao"),
-                };
-                let excluir = await fetch(
-                  "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaExcluido.php",
-                  {
-                    method: "POST",
-                    body: JSON.stringify(dataE),
-                    headers: {
-                      "Content-type": "aplication/json; charset=UTF-8",
-                    },
-                  }
-                );
-                let resExcluir = excluir.json();
-                if (resExcluir.erro == false) {
-                  success("Excluido");
-                } else if (resExcluir.erro == true) {
-                  error("Erro ao excluir, verifique!");
-                } else {
-                  warning("Apenas gerente possui permissão para excluir!");
-                }
-                event.preventDefault();
-              } else if (result.dismiss === Swal.DismissReason.cancel) {
-                delet.fire("Cancelado", "<strong>Exclusão</strong> cancelada!", "error").then(function () {
-                  location.reload();
-                });
-              }
-            });
-        });
+          console.error("Erro ao avaliar pense e aja: ", error);
+        }
       });
     });
-
-    let btnClose = document.getElementById("btnClose");
-    btnClose.addEventListener("click", () => {
-      limpaModal();
-    });
-
-    function limpaModal() {
-      document.getElementById("staticBackdropLabel").innerHTML = "";
-      document.getElementById("matriculaModal").innerHTML = "";
-      document.getElementById("nomeModal").innerHTML = "";
-      document.getElementById("setorModal").innerHTML = "";
-      document.getElementById("liderModal").innerHTML = "";
-      document.getElementById("turnoModal").innerHTML = "";
-      document.getElementById("dataModal").innerHTML = "";
-      document.getElementById("anteriorModal").innerHTML = "";
-      document.getElementById("atualModal").innerHTML = "";
-      document.getElementById("elimPerdaModal").innerHTML = "";
-      document.getElementById("amortizacaoModal").innerHTML = "";
-      document.getElementById("outGanhosModal").innerHTML = "";
-      document.getElementById("a3_mae").selectedIndex = null;
-    }
   };
-  buscaPA();
+  LoadButtons();
 };
 
+// Fechar popup de avaliação
+const closeAvaliarButton = document.querySelector(".avaliar-close");
+const avaliarContainer = document.querySelector(".avaliar-container");
+const avaliarContent = document.querySelector(".avaliar-content");
+closeAvaliarButton.addEventListener("click", () => {
+  avaliarContainer.classList.remove("active");
+  avaliarContent.classList.remove("active");
+});
+
 function activeBtn(e) {
-  // e.currentTarget.classList.toggle("active")
   const btnsGlossario = document.querySelectorAll(".coresGlossario");
   btnsGlossario.forEach((btn) => {
     if (btn !== e.currentTarget) {
@@ -581,12 +258,16 @@ async function listaTable() {
     console.log("Informe sua matricula para definição da unidade");
     return;
   }
-  
+
   const cachedKey = `${mesAnterior}-${mesAtual}-${anoAtual}`;
   let cachedList = getCachedData("cachedList") || {};
   const currentDate = new Date().getTime();
 
-  if (Object.keys(cachedList).length && cachedList[cachedKey] && cachedList[cachedKey].payload) {
+  if (
+    Object.keys(cachedList).length &&
+    cachedList[cachedKey] &&
+    cachedList[cachedKey].payload
+  ) {
     renderListaTable(cachedList[cachedKey].payload);
     updateSelectOptionsLista(cachedList[cachedKey].filters, ".table-filter");
     penseAjaCount.innerHTML = `${cachedList[cachedKey].payload.length} Registros`;
@@ -594,9 +275,11 @@ async function listaTable() {
     showLoadingComponent("listaTable");
   }
 
-  let resBuscaDados
+  let resBuscaDados;
   try {
-    const response = await axios.get(`http://10.110.30.193:2512/pense-aja/${unidade}`);
+    const response = await axios.get(
+      `http://10.110.30.193:2512/pense-aja/${unidade}`
+    );
 
     resBuscaDados = response.data;
     if (resBuscaDados.dados.length === 0) {
@@ -616,7 +299,7 @@ async function listaTable() {
       const newCache = {
         payload: resBuscaDados.dados,
         timestamp: currentDate,
-        filters: resBuscaDados.filters
+        filters: resBuscaDados.filters,
       };
 
       if (!Object.keys(cachedList).length) {
@@ -629,7 +312,11 @@ async function listaTable() {
       }
 
       // Verifica se os dados do servidor são mais recentes que os do cache
-      if (cachedList && resBuscaDados && resBuscaDados.dados.length > cachedList[cachedKey].payload.length) {
+      if (
+        cachedList &&
+        resBuscaDados &&
+        resBuscaDados.dados.length > cachedList[cachedKey].payload.length
+      ) {
         console.log("Atualizando...");
 
         Swal.fire({
@@ -658,11 +345,12 @@ async function listaTable() {
     return;
   } finally {
     hideLoading("listaTable");
-    penseAjaCount.innerHTML = `${cachedList[cachedKey]?.payload.length || resBuscaDados.dados.length || 0}  Registros`;
+    penseAjaCount.innerHTML = `${
+      cachedList[cachedKey]?.payload.length || resBuscaDados.dados.length || 0
+    }  Registros`;
   }
 }
 window.listaTable = listaTable;
-
 
 const obtemAnoAtualEMesAnterior = () => {
   var selectAnoLista = document.getElementById("anoLista");
@@ -701,7 +389,7 @@ const obtemAnoAtualEMesAnterior = () => {
   mesLista.innerHTML = "";
   mesLista.add(optionMes);
 };
-window.obtemAnoAtualEMesAnterior =obtemAnoAtualEMesAnterior
+window.obtemAnoAtualEMesAnterior = obtemAnoAtualEMesAnterior;
 
 const buscaPA_Lista = (listaSize) => {
   let selecionadoLista = document.getElementById("selecionadoLista");
@@ -727,13 +415,16 @@ const buscaPA_Lista = (listaSize) => {
     buttons.addEventListener("click", async function (events) {
       let el = events.target.id.substring(6);
       let data = { identificador: el };
-      let buscaPenseAjaLista = await fetch("/pense_aja/server/apiBuscaPenseAja.php", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-type": "aplication/json; charset=UTF-8",
-        },
-      });
+      let buscaPenseAjaLista = await fetch(
+        "/pense_aja/server/apiBuscaPenseAja.php",
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-type": "aplication/json; charset=UTF-8",
+          },
+        }
+      );
       let resBuscaPenseAjaLista = await buscaPenseAjaLista.json();
       let tituloProjeto = document.getElementById("staticBackdropLabel");
       let matriculaModal = document.getElementById("matriculaModal");
@@ -781,7 +472,8 @@ const buscaPA_Lista = (listaSize) => {
           "<strong>Eliminação de Perdas: </strong>" +
           `${
             resBuscaPenseAjaLista.penseAja.super_producao != ""
-              ? " | " + resBuscaPenseAjaLista.penseAja.super_producao.toUpperCase()
+              ? " | " +
+                resBuscaPenseAjaLista.penseAja.super_producao.toUpperCase()
               : ""
           }` +
           `${
@@ -791,7 +483,8 @@ const buscaPA_Lista = (listaSize) => {
           }` +
           `${
             resBuscaPenseAjaLista.penseAja.processamento != ""
-              ? " | " + resBuscaPenseAjaLista.penseAja.processamento.toUpperCase()
+              ? " | " +
+                resBuscaPenseAjaLista.penseAja.processamento.toUpperCase()
               : ""
           }` +
           `${
@@ -855,7 +548,9 @@ const buscaPA_Lista = (listaSize) => {
           resBuscaPenseAjaLista.penseAja.classificacao == "B" ||
           resBuscaPenseAjaLista.penseAja.classificacao == "C"
         ) {
-          document.getElementById(resBuscaPenseAjaLista.penseAja.classificacao.toLowerCase()).checked = true;
+          document.getElementById(
+            resBuscaPenseAjaLista.penseAja.classificacao.toLowerCase()
+          ).checked = true;
         } else {
           document.getElementById("a").checked = false;
           document.getElementById("b").checked = false;
@@ -863,7 +558,8 @@ const buscaPA_Lista = (listaSize) => {
         }
       }
       if (resBuscaPenseAjaLista.penseAja.a3_mae != "") {
-        document.getElementById("escolha").innerText = resBuscaPenseAjaLista.penseAja.a3_mae;
+        document.getElementById("escolha").innerText =
+          resBuscaPenseAjaLista.penseAja.a3_mae;
       } else {
         document.getElementById("escolha").innerText = "Selecione";
       }
@@ -902,7 +598,9 @@ const buscaPA_Lista = (listaSize) => {
           funcao: sessionStorage.getItem("funcao"),
         };
         let reprovadoLista = await fetch(
-          "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaReprovado.php",
+          "http://" +
+            ip +
+            "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaReprovado.php",
           {
             method: "POST",
             body: JSON.stringify(dataR),
@@ -924,12 +622,15 @@ const buscaPA_Lista = (listaSize) => {
       aprovar.addEventListener("click", async function (event) {
         event.preventDefault();
         let gerAprovouLista = gerAprovador.innerText;
-        let stsGerAprovouLista = document.getElementById("status_gerente").innerText;
-        let stsAnaAprovouLista = document.getElementById("status_analista").innerText;
+        let stsGerAprovouLista =
+          document.getElementById("status_gerente").innerText;
+        let stsAnaAprovouLista =
+          document.getElementById("status_analista").innerText;
         let esperouLista = document.getElementById("esperar").checked;
         let op = document.getElementsByClassName("radio");
         let escolha = "";
-        let a3_maeLista = document.getElementById("a3_mae").childNodes[1].innerText;
+        let a3_maeLista =
+          document.getElementById("a3_mae").childNodes[1].innerText;
         for (let i = 0; i < op.length; ++i) {
           if (op[i].checked == true) {
             escolha = op[i].value;
@@ -949,13 +650,16 @@ const buscaPA_Lista = (listaSize) => {
           em_espera: document.getElementById("esperar").checked,
           replicavel: document.getElementById("replicar").checked,
         };
-        let response = await fetch("/pense_aja/server/apiPostPenseAjaAprovado.php", {
-          method: "POST",
-          body: JSON.stringify(dataA),
-          headers: {
-            "Content-type": "aplication/json; charset=UTF-8",
-          },
-        });
+        let response = await fetch(
+          "/pense_aja/server/apiPostPenseAjaAprovado.php",
+          {
+            method: "POST",
+            body: JSON.stringify(dataA),
+            headers: {
+              "Content-type": "aplication/json; charset=UTF-8",
+            },
+          }
+        );
         let userData = await response.json();
         if (userData.erro == false) {
           successLista("Avaliado");
@@ -965,7 +669,9 @@ const buscaPA_Lista = (listaSize) => {
         let setFuncaoLista = sessionStorage.getItem("funcao");
         const dataPonto = {
           idPenseAja: document.getElementById("id").innerText.substring(4),
-          matricula: document.getElementById("matriculaModal").innerText.substring(11),
+          matricula: document
+            .getElementById("matriculaModal")
+            .innerText.substring(11),
           nome:
             setFuncaoLista == "GERENTE"
               ? sessionStorage.getItem("nome")
@@ -983,7 +689,11 @@ const buscaPA_Lista = (listaSize) => {
           });
           event.preventDefault();
         }
-        if (setFuncaoLista == "GERENTE" && stsAnaAprovouLista == "APROVAR" && esperouLista == false) {
+        if (
+          setFuncaoLista == "GERENTE" &&
+          stsAnaAprovouLista == "APROVAR" &&
+          esperouLista == false
+        ) {
           let pontosLista = await fetch("/pense_aja/server/apiPostPontos.php", {
             method: "POST",
             body: JSON.stringify(dataPonto),
@@ -1015,17 +725,24 @@ const buscaPA_Lista = (listaSize) => {
           .then((result) => {
             if (result.isConfirmed) {
               const dataE = {
-                identificador: document.getElementById("id").innerText.substring(4),
+                identificador: document
+                  .getElementById("id")
+                  .innerText.substring(4),
                 gerente: sessionStorage.getItem("nome"),
                 funcao: sessionStorage.getItem("funcao"),
               };
-              fetch("http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaExcluido.php", {
-                method: "POST",
-                body: JSON.stringify(dataE),
-                headers: {
-                  "Content-type": "aplication/json; charset=UTF-8",
-                },
-              })
+              fetch(
+                "http://" +
+                  ip +
+                  "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaExcluido.php",
+                {
+                  method: "POST",
+                  body: JSON.stringify(dataE),
+                  headers: {
+                    "Content-type": "aplication/json; charset=UTF-8",
+                  },
+                }
+              )
                 .then((response) => response.json())
                 .then((data) => {
                   if (data.erro == false) {
@@ -1033,14 +750,22 @@ const buscaPA_Lista = (listaSize) => {
                   } else if (data.erro == true) {
                     errorLista("Erro ao excluir, verifique!");
                   } else {
-                    warningLista("Apenas gerente possui permissão para excluir!");
+                    warningLista(
+                      "Apenas gerente possui permissão para excluir!"
+                    );
                   }
                 });
               event.preventDefault();
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-              delet.fire("Cancelado", "<strong>Exclusão</strong> cancelada!", "error").then(function () {
-                location.reload();
-              });
+              delet
+                .fire(
+                  "Cancelado",
+                  "<strong>Exclusão</strong> cancelada!",
+                  "error"
+                )
+                .then(function () {
+                  location.reload();
+                });
             }
           });
       });
@@ -1105,10 +830,16 @@ async function listaTableLista() {
       td_id.classList.add("thID");
 
       const data = new Date(element.criado);
-      const hora = `${data.getHours() < 10 ? "0" + data.getHours() : data.getHours()}:${
+      const hora = `${
+        data.getHours() < 10 ? "0" + data.getHours() : data.getHours()
+      }:${
         data.getMinutes() < 10 ? "0" + data.getMinutes() : data.getMinutes()
-      }:${data.getSeconds() < 10 ? "0" + data.getSeconds() : data.getSeconds()}`;
-      const criado = data.toLocaleDateString().replace(new RegExp("/", "g"), "-");
+      }:${
+        data.getSeconds() < 10 ? "0" + data.getSeconds() : data.getSeconds()
+      }`;
+      const criado = data
+        .toLocaleDateString()
+        .replace(new RegExp("/", "g"), "-");
 
       td_realizado.classList.add("celula", "content", "colMaior", "center");
       td_realizado.setAttribute("id", "data");
@@ -1123,7 +854,14 @@ async function listaTableLista() {
       td_nome_projeto.classList.add("celula", "content", "colMaiorX");
       td_nome_projeto.setAttribute("id", "nomeProjetos");
       td_turno.classList.add("celula", "content", "colMaior", "center");
-      td_acoes.classList.add("action", "celula", "content", "colMaior", "acoes", "center");
+      td_acoes.classList.add(
+        "action",
+        "celula",
+        "content",
+        "colMaior",
+        "acoes",
+        "center"
+      );
 
       setTimeout(() => {
         let gerenteAprovadorLista;
@@ -1180,9 +918,16 @@ async function listaTableLista() {
   const cachedListKey = `cachedListTable-${selectMes}-${selectAno}`;
   const queryCache = JSON.parse(localStorage.getItem("filterCache")) || {};
 
-  if (queryCache && Object.keys(queryCache).length > 0 && queryCache[cachedListKey]) {
+  if (
+    queryCache &&
+    Object.keys(queryCache).length > 0 &&
+    queryCache[cachedListKey]
+  ) {
     renderListaTableLista(queryCache[cachedListKey]?.payload);
-    updateSelectOptionsLista(queryCache[cachedListKey]?.filters, ".table-filterLista");
+    updateSelectOptionsLista(
+      queryCache[cachedListKey]?.filters,
+      ".table-filterLista"
+    );
   } else {
     showLoadingComponent("listaTableLista");
   }
@@ -1236,7 +981,11 @@ async function listaTableLista() {
           timer: 2100,
         });
 
-        queryCache[cachedListKey] = { payload: newCache.dados, timestamp: currentTime, filters: newCache.filters };
+        queryCache[cachedListKey] = {
+          payload: newCache.dados,
+          timestamp: currentTime,
+          filters: newCache.filters,
+        };
         localStorage.setItem("filterCache", JSON.stringify(queryCache));
         renderListaTableLista(queryCache[cachedListKey].payload);
         updateSelectOptionsLista(newCache.filters, ".table-filterLista");
@@ -1256,7 +1005,7 @@ async function listaTableLista() {
       hideLoading("listaTableLista");
     });
 }
-window.listaTableLista  =listaTableLista
+window.listaTableLista = listaTableLista;
 
 const delet = Swal.mixin({
   customClass: {
@@ -1295,7 +1044,9 @@ let success = function (message) {
       var elemdivMatricula = document.getElementById("divMatricula");
       var elemNomeProjeto = document.getElementById("nomeProjeto");
       var elemDataProjeto = document.getElementById("dataProjeto");
-      var elemLblSituacaoAnterior = document.getElementById("lblSituacaoAnterior");
+      var elemLblSituacaoAnterior = document.getElementById(
+        "lblSituacaoAnterior"
+      );
       var elemSituacaoAnterior = document.getElementById("situacaoAnterior");
       var elemLblSituacaoAtual = document.getElementById("lblSituacaoAtual");
       var elemSituacaoAtual = document.getElementById("situacaoAtual");
@@ -1314,13 +1065,21 @@ let success = function (message) {
       var elemValorBInput = document.getElementById("valorBInput");
       var elemValorAmortizado = document.getElementById("valorAmortizadoInput");
       var elemOutGanhos = document.getElementById("outGanhos");
-      var elemdivInputCompleteColaborador = document.getElementById("divInputCompleteColaborador");
+      var elemdivInputCompleteColaborador = document.getElementById(
+        "divInputCompleteColaborador"
+      );
       var elemdivMetadeUmPerdas = document.getElementById("divMetadeUmPerdas");
-      var elemdivMetadeDoisPerdas = document.getElementById("divMetadeDoisPerdas");
+      var elemdivMetadeDoisPerdas = document.getElementById(
+        "divMetadeDoisPerdas"
+      );
       var elemdivInputsAmortiza = document.getElementById("divInputsAmortiza");
-      var elemdivInputsOutrosGanhos = document.getElementById("divInputsOutrosGanhos");
+      var elemdivInputsOutrosGanhos = document.getElementById(
+        "divInputsOutrosGanhos"
+      );
       if (elemMatricula.parentNode) {
-        elemdivInputsOutrosGanhos.parentNode.removeChild(elemdivInputsOutrosGanhos);
+        elemdivInputsOutrosGanhos.parentNode.removeChild(
+          elemdivInputsOutrosGanhos
+        );
         elemdivInputsAmortiza.parentNode.removeChild(elemdivInputsAmortiza);
         elemdivMatricula.parentNode.removeChild(elemdivMatricula);
         elemMatricula.parentNode.removeChild(elemMatricula);
@@ -1349,16 +1108,29 @@ let success = function (message) {
         elemValorBInput.parentNode.removeChild(elemValorBInput);
         elemValorAmortizado.parentNode.removeChild(elemValorAmortizado);
         elemOutGanhos.parentNode.removeChild(elemOutGanhos);
-        elemdivInputCompleteColaborador.parentNode.removeChild(elemdivInputCompleteColaborador);
+        elemdivInputCompleteColaborador.parentNode.removeChild(
+          elemdivInputCompleteColaborador
+        );
         elemdivMetadeUmPerdas.parentNode.removeChild(elemdivMetadeUmPerdas);
         elemdivMetadeDoisPerdas.parentNode.removeChild(elemdivMetadeDoisPerdas);
       }
     }
     $("#staticBackdrop").modal("hide");
-    if (document.getElementsByClassName("show") == undefined && document.getElementsByClassName("show") > 0) {
-      if (document.getElementsByClassName("show")[0].classList.contains("modal-backdrop")) {
-        document.getElementsByClassName("show")[0].classList.remove("modal-backdrop");
-        document.getElementsByClassName("show")[1].classList.remove("modal-backdrop");
+    if (
+      document.getElementsByClassName("show") == undefined &&
+      document.getElementsByClassName("show") > 0
+    ) {
+      if (
+        document
+          .getElementsByClassName("show")[0]
+          .classList.contains("modal-backdrop")
+      ) {
+        document
+          .getElementsByClassName("show")[0]
+          .classList.remove("modal-backdrop");
+        document
+          .getElementsByClassName("show")[1]
+          .classList.remove("modal-backdrop");
       }
     }
   });
@@ -1378,10 +1150,21 @@ let successLista = function (message) {
     listaTableLista();
     enviar();
     $("#staticBackdrop").modal("hide");
-    if (document.getElementsByClassName("show") == undefined && document.getElementsByClassName("show") > 0) {
-      if (document.getElementsByClassName("show")[0].classList.contains("modal-backdrop")) {
-        document.getElementsByClassName("show")[0].classList.remove("modal-backdrop");
-        document.getElementsByClassName("show")[1].classList.remove("modal-backdrop");
+    if (
+      document.getElementsByClassName("show") == undefined &&
+      document.getElementsByClassName("show") > 0
+    ) {
+      if (
+        document
+          .getElementsByClassName("show")[0]
+          .classList.contains("modal-backdrop")
+      ) {
+        document
+          .getElementsByClassName("show")[0]
+          .classList.remove("modal-backdrop");
+        document
+          .getElementsByClassName("show")[1]
+          .classList.remove("modal-backdrop");
       }
     }
   });
@@ -1500,7 +1283,8 @@ function updateSelectOptions(unique_col_values_dict) {
   allFilters.forEach((filter_i) => {
     const col_index = filter_i.parentElement.getAttribute("col-index");
     unique_col_values_dict[col_index].sort().forEach((i) => {
-      filter_i.innerHTML = filter_i.innerHTML + `\n\n<option value="${i}">${i}</option>`;
+      filter_i.innerHTML =
+        filter_i.innerHTML + `\n\n<option value="${i}">${i}</option>`;
     });
   });
 }
@@ -1513,7 +1297,9 @@ function filter_rows(tableSelect, tableId) {
 
   allFilters.forEach((filter_i) => {
     const col_index = filter_i.parentElement.getAttribute("col-index");
-    const selectedOptions = Array.from(filter_i.selectedOptions).map((opt) => opt.value);
+    const selectedOptions = Array.from(filter_i.selectedOptions).map(
+      (opt) => opt.value
+    );
 
     // Só adiciona se houver seleções e não incluir apenas 'all'
     if (selectedOptions.length > 0 && !selectedOptions.includes("all")) {
@@ -1528,7 +1314,9 @@ function filter_rows(tableSelect, tableId) {
 
     for (const col_index in filter_value_dict) {
       const selected_values = filter_value_dict[col_index];
-      const cell_value = row.querySelector("td:nth-child(" + col_index + ")").innerText;
+      const cell_value = row.querySelector(
+        "td:nth-child(" + col_index + ")"
+      ).innerText;
 
       // Verifica se o valor da célula casa com pelo menos um dos selecionados
       const match = selected_values.some((value) => cell_value.includes(value));
@@ -1614,7 +1402,9 @@ function soma() {
   if (!valorTotal) {
     return;
   }
-  valorTotal.innerHTML = `${document.querySelectorAll(".active").length} Registros`;
+  valorTotal.innerHTML = `${
+    document.querySelectorAll(".active").length
+  } Registros`;
 }
 
 function somaLista() {
@@ -1622,7 +1412,9 @@ function somaLista() {
   if (!valorTotal) {
     return;
   }
-  valorTotal.innerHTML = `${document.querySelectorAll(".activeLista").length} Registros`;
+  valorTotal.innerHTML = `${
+    document.querySelectorAll(".activeLista").length
+  } Registros`;
 }
 
 function filterAmbos() {
@@ -1948,7 +1740,11 @@ function ativaBtnLista() {
       nomeNormal[x].classList.remove("colNomeComLogin");
     }
   }
-  if (funcao == "ANALISTA!" || funcao == "GERENTE!" || funcao == "GERENTE MARCA!") {
+  if (
+    funcao == "ANALISTA!" ||
+    funcao == "GERENTE!" ||
+    funcao == "GERENTE MARCA!"
+  ) {
     for (let i = 0; i < acoes.length; i++) {
       acoes[i].classList.remove("acoes");
       empTable.classList.add("consulta");
@@ -1979,11 +1775,17 @@ function ativaBtn() {
     }
   }
   if (funcao == "ANALISTA!") {
-    document.getElementById("avaliacaoMensal").innerHTML = `${sessionStorage.getItem(
+    document.getElementById(
+      "avaliacaoMensal"
+    ).innerHTML = `${sessionStorage.getItem(
       "avaliacao_mensal"
     )} <strong class="text-success fs-6">Avaliações</strong> <br>`;
   }
-  if (funcao == "ANALISTA!" || funcao == "GERENTE!" || funcao == "GERENTE MARCA!") {
+  if (
+    funcao == "ANALISTA!" ||
+    funcao == "GERENTE!" ||
+    funcao == "GERENTE MARCA!"
+  ) {
     for (let i = 0; i < acoes.length; i++) {
       acoes[i].classList.remove("acoes");
       empTable.classList.add("consulta");
@@ -2043,14 +1845,16 @@ function dadosFiltroLista() {
 
   mesLista.value = previousSelectedMes;
 }
-window.dadosFiltroLista  =dadosFiltroLista
+window.dadosFiltroLista = dadosFiltroLista;
 
 // Atualiza os meses sempre que o ano for alterado
-document.getElementById("anoLista").addEventListener("change", dadosFiltroLista);
+document
+  .getElementById("anoLista")
+  .addEventListener("change", dadosFiltroLista);
 
 function busc() {
   let tbodyL = document.getElementById("tbodyLista");
   tbodyL.innerText = "";
   listaTableLista();
 }
-window.busc = busc
+window.busc = busc;
