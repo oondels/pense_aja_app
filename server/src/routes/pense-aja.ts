@@ -60,4 +60,17 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
   }
 });
 
+router.get("/id/:id", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const dassOffice = req.query.dassOffice as string;
+    
+    const result = await PenseAjaService.getPenseAjaById(id, dassOffice);
+
+    res.status(200).json(result)
+  } catch (error) {
+    next(error);
+  }
+})
+
 export default router;
