@@ -40,6 +40,18 @@ interface PenseAjaData {
   areaMelhoria: string;
 }
 
+interface EvaluationData {
+  avaliacao: string;
+  emEspera: boolean;
+  replicavel: boolean;
+  justificativa: string;
+  usuario: string;
+  nome: string;
+  funcao: string;
+  dassOffice: string;
+  status: string;
+}
+
 const turnoMap: Record<string, string> = {
   A: "1° Turno",
   B: "2° Turno",
@@ -340,26 +352,68 @@ export const PenseAjaService = {
     const client = await pool.connect();
 
     try {
-      const data = await client.query(`
+      const data = await client.query(
+        `
         SELECT  
           matricula, nome, setor, turno, gerente, data_realizada,
-          situacao_anterior, situacao_atual, nome_projeto, super_producao, transporte, processamento, movimento,
-          estoque, espera, talento, retrabalho, gerente_aprovador, data_aprogerente, analista_avaliador
+          situacao_anterior, situacao_atual, nome_projeto, super_producao, transporte, 
+          processamento, movimento, estoque, espera, talento, retrabalho, gerente_aprovador, 
+          data_aprogerente, analista_avaliador, classificacao, a3_mae, fabrica
+
         FROM 
           pense_aja.pense_aja${office}
-        WHERE id = $1
-      `, [id])
+        WHERE id = $1`,
+        [id]
+      );
 
       if (data.rows.length === 0) {
-        throw new CustomError("Pense Aja não encontrado.", 404, "Pense Aja não encontrado.");
+        throw new CustomError(
+          "Pense Aja não encontrado.",
+          404,
+          "Pense Aja não encontrado."
+        );
       }
 
-      return data.rows[0]
+      return data.rows[0];
     } catch (error) {
       logger.error("Pense-aja", `Erro ao consultar pense aja por ID: ${error}`);
       throw new CustomError("Erro ao consultar pense aja por ID.");
     } finally {
-      await client.release()
+      await client.release();
+    }
+  },
+
+  async evaluatePenseAja(id: string, evaluationData: EvaluationData) {
+    checkDassOffice(evaluationData.dassOffice);
+    const office =
+      evaluationData.dassOffice !== "SEST"
+        ? "_" + evaluationData.dassOffice
+        : "";
+    const client = await pool.connect();
+
+
+    // * Verifiar qualidade do codigo
+    try {
+      // ! Terminar logica para postagem de avaliações, tanto repóprvar quanto aprovar
+      // todo quando statusAvaliacao for = 'EXCLUIR', fazer condição especial
+      let statusAvaliacao = evaluationData.status;
+
+      let query = `UPDATE pense_aja.pense_aja${office} SET `;
+
+      if (evaluationData.funcao.toLowerCase().includes("analista")) {
+        query += `status_analista = $1, analista_avaliador = $2, data_avaanalista = NOW(), `;
+      }
+      if (evaluationData.funcao.toLowerCase().includes("gerente")) {
+        query += `status_gerente = $1, gerente_avaliador = $2, data_aprogerente, `;
+      }
+
+      query += `classificacao = $3, a3_mae = $4, em_espera = $5, replicavel = $6, updatedat = NOW()`;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      logger.error("Pense-aja", `Erro ao avaliar pense aja.`);
+      throw new CustomError("Erro ao avaliar pense aja.");
+    } finally {
+      await client.release();
     }
   },
 };

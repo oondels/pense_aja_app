@@ -554,7 +554,8 @@
 }
 
 /* Melhorias para textarea */
-.penseaja-form textarea {
+.penseaja-form textarea,
+.justifica-avaliacao textarea {
   min-height: 100px;
   resize: vertical;
   line-height: 1.5;

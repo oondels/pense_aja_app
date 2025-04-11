@@ -948,7 +948,6 @@
         </div>
       </div>
     </div>
-
     <!-- Avaliação Pense Aja -->
     <div class="avaliar-container">
       <div class="avaliar-backdrop"></div>
@@ -962,12 +961,12 @@
               <span class="avaliar-subtitle">Análise de melhoria contínua</span>
             </div>
           </div>
-          
+
           <div class="avaliar-projeto">
             <i class="bi bi-lightbulb"></i>
-            Projeto: <strong id="nome-projeto">Automatização de Formulários</strong>
+            Projeto: <strong id="nome-projeto"></strong>
           </div>
-          
+
           <button class="avaliar-close" aria-label="Fechar">
             <i class="bi bi-x-lg"></i>
           </button>
@@ -978,7 +977,7 @@
           <!-- Status Badge -->
           <div class="avaliar-status pending">
             <i class="bi bi-hourglass-split"></i>
-            <span>Aguardando avaliação</span>
+            <span class="pense-aja-status">Aguardando avaliação</span>
           </div>
 
           <!-- Avaliadores -->
@@ -994,7 +993,9 @@
                 </div>
                 <div class="avaliar-revisor-info">
                   <span class="avaliar-label">Gerente Avaliador</span>
-                  <span class="avaliar-value" id="gerente-avaliador">Maria Oliveira</span>
+                  <span class="avaliar-value" id="gerente-avaliador">
+
+                  </span>
                 </div>
               </div>
               <div class="avaliar-revisor">
@@ -1003,7 +1004,9 @@
                 </div>
                 <div class="avaliar-revisor-info">
                   <span class="avaliar-label">Analista Avaliador</span>
-                  <span class="avaliar-value" id="analista-avaliador">Carlos Santos</span>
+                  <span class="avaliar-value" id="analista-avaliador">
+
+                  </span>
                 </div>
               </div>
             </div>
@@ -1015,35 +1018,41 @@
               <i class="bi bi-person-vcard"></i>
               <h3>Dados do Colaborador</h3>
             </div>
+
             <div class="avaliar-user-content">
               <div class="avaliar-user-row">
                 <div class="avaliar-user-item">
                   <span class="avaliar-label">Matrícula</span>
-                  <span class="avaliar-value" id="matricula">12345</span>
+                  <span class="avaliar-value" id="matricula-penseaja-avaliacao"></span>
                 </div>
+
                 <div class="avaliar-user-item">
                   <span class="avaliar-label">Nome</span>
-                  <span class="avaliar-value" id="nome">João Silva</span>
+                  <span class="avaliar-value" id="nome-penseaja-avaliacao"></span>
                 </div>
               </div>
+
               <div class="avaliar-user-row">
                 <div class="avaliar-user-item">
                   <span class="avaliar-label">Gerente</span>
-                  <span class="avaliar-value" id="gerente">Roberto Almeida</span>
+                  <span class="avaliar-value" id="gerente-penseaja-avaliacao"></span>
                 </div>
+
                 <div class="avaliar-user-item">
                   <span class="avaliar-label">Turno</span>
-                  <span class="avaliar-value" id="turno">Manhã</span>
+                  <span class="avaliar-value" id="turno-penseaja-avaliacao"></span>
                 </div>
               </div>
+
               <div class="avaliar-user-row">
                 <div class="avaliar-user-item">
                   <span class="avaliar-label">Setor</span>
-                  <span class="avaliar-value" id="setor">Produção</span>
+                  <span class="avaliar-value" id="setor-penseaja-avaliacao"></span>
                 </div>
+
                 <div class="avaliar-user-item">
                   <span class="avaliar-label">Data de Realização</span>
-                  <span class="avaliar-value" id="data">10/04/2025</span>
+                  <span class="avaliar-value" id="data-penseaja-avaliacao"></span>
                 </div>
               </div>
             </div>
@@ -1055,22 +1064,26 @@
               <i class="bi bi-arrow-left-right"></i>
               <h3>Situação Antes e Depois</h3>
             </div>
+
             <div class="avaliar-situacao-content">
               <div class="avaliar-tabs">
                 <button class="avaliar-tab-btn active" data-tab="antes">
                   <i class="bi bi-skip-backward-fill"></i>
                   <span>Antes</span>
                 </button>
+
                 <button class="avaliar-tab-btn" data-tab="depois">
                   <i class="bi bi-skip-forward-fill"></i>
                   <span>Depois</span>
                 </button>
               </div>
+
               <div class="avaliar-tab-content active" id="antes-tab">
-                <p id="texto-antes">O processo anterior era manual e demorado, exigindo que os operadores preenchessem formulários em papel e depois os digitalizassem. Isso gerava erros de digitação, perda de documentos e atrasos significativos no fluxo de trabalho.</p>
+                <p id="texto-antes-penseaja"></p>
               </div>
+
               <div class="avaliar-tab-content" id="depois-tab">
-                <p id="texto-depois">Com a implementação do sistema digital, o processo tornou-se totalmente automatizado. Os formulários são preenchidos diretamente no tablet, eliminando erros de digitação e perda de documentos. O tempo médio de processamento reduziu de 4 horas para 30 minutos.</p>
+                <p id="texto-depois-penseaja"></p>
               </div>
             </div>
           </div>
@@ -1079,34 +1092,37 @@
           <div class="avaliar-card-nivel">
             <div class="avaliar-card-header">
               <i class="bi bi-trophy"></i>
-              <h3>Classificação da Sugestão</h3>
+              <h3>Classificação do Pense<span class="avaliar-highlight">&</span>Aja</h3>
             </div>
+
             <div class="avaliar-nivel-content">
               <div class="avaliar-rating">
                 <label class="avaliar-rating-option">
-                  <input type="radio" name="avaliacao" value="1">
+                  <input type="radio" name="avaliacao-pense-aja" value="A">
                   <div class="avaliar-rating-display">
-                    <span class="avaliar-rating-value">1</span>
+                    <span class="avaliar-rating-value">A</span>
                     <span class="avaliar-rating-icon">
                       <i class="bi bi-star-fill"></i>
                     </span>
                     <span class="avaliar-rating-label">Básica</span>
                   </div>
                 </label>
+
                 <label class="avaliar-rating-option">
-                  <input type="radio" name="avaliacao" value="2">
+                  <input type="radio" name="avaliacao-pense-aja" value="B">
                   <div class="avaliar-rating-display">
-                    <span class="avaliar-rating-value">2</span>
+                    <span class="avaliar-rating-value">B</span>
                     <span class="avaliar-rating-icon">
                       <i class="bi bi-stars"></i>
                     </span>
                     <span class="avaliar-rating-label">Intermediária</span>
                   </div>
                 </label>
+
                 <label class="avaliar-rating-option">
-                  <input type="radio" name="avaliacao" value="3">
+                  <input type="radio" name="avaliacao-pense-aja" value="C">
                   <div class="avaliar-rating-display">
-                    <span class="avaliar-rating-value">3</span>
+                    <span class="avaliar-rating-value">C</span>
                     <span class="avaliar-rating-icon">
                       <i class="bi bi-award-fill"></i>
                     </span>
@@ -1114,6 +1130,10 @@
                   </div>
                 </label>
               </div>
+            </div>
+
+            <div class="justifica-avaliacao hidden">
+              <textarea placeholder="Justifique a avaliação do pense e aja." name="justificativa-avaliacao" id="justificativa-avaliacao"></textarea>
             </div>
           </div>
 
@@ -1128,6 +1148,7 @@
                   Em Espera
                 </span>
               </label>
+
               <label class="avaliar-toggle">
                 <input type="checkbox" id="replicavel">
                 <span class="avaliar-toggle-slider"></span>
@@ -1142,20 +1163,22 @@
 
         <!-- Footer -->
         <div class="avaliar-footer">
-          
           <div class="avaliar-actions">
             <button class="avaliar-btn avaliar-btn-aprovar">
               <i class="bi bi-check-circle"></i>
               <span>Aprovar</span>
             </button>
+
             <button class="avaliar-btn avaliar-btn-reprovar">
               <i class="bi bi-x-circle"></i>
               <span>Reprovar</span>
             </button>
+
             <button class="avaliar-btn avaliar-btn-excluir">
               <i class="bi bi-trash"></i>
               <span>Excluir</span>
             </button>
+            
             <button class="avaliar-btn avaliar-btn-cancelar">
               <i class="bi bi-arrow-return-left"></i>
               <span>Cancelar</span>
@@ -1529,6 +1552,7 @@
   <script src="assets/js/email.js" type="module"></script>
   <script src="assets/js/unidade-dass.js" type="module"></script>
   <script src="assets/js/registerPenseAja.js" type="module"></script>
+  <script src="assets/js/evaluatePenseAja.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 
