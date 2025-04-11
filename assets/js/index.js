@@ -317,7 +317,7 @@ const login = () => {
   loading.classList.remove("hidden");
 
   axios
-    .post(`http://10.110.30.193:2399/auth/login`, { usuario: username, senha: password })
+    .post(`${ip}:2399/auth/login`, { usuario: username, senha: password })
     .then((response) => {
       const data = response.data;
       sessionStorage.setItem("token", data.token);
@@ -401,7 +401,7 @@ logoutButton.addEventListener("click", () => {
   loading.classList.remove("hidden");
 
   axios
-    .post("http://10.110.30.193:2399/auth/logout")
+    .post(`${ip}:2399/auth/logout`)
     .then(() => {
       sessionStorage.clear();
 
