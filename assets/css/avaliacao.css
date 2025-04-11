@@ -62,6 +62,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   border-top-right-radius: 16px !important;
   border-top-left-radius: 16px !important;
+  min-height: 110px;
 }
 
 .avaliar-title {
@@ -71,8 +72,8 @@
 }
 
 .avaliar-logo {
-  width: 40px;
-  height: 40px;
+  width: 70px;
+  height: 70px;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
@@ -170,7 +171,7 @@
 .avaliar-card-user:hover,
 .avaliar-card-situacao:hover,
 .avaliar-card-nivel:hover {
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18);
 }
 
 .avaliar-card-header {
@@ -241,13 +242,13 @@
 }
 
 .avaliar-revisor-info .avaliar-label {
-  font-size: 12px;
+  font-size: 14px;
   color: #666;
   margin-bottom: 2px;
 }
 
 .avaliar-revisor-info .avaliar-value {
-  font-weight: 500;
+  font-weight: 900;
   color: #333;
 }
 
@@ -272,7 +273,7 @@
 }
 
 .avaliar-user-item .avaliar-label {
-  font-size: 12px;
+  font-size: 14px;
   color: #666;
   margin-bottom: 4px;
 }
@@ -398,6 +399,36 @@
   color: #666;
 }
 
+.justifica-avaliacao {
+  padding: 15px;
+}
+
+.justifica-avaliacao textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid #cfcfcf;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: all 0.3s;
+  background-color: #fdfdfd;
+  color: #333;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.justifica-avaliacao textarea:focus {
+  border-color: #ef5350;
+  outline: none;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(239, 83, 80, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.justifica-avaliacao textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.5;
+  padding-top: 12px;
+}
+
 /* Flags */
 .avaliar-flags-content {
   padding: 16px 20px;
@@ -474,6 +505,11 @@
   gap: 8px;
   font-size: 16px;
   color: #ffffff !important;
+}
+
+.avaliar-projeto i {
+  color: rgb(224, 224, 39);
+  font-weight: bold;
 }
 
 .avaliar-actions {

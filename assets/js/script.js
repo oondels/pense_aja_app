@@ -53,6 +53,123 @@ const getCachedData = (cacheKey, _) => {
   }
 };
 
+// Avaliaca dos pense e aja
+const avaliarContainer = document.querySelector(".avaliar-container");
+const avaliarContent = document.querySelector(".avaliar-content");
+const loadEvaluateButtons = () => {
+  ativaBtn();
+
+  // Avaliar pense e aja
+  const penseajaEvaluateButtons = document.querySelectorAll("span.btnEvaluateLista");
+  const dassOffice = localStorage.getItem("unidadeDass");
+
+  // Conteúdo pense aja a ser avaliado
+  let nomeProjeto = document.querySelector("#nome-projeto");
+  let statusProjeto = document.querySelector(".pense-aja-status");
+  let gerenteAvaliador = document.querySelector("#gerente-avaliador");
+  let analistaAvaliador = document.querySelector("#analista-avaliador");
+  let matriculaCriador = document.querySelector(
+    "#matricula-penseaja-avaliacao"
+  );
+  let nomeCriador = document.querySelector("#nome-penseaja-avaliacao");
+  let gerenteCriador = document.querySelector("#gerente-penseaja-avaliacao");
+  let turnoCriador = document.querySelector("#turno-penseaja-avaliacao");
+  let setorCriador = document.querySelector("#setor-penseaja-avaliacao");
+  let dataCriacao = document.querySelector("#data-penseaja-avaliacao");
+  let situacaoAntes = document.querySelector("#texto-antes-penseaja");
+  let situacaoDepois = document.querySelector("#texto-depois-penseaja");
+
+  // Abrir pense aja para avaliar
+  penseajaEvaluateButtons.forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      let penseAjaId = event.target.id.substring(1);
+      sessionStorage.setItem("penseAjaEmAvaliacao", penseAjaId)
+
+      // Ativando popup de avaliação
+      avaliarContainer.classList.add("active");
+      avaliarContent.classList.add("active");
+
+      const turnoMapping = {
+        C: "3° Turno",
+        A: "1° Turno",
+        B: "2° Turno",
+      };
+
+      try {
+        const response = await axios.get(
+          `${ip}:2512/pense-aja/id/${penseAjaId}`,
+          { params: { dassOffice: dassOffice } }
+        );
+
+        // Renderiza conteúdo para o usuário
+        nomeProjeto.innerHTML = response.data.nome_projeto;
+        if (response.data.gerente_aprovador) {
+          statusProjeto.innerHTML = "Avaliado pelo gerente!";
+        } else if (response.data.analista_avaliador) {
+          statusProjeto.innerHTML = "Avaliado pelo analista!";
+        } else {
+          statusProjeto.innerHTML = "Aguardando avaliação!";
+        }
+        gerenteAvaliador.innerHTML =
+          response.data.gerente_aprovador || "Ainda não avaliou!";
+        analistaAvaliador.innerHTML =
+          response.data.analista_avaliador || "Ainda não avaliou!";
+        matriculaCriador.innerHTML = response.data.matricula;
+        nomeCriador.innerHTML = response.data.nome;
+        gerenteCriador.innerHTML = response.data.gerente;
+        turnoCriador.innerHTML =
+          turnoMapping[response.data.turno] || "Comercial";
+        setorCriador.innerHTML = response.data.setor;
+        dataCriacao.innerHTML = new Date(
+          response.data.data_realizada
+        ).toLocaleDateString();
+        situacaoAntes.innerHTML = response.data.situacao_anterior;
+        situacaoDepois.innerHTML = response.data.situacao_atual;
+      } catch (error) {
+        showNotification(
+          "Erro",
+          "Erro ao Coletar dados do pense aja. Entre em contato com a equipe de automação.",
+          "error",
+          2500
+        );
+        console.error("Erro ao avaliar pense e aja: ", error);
+      }
+    });
+  });
+
+  // Botões para alternar entre "Antes" e "Depois"
+  const botaoAntesDepois = document.querySelectorAll(".avaliar-tab-btn");
+  botaoAntesDepois.forEach((btn) => {
+    btn.addEventListener("click", (event) => {
+      const clickedButton = event.target.closest(".avaliar-tab-btn");
+      if (!clickedButton) return;
+
+      // Remove active dos botões e conteudos correspondentes
+      botaoAntesDepois.forEach((btn) => btn.classList.remove("active"));
+      document
+        .querySelectorAll(".avaliar-tab-content")
+        .forEach((tab) => tab.classList.remove("active"));
+      // Adiciona a classe 'active' apenas no botão clicado
+      clickedButton.classList.add("active");
+
+      // Coleta o valor de `data-tab` para coletar o conteudo referente
+      const tabName = clickedButton.getAttribute("data-tab");
+      const activeContent = document.getElementById(`${tabName}-tab`);
+
+      if (activeContent) {
+        activeContent.classList.add("active");
+      }
+    });
+  });
+};
+
+// Fechar popup de avaliação
+const closeAvaliarButton = document.querySelector(".avaliar-close");
+closeAvaliarButton.addEventListener("click", () => {
+  avaliarContainer.classList.remove("active");
+  avaliarContent.classList.remove("active");
+});
+
 const renderListaTable = (data) => {
   let tbody = document.getElementById("tbody");
   tbody.innerText = "";
@@ -157,56 +274,8 @@ const renderListaTable = (data) => {
     }
   });
 
-  const avaliarContainer = document.querySelector(".avaliar-container");
-  const avaliarContent = document.querySelector(".avaliar-content");
-  const LoadButtons = () => {
-    ativaBtn();
-
-    // Avaliar pense e aja
-    const evaluateButtons = document.querySelectorAll("span.btnEvaluateLista");
-    const dassOffice = localStorage.getItem("unidadeDass");
-
-    // Botões avaliação lista
-    evaluateButtons.forEach((button) => {
-      button.addEventListener("click", async (event) => {
-        let penseAjaId = event.target.id.substring(1);
-
-        // Ativando popup de avaliação
-        avaliarContainer.classList.add("active");
-        avaliarContent.classList.add("active");
-
-        try {
-          const response = await axios.get(
-            `${ip}:2512/pense-aja/id/${penseAjaId}`,
-            {
-              params: { dassOffice: dassOffice },
-            }
-          );
-
-          console.log(response.data);
-        } catch (error) {
-          showNotification(
-            "Erro",
-            "Erro ao avaliar pense e aja. Entre em contato com a equipe de suporte.",
-            "error",
-            2500
-          );
-          console.error("Erro ao avaliar pense e aja: ", error);
-        }
-      });
-    });
-  };
-  LoadButtons();
+  loadEvaluateButtons();
 };
-
-// Fechar popup de avaliação
-const closeAvaliarButton = document.querySelector(".avaliar-close");
-const avaliarContainer = document.querySelector(".avaliar-container");
-const avaliarContent = document.querySelector(".avaliar-content");
-closeAvaliarButton.addEventListener("click", () => {
-  avaliarContainer.classList.remove("active");
-  avaliarContent.classList.remove("active");
-});
 
 function activeBtn(e) {
   const btnsGlossario = document.querySelectorAll(".coresGlossario");
@@ -277,9 +346,7 @@ async function listaTable() {
 
   let resBuscaDados;
   try {
-    const response = await axios.get(
-      `http://10.110.30.193:2512/pense-aja/${unidade}`
-    );
+    const response = await axios.get(`${ip}:2512/pense-aja/${unidade}`);
 
     resBuscaDados = response.data;
     if (resBuscaDados.dados.length === 0) {
@@ -938,7 +1005,7 @@ async function listaTableLista() {
   valorTotal.innerHTML = `${listaSize} Registros`;
 
   await axios
-    .get(`http://10.110.30.193:2512/pense-aja/history/${unidade}`, {
+    .get(`${ip}:2512/pense-aja/history/${unidade}`, {
       params: {
         selectedMonth: Number(selectMes),
         selectedYear: selectAno,
