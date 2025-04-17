@@ -88,7 +88,7 @@ router.get(
   }
 );
 
-// ! Colocar o a3 para enviar para essa rota
+// TODO: Após atualizar o registro, atualizar o cache no front-end
 router.put(
   "/avaliar/:id",
   verifyToken,
@@ -96,20 +96,23 @@ router.put(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = req.body;
-
-      console.log(req.user);
+      const { id } = req.params;
 
       const evaluationData = {
         ...req.user,
         ...data,
       };
 
-      // const neweEvaluate = await PenseAjaService.
+      const newEvaluation = await PenseAjaService.evaluatePenseAja(
+        id,
+        evaluationData
+      );
 
-      res.status(200).json({
-        message: "Pense Aja avaliado com sucesso!",
-        data: data,
-      });
+      res.json(newEvaluation);
+      // res.status(200).json({
+      //   message: "Pense Aja avaliado com sucesso!",
+      //   data: newEvaluation,
+      // });
       return;
     } catch (error) {
       next(error);

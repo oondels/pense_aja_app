@@ -50,6 +50,7 @@ interface EvaluationData {
   funcao: string;
   dassOffice: string;
   status: string;
+  a3Mae?: string;
 }
 
 const turnoMap: Record<string, string> = {
@@ -391,26 +392,51 @@ export const PenseAjaService = {
         : "";
     const client = await pool.connect();
 
+    const checkUserRole = (role: string) => {
+      return role.includes("analista")
+        ? "status_analista = $1, analista_avaliador = $2, data_avaanalista = NOW(), "
+        : "status_gerente = $1, gerente_avaliador = $2, data_aprogerente = NOW(), ";
+    };
 
-    // * Verifiar qualidade do codigo
     try {
-      // ! Terminar logica para postagem de avaliações, tanto repóprvar quanto aprovar
-      // todo quando statusAvaliacao for = 'EXCLUIR', fazer condição especial
-      let statusAvaliacao = evaluationData.status;
+      await client.query("BEGIN");
+      const statusAvaliacao = evaluationData.status;
+      const avaliador = evaluationData.usuario
 
+      let params: Array<string | boolean> = []
       let query = `UPDATE pense_aja.pense_aja${office} SET `;
 
-      if (evaluationData.funcao.toLowerCase().includes("analista")) {
-        query += `status_analista = $1, analista_avaliador = $2, data_avaanalista = NOW(), `;
-      }
-      if (evaluationData.funcao.toLowerCase().includes("gerente")) {
-        query += `status_gerente = $1, gerente_avaliador = $2, data_aprogerente, `;
-      }
+      query += checkUserRole(evaluationData.funcao.toLowerCase());
+      params.push(statusAvaliacao)
+      params.push(avaliador)
 
-      query += `classificacao = $3, a3_mae = $4, em_espera = $5, replicavel = $6, updatedat = NOW()`;
+      if (statusAvaliacao === "EXCLUIR") {
+        query += `excluido = 'S', updatedat = NOW() `;
+      } else {
+        query += `classificacao = $3, a3_mae = $4, em_espera = $5, replicavel = $6, updatedat = NOW() `;
+        params.push(evaluationData.avaliacao);
+        params.push(evaluationData.a3Mae || "");
+        params.push(evaluationData.emEspera);
+        params.push(evaluationData.replicavel);
+      }
+      query += `WHERE id = $${params.length + 1} RETURNING id;`;
+      params.push(id)
+
+      const result = await client.query(query, params)
+      if (result.rows.length === 0) {
+        await client.query("ROLLBACK");
+        throw new CustomError(
+          "Pense Aja não encontrado.",
+          404,
+          "Pense Aja não encontrado."
+        );
+      }
+      await client.query("COMMIT")
+      
+      return result.rows[0];
     } catch (error) {
       await client.query("ROLLBACK");
-      logger.error("Pense-aja", `Erro ao avaliar pense aja.`);
+      logger.error("Pense-aja", `Erro ao avaliar pense aja: ${error}`);
       throw new CustomError("Erro ao avaliar pense aja.");
     } finally {
       await client.release();

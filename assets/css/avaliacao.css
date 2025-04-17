@@ -51,6 +51,94 @@
   visibility: visible;
 }
 
+#a3-penseAja {
+  appearance: none;
+  background: linear-gradient(to right, #fff9f9, #fff5f5);
+  border: 1px solid #ffcdd2;
+  border-radius: 10px;
+  color: #b71c1c;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+  padding: 12px 18px;
+  width: 80%;
+  box-shadow: 0 4px 16px rgba(229, 115, 115, 0.1), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23b71c1c' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 16px) center;
+  padding-right: 48px;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(5px);
+}
+
+#a3-penseAja::before {
+  content: "A3";
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(183, 28, 28, 0.5);
+  font-weight: 700;
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+
+#a3-penseAja:focus {
+  outline: none;
+  border-color: #e53935;
+  box-shadow: 0 4px 20px rgba(229, 57, 53, 0.15), 
+              0 0 0 2px rgba(229, 57, 53, 0.1);
+  transform: translateY(-2px);
+}
+
+#a3-penseAja:hover {
+  background: linear-gradient(to right, #fff5f5, #ffebee);
+  border-color: #ef9a9a;
+  box-shadow: 0 6px 20px rgba(229, 115, 115, 0.15), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Estilo das opções do select */
+#a3-penseAja option {
+  background-color: #fff;
+  color: #b71c1c;
+  padding: 12px;
+  font-weight: 500;
+  border-radius: 8px;
+}
+
+#a3-penseAja option:checked {
+  background-color: #ffebee;
+  font-weight: 700;
+  color: #c62828;
+}
+
+/* Estilo especial para opção selected/disabled */
+#a3-penseAja option:first-child {
+  font-style: italic;
+  color: #d32f2f;
+  font-weight: 400;
+}
+
+/* Para navegadores webkit como Chrome/Safari */
+#a3-penseAja::-webkit-scrollbar {
+  width: 8px;
+}
+
+#a3-penseAja::-webkit-scrollbar-track {
+  background: #ffebee;
+  border-radius: 4px;
+}
+
+#a3-penseAja::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #ef5350, #e53935);
+  border-radius: 4px;
+  border: 2px solid #ffebee;
+}
+
 /* Header */
 .avaliar-header {
   display: flex;

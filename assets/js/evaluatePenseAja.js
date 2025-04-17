@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const justificativa = document.querySelector(
       "#justificativa-avaliacao"
     ).value;
+    const a3Mae = document.querySelector("#a3-penseAja").value || ""
 
     if (!dassOffice) {
       showNotification(
@@ -46,6 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     //     return;
     // }
 
+    // TODO: Após atualizar o registro, atualizar o cache no front-end
     try {
       const response = await axios.put(
         `${ip}:2512/pense-aja/avaliar/${penseAjaId}`,
@@ -55,7 +57,8 @@ document.addEventListener("DOMContentLoaded", () => {
           replicavel: replicavel,
           justificativa: justificativa,
           dassOffice: dassOffice,
-          status: action
+          status: action,
+          a3Mae: a3Mae
         }
       );
       console.log(response.data);

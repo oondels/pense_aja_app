@@ -936,7 +936,10 @@
                 </div>
 
                 <textarea id="ganhos-descricao" placeholder="Explique detalhadamente quais ganhos foram obtidos com sua melhoria..."></textarea>
-                <div class="input-helper">Mencione dados, números e resultados que demonstram o impacto positivo da sua ideia.</div>
+                <div class="input-helper">
+                  <span class="bi bi-lightbulb text-yellow"></span>
+                  Mencione dados, números e resultados que demonstram o impacto positivo da sua ideia.
+                </div>
               </div>
             </div>
           </div>
@@ -955,7 +958,7 @@
         <!-- Header -->
         <div class="avaliar-header">
           <div class="avaliar-title">
-            <img src="./assets/img/icons/dass-penseaja.png" alt="Logo" class="avaliar-logo">
+            <img src="./assets/img/icons/dass-penseaja-light.png" alt="Logo" class="avaliar-logo">
             <div class="avaliar-title-text">
               <h2>Avaliação Pense<span class="avaliar-highlight">&</span>Aja</h2>
               <span class="avaliar-subtitle">Análise de melhoria contínua</span>
@@ -1005,7 +1008,6 @@
                 <div class="avaliar-revisor-info">
                   <span class="avaliar-label">Analista Avaliador</span>
                   <span class="avaliar-value" id="analista-avaliador">
-
                   </span>
                 </div>
               </div>
@@ -1157,7 +1159,21 @@
                   Replicável
                 </span>
               </label>
+
+
             </div>
+            <select id="a3-penseAja" class="form-select">
+              <option value="" selected disabled id="escolha">Selecione</option>
+              <option value="lean">LEAN</option>
+              <option value="pessoas">PESSOAS</option>
+              <option value="digitalizacao">DIGITALIZAÇÃO</option>
+              <option value="produtividade">PRODUTIVIDADE</option>
+              <option value="padronizacao">PADRONIZAÇÃO</option>
+              <option value="comunicacao">COMUNICAÇÃO</option>
+              <option value="ssma">SSMA</option>
+              <option value="orcamento">ORÇAMENTO</option>
+              <option value="qualidade">QUALIDADE</option>
+            </select>
           </div>
         </div>
 
@@ -1178,7 +1194,7 @@
               <i class="bi bi-trash"></i>
               <span>Excluir</span>
             </button>
-            
+
             <button class="avaliar-btn avaliar-btn-cancelar">
               <i class="bi bi-arrow-return-left"></i>
               <span>Cancelar</span>

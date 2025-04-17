@@ -14,6 +14,9 @@
   opacity: 1;
   transition: opacity 0.3s ease;
 }
+.text-yellow {
+  color: #ffc107 !important;
+}
 
 .loading-spinner {
   position: relative;
