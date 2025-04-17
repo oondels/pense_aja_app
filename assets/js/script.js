@@ -60,7 +60,9 @@ const loadEvaluateButtons = () => {
   ativaBtn();
 
   // Avaliar pense e aja
-  const penseajaEvaluateButtons = document.querySelectorAll("span.btnEvaluateLista");
+  const penseajaEvaluateButtons = document.querySelectorAll(
+    "span.btnEvaluateLista"
+  );
   const dassOffice = localStorage.getItem("unidadeDass");
 
   // Conteúdo pense aja a ser avaliado
@@ -83,7 +85,7 @@ const loadEvaluateButtons = () => {
   penseajaEvaluateButtons.forEach((button) => {
     button.addEventListener("click", async (event) => {
       let penseAjaId = event.target.id.substring(1);
-      sessionStorage.setItem("penseAjaEmAvaliacao", penseAjaId)
+      sessionStorage.setItem("penseAjaEmAvaliacao", penseAjaId);
 
       // Ativando popup de avaliação
       avaliarContainer.classList.add("active");
@@ -269,8 +271,14 @@ const renderListaTable = (data) => {
       idTr.classList.remove("reprovadoGerente");
       idTr.classList.add("emEspera");
     }
-    if (gerenteAprovador != "" && analistaAvaliador != "") {
+    if (!gerenteAprovador && !analistaAvaliador) {
       idTr.classList.add("avaliado");
+    }
+
+    if (element.id === "4902") {
+      console.log("Gerente aprovador: ",gerenteAprovador);
+      console.log("Analisata aprovador: ",analistaAvaliador);
+      
     }
   });
 

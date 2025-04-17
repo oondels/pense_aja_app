@@ -418,7 +418,11 @@ logoutButton.addEventListener("click", () => {
 
 const testeProtectedRoute = async () => {
   axios
-    .get("http://10.110.30.193:2512/pense-aja/protected")
+    .get(`${ip}:2512/pense-aja/protected`, {
+      headers: {
+        Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+      },
+    })
     .then((response) => {
       console.log(response.data);
     })
