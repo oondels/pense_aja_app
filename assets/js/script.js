@@ -253,7 +253,7 @@ const renderListaTable = (data) => {
     } else {
       idTr.classList.remove("semAnalista");
     }
-    if (gerenteAprovador == "" && analistaAvaliador == "") {
+    if (!gerenteAprovador && !analistaAvaliador) {
       idTr.classList.add("semAmbos");
     } else {
       idTr.classList.remove("semAmbos");
@@ -271,7 +271,7 @@ const renderListaTable = (data) => {
       idTr.classList.remove("reprovadoGerente");
       idTr.classList.add("emEspera");
     }
-    if (!gerenteAprovador && !analistaAvaliador) {
+    if (gerenteAprovador && analistaAvaliador) {
       idTr.classList.add("avaliado");
     }
 
