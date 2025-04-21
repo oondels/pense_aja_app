@@ -464,14 +464,15 @@ footer {
 }
 
 .exemploBranco {
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0 !important;
+  background-color: #e6f9e6;
+  border: 1px solid #a7f3d0 !important;
 }
 .labelBranco {
   color: #555555;
 }
 .exemploRose {
-  background-color: #ff2d55;
+  background-color: #fff9c4;
+  border: 1px solid #ffeb3b !important;
 }
 .labelRose {
   color: #cc2444;

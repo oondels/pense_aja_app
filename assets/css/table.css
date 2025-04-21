@@ -300,7 +300,6 @@ tbody tr:hover {
   transform: translateX(-50%) translateY(-5px);
 }
 
-/* Status colors with modern styling */
 .semAnalista,
 .semAnalistaLista {
   background-color: rgba(56, 189, 248, 0.15);
@@ -317,6 +316,13 @@ tbody tr:hover {
   transition: all 0.3s;
 }
 
+.reprovadoGerente, .reprovadoGerenteLista {
+  background-color: #fcd6d6;
+  border-left: 4px solid #ff4000 !important;
+  color: #922703;
+  transition: all 0.3s;
+} 
+
 .semAmbos,
 .semAmbosLista {
   background-color: rgba(168, 85, 247, 0.15);
@@ -327,8 +333,13 @@ tbody tr:hover {
 
 .avaliado,
 .avaliadoLista {
-  background-color: #fff;
-  border-left: 4px solid #e2e8f0;
+  background-color: #f1fff1;
+  border-left: 4px solid #a7f3d0;
+}
+
+.emEspera, .emEsperaLista {
+  background-color: #fbf9e3;
+  border-left: 4px solid #ffeb3b;
 }
 
 .subClassificacao {

@@ -243,12 +243,12 @@ const renderListaTable = (data) => {
     statusGerente = element.status_gerente;
     emEspera = element.em_espera;
     idTr = document.getElementById(idLinha);
-    if (gerenteAprovador == "" && analistaAvaliador != "") {
+    if (!gerenteAprovador && analistaAvaliador) {
       idTr.classList.add("semGerente");
     } else {
       idTr.classList.remove("semGerente");
     }
-    if (gerenteAprovador != "" && analistaAvaliador == "") {
+    if (gerenteAprovador && !analistaAvaliador) {
       idTr.classList.add("semAnalista");
     } else {
       idTr.classList.remove("semAnalista");
@@ -264,7 +264,7 @@ const renderListaTable = (data) => {
       idTr.classList.remove("semAmbos");
       idTr.classList.add("reprovadoGerente");
     }
-    if (emEspera == "1") {
+    if (emEspera === "1") {
       idTr.classList.remove("semAnalista");
       idTr.classList.remove("semGerente");
       idTr.classList.remove("semAmbos");
@@ -273,12 +273,6 @@ const renderListaTable = (data) => {
     }
     if (gerenteAprovador && analistaAvaliador) {
       idTr.classList.add("avaliado");
-    }
-
-    if (element.id === "4902") {
-      console.log("Gerente aprovador: ",gerenteAprovador);
-      console.log("Analisata aprovador: ",analistaAvaliador);
-      
     }
   });
 
@@ -881,28 +875,28 @@ async function listaTableLista() {
   const renderListaTableLista = (data) => {
     tbody.innerHTML = "";
     data.forEach((element) => {
-      let tr = tbody.insertRow();
-      let td_id = tr.insertCell();
-      let td_realizado = tr.insertCell();
-      let td_nome = tr.insertCell();
-      let td_setor = tr.insertCell();
-      let td_gerente = tr.insertCell();
-      let td_nome_projeto = tr.insertCell();
-      let td_turno = tr.insertCell();
-      let td_acoes = tr.insertCell();
+      let trLista = tbody.insertRow();
+      let td_idLista = trLista.insertCell();
+      let td_realizadoLista = trLista.insertCell();
+      let td_nomeLista = trLista.insertCell();
+      let td_setorLista = trLista.insertCell();
+      let td_gerenteLista = trLista.insertCell();
+      let td_nome_projetoLista = trLista.insertCell();
+      let td_turnoLista = trLista.insertCell();
+      let td_acoesLista = trLista.insertCell();
 
-      td_id.innerText = element.id;
-      td_realizado.innerText = element.data_realizada;
-      td_nome.innerText = element.nome;
-      td_setor.innerText = element.setor;
-      td_gerente.innerText = element.gerente;
-      td_nome_projeto.innerHTML += `${element.nome_projeto} <div id="toolLista"><div id="tooltipTextBeforeLista"><strong>SITUAÇÃO ANTERIOR: </strong>${element.situacao_anterior}</div><div id="tooltipTextAfterLista"><strong>SITUAÇÃO ATUAL: </strong>${element.situacao_atual}</div></div>`;
-      td_turno.innerText = element.turno;
-      td_acoes.innerHTML += `<i class="btnAcoes botaoInfo bi bi-info-square iLista" id="iLista${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
+      td_idLista.innerText = element.id;
+      td_realizadoLista.innerText = element.data_realizada;
+      td_nomeLista.innerText = element.nome;
+      td_setorLista.innerText = element.setor;
+      td_gerenteLista.innerText = element.gerente;
+      td_nome_projetoLista.innerHTML += `${element.nome_projeto} <div id="toolLista"><div id="tooltipTextBeforeLista"><strong>SITUAÇÃO ANTERIOR: </strong>${element.situacao_anterior}</div><div id="tooltipTextAfterLista"><strong>SITUAÇÃO ATUAL: </strong>${element.situacao_atual}</div></div>`;
+      td_turnoLista.innerText = element.turno;
+      td_acoesLista.innerHTML += `<i class="btnAcoes botaoInfo bi bi-info-square iLista" id="iLista${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
 
-      tr.classList.add("headConsultaLista", "activeLista");
-      tr.setAttribute("id", element.id);
-      td_id.classList.add("thID");
+      trLista.classList.add("headConsultaLista", "activeLista");
+      trLista.setAttribute("id", element.id);
+      td_idLista.classList.add("thID");
 
       const data = new Date(element.criado);
       const hora = `${
@@ -916,20 +910,20 @@ async function listaTableLista() {
         .toLocaleDateString()
         .replace(new RegExp("/", "g"), "-");
 
-      td_realizado.classList.add("celula", "content", "colMaior", "center");
-      td_realizado.setAttribute("id", "data");
-      td_realizado.setAttribute("data-bs-toggle", "tooltip");
-      td_realizado.setAttribute("data-bs-placement", "bottom");
-      td_realizado.setAttribute("data-bs-custom-class", "custom-tooltip");
-      td_realizado.setAttribute("title", `Criado em: ${criado} às ${hora}`);
+      td_realizadoLista.classList.add("celula", "content", "colMaior", "center");
+      td_realizadoLista.setAttribute("id", "data");
+      td_realizadoLista.setAttribute("data-bs-toggle", "tooltip");
+      td_realizadoLista.setAttribute("data-bs-placement", "bottom");
+      td_realizadoLista.setAttribute("data-bs-custom-class", "custom-tooltip");
+      td_realizadoLista.setAttribute("title", `Criado em: ${criado} às ${hora}`);
 
-      td_nome.classList.add("nomeNormal", "celula", "content", "colNome");
-      td_setor.classList.add("celula", "content", "colMaiorX");
-      td_gerente.classList.add("celula", "content", "colMaiorX");
-      td_nome_projeto.classList.add("celula", "content", "colMaiorX");
-      td_nome_projeto.setAttribute("id", "nomeProjetos");
-      td_turno.classList.add("celula", "content", "colMaior", "center");
-      td_acoes.classList.add(
+      td_nomeLista.classList.add("nomeNormal", "celula", "content", "colNome");
+      td_setorLista.classList.add("celula", "content", "colMaiorX");
+      td_gerenteLista.classList.add("celula", "content", "colMaiorX");
+      td_nome_projetoLista.classList.add("celula", "content", "colMaiorX");
+      td_nome_projetoLista.setAttribute("id", "nomeProjetos");
+      td_turnoLista.classList.add("celula", "content", "colMaior", "center");
+      td_acoesLista.classList.add(
         "action",
         "celula",
         "content",
@@ -938,7 +932,6 @@ async function listaTableLista() {
         "center"
       );
 
-      setTimeout(() => {
         let gerenteAprovadorLista;
         let analistaAvaliadorLista;
         let idLinhaLista;
@@ -950,21 +943,20 @@ async function listaTableLista() {
         idLinhaLista = element.id;
         statusGerenteLista = element.status_gerente;
         emEsperaLista = element.em_espera;
-        idTrLista = document.getElementById(idLinhaLista);
+        idTrLista = document.getElementById(idLinhaLista);        
 
-        if (!gerenteAprovadorLista && analistaAvaliadorLista !== "") {
+        if (!gerenteAprovadorLista && analistaAvaliadorLista) {
           idTrLista.classList.add("semGerenteLista");
         } else {
           idTrLista.classList.remove("semGerenteLista");
         }
-        if (gerenteAprovadorLista !== "" && analistaAvaliadorLista === "") {
+        if (gerenteAprovadorLista && !analistaAvaliadorLista) {
           idTrLista.classList.add("semAnalistaLista");
         } else {
           idTrLista.classList.remove("semAnalistaLista");
         }
         if (!gerenteAprovadorLista && !analistaAvaliadorLista) {
-          const row = document.getElementById(element.id);
-          row.classList.add("semAmbosLista");
+          idTrLista.classList.add("semAmbosLista");
         } else {
           idTrLista.classList.remove("semAmbosLista");
         }
@@ -981,10 +973,9 @@ async function listaTableLista() {
           idTrLista.classList.remove("reprovadoGerenteLista");
           idTrLista.classList.add("emEsperaLista");
         }
-        if (gerenteAprovadorLista !== "" && analistaAvaliadorLista !== "") {
+        if (gerenteAprovadorLista && analistaAvaliadorLista) {
           idTrLista.classList.add("avaliadoLista");
         }
-      }, 150);
     });
   };
 
