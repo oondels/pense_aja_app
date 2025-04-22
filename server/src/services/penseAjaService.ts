@@ -37,7 +37,20 @@ interface PenseAjaData {
   outrosGanhos?: string;
   ganhos?: Array<string>;
   ganhoDetalhes?: string;
-  areaMelhoria: string
+  areaMelhoria: string;
+}
+
+interface EvaluationData {
+  avaliacao: string;
+  emEspera: boolean;
+  replicavel: boolean;
+  justificativa: string;
+  usuario: string;
+  nome: string;
+  funcao: string;
+  dassOffice: string;
+  status: string;
+  a3Mae?: string;
 }
 
 const turnoMap: Record<string, string> = {
@@ -254,7 +267,7 @@ export const PenseAjaService = {
     }
 
     if (!data.perdas) {
-      data.perdas = []
+      data.perdas = [];
     }
 
     const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
@@ -295,10 +308,11 @@ export const PenseAjaService = {
         data.a3Mae || "",
         JSON.stringify(data.ganhos),
         data.ganhoDetalhes || "",
-        data.areaMelhoria
+        data.areaMelhoria,
       ];
 
-      const newPenseAja = await client.query(`
+      const newPenseAja = await client.query(
+        `
         INSERT INTO pense_aja.pense_aja${office} (
           matricula, nome, turno, setor, gerente, nome_projeto, data_realizada,
           situacao_anterior, situacao_atual, super_producao, transporte, processamento, movimento,
@@ -306,17 +320,23 @@ export const PenseAjaService = {
           a3_mae, ganhos, outros_ganhos, fabrica, createdat, updatedat, lider, excluido
         ) VALUES
          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, NOW(), NOW(), '', '')
-        RETURNING id;`, params);
+        RETURNING id;`,
+        params
+      );
 
       if (newPenseAja.rows.length === 0) {
-        await client.query("ROLLBACK")
-        throw new CustomError("Erro ao registrar pense aja.", 400, "Erro ao inserir no banco de dados.");
+        await client.query("ROLLBACK");
+        throw new CustomError(
+          "Erro ao registrar pense aja.",
+          400,
+          "Erro ao inserir no banco de dados."
+        );
       }
 
-      await client.query("COMMIT")
+      await client.query("COMMIT");
       return newPenseAja.rows[0];
     } catch (error) {
-      await client.query("ROLLBACK")
+      await client.query("ROLLBACK");
       const messageError =
         error instanceof Error ? error.message : "Erro desconhecido!";
       logger.error("Pense-aja", `Erro ao registrar pense aja: ${messageError}`);
@@ -324,6 +344,102 @@ export const PenseAjaService = {
       throw new CustomError("Erro ao registrar pense aja.");
     } finally {
       client.release();
+    }
+  },
+
+  async getPenseAjaById(id: string, dassOffice: string) {
+    checkDassOffice(dassOffice);
+    const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
+    const client = await pool.connect();
+
+    try {
+      const data = await client.query(
+        `
+        SELECT  
+          matricula, nome, setor, turno, gerente, data_realizada,
+          situacao_anterior, situacao_atual, nome_projeto, super_producao, transporte, 
+          processamento, movimento, estoque, espera, talento, retrabalho, gerente_aprovador, 
+          data_aprogerente, analista_avaliador, classificacao, a3_mae, fabrica
+
+        FROM 
+          pense_aja.pense_aja${office}
+        WHERE id = $1`,
+        [id]
+      );
+
+      if (data.rows.length === 0) {
+        throw new CustomError(
+          "Pense Aja não encontrado.",
+          404,
+          "Pense Aja não encontrado."
+        );
+      }
+
+      return data.rows[0];
+    } catch (error) {
+      logger.error("Pense-aja", `Erro ao consultar pense aja por ID: ${error}`);
+      throw new CustomError("Erro ao consultar pense aja por ID.");
+    } finally {
+      await client.release();
+    }
+  },
+
+  async evaluatePenseAja(id: string, evaluationData: EvaluationData) {
+    checkDassOffice(evaluationData.dassOffice);
+    const office =
+      evaluationData.dassOffice !== "SEST"
+        ? "_" + evaluationData.dassOffice
+        : "";
+    const client = await pool.connect();
+
+    const checkUserRole = (role: string) => {
+      return role.includes("analista")
+        ? "status_analista = $1, analista_avaliador = $2, data_avaanalista = NOW(), "
+        : "status_gerente = $1, gerente_avaliador = $2, data_aprogerente = NOW(), ";
+    };
+
+    try {
+      await client.query("BEGIN");
+      const statusAvaliacao = evaluationData.status;
+      const avaliador = evaluationData.usuario
+
+      let params: Array<string | boolean> = []
+      let query = `UPDATE pense_aja.pense_aja${office} SET `;
+
+      query += checkUserRole(evaluationData.funcao.toLowerCase());
+      params.push(statusAvaliacao)
+      params.push(avaliador)
+
+      if (statusAvaliacao === "EXCLUIR") {
+        query += `excluido = 'S', updatedat = NOW() `;
+      } else {
+        query += `classificacao = $3, a3_mae = $4, em_espera = $5, replicavel = $6, updatedat = NOW() `;
+        params.push(evaluationData.avaliacao);
+        params.push(evaluationData.a3Mae || "");
+        params.push(evaluationData.emEspera);
+        params.push(evaluationData.replicavel);
+      }
+      query += `WHERE id = $${params.length + 1} RETURNING id;`;
+      params.push(id)
+
+      const result = await client.query(query, params)
+      if (result.rows.length === 0) {
+        await client.query("ROLLBACK");
+        throw new CustomError(
+          "Pense Aja não encontrado.",
+          404,
+          "Pense Aja não encontrado."
+        );
+      }
+      await client.query("COMMIT")
+      
+      return result.rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+      logger.error("Pense-aja", `Erro ao avaliar pense aja: ${error}`);
+      throw new CustomError("Erro ao avaliar pense aja.");
+    } finally {
+      await client.release();
     }
   },
 };

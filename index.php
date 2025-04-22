@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="./assets/css/new.css">
   <link rel="stylesheet" href="./assets/css/table.css">
   <link rel="stylesheet" href="./assets/css/register.css">
+  <link rel="stylesheet" href="./assets/css/avaliacao.css">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="./assets/js/sweetalert2.all.min.js"></script>
@@ -139,7 +140,7 @@
         <button id="protected-route">Rota protegida</button>
 
         <!-- Tabela -->
-        <div style="display: flex; justify-content: center;">
+        <div class="principal">
           <div class="divTable">
             <table class="consulta" id="emp-table">
               <thead id="headThead">
@@ -147,19 +148,19 @@
                   <th class="subtitles celula colMenor thID">ID</th>
                   <th class="subtitles celula colMaior" col-index=1>Realizado</th>
                   <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
-                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista" data-el="3" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
+                    <select class="table-filter select-modern" autocomplete="off" id="nomeSelLista" name="nomeSelLista" data-el="3" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
                   <th class="subtitles celula colMaiorX" col-index=4>Setor
-                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista"
+                    <select class="table-filter select-modern" autocomplete="off" id="setorSelLista" name="setorSelLista"
                       data-el="4" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
 
                   <th class="subtitles celula colMaiorX" col-index=5>Gerente
-                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="gerenteSelLista"
+                    <select class="table-filter select-modern" autocomplete="off" id="gerenteSelLista"
                       name="gerenteSelLista" data-el="5" onchange="filter_rows('multiple')" multiple>
                       <option value="" id="selecionado"></option>
                       <option value="all"></option>
@@ -167,22 +168,23 @@
                   </th>
 
                   <th class="subtitles celula colMaiorX print" col-index=6>Nome do projeto
-                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="projetoSelLista"
+                    <select class="table-filter select-modern" autocomplete="off" id="projetoSelLista"
                       name="projetoSelLista" data-el="6" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
                   <th class="subtitles celula colMaior" col-index=7>Turno
-                    <select class="table-filter select-modern col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
+                    <select class="table-filter select-modern" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
                       data-el="7" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
-                  <th class="action subtitles celula colMaior acoes">Ações
+                  <th class="action subtitles celula colMenor acoes">Ações
                   </th>
                 </tr>
               </thead>
               <tbody id="tbody">
+                <!-- O conteúdo será adicionado dinamicamente via JavaScript -->
               </tbody>
             </table>
           </div>
@@ -428,6 +430,7 @@
       </div>
     </div>
 
+    <!-- Loja -->
     <div id="loja" class="loja store-container">
       <div class="store-wrapper">
         <div class="store-header red-theme">
@@ -610,6 +613,7 @@
       </div>
     </div>
 
+    <!-- Lista Principal -->
     <div id="lista">
       <div class="navHeaderLista col-12 nav-header-modern">
         <div class="nav-header-content">
@@ -828,23 +832,23 @@
             </div>
 
             <!-- AI button -->
-          <div class="tooltip-container">
-            <button id="ai-button" class="ai-enhance-button" type="button">
-              <div class="ai-enhance-icon">
-                <i class="bi bi-robot"></i>
-                <i class="bi bi-stars icon-spark"></i>
+            <div class="tooltip-container">
+              <button id="ai-button" class="ai-enhance-button" type="button">
+                <div class="ai-enhance-icon">
+                  <i class="bi bi-robot"></i>
+                  <i class="bi bi-stars icon-spark"></i>
+                </div>
+                <span>Melhorar texto com IA</span>
+                <div class="ai-enhance-effect"></div>
+              </button>
+              <div class="ai-tooltip">
+                <strong>
+                  <span class="lamp-icon bi bi-lightbulb"></span>
+                  Dica inteligente!
+                </strong>
+                Revise seu texto com inteligência artificial para facilitar a avaliação!
               </div>
-              <span>Melhorar texto com IA</span>
-              <div class="ai-enhance-effect"></div>
-            </button>
-            <div class="ai-tooltip">
-              <strong>
-                <span class="lamp-icon bi bi-lightbulb"></span>
-                Dica inteligente!
-              </strong>
-              Revise seu texto com inteligência artificial para facilitar a avaliação!
             </div>
-          </div>
           </div>
 
           <!-- 8 Perdas -->
@@ -933,7 +937,10 @@
                 </div>
 
                 <textarea id="ganhos-descricao" placeholder="Explique detalhadamente quais ganhos foram obtidos com sua melhoria..."></textarea>
-                <div class="input-helper">Mencione dados, números e resultados que demonstram o impacto positivo da sua ideia.</div>
+                <div class="input-helper">
+                  <span class="bi bi-lightbulb text-yellow"></span>
+                  Mencione dados, números e resultados que demonstram o impacto positivo da sua ideia.
+                </div>
               </div>
             </div>
           </div>
@@ -942,6 +949,258 @@
             <span>Salvar</span>
             <span class="bi bi-save"></span>
           </button>
+        </div>
+      </div>
+    </div>
+    <!-- Avaliação Pense Aja -->
+    <div class="avaliar-container">
+      <div class="avaliar-backdrop"></div>
+      <div class="avaliar-content">
+        <!-- Header -->
+        <div class="avaliar-header">
+          <div class="avaliar-title">
+            <img src="./assets/img/icons/dass-penseaja-light.png" alt="Logo" class="avaliar-logo">
+            <div class="avaliar-title-text">
+              <h2>Avaliação Pense<span class="avaliar-highlight">&</span>Aja</h2>
+              <span class="avaliar-subtitle">Análise de melhoria contínua</span>
+            </div>
+          </div>
+
+          <div class="avaliar-projeto">
+            <i class="bi bi-lightbulb"></i>
+            Projeto: <strong id="nome-projeto"></strong>
+          </div>
+
+          <button class="avaliar-close" aria-label="Fechar">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="avaliar-body">
+          <!-- Status Badge -->
+          <div class="avaliar-status pending">
+            <i class="bi bi-hourglass-split"></i>
+            <span class="pense-aja-status">Aguardando avaliação</span>
+          </div>
+
+          <!-- Avaliadores -->
+          <div class="avaliar-card-revisores">
+            <div class="avaliar-card-header">
+              <i class="bi bi-people-fill"></i>
+              <h3>Avaliadores</h3>
+            </div>
+            <div class="avaliar-revisores-content">
+              <div class="avaliar-revisor">
+                <div class="avaliar-avatar avaliar-avatar-gerente">
+                  <i class="bi bi-person-badge"></i>
+                </div>
+                <div class="avaliar-revisor-info">
+                  <span class="avaliar-label">Gerente Avaliador</span>
+                  <span class="avaliar-value" id="gerente-avaliador">
+
+                  </span>
+                </div>
+              </div>
+              <div class="avaliar-revisor">
+                <div class="avaliar-avatar avaliar-avatar-analista">
+                  <i class="bi bi-person-check"></i>
+                </div>
+                <div class="avaliar-revisor-info">
+                  <span class="avaliar-label">Analista Avaliador</span>
+                  <span class="avaliar-value" id="analista-avaliador">
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dados do Colaborador -->
+          <div class="avaliar-card-user">
+            <div class="avaliar-card-header">
+              <i class="bi bi-person-vcard"></i>
+              <h3>Dados do Colaborador</h3>
+            </div>
+
+            <div class="avaliar-user-content">
+              <div class="avaliar-user-row">
+                <div class="avaliar-user-item">
+                  <span class="avaliar-label">Matrícula</span>
+                  <span class="avaliar-value" id="matricula-penseaja-avaliacao"></span>
+                </div>
+
+                <div class="avaliar-user-item">
+                  <span class="avaliar-label">Nome</span>
+                  <span class="avaliar-value" id="nome-penseaja-avaliacao"></span>
+                </div>
+              </div>
+
+              <div class="avaliar-user-row">
+                <div class="avaliar-user-item">
+                  <span class="avaliar-label">Gerente</span>
+                  <span class="avaliar-value" id="gerente-penseaja-avaliacao"></span>
+                </div>
+
+                <div class="avaliar-user-item">
+                  <span class="avaliar-label">Turno</span>
+                  <span class="avaliar-value" id="turno-penseaja-avaliacao"></span>
+                </div>
+              </div>
+
+              <div class="avaliar-user-row">
+                <div class="avaliar-user-item">
+                  <span class="avaliar-label">Setor</span>
+                  <span class="avaliar-value" id="setor-penseaja-avaliacao"></span>
+                </div>
+
+                <div class="avaliar-user-item">
+                  <span class="avaliar-label">Data de Realização</span>
+                  <span class="avaliar-value" id="data-penseaja-avaliacao"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Situação Antes e Depois -->
+          <div class="avaliar-card-situacao">
+            <div class="avaliar-card-header">
+              <i class="bi bi-arrow-left-right"></i>
+              <h3>Situação Antes e Depois</h3>
+            </div>
+
+            <div class="avaliar-situacao-content">
+              <div class="avaliar-tabs">
+                <button class="avaliar-tab-btn active" data-tab="antes">
+                  <i class="bi bi-skip-backward-fill"></i>
+                  <span>Antes</span>
+                </button>
+
+                <button class="avaliar-tab-btn" data-tab="depois">
+                  <i class="bi bi-skip-forward-fill"></i>
+                  <span>Depois</span>
+                </button>
+              </div>
+
+              <div class="avaliar-tab-content active" id="antes-tab">
+                <p id="texto-antes-penseaja"></p>
+              </div>
+
+              <div class="avaliar-tab-content" id="depois-tab">
+                <p id="texto-depois-penseaja"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Avaliação -->
+          <div class="avaliar-card-nivel">
+            <div class="avaliar-card-header">
+              <i class="bi bi-trophy"></i>
+              <h3>Classificação do Pense<span class="avaliar-highlight">&</span>Aja</h3>
+            </div>
+
+            <div class="avaliar-nivel-content">
+              <div class="avaliar-rating">
+                <label class="avaliar-rating-option">
+                  <input type="radio" name="avaliacao-pense-aja" value="A">
+                  <div class="avaliar-rating-display">
+                    <span class="avaliar-rating-value">A</span>
+                    <span class="avaliar-rating-icon">
+                      <i class="bi bi-star-fill"></i>
+                    </span>
+                    <span class="avaliar-rating-label">Básica</span>
+                  </div>
+                </label>
+
+                <label class="avaliar-rating-option">
+                  <input type="radio" name="avaliacao-pense-aja" value="B">
+                  <div class="avaliar-rating-display">
+                    <span class="avaliar-rating-value">B</span>
+                    <span class="avaliar-rating-icon">
+                      <i class="bi bi-stars"></i>
+                    </span>
+                    <span class="avaliar-rating-label">Intermediária</span>
+                  </div>
+                </label>
+
+                <label class="avaliar-rating-option">
+                  <input type="radio" name="avaliacao-pense-aja" value="C">
+                  <div class="avaliar-rating-display">
+                    <span class="avaliar-rating-value">C</span>
+                    <span class="avaliar-rating-icon">
+                      <i class="bi bi-award-fill"></i>
+                    </span>
+                    <span class="avaliar-rating-label">Avançada</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="justifica-avaliacao hidden">
+              <textarea placeholder="Justifique a avaliação do pense e aja." name="justificativa-avaliacao" id="justificativa-avaliacao"></textarea>
+            </div>
+          </div>
+
+          <!-- Flags -->
+          <div class="avaliar-card-flags">
+            <div class="avaliar-flags-content">
+              <label class="avaliar-toggle">
+                <input type="checkbox" id="em-espera">
+                <span class="avaliar-toggle-slider"></span>
+                <span class="avaliar-toggle-label">
+                  <i class="bi bi-hourglass"></i>
+                  Em Espera
+                </span>
+              </label>
+
+              <label class="avaliar-toggle">
+                <input type="checkbox" id="replicavel">
+                <span class="avaliar-toggle-slider"></span>
+                <span class="avaliar-toggle-label">
+                  <i class="bi bi-diagram-3"></i>
+                  Replicável
+                </span>
+              </label>
+
+
+            </div>
+            <select id="a3-penseAja" class="form-select">
+              <option value="" selected disabled id="escolha">Selecione</option>
+              <option value="lean">LEAN</option>
+              <option value="pessoas">PESSOAS</option>
+              <option value="digitalizacao">DIGITALIZAÇÃO</option>
+              <option value="produtividade">PRODUTIVIDADE</option>
+              <option value="padronizacao">PADRONIZAÇÃO</option>
+              <option value="comunicacao">COMUNICAÇÃO</option>
+              <option value="ssma">SSMA</option>
+              <option value="orcamento">ORÇAMENTO</option>
+              <option value="qualidade">QUALIDADE</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="avaliar-footer">
+          <div class="avaliar-actions">
+            <button class="avaliar-btn avaliar-btn-aprovar">
+              <i class="bi bi-check-circle"></i>
+              <span>Aprovar</span>
+            </button>
+
+            <button class="avaliar-btn avaliar-btn-reprovar">
+              <i class="bi bi-x-circle"></i>
+              <span>Reprovar</span>
+            </button>
+
+            <button class="avaliar-btn avaliar-btn-excluir">
+              <i class="bi bi-trash"></i>
+              <span>Excluir</span>
+            </button>
+
+            <button class="avaliar-btn avaliar-btn-cancelar">
+              <i class="bi bi-arrow-return-left"></i>
+              <span>Cancelar</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1187,6 +1446,7 @@
       </div>
     </div>
 
+    <!-- Unidade Dass -->
     <div class="unidade-dass">
       <div class="unidade-popup-overlay"></div>
       <div class="unidade-popup">
@@ -1216,6 +1476,7 @@
       </div>
     </div>
 
+    <!-- Email -->
     <div class="email-colector">
       <div class="email-popup-overlay"></div>
       <div class="email-popup">
@@ -1260,6 +1521,7 @@
       </div>
     </div>
 
+    <!-- Loading -->
     <div class="loading-cdata hidden">
       <div class="loading-spinner">
         <div class="spinner-ring"></div>
@@ -1307,6 +1569,7 @@
   <script src="assets/js/email.js" type="module"></script>
   <script src="assets/js/unidade-dass.js" type="module"></script>
   <script src="assets/js/registerPenseAja.js" type="module"></script>
+  <script src="assets/js/evaluatePenseAja.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 

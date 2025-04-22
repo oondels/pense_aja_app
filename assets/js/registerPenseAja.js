@@ -1,3 +1,5 @@
+import ip from "./ip.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   const dassOffice = localStorage.getItem("unidadeDass") || null;
   const penseAjaButton = document.querySelector("#openMenu");
@@ -24,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       userData = await axios.get(
-        `http://10.110.30.193:2512/user/${matricula}`,
+        `${ip}:2512/user/${matricula}`,
         {
           params: { dassOffice: dassOffice },
         }
@@ -168,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const response = await axios.post(
-        `http://10.110.30.193:2512/pense-aja/${dassOffice}`,
+        `${ip}:2512/pense-aja/${dassOffice}`,
         {
           registration: matricula,
           userName: userData.nome,

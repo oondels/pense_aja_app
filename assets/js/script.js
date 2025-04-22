@@ -1,5 +1,5 @@
 const unidade = localStorage.getItem("unidadeDass");
-import ip from "./ip.js"
+import ip from "./ip.js";
 
 let components = new Map();
 function showLoadingComponent(element) {
@@ -37,7 +37,6 @@ function showLoading(estado = "flex") {
   document.getElementById("loading-overlay").style.display = `${estado}`;
 }
 
-/*****************************************************************************/
 const getCachedData = (cacheKey, _) => {
   const raw = localStorage.getItem(cacheKey);
 
@@ -53,6 +52,125 @@ const getCachedData = (cacheKey, _) => {
     return false;
   }
 };
+
+// Avaliaca dos pense e aja
+const avaliarContainer = document.querySelector(".avaliar-container");
+const avaliarContent = document.querySelector(".avaliar-content");
+const loadEvaluateButtons = () => {
+  ativaBtn();
+
+  // Avaliar pense e aja
+  const penseajaEvaluateButtons = document.querySelectorAll(
+    "span.btnEvaluateLista"
+  );
+  const dassOffice = localStorage.getItem("unidadeDass");
+
+  // Conteúdo pense aja a ser avaliado
+  let nomeProjeto = document.querySelector("#nome-projeto");
+  let statusProjeto = document.querySelector(".pense-aja-status");
+  let gerenteAvaliador = document.querySelector("#gerente-avaliador");
+  let analistaAvaliador = document.querySelector("#analista-avaliador");
+  let matriculaCriador = document.querySelector(
+    "#matricula-penseaja-avaliacao"
+  );
+  let nomeCriador = document.querySelector("#nome-penseaja-avaliacao");
+  let gerenteCriador = document.querySelector("#gerente-penseaja-avaliacao");
+  let turnoCriador = document.querySelector("#turno-penseaja-avaliacao");
+  let setorCriador = document.querySelector("#setor-penseaja-avaliacao");
+  let dataCriacao = document.querySelector("#data-penseaja-avaliacao");
+  let situacaoAntes = document.querySelector("#texto-antes-penseaja");
+  let situacaoDepois = document.querySelector("#texto-depois-penseaja");
+
+  // Abrir pense aja para avaliar
+  penseajaEvaluateButtons.forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      let penseAjaId = event.target.id.substring(1);
+      sessionStorage.setItem("penseAjaEmAvaliacao", penseAjaId);
+
+      // Ativando popup de avaliação
+      avaliarContainer.classList.add("active");
+      avaliarContent.classList.add("active");
+
+      const turnoMapping = {
+        C: "3° Turno",
+        A: "1° Turno",
+        B: "2° Turno",
+      };
+
+      try {
+        const response = await axios.get(
+          `${ip}:2512/pense-aja/id/${penseAjaId}`,
+          { params: { dassOffice: dassOffice } }
+        );
+
+        // Renderiza conteúdo para o usuário
+        nomeProjeto.innerHTML = response.data.nome_projeto;
+        if (response.data.gerente_aprovador) {
+          statusProjeto.innerHTML = "Avaliado pelo gerente!";
+        } else if (response.data.analista_avaliador) {
+          statusProjeto.innerHTML = "Avaliado pelo analista!";
+        } else {
+          statusProjeto.innerHTML = "Aguardando avaliação!";
+        }
+        gerenteAvaliador.innerHTML =
+          response.data.gerente_aprovador || "Ainda não avaliou!";
+        analistaAvaliador.innerHTML =
+          response.data.analista_avaliador || "Ainda não avaliou!";
+        matriculaCriador.innerHTML = response.data.matricula;
+        nomeCriador.innerHTML = response.data.nome;
+        gerenteCriador.innerHTML = response.data.gerente;
+        turnoCriador.innerHTML =
+          turnoMapping[response.data.turno] || "Comercial";
+        setorCriador.innerHTML = response.data.setor;
+        dataCriacao.innerHTML = new Date(
+          response.data.data_realizada
+        ).toLocaleDateString();
+        situacaoAntes.innerHTML = response.data.situacao_anterior;
+        situacaoDepois.innerHTML = response.data.situacao_atual;
+      } catch (error) {
+        showNotification(
+          "Erro",
+          "Erro ao Coletar dados do pense aja. Entre em contato com a equipe de automação.",
+          "error",
+          2500
+        );
+        console.error("Erro ao avaliar pense e aja: ", error);
+      }
+    });
+  });
+
+  // Botões para alternar entre "Antes" e "Depois"
+  const botaoAntesDepois = document.querySelectorAll(".avaliar-tab-btn");
+  botaoAntesDepois.forEach((btn) => {
+    btn.addEventListener("click", (event) => {
+      const clickedButton = event.target.closest(".avaliar-tab-btn");
+      if (!clickedButton) return;
+
+      // Remove active dos botões e conteudos correspondentes
+      botaoAntesDepois.forEach((btn) => btn.classList.remove("active"));
+      document
+        .querySelectorAll(".avaliar-tab-content")
+        .forEach((tab) => tab.classList.remove("active"));
+      // Adiciona a classe 'active' apenas no botão clicado
+      clickedButton.classList.add("active");
+
+      // Coleta o valor de `data-tab` para coletar o conteudo referente
+      const tabName = clickedButton.getAttribute("data-tab");
+      const activeContent = document.getElementById(`${tabName}-tab`);
+
+      if (activeContent) {
+        activeContent.classList.add("active");
+      }
+    });
+  });
+};
+
+// Fechar popup de avaliação
+const closeAvaliarButton = document.querySelector(".avaliar-close");
+closeAvaliarButton.addEventListener("click", () => {
+  avaliarContainer.classList.remove("active");
+  avaliarContent.classList.remove("active");
+});
 
 const renderListaTable = (data) => {
   let tbody = document.getElementById("tbody");
@@ -76,16 +194,18 @@ const renderListaTable = (data) => {
     td_gerente.innerText = element.gerente;
     td_nome_projeto.innerHTML += `${element.nome_projeto} <div id="tool"><div id="tooltipTextBefore"><strong>SITUAÇÃO ANTERIOR: </strong>${element.situacao_anterior}</div><div id="tooltipTextAfter"><strong>SITUAÇÃO ATUAL: </strong>${element.situacao_atual}</div></div>`;
     td_turno.innerText = element.turno;
-    td_acoes.innerHTML += `<i class="btnAcoes botaoInfo bi bi-clipboard-check" id="i${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
+    td_acoes.innerHTML += `<span class="btnEvaluateLista btnAcoes botaoInfo bi bi-clipboard-check" id="i${element.id}"></span>`;
 
     tr.classList.add("headConsulta", "active");
     tr.setAttribute("id", element.id);
     td_id.classList.add("thID");
 
     const data = new Date(element.criado);
-    const hora = `${data.getHours() < 10 ? "0" + data.getHours() : data.getHours()}:${
-      data.getMinutes() < 10 ? "0" + data.getMinutes() : data.getMinutes()
-    }:${data.getSeconds() < 10 ? "0" + data.getSeconds() : data.getSeconds()}`;
+    const hora = `${
+      data.getHours() < 10 ? "0" + data.getHours() : data.getHours()
+    }:${data.getMinutes() < 10 ? "0" + data.getMinutes() : data.getMinutes()}:${
+      data.getSeconds() < 10 ? "0" + data.getSeconds() : data.getSeconds()
+    }`;
     const criado = data.toLocaleDateString().replace(new RegExp("/", "g"), "-");
 
     td_realizado.classList.add("celula", "content", "colMaior", "center");
@@ -101,7 +221,14 @@ const renderListaTable = (data) => {
     td_nome_projeto.classList.add("celula", "content", "colMaiorX");
     td_nome_projeto.setAttribute("id", "nomeProjeto");
     td_turno.classList.add("celula", "content", "colMaior", "center");
-    td_acoes.classList.add("action", "celula", "content", "colMaior", "acoes", "center");
+    td_acoes.classList.add(
+      "action",
+      "celula",
+      "content",
+      "colMenor",
+      "acoes",
+      "center"
+    );
 
     /*Busca Aprovador*/
     let gerenteAprovador;
@@ -116,17 +243,17 @@ const renderListaTable = (data) => {
     statusGerente = element.status_gerente;
     emEspera = element.em_espera;
     idTr = document.getElementById(idLinha);
-    if (gerenteAprovador == "" && analistaAvaliador != "") {
+    if (!gerenteAprovador && analistaAvaliador) {
       idTr.classList.add("semGerente");
     } else {
       idTr.classList.remove("semGerente");
     }
-    if (gerenteAprovador != "" && analistaAvaliador == "") {
+    if (gerenteAprovador && !analistaAvaliador) {
       idTr.classList.add("semAnalista");
     } else {
       idTr.classList.remove("semAnalista");
     }
-    if (gerenteAprovador == "" && analistaAvaliador == "") {
+    if (!gerenteAprovador && !analistaAvaliador) {
       idTr.classList.add("semAmbos");
     } else {
       idTr.classList.remove("semAmbos");
@@ -137,401 +264,22 @@ const renderListaTable = (data) => {
       idTr.classList.remove("semAmbos");
       idTr.classList.add("reprovadoGerente");
     }
-    if (emEspera == "1") {
+    if (emEspera === "1") {
       idTr.classList.remove("semAnalista");
       idTr.classList.remove("semGerente");
       idTr.classList.remove("semAmbos");
       idTr.classList.remove("reprovadoGerente");
       idTr.classList.add("emEspera");
     }
-    if (gerenteAprovador != "" && analistaAvaliador != "") {
+    if (gerenteAprovador && analistaAvaliador) {
       idTr.classList.add("avaliado");
     }
   });
 
-  const buscaPA = () => {
-    if (!unidade) {
-      console.log("Informe sua matricula para definição da unidade");
-      return;
-    }
-
-    let line = document.querySelectorAll(".active").length;
-    if (line !== 0) {
-      filter_rows();
-    }
-    ativaBtn();
-    document.querySelectorAll("i").forEach((button) => {
-      if (!unidade) {
-        console.log("Informe sua matricula para definição da unidade");
-        return;
-      }
-
-      button.addEventListener("click", async function (event) {
-        // Reseta Modal
-        showLoadingComponent("buscaPa");
-        limpaModal();
-
-        let el = event.target.id.substring(1);
-        let data = { identificador: el };
-        let buscaPenseAja = await fetch("/pense_aja/server/apiBuscaPenseAja.php", {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          },
-        });
-
-        let tituloProjeto = document.getElementById("staticBackdropLabel");
-        let matriculaModal = document.getElementById("matriculaModal");
-        let nomeModal = document.getElementById("nomeModal");
-        let setorModal = document.getElementById("setorModal");
-        let liderModal = document.getElementById("liderModal");
-        let turnoModal = document.getElementById("turnoModal");
-        let dataModal = document.getElementById("dataModal");
-        let anteriorModal = document.getElementById("anteriorModal");
-        let atualModal = document.getElementById("atualModal");
-        let elimPerdaModal = document.getElementById("elimPerdaModal");
-        let amortizacaoModal = document.getElementById("amortizacaoModal");
-        let outGanhosModal = document.getElementById("outGanhosModal");
-        let ids = document.getElementById("id");
-        let statusGerente = document.getElementById("status_gerente");
-        let statusAnalista = document.getElementById("status_analista");
-        let gerAprovador = document.getElementById("gerAprovador");
-        let anaAprovador = document.getElementById("anaAprovador");
-        let turno;
-
-        let resBuscaPenseAja = await buscaPenseAja.json();
-
-        if (resBuscaPenseAja.erro == false) {
-          switch (resBuscaPenseAja.penseAja.turno) {
-            case "A":
-              turno = "1º";
-              break;
-            case "B":
-              turno = "2º";
-              break;
-            case "C":
-              turno = "3º";
-              break;
-            default:
-              turno = "Comercial";
-              break;
-          }
-          tituloProjeto.innerHTML = resBuscaPenseAja.penseAja.nome_projeto;
-          matriculaModal.innerHTML = `<strong>Matrícula: </strong>${resBuscaPenseAja.penseAja.matricula}`;
-          nomeModal.innerHTML = `<strong>Usuário: </strong>${resBuscaPenseAja.penseAja.nome}`;
-          setorModal.innerHTML = `<strong>Setor: </strong>${resBuscaPenseAja.penseAja.setor}`;
-          liderModal.innerHTML = `<strong>Líder: </strong>${resBuscaPenseAja.penseAja.lider}`;
-          turnoModal.innerHTML = `<strong>Turno: </strong>${turno}`;
-          dataModal.innerHTML = `<strong>Data Realização: </strong>${resBuscaPenseAja.penseAja.data_realizada}`;
-          anteriorModal.innerHTML = `<strong>Situação Anterior: </strong>${resBuscaPenseAja.penseAja.situacao_anterior}`;
-          atualModal.innerHTML = `<strong>Situação Atual: </strong>${resBuscaPenseAja.penseAja.situacao_atual}`;
-          elimPerdaModal.innerHTML =
-            "<strong>Eliminação de Perdas: </strong>" +
-            `${
-              resBuscaPenseAja.penseAja.super_producao != ""
-                ? " | " + resBuscaPenseAja.penseAja.super_producao.toUpperCase()
-                : ""
-            }` +
-            `${
-              resBuscaPenseAja.penseAja.transporte != ""
-                ? " | " + resBuscaPenseAja.penseAja.transporte.toUpperCase()
-                : ""
-            }` +
-            `${
-              resBuscaPenseAja.penseAja.processamento != ""
-                ? " | " + resBuscaPenseAja.penseAja.processamento.toUpperCase()
-                : ""
-            }` +
-            `${
-              resBuscaPenseAja.penseAja.movimento != "" ? " | " + resBuscaPenseAja.penseAja.movimento.toUpperCase() : ""
-            }` +
-            `${
-              resBuscaPenseAja.penseAja.estoque != "" ? " | " + resBuscaPenseAja.penseAja.estoque.toUpperCase() : ""
-            }` +
-            `${resBuscaPenseAja.penseAja.espera != "" ? " | " + resBuscaPenseAja.penseAja.espera.toUpperCase() : ""}` +
-            `${
-              resBuscaPenseAja.penseAja.talento != "" ? " | " + resBuscaPenseAja.penseAja.talento.toUpperCase() : ""
-            }` +
-            `${
-              resBuscaPenseAja.penseAja.retrabalho != ""
-                ? " | " + resBuscaPenseAja.penseAja.retrabalho.toUpperCase()
-                : ""
-            }`;
-          if (parseInt(resBuscaPenseAja.penseAja.valor_a) != 0 || parseInt(resBuscaPenseAja.penseAja.valor_b) != 0) {
-            amortizacaoModal.innerHTML = `<strong>Cálculo de Amortização: </strong>
-          ${resBuscaPenseAja.penseAja.valor_a} / ${resBuscaPenseAja.penseAja.valor_b} = ${resBuscaPenseAja.penseAja.valor_amortizado}`;
-          } else {
-            amortizacaoModal.innerHTML = "";
-          }
-          if (resBuscaPenseAja.penseAja.outros_ganhos != "") {
-            outGanhosModal.innerHTML = `<strong>Outros ganhos: </strong> ${resBuscaPenseAja.penseAja.outros_ganhos}`;
-          }
-          ids.innerHTML = `<strong>ID: </strong>${resBuscaPenseAja.penseAja.id}`;
-          statusGerente.innerHTML = `${resBuscaPenseAja.penseAja.status_gerente}`;
-          statusAnalista.innerHTML = `${resBuscaPenseAja.penseAja.status_analista}`;
-          gerAprovador.innerHTML =
-            '<strong class="strongM">Gerente: </strong>' +
-            `${
-              resBuscaPenseAja.penseAja.gerente_aprovador != ""
-                ? resBuscaPenseAja.penseAja.gerente_aprovador
-                : "Ainda não avaliou!"
-            }`;
-          anaAprovador.innerHTML =
-            '<strong class="strongM">Analista: </strong>' +
-            `${
-              resBuscaPenseAja.penseAja.analista_avaliador != ""
-                ? resBuscaPenseAja.penseAja.analista_avaliador
-                : "Ainda não avaliou!"
-            }`;
-          if (
-            resBuscaPenseAja.penseAja.classificacao == "A" ||
-            resBuscaPenseAja.penseAja.classificacao == "B" ||
-            resBuscaPenseAja.penseAja.classificacao == "C"
-          ) {
-            document.getElementById(resBuscaPenseAja.penseAja.classificacao.toLowerCase()).checked = true;
-          } else {
-            document.getElementById("a").checked = false;
-            document.getElementById("b").checked = false;
-            document.getElementById("c").checked = false;
-          }
-        }
-
-        if (resBuscaPenseAja.penseAja.a3_mae != "") {
-          document.getElementById("escolha").innerText = resBuscaPenseAja.penseAja.a3_mae;
-        } else {
-          document.getElementById("escolha").innerText = "Selecione";
-        }
-
-        if (
-          document.getElementById("funcao").innerText === "ANALISTA!" &&
-          gerAprovador.innerText != "Gerente: Ainda não avaliou!"
-        ) {
-          document.getElementById("a").disabled = true;
-          document.getElementById("b").disabled = true;
-          document.getElementById("c").disabled = true;
-          document.getElementById("a3_mae").disabled = false;
-        } else {
-          document.getElementById("a").disabled = false;
-          document.getElementById("b").disabled = false;
-          document.getElementById("c").disabled = false;
-          document.getElementById("a3_mae").disabled = false;
-        }
-
-        if (resBuscaPenseAja.penseAja.em_espera == "1") {
-          document.getElementById("esperar").checked = true;
-        } else {
-          document.getElementById("esperar").checked = false;
-        }
-
-        if (resBuscaPenseAja.penseAja.replicavel == "1") {
-          document.getElementById("replicar").checked = true;
-        } else {
-          document.getElementById("replicar").checked = false;
-        }
-
-        hideLoading("buscaPa");
-        /*Pense e aja reprovado*/
-        let reprovar = document.getElementById("reprovar");
-        reprovar.addEventListener("click", async function (event) {
-          if (!unidade) {
-            console.log("Informe sua matricula para definição da unidade");
-            return;
-          }
-
-          event.preventDefault();
-          const dataR = {
-            identificador: document.getElementById("id").innerText.substring(4),
-            status: "reprovar",
-            nome: sessionStorage.getItem("nome"),
-            funcao: sessionStorage.getItem("funcao"),
-          };
-          let reprovado = await fetch(
-            "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaReprovado.php",
-            {
-              method: "POST",
-              body: JSON.stringify(dataR),
-              headers: {
-                "Content-type": "aplication/json; charset=UTF-8",
-              },
-            }
-          );
-          let resReprovado = await reprovado.json();
-          if (resReprovado.erro == false) {
-            success("Avaliado");
-          } else {
-            error("Erro ao gravar avaliação, verifique!");
-          }
-        });
-
-        /*Pense e aja aprovado*/
-        let aprovar = document.getElementById("aprovar");
-        aprovar.addEventListener("click", async function (event) {
-          if (!unidade) {
-            console.log("Informe sua matricula para definição da unidade");
-            return;
-          }
-
-          event.preventDefault();
-          let gerAprovou = document.getElementById("gerAprovador").innerText;
-          let stsGerAprovou = document.getElementById("status_gerente").innerText;
-          let stsAnaAprovou = document.getElementById("status_analista").innerText;
-          let esperou = document.getElementById("esperar").checked;
-          let op = document.getElementsByClassName("radio");
-          let escolha = "";
-          for (let i = 0; i < op.length; ++i) {
-            if (op[i].checked == true) {
-              escolha = op[i].value;
-            }
-          }
-          if (escolha == "") {
-            required("Classificação obrigatória, por favor selecione um tipo!");
-            return false;
-          }
-          const dataA = {
-            identificador: document.getElementById("id").innerText.substring(4),
-            status: "aprovar",
-            nome: sessionStorage.getItem("nome"),
-            funcao: sessionStorage.getItem("funcao"),
-            escolha: escolha,
-            a3Mae:
-              document.getElementById("a3_mae").childNodes[1].innerText == "Selecione"
-                ? ""
-                : document.getElementById("a3_mae").childNodes[1].innerText,
-            em_espera: document.getElementById("esperar").checked,
-            replicavel: document.getElementById("replicar").checked,
-          };
-          let aprovado = await fetch(
-            "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaAprovado.php",
-            {
-              method: "POST",
-              body: JSON.stringify(dataA),
-              headers: {
-                "Content-type": "aplication/json; charset=UTF-8",
-              },
-            }
-          );
-          let resAprovado = await aprovado.json();
-          if (resAprovado.erro == false) {
-            success("Avaliado");
-          } else {
-            error("Erro ao gravar avaliação, verifique!");
-          }
-
-          let setFuncao = sessionStorage.getItem("funcao");
-          const dataPonto = {
-            idPenseAja: document.getElementById("id").innerText.substring(4),
-            matricula: document.getElementById("matriculaModal").innerText.substring(11),
-            nome:
-              setFuncao == "GERENTE"
-                ? sessionStorage.getItem("nome")
-                : document.getElementById("nomeModal").innerText.substring(9),
-            classificacao: escolha,
-            gerente: gerAprovou.substring(9),
-          };
-          /*Se avaliação pelo gerente e pelo analista salva ponto*/
-          if (setFuncao == "ANALISTA!" && esperou == false) {
-            let pontos = await fetch("/pense_aja/server/apiPostPontos.php", {
-              method: "POST",
-              body: JSON.stringify(dataPonto),
-              headers: {
-                "Content-type": "aplication/json; charset=UTF-8",
-              },
-            });
-            event.preventDefault();
-          }
-          if (setFuncao == "GERENTE" && stsAnaAprovou == "APROVAR" && esperou == false) {
-            let pontos = await fetch("/pense_aja/server/apiPostPontos.php", {
-              method: "POST",
-              body: JSON.stringify(dataPonto),
-              headers: {
-                "Content-type": "aplication/json; charset=UTF-8",
-              },
-            });
-            event.preventDefault();
-          }
-        });
-
-        /*Pense e aja excluído*/
-        let excluir = document.getElementById("excluir");
-        excluir.addEventListener("click", function (event) {
-          if (!unidade) {
-            console.log("Informe sua matricula para definição da unidade");
-            return;
-          }
-
-          delet
-            .fire({
-              title: "Você tem certeza?",
-              text: "Não será possível reverter após confirmar!",
-              icon: "warning",
-              showCancelButton: true,
-              confirmButtonText: "Sim, excluir!",
-              cancelButtonText: "Não, cancelar!",
-              reverseButtons: true,
-            })
-            .then(async (result) => {
-              if (result.isConfirmed) {
-                const dataE = {
-                  identificador: document.getElementById("id").innerText.substring(4),
-                  gerente: sessionStorage.getItem("nome"),
-                  funcao: sessionStorage.getItem("funcao"),
-                };
-                let excluir = await fetch(
-                  "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaExcluido.php",
-                  {
-                    method: "POST",
-                    body: JSON.stringify(dataE),
-                    headers: {
-                      "Content-type": "aplication/json; charset=UTF-8",
-                    },
-                  }
-                );
-                let resExcluir = excluir.json();
-                if (resExcluir.erro == false) {
-                  success("Excluido");
-                } else if (resExcluir.erro == true) {
-                  error("Erro ao excluir, verifique!");
-                } else {
-                  warning("Apenas gerente possui permissão para excluir!");
-                }
-                event.preventDefault();
-              } else if (result.dismiss === Swal.DismissReason.cancel) {
-                delet.fire("Cancelado", "<strong>Exclusão</strong> cancelada!", "error").then(function () {
-                  location.reload();
-                });
-              }
-            });
-        });
-      });
-    });
-
-    let btnClose = document.getElementById("btnClose");
-    btnClose.addEventListener("click", () => {
-      limpaModal();
-    });
-
-    function limpaModal() {
-      document.getElementById("staticBackdropLabel").innerHTML = "";
-      document.getElementById("matriculaModal").innerHTML = "";
-      document.getElementById("nomeModal").innerHTML = "";
-      document.getElementById("setorModal").innerHTML = "";
-      document.getElementById("liderModal").innerHTML = "";
-      document.getElementById("turnoModal").innerHTML = "";
-      document.getElementById("dataModal").innerHTML = "";
-      document.getElementById("anteriorModal").innerHTML = "";
-      document.getElementById("atualModal").innerHTML = "";
-      document.getElementById("elimPerdaModal").innerHTML = "";
-      document.getElementById("amortizacaoModal").innerHTML = "";
-      document.getElementById("outGanhosModal").innerHTML = "";
-      document.getElementById("a3_mae").selectedIndex = null;
-    }
-  };
-  buscaPA();
+  loadEvaluateButtons();
 };
 
 function activeBtn(e) {
-  // e.currentTarget.classList.toggle("active")
   const btnsGlossario = document.querySelectorAll(".coresGlossario");
   btnsGlossario.forEach((btn) => {
     if (btn !== e.currentTarget) {
@@ -581,12 +329,16 @@ async function listaTable() {
     console.log("Informe sua matricula para definição da unidade");
     return;
   }
-  
+
   const cachedKey = `${mesAnterior}-${mesAtual}-${anoAtual}`;
   let cachedList = getCachedData("cachedList") || {};
   const currentDate = new Date().getTime();
 
-  if (Object.keys(cachedList).length && cachedList[cachedKey] && cachedList[cachedKey].payload) {
+  if (
+    Object.keys(cachedList).length &&
+    cachedList[cachedKey] &&
+    cachedList[cachedKey].payload
+  ) {
     renderListaTable(cachedList[cachedKey].payload);
     updateSelectOptionsLista(cachedList[cachedKey].filters, ".table-filter");
     penseAjaCount.innerHTML = `${cachedList[cachedKey].payload.length} Registros`;
@@ -594,9 +346,9 @@ async function listaTable() {
     showLoadingComponent("listaTable");
   }
 
-  let resBuscaDados
+  let resBuscaDados;
   try {
-    const response = await axios.get(`http://10.110.30.193:2512/pense-aja/${unidade}`);
+    const response = await axios.get(`${ip}:2512/pense-aja/${unidade}`);
 
     resBuscaDados = response.data;
     if (resBuscaDados.dados.length === 0) {
@@ -616,7 +368,7 @@ async function listaTable() {
       const newCache = {
         payload: resBuscaDados.dados,
         timestamp: currentDate,
-        filters: resBuscaDados.filters
+        filters: resBuscaDados.filters,
       };
 
       if (!Object.keys(cachedList).length) {
@@ -629,7 +381,11 @@ async function listaTable() {
       }
 
       // Verifica se os dados do servidor são mais recentes que os do cache
-      if (cachedList && resBuscaDados && resBuscaDados.dados.length > cachedList[cachedKey].payload.length) {
+      if (
+        cachedList &&
+        resBuscaDados &&
+        resBuscaDados.dados.length > cachedList[cachedKey].payload.length
+      ) {
         console.log("Atualizando...");
 
         Swal.fire({
@@ -658,11 +414,12 @@ async function listaTable() {
     return;
   } finally {
     hideLoading("listaTable");
-    penseAjaCount.innerHTML = `${cachedList[cachedKey]?.payload.length || resBuscaDados.dados.length || 0}  Registros`;
+    penseAjaCount.innerHTML = `${
+      cachedList[cachedKey]?.payload.length || resBuscaDados.dados.length || 0
+    }  Registros`;
   }
 }
 window.listaTable = listaTable;
-
 
 const obtemAnoAtualEMesAnterior = () => {
   var selectAnoLista = document.getElementById("anoLista");
@@ -701,7 +458,7 @@ const obtemAnoAtualEMesAnterior = () => {
   mesLista.innerHTML = "";
   mesLista.add(optionMes);
 };
-window.obtemAnoAtualEMesAnterior =obtemAnoAtualEMesAnterior
+window.obtemAnoAtualEMesAnterior = obtemAnoAtualEMesAnterior;
 
 const buscaPA_Lista = (listaSize) => {
   let selecionadoLista = document.getElementById("selecionadoLista");
@@ -727,13 +484,16 @@ const buscaPA_Lista = (listaSize) => {
     buttons.addEventListener("click", async function (events) {
       let el = events.target.id.substring(6);
       let data = { identificador: el };
-      let buscaPenseAjaLista = await fetch("/pense_aja/server/apiBuscaPenseAja.php", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-type": "aplication/json; charset=UTF-8",
-        },
-      });
+      let buscaPenseAjaLista = await fetch(
+        "/pense_aja/server/apiBuscaPenseAja.php",
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-type": "aplication/json; charset=UTF-8",
+          },
+        }
+      );
       let resBuscaPenseAjaLista = await buscaPenseAjaLista.json();
       let tituloProjeto = document.getElementById("staticBackdropLabel");
       let matriculaModal = document.getElementById("matriculaModal");
@@ -781,7 +541,8 @@ const buscaPA_Lista = (listaSize) => {
           "<strong>Eliminação de Perdas: </strong>" +
           `${
             resBuscaPenseAjaLista.penseAja.super_producao != ""
-              ? " | " + resBuscaPenseAjaLista.penseAja.super_producao.toUpperCase()
+              ? " | " +
+                resBuscaPenseAjaLista.penseAja.super_producao.toUpperCase()
               : ""
           }` +
           `${
@@ -791,7 +552,8 @@ const buscaPA_Lista = (listaSize) => {
           }` +
           `${
             resBuscaPenseAjaLista.penseAja.processamento != ""
-              ? " | " + resBuscaPenseAjaLista.penseAja.processamento.toUpperCase()
+              ? " | " +
+                resBuscaPenseAjaLista.penseAja.processamento.toUpperCase()
               : ""
           }` +
           `${
@@ -855,7 +617,9 @@ const buscaPA_Lista = (listaSize) => {
           resBuscaPenseAjaLista.penseAja.classificacao == "B" ||
           resBuscaPenseAjaLista.penseAja.classificacao == "C"
         ) {
-          document.getElementById(resBuscaPenseAjaLista.penseAja.classificacao.toLowerCase()).checked = true;
+          document.getElementById(
+            resBuscaPenseAjaLista.penseAja.classificacao.toLowerCase()
+          ).checked = true;
         } else {
           document.getElementById("a").checked = false;
           document.getElementById("b").checked = false;
@@ -863,7 +627,8 @@ const buscaPA_Lista = (listaSize) => {
         }
       }
       if (resBuscaPenseAjaLista.penseAja.a3_mae != "") {
-        document.getElementById("escolha").innerText = resBuscaPenseAjaLista.penseAja.a3_mae;
+        document.getElementById("escolha").innerText =
+          resBuscaPenseAjaLista.penseAja.a3_mae;
       } else {
         document.getElementById("escolha").innerText = "Selecione";
       }
@@ -902,7 +667,9 @@ const buscaPA_Lista = (listaSize) => {
           funcao: sessionStorage.getItem("funcao"),
         };
         let reprovadoLista = await fetch(
-          "http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaReprovado.php",
+          "http://" +
+            ip +
+            "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaReprovado.php",
           {
             method: "POST",
             body: JSON.stringify(dataR),
@@ -924,12 +691,15 @@ const buscaPA_Lista = (listaSize) => {
       aprovar.addEventListener("click", async function (event) {
         event.preventDefault();
         let gerAprovouLista = gerAprovador.innerText;
-        let stsGerAprovouLista = document.getElementById("status_gerente").innerText;
-        let stsAnaAprovouLista = document.getElementById("status_analista").innerText;
+        let stsGerAprovouLista =
+          document.getElementById("status_gerente").innerText;
+        let stsAnaAprovouLista =
+          document.getElementById("status_analista").innerText;
         let esperouLista = document.getElementById("esperar").checked;
         let op = document.getElementsByClassName("radio");
         let escolha = "";
-        let a3_maeLista = document.getElementById("a3_mae").childNodes[1].innerText;
+        let a3_maeLista =
+          document.getElementById("a3_mae").childNodes[1].innerText;
         for (let i = 0; i < op.length; ++i) {
           if (op[i].checked == true) {
             escolha = op[i].value;
@@ -949,13 +719,16 @@ const buscaPA_Lista = (listaSize) => {
           em_espera: document.getElementById("esperar").checked,
           replicavel: document.getElementById("replicar").checked,
         };
-        let response = await fetch("/pense_aja/server/apiPostPenseAjaAprovado.php", {
-          method: "POST",
-          body: JSON.stringify(dataA),
-          headers: {
-            "Content-type": "aplication/json; charset=UTF-8",
-          },
-        });
+        let response = await fetch(
+          "/pense_aja/server/apiPostPenseAjaAprovado.php",
+          {
+            method: "POST",
+            body: JSON.stringify(dataA),
+            headers: {
+              "Content-type": "aplication/json; charset=UTF-8",
+            },
+          }
+        );
         let userData = await response.json();
         if (userData.erro == false) {
           successLista("Avaliado");
@@ -965,7 +738,9 @@ const buscaPA_Lista = (listaSize) => {
         let setFuncaoLista = sessionStorage.getItem("funcao");
         const dataPonto = {
           idPenseAja: document.getElementById("id").innerText.substring(4),
-          matricula: document.getElementById("matriculaModal").innerText.substring(11),
+          matricula: document
+            .getElementById("matriculaModal")
+            .innerText.substring(11),
           nome:
             setFuncaoLista == "GERENTE"
               ? sessionStorage.getItem("nome")
@@ -983,7 +758,11 @@ const buscaPA_Lista = (listaSize) => {
           });
           event.preventDefault();
         }
-        if (setFuncaoLista == "GERENTE" && stsAnaAprovouLista == "APROVAR" && esperouLista == false) {
+        if (
+          setFuncaoLista == "GERENTE" &&
+          stsAnaAprovouLista == "APROVAR" &&
+          esperouLista == false
+        ) {
           let pontosLista = await fetch("/pense_aja/server/apiPostPontos.php", {
             method: "POST",
             body: JSON.stringify(dataPonto),
@@ -1015,17 +794,24 @@ const buscaPA_Lista = (listaSize) => {
           .then((result) => {
             if (result.isConfirmed) {
               const dataE = {
-                identificador: document.getElementById("id").innerText.substring(4),
+                identificador: document
+                  .getElementById("id")
+                  .innerText.substring(4),
                 gerente: sessionStorage.getItem("nome"),
                 funcao: sessionStorage.getItem("funcao"),
               };
-              fetch("http://" + ip + "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaExcluido.php", {
-                method: "POST",
-                body: JSON.stringify(dataE),
-                headers: {
-                  "Content-type": "aplication/json; charset=UTF-8",
-                },
-              })
+              fetch(
+                "http://" +
+                  ip +
+                  "/dass-penseaja-vdc/pense_aja/server/apiPostPenseAjaExcluido.php",
+                {
+                  method: "POST",
+                  body: JSON.stringify(dataE),
+                  headers: {
+                    "Content-type": "aplication/json; charset=UTF-8",
+                  },
+                }
+              )
                 .then((response) => response.json())
                 .then((data) => {
                   if (data.erro == false) {
@@ -1033,14 +819,22 @@ const buscaPA_Lista = (listaSize) => {
                   } else if (data.erro == true) {
                     errorLista("Erro ao excluir, verifique!");
                   } else {
-                    warningLista("Apenas gerente possui permissão para excluir!");
+                    warningLista(
+                      "Apenas gerente possui permissão para excluir!"
+                    );
                   }
                 });
               event.preventDefault();
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-              delet.fire("Cancelado", "<strong>Exclusão</strong> cancelada!", "error").then(function () {
-                location.reload();
-              });
+              delet
+                .fire(
+                  "Cancelado",
+                  "<strong>Exclusão</strong> cancelada!",
+                  "error"
+                )
+                .then(function () {
+                  location.reload();
+                });
             }
           });
       });
@@ -1081,51 +875,63 @@ async function listaTableLista() {
   const renderListaTableLista = (data) => {
     tbody.innerHTML = "";
     data.forEach((element) => {
-      let tr = tbody.insertRow();
-      let td_id = tr.insertCell();
-      let td_realizado = tr.insertCell();
-      let td_nome = tr.insertCell();
-      let td_setor = tr.insertCell();
-      let td_gerente = tr.insertCell();
-      let td_nome_projeto = tr.insertCell();
-      let td_turno = tr.insertCell();
-      let td_acoes = tr.insertCell();
+      let trLista = tbody.insertRow();
+      let td_idLista = trLista.insertCell();
+      let td_realizadoLista = trLista.insertCell();
+      let td_nomeLista = trLista.insertCell();
+      let td_setorLista = trLista.insertCell();
+      let td_gerenteLista = trLista.insertCell();
+      let td_nome_projetoLista = trLista.insertCell();
+      let td_turnoLista = trLista.insertCell();
+      let td_acoesLista = trLista.insertCell();
 
-      td_id.innerText = element.id;
-      td_realizado.innerText = element.data_realizada;
-      td_nome.innerText = element.nome;
-      td_setor.innerText = element.setor;
-      td_gerente.innerText = element.gerente;
-      td_nome_projeto.innerHTML += `${element.nome_projeto} <div id="toolLista"><div id="tooltipTextBeforeLista"><strong>SITUAÇÃO ANTERIOR: </strong>${element.situacao_anterior}</div><div id="tooltipTextAfterLista"><strong>SITUAÇÃO ATUAL: </strong>${element.situacao_atual}</div></div>`;
-      td_turno.innerText = element.turno;
-      td_acoes.innerHTML += `<i class="btnAcoes botaoInfo bi bi-info-square iLista" id="iLista${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
+      td_idLista.innerText = element.id;
+      td_realizadoLista.innerText = element.data_realizada;
+      td_nomeLista.innerText = element.nome;
+      td_setorLista.innerText = element.setor;
+      td_gerenteLista.innerText = element.gerente;
+      td_nome_projetoLista.innerHTML += `${element.nome_projeto} <div id="toolLista"><div id="tooltipTextBeforeLista"><strong>SITUAÇÃO ANTERIOR: </strong>${element.situacao_anterior}</div><div id="tooltipTextAfterLista"><strong>SITUAÇÃO ATUAL: </strong>${element.situacao_atual}</div></div>`;
+      td_turnoLista.innerText = element.turno;
+      td_acoesLista.innerHTML += `<i class="btnAcoes botaoInfo bi bi-info-square iLista" id="iLista${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
 
-      tr.classList.add("headConsultaLista", "activeLista");
-      tr.setAttribute("id", element.id);
-      td_id.classList.add("thID");
+      trLista.classList.add("headConsultaLista", "activeLista");
+      trLista.setAttribute("id", element.id);
+      td_idLista.classList.add("thID");
 
       const data = new Date(element.criado);
-      const hora = `${data.getHours() < 10 ? "0" + data.getHours() : data.getHours()}:${
+      const hora = `${
+        data.getHours() < 10 ? "0" + data.getHours() : data.getHours()
+      }:${
         data.getMinutes() < 10 ? "0" + data.getMinutes() : data.getMinutes()
-      }:${data.getSeconds() < 10 ? "0" + data.getSeconds() : data.getSeconds()}`;
-      const criado = data.toLocaleDateString().replace(new RegExp("/", "g"), "-");
+      }:${
+        data.getSeconds() < 10 ? "0" + data.getSeconds() : data.getSeconds()
+      }`;
+      const criado = data
+        .toLocaleDateString()
+        .replace(new RegExp("/", "g"), "-");
 
-      td_realizado.classList.add("celula", "content", "colMaior", "center");
-      td_realizado.setAttribute("id", "data");
-      td_realizado.setAttribute("data-bs-toggle", "tooltip");
-      td_realizado.setAttribute("data-bs-placement", "bottom");
-      td_realizado.setAttribute("data-bs-custom-class", "custom-tooltip");
-      td_realizado.setAttribute("title", `Criado em: ${criado} às ${hora}`);
+      td_realizadoLista.classList.add("celula", "content", "colMaior", "center");
+      td_realizadoLista.setAttribute("id", "data");
+      td_realizadoLista.setAttribute("data-bs-toggle", "tooltip");
+      td_realizadoLista.setAttribute("data-bs-placement", "bottom");
+      td_realizadoLista.setAttribute("data-bs-custom-class", "custom-tooltip");
+      td_realizadoLista.setAttribute("title", `Criado em: ${criado} às ${hora}`);
 
-      td_nome.classList.add("nomeNormal", "celula", "content", "colNome");
-      td_setor.classList.add("celula", "content", "colMaiorX");
-      td_gerente.classList.add("celula", "content", "colMaiorX");
-      td_nome_projeto.classList.add("celula", "content", "colMaiorX");
-      td_nome_projeto.setAttribute("id", "nomeProjetos");
-      td_turno.classList.add("celula", "content", "colMaior", "center");
-      td_acoes.classList.add("action", "celula", "content", "colMaior", "acoes", "center");
+      td_nomeLista.classList.add("nomeNormal", "celula", "content", "colNome");
+      td_setorLista.classList.add("celula", "content", "colMaiorX");
+      td_gerenteLista.classList.add("celula", "content", "colMaiorX");
+      td_nome_projetoLista.classList.add("celula", "content", "colMaiorX");
+      td_nome_projetoLista.setAttribute("id", "nomeProjetos");
+      td_turnoLista.classList.add("celula", "content", "colMaior", "center");
+      td_acoesLista.classList.add(
+        "action",
+        "celula",
+        "content",
+        "colMaior",
+        "acoes",
+        "center"
+      );
 
-      setTimeout(() => {
         let gerenteAprovadorLista;
         let analistaAvaliadorLista;
         let idLinhaLista;
@@ -1137,21 +943,20 @@ async function listaTableLista() {
         idLinhaLista = element.id;
         statusGerenteLista = element.status_gerente;
         emEsperaLista = element.em_espera;
-        idTrLista = document.getElementById(idLinhaLista);
+        idTrLista = document.getElementById(idLinhaLista);        
 
-        if (!gerenteAprovadorLista && analistaAvaliadorLista !== "") {
+        if (!gerenteAprovadorLista && analistaAvaliadorLista) {
           idTrLista.classList.add("semGerenteLista");
         } else {
           idTrLista.classList.remove("semGerenteLista");
         }
-        if (gerenteAprovadorLista !== "" && analistaAvaliadorLista === "") {
+        if (gerenteAprovadorLista && !analistaAvaliadorLista) {
           idTrLista.classList.add("semAnalistaLista");
         } else {
           idTrLista.classList.remove("semAnalistaLista");
         }
         if (!gerenteAprovadorLista && !analistaAvaliadorLista) {
-          const row = document.getElementById(element.id);
-          row.classList.add("semAmbosLista");
+          idTrLista.classList.add("semAmbosLista");
         } else {
           idTrLista.classList.remove("semAmbosLista");
         }
@@ -1168,10 +973,9 @@ async function listaTableLista() {
           idTrLista.classList.remove("reprovadoGerenteLista");
           idTrLista.classList.add("emEsperaLista");
         }
-        if (gerenteAprovadorLista !== "" && analistaAvaliadorLista !== "") {
+        if (gerenteAprovadorLista && analistaAvaliadorLista) {
           idTrLista.classList.add("avaliadoLista");
         }
-      }, 150);
     });
   };
 
@@ -1180,9 +984,16 @@ async function listaTableLista() {
   const cachedListKey = `cachedListTable-${selectMes}-${selectAno}`;
   const queryCache = JSON.parse(localStorage.getItem("filterCache")) || {};
 
-  if (queryCache && Object.keys(queryCache).length > 0 && queryCache[cachedListKey]) {
+  if (
+    queryCache &&
+    Object.keys(queryCache).length > 0 &&
+    queryCache[cachedListKey]
+  ) {
     renderListaTableLista(queryCache[cachedListKey]?.payload);
-    updateSelectOptionsLista(queryCache[cachedListKey]?.filters, ".table-filterLista");
+    updateSelectOptionsLista(
+      queryCache[cachedListKey]?.filters,
+      ".table-filterLista"
+    );
   } else {
     showLoadingComponent("listaTableLista");
   }
@@ -1193,7 +1004,7 @@ async function listaTableLista() {
   valorTotal.innerHTML = `${listaSize} Registros`;
 
   await axios
-    .get(`http://10.110.30.193:2512/pense-aja/history/${unidade}`, {
+    .get(`${ip}:2512/pense-aja/history/${unidade}`, {
       params: {
         selectedMonth: Number(selectMes),
         selectedYear: selectAno,
@@ -1236,7 +1047,11 @@ async function listaTableLista() {
           timer: 2100,
         });
 
-        queryCache[cachedListKey] = { payload: newCache.dados, timestamp: currentTime, filters: newCache.filters };
+        queryCache[cachedListKey] = {
+          payload: newCache.dados,
+          timestamp: currentTime,
+          filters: newCache.filters,
+        };
         localStorage.setItem("filterCache", JSON.stringify(queryCache));
         renderListaTableLista(queryCache[cachedListKey].payload);
         updateSelectOptionsLista(newCache.filters, ".table-filterLista");
@@ -1256,7 +1071,7 @@ async function listaTableLista() {
       hideLoading("listaTableLista");
     });
 }
-window.listaTableLista  =listaTableLista
+window.listaTableLista = listaTableLista;
 
 const delet = Swal.mixin({
   customClass: {
@@ -1295,7 +1110,9 @@ let success = function (message) {
       var elemdivMatricula = document.getElementById("divMatricula");
       var elemNomeProjeto = document.getElementById("nomeProjeto");
       var elemDataProjeto = document.getElementById("dataProjeto");
-      var elemLblSituacaoAnterior = document.getElementById("lblSituacaoAnterior");
+      var elemLblSituacaoAnterior = document.getElementById(
+        "lblSituacaoAnterior"
+      );
       var elemSituacaoAnterior = document.getElementById("situacaoAnterior");
       var elemLblSituacaoAtual = document.getElementById("lblSituacaoAtual");
       var elemSituacaoAtual = document.getElementById("situacaoAtual");
@@ -1314,13 +1131,21 @@ let success = function (message) {
       var elemValorBInput = document.getElementById("valorBInput");
       var elemValorAmortizado = document.getElementById("valorAmortizadoInput");
       var elemOutGanhos = document.getElementById("outGanhos");
-      var elemdivInputCompleteColaborador = document.getElementById("divInputCompleteColaborador");
+      var elemdivInputCompleteColaborador = document.getElementById(
+        "divInputCompleteColaborador"
+      );
       var elemdivMetadeUmPerdas = document.getElementById("divMetadeUmPerdas");
-      var elemdivMetadeDoisPerdas = document.getElementById("divMetadeDoisPerdas");
+      var elemdivMetadeDoisPerdas = document.getElementById(
+        "divMetadeDoisPerdas"
+      );
       var elemdivInputsAmortiza = document.getElementById("divInputsAmortiza");
-      var elemdivInputsOutrosGanhos = document.getElementById("divInputsOutrosGanhos");
+      var elemdivInputsOutrosGanhos = document.getElementById(
+        "divInputsOutrosGanhos"
+      );
       if (elemMatricula.parentNode) {
-        elemdivInputsOutrosGanhos.parentNode.removeChild(elemdivInputsOutrosGanhos);
+        elemdivInputsOutrosGanhos.parentNode.removeChild(
+          elemdivInputsOutrosGanhos
+        );
         elemdivInputsAmortiza.parentNode.removeChild(elemdivInputsAmortiza);
         elemdivMatricula.parentNode.removeChild(elemdivMatricula);
         elemMatricula.parentNode.removeChild(elemMatricula);
@@ -1349,16 +1174,29 @@ let success = function (message) {
         elemValorBInput.parentNode.removeChild(elemValorBInput);
         elemValorAmortizado.parentNode.removeChild(elemValorAmortizado);
         elemOutGanhos.parentNode.removeChild(elemOutGanhos);
-        elemdivInputCompleteColaborador.parentNode.removeChild(elemdivInputCompleteColaborador);
+        elemdivInputCompleteColaborador.parentNode.removeChild(
+          elemdivInputCompleteColaborador
+        );
         elemdivMetadeUmPerdas.parentNode.removeChild(elemdivMetadeUmPerdas);
         elemdivMetadeDoisPerdas.parentNode.removeChild(elemdivMetadeDoisPerdas);
       }
     }
     $("#staticBackdrop").modal("hide");
-    if (document.getElementsByClassName("show") == undefined && document.getElementsByClassName("show") > 0) {
-      if (document.getElementsByClassName("show")[0].classList.contains("modal-backdrop")) {
-        document.getElementsByClassName("show")[0].classList.remove("modal-backdrop");
-        document.getElementsByClassName("show")[1].classList.remove("modal-backdrop");
+    if (
+      document.getElementsByClassName("show") == undefined &&
+      document.getElementsByClassName("show") > 0
+    ) {
+      if (
+        document
+          .getElementsByClassName("show")[0]
+          .classList.contains("modal-backdrop")
+      ) {
+        document
+          .getElementsByClassName("show")[0]
+          .classList.remove("modal-backdrop");
+        document
+          .getElementsByClassName("show")[1]
+          .classList.remove("modal-backdrop");
       }
     }
   });
@@ -1378,10 +1216,21 @@ let successLista = function (message) {
     listaTableLista();
     enviar();
     $("#staticBackdrop").modal("hide");
-    if (document.getElementsByClassName("show") == undefined && document.getElementsByClassName("show") > 0) {
-      if (document.getElementsByClassName("show")[0].classList.contains("modal-backdrop")) {
-        document.getElementsByClassName("show")[0].classList.remove("modal-backdrop");
-        document.getElementsByClassName("show")[1].classList.remove("modal-backdrop");
+    if (
+      document.getElementsByClassName("show") == undefined &&
+      document.getElementsByClassName("show") > 0
+    ) {
+      if (
+        document
+          .getElementsByClassName("show")[0]
+          .classList.contains("modal-backdrop")
+      ) {
+        document
+          .getElementsByClassName("show")[0]
+          .classList.remove("modal-backdrop");
+        document
+          .getElementsByClassName("show")[1]
+          .classList.remove("modal-backdrop");
       }
     }
   });
@@ -1500,7 +1349,8 @@ function updateSelectOptions(unique_col_values_dict) {
   allFilters.forEach((filter_i) => {
     const col_index = filter_i.parentElement.getAttribute("col-index");
     unique_col_values_dict[col_index].sort().forEach((i) => {
-      filter_i.innerHTML = filter_i.innerHTML + `\n\n<option value="${i}">${i}</option>`;
+      filter_i.innerHTML =
+        filter_i.innerHTML + `\n\n<option value="${i}">${i}</option>`;
     });
   });
 }
@@ -1513,7 +1363,9 @@ function filter_rows(tableSelect, tableId) {
 
   allFilters.forEach((filter_i) => {
     const col_index = filter_i.parentElement.getAttribute("col-index");
-    const selectedOptions = Array.from(filter_i.selectedOptions).map((opt) => opt.value);
+    const selectedOptions = Array.from(filter_i.selectedOptions).map(
+      (opt) => opt.value
+    );
 
     // Só adiciona se houver seleções e não incluir apenas 'all'
     if (selectedOptions.length > 0 && !selectedOptions.includes("all")) {
@@ -1528,7 +1380,9 @@ function filter_rows(tableSelect, tableId) {
 
     for (const col_index in filter_value_dict) {
       const selected_values = filter_value_dict[col_index];
-      const cell_value = row.querySelector("td:nth-child(" + col_index + ")").innerText;
+      const cell_value = row.querySelector(
+        "td:nth-child(" + col_index + ")"
+      ).innerText;
 
       // Verifica se o valor da célula casa com pelo menos um dos selecionados
       const match = selected_values.some((value) => cell_value.includes(value));
@@ -1614,7 +1468,9 @@ function soma() {
   if (!valorTotal) {
     return;
   }
-  valorTotal.innerHTML = `${document.querySelectorAll(".active").length} Registros`;
+  valorTotal.innerHTML = `${
+    document.querySelectorAll(".active").length
+  } Registros`;
 }
 
 function somaLista() {
@@ -1622,7 +1478,9 @@ function somaLista() {
   if (!valorTotal) {
     return;
   }
-  valorTotal.innerHTML = `${document.querySelectorAll(".activeLista").length} Registros`;
+  valorTotal.innerHTML = `${
+    document.querySelectorAll(".activeLista").length
+  } Registros`;
 }
 
 function filterAmbos() {
@@ -1948,7 +1806,11 @@ function ativaBtnLista() {
       nomeNormal[x].classList.remove("colNomeComLogin");
     }
   }
-  if (funcao == "ANALISTA!" || funcao == "GERENTE!" || funcao == "GERENTE MARCA!") {
+  if (
+    funcao == "ANALISTA!" ||
+    funcao == "GERENTE!" ||
+    funcao == "GERENTE MARCA!"
+  ) {
     for (let i = 0; i < acoes.length; i++) {
       acoes[i].classList.remove("acoes");
       empTable.classList.add("consulta");
@@ -1979,11 +1841,17 @@ function ativaBtn() {
     }
   }
   if (funcao == "ANALISTA!") {
-    document.getElementById("avaliacaoMensal").innerHTML = `${sessionStorage.getItem(
+    document.getElementById(
+      "avaliacaoMensal"
+    ).innerHTML = `${sessionStorage.getItem(
       "avaliacao_mensal"
     )} <strong class="text-success fs-6">Avaliações</strong> <br>`;
   }
-  if (funcao == "ANALISTA!" || funcao == "GERENTE!" || funcao == "GERENTE MARCA!") {
+  if (
+    funcao == "ANALISTA!" ||
+    funcao == "GERENTE!" ||
+    funcao == "GERENTE MARCA!"
+  ) {
     for (let i = 0; i < acoes.length; i++) {
       acoes[i].classList.remove("acoes");
       empTable.classList.add("consulta");
@@ -2043,14 +1911,16 @@ function dadosFiltroLista() {
 
   mesLista.value = previousSelectedMes;
 }
-window.dadosFiltroLista  =dadosFiltroLista
+window.dadosFiltroLista = dadosFiltroLista;
 
 // Atualiza os meses sempre que o ano for alterado
-document.getElementById("anoLista").addEventListener("change", dadosFiltroLista);
+document
+  .getElementById("anoLista")
+  .addEventListener("change", dadosFiltroLista);
 
 function busc() {
   let tbodyL = document.getElementById("tbodyLista");
   tbodyL.innerText = "";
   listaTableLista();
 }
-window.busc = busc
+window.busc = busc;

@@ -1,393 +1,320 @@
-/* Tabela */
-tbody {
-  height: 85vh;
-  overflow-x: hidden;
-  overflow-y: auto;
+/* Tabela - Nova implementação responsive */
+
+/* Configurações principais da tabela */
+.divTable,
+.divTableLista {
+  width: 100%;
+  max-width: 100%;
+  margin: 10px auto;
+  border-radius: 12px;
+  overflow: hidden; /* Contém tudo dentro da div */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  background-color: #ffffff;
 }
 
-td,
-th {
-  word-wrap: break-word;
-  padding: 8px;
-}
-
-table {
-  border-spacing: 0;
+/* Estilos da tabela */
+.consulta {
+  width: 100%;
+  table-layout: fixed; /* Crucial para manter larguras de coluna consistentes */
   border-collapse: collapse;
-  width: 100% !important;
-  table-layout: fixed;
+  background: #ffffff;
   font-family: "Roboto", sans-serif;
   font-size: 13px;
   color: #333;
-  overflow-x: hidden !important;
 }
 
-.divTable,
-.divTableLista {
-  margin-top: 10px !important;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin: 0 auto 2rem auto;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  background-color: #ffffff;
-  /* height: calc(100vh - 130px) !important; */
-}
-
+/* Cabeçalho da tabela */
 #headThead {
-  width: 100% !important;
+  position: sticky;
   top: 0;
+  z-index: 10;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   color: #ffffff;
 }
 
-.consulta {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  width: 100%;
-  background: #ffffff;
-  border-radius: 8px;
-  overflow: auto;
-}
-
-.consultaComLogin {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  width: 85%;
-  border-radius: 8px;
-  overflow: auto;
-  background: #ffffff;
-}
-
 #headConsulta,
 #headConsultaLista {
-  border-collapse: collapse;
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   color: #fff;
-  width: 100% !important;
-  font-family: "roboto-bold";
-  font-size: 13px;
-  letter-spacing: 0.5px;
+  font-weight: 600;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
+/* Células do cabeçalho */
 #headConsulta th,
 #headConsultaLista th {
   padding: 12px 8px;
   text-transform: uppercase;
-  font-weight: 600;
   text-align: center;
-  top: 0;
-  transition: background-color 0.2s ease;
+  position: relative;
+  white-space: nowrap;
 }
 
-/* Células */
-th,
-td {
-  padding: 12px 8px;
+/* Definições padrão para células */
+th, td {
+  padding: 10px 6px;
   text-align: center;
-  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
   border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+  height: 4.5vh;
+  transition: all 0.2s;
 }
 
+/* Corpo da tabela */
+tbody {
+  max-height: 65vh;
+  overflow-y: auto;
+}
+
+/* Estilos de linhas */
 tr {
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 tbody tr:hover {
   background-color: rgba(0, 0, 0, 0.03);
-  color: #333;
-  width: 100%;
   transform: translateY(-1px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-/* #tbodyLista {
-  height: 82vh;
-} */
-
-/* Alternar cores de linhas */
-/* tr:nth-child(even) {
+tr:nth-child(even) {
   background-color: rgba(0, 0, 0, 0.01);
-} */
-
-.colMenor {
-  max-width: 3.59vw;
-  min-width: 3.59vw;
-  font-size: 12px;
-  letter-spacing: 0.5px;
 }
 
-.colMen {
-  width: 3vw;
-  letter-spacing: 0.5px;
-}
-
-.data select,
-.select-modern {
+/* Classes para conteúdo */
+.content {
+  font-family: "Roboto", sans-serif;
   font-size: 13px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.subtitles {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Definições de largura das colunas */
+.thID, .colMenor {
+  width: 5%;
+}
+
+.colMaior {
+  width: 10%;
+}
+
+.colMaiorX, .colNome, .nomeNormal {
+  width: 15%;
+}
+
+.action, .acoes {
+  width: 8%;
+}
+
+/* Melhorias para select boxes na tabela */
+.select-modern {
+  width: 100%;
+  font-size: 12px;
   padding: 4px 6px;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
   background-color: #fff;
+  margin-top: 5px;
   transition: all 0.2s ease-in-out;
 }
 
-.data select:focus,
 .select-modern:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
   outline: none;
 }
 
-.colMedio {
-  max-width: 4.11vw;
-  min-width: 4.11vw;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-}
-
-.colMed {
-  width: 3vw;
-  letter-spacing: 0.5px;
-}
-
-.colMaior {
-  max-width: 9.2vw;
-  min-width: 9.2vw;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-}
-
-.colMai {
-  width: 8.3vw;
-  letter-spacing: 0.5px;
-}
-
-.colMaiorX {
-  max-width: 18vw;
-  min-width: 18vw;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-}
-
-.colNomeComLogin {
-  max-width: 18vw;
-  min-width: 18vw;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-}
-
-.colNome {
-  max-width: 18vw;
-  min-width: 18vw;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-}
-
-.colMaiX {
-  width: 17vw;
-  letter-spacing: 0.5px;
-}
-
-.divSelect {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
-  gap: 8px;
-}
-
-.celula {
-  height: 4.5vh;
-  padding: 8px;
-  transition: all 0.2s;
-  vertical-align: middle;
-  border-bottom: 1px solid #edf2f7;
-}
-
-.celulaLista {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  height: 4.5vh;
-  color: #fff;
-  padding: 8px;
-  transition: all 0.2s;
-  vertical-align: middle;
-}
-
-.content {
-  font-family: "roboto-regular";
-  font-size: 13px;
-  text-align: center;
-  line-height: 1.5;
-  color: #333;
-}
-
-.data {
-  width: 10vw;
-}
-
-/* Ações */
-.btnAcoes {
-  background-color: #ffffff;
-  color: #333;
-  padding: 10px 20px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-block;
-  user-select: none;
-}
-
-.btnAcoes:hover {
-  background-color: #36f465;
-  color: #000000;
-  border-color: #5cf436;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 12px rgba(54, 244, 54, 0.4);
-  cursor: pointer;
-}
-
-/* Tooltip styling */
-#modDif,
-#metDif {
-  position: relative;
-  cursor: pointer;
-  padding: 4px;
-  color: #2563eb;
-  transition: all 0.2s;
-}
-
-#modDif:hover,
-#metDif:hover {
-  color: #1d4ed8;
-}
-
-#tooltipText {
+/* Tooltip personalizado */
+#tool {
+  display: none;
   position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
   background-color: #1e293b;
   color: #fff;
-  font-weight: bold;
-  letter-spacing: 1px;
-  word-spacing: 1px;
   border-radius: 6px;
-  padding: 8px 12px;
-  white-space: nowrap;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  /* z-index: 100; */
+  padding: 10px;
+  width: 250px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateX(-50%) translateY(-10px);
+  z-index: 100;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  text-align: left;
 }
 
-#modDif:hover #tooltipText,
-#metDif:hover #tooltipText {
-  visibility: visible;
-  opacity: 1;
-  transform: translateX(-50%) translateY(-5px);
+.tooltip-overlay:hover + #tool {
+  display: block;
 }
 
-/* Status colors with modern styling */
-.semAnalista,
-.semAnalistaLista {
+.tooltip-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Classes de status para linhas */
+.semAnalista, .semAnalistaLista {
   background-color: rgba(56, 189, 248, 0.15);
   border-left: 4px solid #0ea5e9;
   color: #0369a1;
-  transition: all 0.3s;
 }
 
-.semGerente,
-.semGerenteLista {
+.semGerente, .semGerenteLista {
   background-color: rgba(251, 146, 60, 0.15);
   border-left: 4px solid #f97316;
   color: #9a3412;
-  transition: all 0.3s;
 }
 
-.semAmbos,
-.semAmbosLista {
+.reprovadoGerente, .reprovadoGerenteLista {
+  background-color: #fcd6d6;
+  border-left: 4px solid #ff4000;
+  color: #922703;
+}
+
+.semAmbos, .semAmbosLista {
   background-color: rgba(168, 85, 247, 0.15);
   border-left: 4px solid #a855f7;
   color: #6b21a8;
-  transition: all 0.3s;
 }
 
-.avaliado,
-.avaliadoLista {
-  background-color: #fff;
-  border-left: 4px solid #e2e8f0;
+.avaliado, .avaliadoLista {
+  background-color: #f1fff1;
+  border-left: 4px solid #a7f3d0;
 }
 
-.subClassificacao {
+.emEspera, .emEsperaLista {
+  background-color: #fbf9e3;
+  border-left: 4px solid #ffeb3b;
+}
+
+/* Estilo para área de filtros (Glossário) */
+.divGlossario {
   display: flex;
-  width: 100%;
+  flex-wrap: wrap;
+  gap: 8px;
   justify-content: center;
-  gap: 15%;
-  margin-bottom: 50px;
+  margin-bottom: 10px;
+  padding: 8px 0;
 }
 
-.a3_mae {
-  text-align: center;
-}
-
-.textarea {
-  width: 25%;
-  height: 60px;
-  color: #333;
-  font-size: 14px;
-  text-align: center;
-  resize: none;
-  vertical-align: middle;
-  line-height: 29px;
-  border: 1px solid #e2e8f0;
+.coresGlossario {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
   border-radius: 6px;
-  padding: 8px;
-  transition: all 0.3s;
+  background-color: #f8fafc;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.textarea:focus {
-  border-color: #3b82f6;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+.coresGlossario:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.center {
-  text-align: center;
+.coresGlossario button {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
 }
 
-/* Tabela Historico */
+/* Botões de filtros de cores */
+.exemploVermelho { background-color: #ff4000; }
+.exemploRoxo { background-color: #a855f7; }
+.exemploLaranja { background-color: #f97316; }
+.exemploAzul { background-color: #0ea5e9; }
+.exemploBranco { background-color: #a7f3d0; }
+.exemploRose { background-color: #ffeb3b; }
+
+/* Responsividade */
+@media (max-width: 1200px) {
+  .divTable, .divTableLista {
+    max-width: 95%;
+  }
+  
+  th, td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .select-modern {
+    font-size: 11px;
+    padding: 3px 4px;
+  }
+}
+
+@media (max-width: 992px) {
+  /* Ajustar larguras das colunas em telas médias */
+  .colMaior {
+    width: 8%;
+  }
+  
+  .colMaiorX, .colNome, .nomeNormal {
+    width: 13%;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Telas pequenas: esconder ou minimizar algumas colunas */
+  .colMenor, .thID {
+    width: 4%;
+  }
+  
+  .colMaior {
+    width: 7%;
+  }
+  
+  .colMaiorX, .colNome, .nomeNormal {
+    width: 12%;
+  }
+  
+  .action, .acoes {
+    width: 6%;
+  }
+  
+  th, td {
+    font-size: 11px;
+    padding: 6px 2px;
+  }
+}
+
+/* Estilos para o contêiner pai da tabela */
+.principal {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 10px;
+}
+
+/* Área de listas */
 #lista {
   position: fixed;
   top: 0;
   right: 0;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   background: white;
   z-index: 10;
-
-  /* Começa fora da tela com opacidade 0 */
   transform: translateY(-100%);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-
   transition: all 0.4s ease-in-out;
 }
 
-/* Quando ativa */
 #lista.show {
   transform: translateY(0);
   opacity: 1;
@@ -396,26 +323,17 @@ tbody tr:hover {
   z-index: 50 !important;
 }
 
-/* Aviso de tabela da pag. principal */
-.swal-container-custom {
-  z-index: 1 !important;
-}
-
-.swal-popup-custom {
-  z-index: 2 !important;
-}
-
-.nav-header-modern {
+/* Header da lista */
+.navHeaderLista {
   background: linear-gradient(135deg, #2c3e50 0%, #1a2a38 100%);
   border-radius: 12px 12px 0 0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 18px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
-  overflow: hidden;
 }
 
-.nav-header-modern::before {
+.navHeaderLista::before {
   content: "";
   position: absolute;
   top: 0;
@@ -423,161 +341,9 @@ tbody tr:hover {
   right: 0;
   height: 3px;
   background: linear-gradient(90deg, #3498db, #5dade2, #3498db);
-  z-index: 2;
 }
 
-.nav-header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-}
-
-/* Estilo para os filtros de data */
-.nav-date-filters {
-  gap: 16px;
-}
-
-.filter-container {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 12px;
-  transition: all 0.3s ease;
-}
-
-.filter-container:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.filter-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.filter-icon {
-  color: #5dade2;
-  font-size: 16px;
-}
-
-/* Estilo para os selects */
-.select-wrapper {
-  position: relative;
-  display: inline-block;
+/* Ajuste nos selects da lista */
+.trHeadListaTR .select-modern {
   width: 100%;
-}
-
-.modern-select {
-  appearance: none;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  outline: none;
-  padding: 10px 30px 10px 15px;
-  transition: all 0.3s ease;
-  width: 100%;
-  font-size: 14px;
-}
-
-.modern-select:hover,
-.modern-select:focus {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.select-arrow {
-  color: rgba(255, 255, 255, 0.7);
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-}
-
-.stats-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.stats-badge {
-  background: rgba(46, 204, 113, 0.2);
-  border: 1px solid rgba(46, 204, 113, 0.3);
-  border-radius: 20px;
-  display: flex;
-  color: #fff;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 18px;
-  transition: all 0.3s ease;
-}
-
-.stats-badge:hover {
-  background: rgba(46, 204, 113, 0.3);
-}
-
-.stats-icon {
-  color: #2ecc71;
-  font-size: 18px;
-}
-
-.valorTotal {
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  font-size: 18px;
-}
-
-/* Estilo para o botão de fechar */
-.close-container {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.close-button {
-  background: rgba(231, 76, 60, 0.1);
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  height: 46px;
-  width: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.close-button:hover {
-  background: rgba(231, 76, 60, 0.2);
-  transform: scale(1.1);
-}
-
-@media (max-width: 768px) {
-  th,
-  td {
-    font-size: 11px;
-    padding: 8px 4px;
-  }
-
-  .divTable {
-    max-width: 100%;
-    padding: 0 10px;
-  }
-
-  .nav-header-modern {
-    padding: 15px;
-  }
-
-  .nav-date-filters {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .stats-badge {
-    padding: 6px 12px;
-  }
 }
