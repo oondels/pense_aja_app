@@ -53,7 +53,7 @@ const getCachedData = (cacheKey, _) => {
   }
 };
 
-// Avaliaca dos pense e aja
+// Avaliação dos pense e aja
 const avaliarContainer = document.querySelector(".avaliar-container");
 const avaliarContent = document.querySelector(".avaliar-content");
 const loadEvaluateButtons = () => {
@@ -84,12 +84,67 @@ const loadEvaluateButtons = () => {
   // Abrir pense aja para avaliar
   penseajaEvaluateButtons.forEach((button) => {
     button.addEventListener("click", async (event) => {
-      let penseAjaId = event.target.id.substring(1);
-      sessionStorage.setItem("penseAjaEmAvaliacao", penseAjaId);
-
       // Ativando popup de avaliação
       avaliarContainer.classList.add("active");
       avaliarContent.classList.add("active");
+
+      // Botões de avaliação pense e aja
+      const actionButtons = avaliarContent.querySelectorAll(".avaliar-btn");
+
+      // Reseta todos os botões de avaliação
+      actionButtons.forEach(button => {
+        button.disabled = false;
+        button.classList.remove("disabled-button");
+      });
+
+      // Busca linha da tabela referente ao botão clicacdo
+      const clickedButton = event.target;
+      const tableRow = clickedButton.closest("tr");
+
+      // Coleta situação do pense e aja
+      let penseAjaSituation;
+      if (tableRow.classList.contains("semGerente") || tableRow.classList.contains("emEspera")) {
+        penseAjaSituation = "avaliado-analista";
+      } else if (tableRow.classList.contains("semAnalista")) {
+        penseAjaSituation = "avaliado-gerente";
+      } else if (tableRow.classList.contains("avaliado")) {
+        penseAjaSituation = 'avaliado'
+      } else {
+        penseAjaSituation = "nao-avaliado";
+      }
+
+      const userRole = sessionStorage.getItem("funcao");
+      const isManager = userRole.toLocaleLowerCase().includes("gerente");
+
+      actionButtons.forEach((button) => {
+        const isExcluirButton = [...button.classList].some((cls) =>
+          cls.toLowerCase().includes("excluir")
+        );
+
+        // Verifica se usuário é gerente
+        if (!isManager) {
+          // Verifia se analista já avaliou e desabilita botões
+          if (penseAjaSituation === "avaliado-analista" || penseAjaSituation === 'avaliado') {
+            button.disabled = true;
+            button.classList.add("disabled-button");
+          } else {
+            // Desabilita botão exlcuir
+            if (isExcluirButton) {
+              button.disabled = true;
+              button.classList.add("disabled-button");
+            }
+          }
+        } else {
+          if (penseAjaSituation === "avaliado-gerente") {
+            button.disabled = true;
+            button.classList.add("disabled-button");
+          }
+        }
+      });
+
+      // Salva id do penseAja em avaliação para coleta posterior
+      let penseAjaId = event.target.id.substring(1);
+      sessionStorage.setItem("penseAjaEmAvaliacao", penseAjaId);
 
       const turnoMapping = {
         C: "3° Turno",
@@ -278,6 +333,7 @@ const renderListaTable = (data) => {
 
   loadEvaluateButtons();
 };
+window.renderListaTable = renderListaTable;
 
 function activeBtn(e) {
   const btnsGlossario = document.querySelectorAll(".coresGlossario");
@@ -386,8 +442,6 @@ async function listaTable() {
         resBuscaDados &&
         resBuscaDados.dados.length > cachedList[cachedKey].payload.length
       ) {
-        console.log("Atualizando...");
-
         Swal.fire({
           icon: "success",
           title: "Sucesso",
@@ -861,123 +915,121 @@ const buscaPA_Lista = (listaSize) => {
   }
 };
 
+const renderListaTableLista = (data) => {
+  let tbody = document.getElementById("tbodyLista");
+
+  tbody.innerHTML = "";
+  data.forEach((element) => {
+    let trLista = tbody.insertRow();
+    let td_idLista = trLista.insertCell();
+    let td_realizadoLista = trLista.insertCell();
+    let td_nomeLista = trLista.insertCell();
+    let td_setorLista = trLista.insertCell();
+    let td_gerenteLista = trLista.insertCell();
+    let td_nome_projetoLista = trLista.insertCell();
+    let td_turnoLista = trLista.insertCell();
+    let td_acoesLista = trLista.insertCell();
+
+    td_idLista.innerText = element.id;
+    td_realizadoLista.innerText = element.data_realizada;
+    td_nomeLista.innerText = element.nome;
+    td_setorLista.innerText = element.setor;
+    td_gerenteLista.innerText = element.gerente;
+    td_nome_projetoLista.innerHTML += `${element.nome_projeto} <div id="toolLista"><div id="tooltipTextBeforeLista"><strong>SITUAÇÃO ANTERIOR: </strong>${element.situacao_anterior}</div><div id="tooltipTextAfterLista"><strong>SITUAÇÃO ATUAL: </strong>${element.situacao_atual}</div></div>`;
+    td_turnoLista.innerText = element.turno;
+    td_acoesLista.innerHTML += `<i class="btnAcoes botaoInfo bi bi-info-square iLista" id="iLista${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
+
+    trLista.classList.add("headConsultaLista", "activeLista");
+    trLista.setAttribute("id", element.id);
+    td_idLista.classList.add("thID");
+
+    const data = new Date(element.criado);
+    const hora = `${
+      data.getHours() < 10 ? "0" + data.getHours() : data.getHours()
+    }:${data.getMinutes() < 10 ? "0" + data.getMinutes() : data.getMinutes()}:${
+      data.getSeconds() < 10 ? "0" + data.getSeconds() : data.getSeconds()
+    }`;
+    const criado = data.toLocaleDateString().replace(new RegExp("/", "g"), "-");
+
+    td_realizadoLista.classList.add("celula", "content", "colMaior", "center");
+    td_realizadoLista.setAttribute("id", "data");
+    td_realizadoLista.setAttribute("data-bs-toggle", "tooltip");
+    td_realizadoLista.setAttribute("data-bs-placement", "bottom");
+    td_realizadoLista.setAttribute("data-bs-custom-class", "custom-tooltip");
+    td_realizadoLista.setAttribute("title", `Criado em: ${criado} às ${hora}`);
+
+    td_nomeLista.classList.add("nomeNormal", "celula", "content", "colNome");
+    td_setorLista.classList.add("celula", "content", "colMaiorX");
+    td_gerenteLista.classList.add("celula", "content", "colMaiorX");
+    td_nome_projetoLista.classList.add("celula", "content", "colMaiorX");
+    td_nome_projetoLista.setAttribute("id", "nomeProjetos");
+    td_turnoLista.classList.add("celula", "content", "colMaior", "center");
+    td_acoesLista.classList.add(
+      "action",
+      "celula",
+      "content",
+      "colMaior",
+      "acoes",
+      "center"
+    );
+
+    let gerenteAprovadorLista;
+    let analistaAvaliadorLista;
+    let idLinhaLista;
+    let idTrLista;
+    let statusGerenteLista;
+    let emEsperaLista;
+    gerenteAprovadorLista = element.gerente_aprovador;
+    analistaAvaliadorLista = element.analista_avaliador;
+    idLinhaLista = element.id;
+    statusGerenteLista = element.status_gerente;
+    emEsperaLista = element.em_espera;
+    idTrLista = document.getElementById(idLinhaLista);
+
+    if (!gerenteAprovadorLista && analistaAvaliadorLista) {
+      idTrLista.classList.add("semGerenteLista");
+    } else {
+      idTrLista.classList.remove("semGerenteLista");
+    }
+    if (gerenteAprovadorLista && !analistaAvaliadorLista) {
+      idTrLista.classList.add("semAnalistaLista");
+    } else {
+      idTrLista.classList.remove("semAnalistaLista");
+    }
+    if (!gerenteAprovadorLista && !analistaAvaliadorLista) {
+      idTrLista.classList.add("semAmbosLista");
+    } else {
+      idTrLista.classList.remove("semAmbosLista");
+    }
+    if (statusGerenteLista === "REPROVAR") {
+      idTrLista.classList.remove("semAnalistaLista");
+      idTrLista.classList.remove("semGerenteLista");
+      idTrLista.classList.remove("semAmbosLista");
+      idTrLista.classList.add("reprovadoGerenteLista");
+    }
+    if (emEsperaLista === "1") {
+      idTrLista.classList.remove("semAnalistaLista");
+      idTrLista.classList.remove("semGerenteLista");
+      idTrLista.classList.remove("semAmbosLista");
+      idTrLista.classList.remove("reprovadoGerenteLista");
+      idTrLista.classList.add("emEsperaLista");
+    }
+    if (gerenteAprovadorLista && analistaAvaliadorLista) {
+      idTrLista.classList.add("avaliadoLista");
+    }
+  });
+};
+
 async function listaTableLista() {
   if (!unidade) {
     console.log("Informe sua matricula para definição da unidade");
     return;
   }
-
   let tbody = document.getElementById("tbodyLista");
   tbody.innerText = "";
+
   let selectMes = document.getElementById("mesLista").value;
   let selectAno = document.getElementById("anoLista").value;
-
-  const renderListaTableLista = (data) => {
-    tbody.innerHTML = "";
-    data.forEach((element) => {
-      let trLista = tbody.insertRow();
-      let td_idLista = trLista.insertCell();
-      let td_realizadoLista = trLista.insertCell();
-      let td_nomeLista = trLista.insertCell();
-      let td_setorLista = trLista.insertCell();
-      let td_gerenteLista = trLista.insertCell();
-      let td_nome_projetoLista = trLista.insertCell();
-      let td_turnoLista = trLista.insertCell();
-      let td_acoesLista = trLista.insertCell();
-
-      td_idLista.innerText = element.id;
-      td_realizadoLista.innerText = element.data_realizada;
-      td_nomeLista.innerText = element.nome;
-      td_setorLista.innerText = element.setor;
-      td_gerenteLista.innerText = element.gerente;
-      td_nome_projetoLista.innerHTML += `${element.nome_projeto} <div id="toolLista"><div id="tooltipTextBeforeLista"><strong>SITUAÇÃO ANTERIOR: </strong>${element.situacao_anterior}</div><div id="tooltipTextAfterLista"><strong>SITUAÇÃO ATUAL: </strong>${element.situacao_atual}</div></div>`;
-      td_turnoLista.innerText = element.turno;
-      td_acoesLista.innerHTML += `<i class="btnAcoes botaoInfo bi bi-info-square iLista" id="iLista${element.id}" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></i>`;
-
-      trLista.classList.add("headConsultaLista", "activeLista");
-      trLista.setAttribute("id", element.id);
-      td_idLista.classList.add("thID");
-
-      const data = new Date(element.criado);
-      const hora = `${
-        data.getHours() < 10 ? "0" + data.getHours() : data.getHours()
-      }:${
-        data.getMinutes() < 10 ? "0" + data.getMinutes() : data.getMinutes()
-      }:${
-        data.getSeconds() < 10 ? "0" + data.getSeconds() : data.getSeconds()
-      }`;
-      const criado = data
-        .toLocaleDateString()
-        .replace(new RegExp("/", "g"), "-");
-
-      td_realizadoLista.classList.add("celula", "content", "colMaior", "center");
-      td_realizadoLista.setAttribute("id", "data");
-      td_realizadoLista.setAttribute("data-bs-toggle", "tooltip");
-      td_realizadoLista.setAttribute("data-bs-placement", "bottom");
-      td_realizadoLista.setAttribute("data-bs-custom-class", "custom-tooltip");
-      td_realizadoLista.setAttribute("title", `Criado em: ${criado} às ${hora}`);
-
-      td_nomeLista.classList.add("nomeNormal", "celula", "content", "colNome");
-      td_setorLista.classList.add("celula", "content", "colMaiorX");
-      td_gerenteLista.classList.add("celula", "content", "colMaiorX");
-      td_nome_projetoLista.classList.add("celula", "content", "colMaiorX");
-      td_nome_projetoLista.setAttribute("id", "nomeProjetos");
-      td_turnoLista.classList.add("celula", "content", "colMaior", "center");
-      td_acoesLista.classList.add(
-        "action",
-        "celula",
-        "content",
-        "colMaior",
-        "acoes",
-        "center"
-      );
-
-        let gerenteAprovadorLista;
-        let analistaAvaliadorLista;
-        let idLinhaLista;
-        let idTrLista;
-        let statusGerenteLista;
-        let emEsperaLista;
-        gerenteAprovadorLista = element.gerente_aprovador;
-        analistaAvaliadorLista = element.analista_avaliador;
-        idLinhaLista = element.id;
-        statusGerenteLista = element.status_gerente;
-        emEsperaLista = element.em_espera;
-        idTrLista = document.getElementById(idLinhaLista);        
-
-        if (!gerenteAprovadorLista && analistaAvaliadorLista) {
-          idTrLista.classList.add("semGerenteLista");
-        } else {
-          idTrLista.classList.remove("semGerenteLista");
-        }
-        if (gerenteAprovadorLista && !analistaAvaliadorLista) {
-          idTrLista.classList.add("semAnalistaLista");
-        } else {
-          idTrLista.classList.remove("semAnalistaLista");
-        }
-        if (!gerenteAprovadorLista && !analistaAvaliadorLista) {
-          idTrLista.classList.add("semAmbosLista");
-        } else {
-          idTrLista.classList.remove("semAmbosLista");
-        }
-        if (statusGerenteLista === "REPROVAR") {
-          idTrLista.classList.remove("semAnalistaLista");
-          idTrLista.classList.remove("semGerenteLista");
-          idTrLista.classList.remove("semAmbosLista");
-          idTrLista.classList.add("reprovadoGerenteLista");
-        }
-        if (emEsperaLista === "1") {
-          idTrLista.classList.remove("semAnalistaLista");
-          idTrLista.classList.remove("semGerenteLista");
-          idTrLista.classList.remove("semAmbosLista");
-          idTrLista.classList.remove("reprovadoGerenteLista");
-          idTrLista.classList.add("emEsperaLista");
-        }
-        if (gerenteAprovadorLista && analistaAvaliadorLista) {
-          idTrLista.classList.add("avaliadoLista");
-        }
-    });
-  };
 
   // Dados do filtro para evitar spans desnecessários
   const currentTime = new Date().getTime();

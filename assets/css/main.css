@@ -1,3 +1,80 @@
+/* Botões Desabilitados */
+.disabled-button {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: linear-gradient(145deg, #9e9e9e, #bdbdbd) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  border-color: #9e9e9e !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.disabled-button::before {
+  opacity: 0.5;
+}
+
+.disabled-button:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.disabled-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(0, 0, 0, 0.05) 10px,
+    rgba(0, 0, 0, 0.05) 20px
+  );
+  pointer-events: none;
+}
+
+.disabled-button:hover::before {
+  animation: none;
+}
+
+/* Adicionando tooltip informativo ao passar o mouse */
+.disabled-button {
+  position: relative;
+}
+
+.disabled-button:hover::before {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background-color: rgba(33, 33, 33, 0.9);
+  color: white;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 5;
+  font-weight: normal;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Triângulo do tooltip */
+.disabled-button:hover::after {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: rgba(33, 33, 33, 0.9);
+  z-index: 5;
+}
+
 /* Estilos para o componente de loading */
 .loading-cdata {
   position: fixed;

@@ -401,17 +401,26 @@ export const PenseAjaService = {
     try {
       await client.query("BEGIN");
       const statusAvaliacao = evaluationData.status;
-      const avaliador = evaluationData.usuario
+      const avaliador = evaluationData.usuario;
+      const userRole = evaluationData.funcao.toLowerCase();
 
-      let params: Array<string | boolean> = []
+      let params: Array<string | boolean> = [];
       let query = `UPDATE pense_aja.pense_aja${office} SET `;
 
-      query += checkUserRole(evaluationData.funcao.toLowerCase());
-      params.push(statusAvaliacao)
-      params.push(avaliador)
+      query += checkUserRole(userRole);
+      params.push(statusAvaliacao);
+      params.push(avaliador);
 
       if (statusAvaliacao === "EXCLUIR") {
-        query += `excluido = 'S', updatedat = NOW() `;
+        if (userRole.includes("gerente")) {
+          query += `excluido = 'S', updatedat = NOW() `;
+        } else {
+          throw new CustomError(
+            "Somente Gerentes podem excluir um registro pense e aja!",
+            403,
+            "Somente Gerentes podem excluir um registro pense e aja!"
+          );
+        }
       } else {
         query += `classificacao = $3, a3_mae = $4, em_espera = $5, replicavel = $6, updatedat = NOW() `;
         params.push(evaluationData.avaliacao);
@@ -419,10 +428,14 @@ export const PenseAjaService = {
         params.push(evaluationData.emEspera);
         params.push(evaluationData.replicavel);
       }
-      query += `WHERE id = $${params.length + 1} RETURNING id;`;
-      params.push(id)
+      query += `
+      WHERE id = $${params.length + 1} 
+      RETURNING id, data_realizada, fabrica, nome, setor, gerente, nome_projeto,
+      turno, situacao_anterior, situacao_atual, gerente_aprovador, analista_avaliador,
+      status_gerente, status_analista, em_espera, createdat AS criado;`;
+      params.push(id);
 
-      const result = await client.query(query, params)
+      const result = await client.query(query, params);
       if (result.rows.length === 0) {
         await client.query("ROLLBACK");
         throw new CustomError(
@@ -431,13 +444,18 @@ export const PenseAjaService = {
           "Pense Aja não encontrado."
         );
       }
-      await client.query("COMMIT")
-      
+      await client.query("COMMIT");
+
       return result.rows[0];
     } catch (error) {
       await client.query("ROLLBACK");
       logger.error("Pense-aja", `Erro ao avaliar pense aja: ${error}`);
-      throw new CustomError("Erro ao avaliar pense aja.");
+
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        throw new CustomError("Erro ao avaliar pense aja.");
+      }
     } finally {
       await client.release();
     }
