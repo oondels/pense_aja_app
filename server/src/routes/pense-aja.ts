@@ -88,7 +88,6 @@ router.get(
   }
 );
 
-// TODO: Após atualizar o registro, atualizar o cache no front-end
 router.put(
   "/avaliar/:id",
   verifyToken,
@@ -108,11 +107,10 @@ router.put(
         evaluationData
       );
 
-      res.json(newEvaluation);
-      // res.status(200).json({
-      //   message: "Pense Aja avaliado com sucesso!",
-      //   data: newEvaluation,
-      // });
+      res.status(200).json({
+        message: "Pense Aja avaliado com sucesso!",
+        data: newEvaluation,
+      });
       return;
     } catch (error) {
       next(error);
