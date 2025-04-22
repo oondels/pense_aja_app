@@ -397,6 +397,7 @@ passwordInputConfirm.addEventListener("input", checkPasswordsEqual);
 // Logout
 const logoutButton = document.querySelector("#logout");
 logoutButton.addEventListener("click", () => {
+  
   const loading = document.querySelector(".spinner-logout");
   loading.classList.remove("hidden");
 
