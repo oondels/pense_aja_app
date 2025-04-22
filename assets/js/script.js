@@ -225,7 +225,7 @@ const renderListaTable = (data) => {
       "action",
       "celula",
       "content",
-      "colMaior",
+      "colMenor",
       "acoes",
       "center"
     );
