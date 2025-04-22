@@ -140,7 +140,7 @@
         <button id="protected-route">Rota protegida</button>
 
         <!-- Tabela -->
-        <div style="display: flex; justify-content: center;">
+        <div class="principal">
           <div class="divTable">
             <table class="consulta" id="emp-table">
               <thead id="headThead">
@@ -148,19 +148,19 @@
                   <th class="subtitles celula colMenor thID">ID</th>
                   <th class="subtitles celula colMaior" col-index=1>Realizado</th>
                   <th class="subtitles celula nomeNormal colNome" col-index=3>Nome
-                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="nomeSelLista" name="nomeSelLista" data-el="3" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
+                    <select class="table-filter select-modern" autocomplete="off" id="nomeSelLista" name="nomeSelLista" data-el="3" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
                   <th class="subtitles celula colMaiorX" col-index=4>Setor
-                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="setorSelLista" name="setorSelLista"
+                    <select class="table-filter select-modern" autocomplete="off" id="setorSelLista" name="setorSelLista"
                       data-el="4" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
 
                   <th class="subtitles celula colMaiorX" col-index=5>Gerente
-                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="gerenteSelLista"
+                    <select class="table-filter select-modern" autocomplete="off" id="gerenteSelLista"
                       name="gerenteSelLista" data-el="5" onchange="filter_rows('multiple')" multiple>
                       <option value="" id="selecionado"></option>
                       <option value="all"></option>
@@ -168,31 +168,23 @@
                   </th>
 
                   <th class="subtitles celula colMaiorX print" col-index=6>Nome do projeto
-                    <select class="table-filter select-modern col colMaiX" autocomplete="off" id="projetoSelLista"
+                    <select class="table-filter select-modern" autocomplete="off" id="projetoSelLista"
                       name="projetoSelLista" data-el="6" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
                   <th class="subtitles celula colMaior" col-index=7>Turno
-                    <select class="table-filter select-modern col colMai" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
+                    <select class="table-filter select-modern" autocomplete="off" id="turnoSelLista" name="turnoSelLista"
                       data-el="7" onchange="filter_rows('.table-filter', '#emp-table')" multiple>
                       <option value="all"></option>
                     </select>
                   </th>
-                  <th class="action subtitles celula colMaior acoes">Ações
+                  <th class="action subtitles celula colMenor acoes">Ações
                   </th>
                 </tr>
               </thead>
               <tbody id="tbody">
-                <tr>
-                  <td class="celula content colMaiorX" id="nomeProjeto">dg 
-                    <div class="tooltip-overlay"></div>
-                    <div id="tool">
-                      <div id="tooltipTextBefore"><strong>SITUAÇÃO ANTERIOR: </strong>gegeg</div>
-                      <div id="tooltipTextAfter"><strong>SITUAÇÃO ATUAL: </strong>egeg</div>
-                    </div>
-                  </td>
-                </tr>
+                <!-- O conteúdo será adicionado dinamicamente via JavaScript -->
               </tbody>
             </table>
           </div>
