@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sessionStorage.setItem("usuario", decoded.usuario);
         sessionStorage.setItem("nome", decoded.nome);
         sessionStorage.setItem("funcao", decoded.funcao);
+        sessionStorage.setItem("expirationTime", data.tokenExpirationTime)
 
         showNotification(
           "Sucesso!",
@@ -78,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         setTimeout(() => {
           window.location.reload();
-        }, 2000);
+        }, 1600);
       })
       .catch(() => {
         showNotification(
