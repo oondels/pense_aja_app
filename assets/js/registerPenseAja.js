@@ -1,5 +1,6 @@
 import { api } from "../../src/services/httpClient.js";
 
+
 document.addEventListener("DOMContentLoaded", () => {
   const dassOffice = localStorage.getItem("unidadeDass") || null;
   const penseAjaButton = document.querySelector("#openMenu");

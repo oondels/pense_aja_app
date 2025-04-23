@@ -405,7 +405,6 @@ async function listaTable() {
   let resBuscaDados;
   try {
     const response = await api.get(`/pense-aja/${unidade}`);
-
     resBuscaDados = response.data;
     if (resBuscaDados.dados.length === 0) {
       Swal.fire({

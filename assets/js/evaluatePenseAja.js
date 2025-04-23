@@ -1,4 +1,5 @@
 import { api } from "../../src/services/httpClient.js";
+
 import CacheManager from "./cacheManager.js";
 
 document.addEventListener("DOMContentLoaded", () => {

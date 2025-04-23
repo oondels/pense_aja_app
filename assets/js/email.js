@@ -1,5 +1,6 @@
 import { authApi } from "../../src/services/httpClient.js";
 
+
 const emailPopup = document.querySelector(".email-popup");
 const emailOverlay = document.querySelector(".email-popup-overlay");
 
