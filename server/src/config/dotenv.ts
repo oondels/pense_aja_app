@@ -11,7 +11,8 @@ const vars = {
   DBASE: process.env.DBASE,
   RABBITMQ_URL: process.env.RABBITMQ_URL,
   JWT_SECRET: process.env.JWT_SECRET || 'default_value',
-  DEV_ENV: process.env.DEV_ENV
+  DEV_ENV: process.env.DEV_ENV,
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || ""
 };
 
 export default vars;

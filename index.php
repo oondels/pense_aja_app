@@ -17,8 +17,9 @@
   <link rel="stylesheet" href="./assets/css/table.css">
   <link rel="stylesheet" href="./assets/css/register.css">
   <link rel="stylesheet" href="./assets/css/avaliacao.css">
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/ai-effects.css">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="./assets/js/sweetalert2.all.min.js"></script>
 
   <title>Pense&Aja</title>
@@ -815,7 +816,6 @@
                   </select>
                 </div>
               </div>
-              Colocar opção de fabrica
             </div>
           </div>
 
@@ -840,6 +840,7 @@
                 </div>
                 <span>Melhorar texto com IA</span>
                 <div class="ai-enhance-effect"></div>
+                <span class="spinner-ai hidden"></span>
               </button>
               <div class="ai-tooltip">
                 <strong>
@@ -1570,6 +1571,7 @@
   <script src="assets/js/unidade-dass.js" type="module"></script>
   <script src="assets/js/registerPenseAja.js" type="module"></script>
   <script src="assets/js/evaluatePenseAja.js" type="module"></script>
+  <script src="assets/js/auth.js" type="module"></script>
   <script src="bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 

@@ -21,9 +21,13 @@ export function attachInterceptors(api, apiAuth) {
     try {
       console.log("Token expirado, atualizando token...");
 
-      await authInstance.post("/aduth/token/refresh", null, {
+      const response = await authInstance.post("/auth/token/refresh", null, {
         withCredentials: true,
       });
+      sessionStorage.setItem(
+        "expirationTime",
+        response.data.tokenExpirationTime
+      );
 
       queue.forEach((p) => p.resolve());
       queue = [];
@@ -42,13 +46,6 @@ export function attachInterceptors(api, apiAuth) {
         );
 
         setTimeout(() => {
-          const cookies = document.cookie.split(";");
-          for (let cookie of cookies) {
-            const eqPos = cookie.indexOf("=");
-            const name =
-              eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
-            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-          }
           sessionStorage.clear();
           window.location.reload();
         }, 3000);
@@ -73,10 +70,10 @@ export function attachInterceptors(api, apiAuth) {
 
       try {
         // Tenta renovar o token antes de prosseguir com a requisição original
-        await apiAuth.post("/auth/token/refresh", null, {
+        const response = await apiAuth.post("/auth/token/refresh", null, {
           withCredentials: true,
         });
-        console.log("Token atualizado com sucesso");
+        sessionStorage.setItem("expirationTime", response.data.tokenExpirationTime);
       } catch (error) {
         console.warn("Falha no refresh proativo:", error);
       } finally {
@@ -104,6 +101,8 @@ export function attachInterceptors(api, apiAuth) {
 function isTokenNearExpiration() {
   const expiryTime = sessionStorage.getItem("TokenExpiration");
   if (expiryTime) {
+    console.log("Buscando novo auth TOken");
+
     return parseInt(expiryTime) - Date.now() / 1000 < 30;
   }
 
