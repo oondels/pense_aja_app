@@ -1,4 +1,4 @@
-import ip from "./ip.js";
+import { api } from "../../src/services/httpClient.js";
 
 function showUnidadePopup() {
   const unidadePopup = document.querySelector(".unidade-popup");
@@ -50,8 +50,8 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    axios
-      .get(`${ip}:2512/user/unidade/${matricula}`)
+    api
+      .get(`/user/unidade/${matricula}`)
       .then((response) => {
         const message = response.data.message;
         const unidade = response.data.dassOffice;

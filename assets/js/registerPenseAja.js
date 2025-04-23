@@ -1,4 +1,4 @@
-import ip from "./ip.js";
+import { api } from "../../src/services/httpClient.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const dassOffice = localStorage.getItem("unidadeDass") || null;
@@ -25,8 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const userInfo = document.querySelector(".user-penseaja-info");
 
     try {
-      userData = await axios.get(
-        `${ip}:2512/user/${matricula}`,
+      userData = await api.get(
+        `/user/${matricula}`,
         {
           params: { dassOffice: dassOffice },
         }
@@ -169,8 +169,8 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
       }
 
-      const response = await axios.post(
-        `${ip}:2512/pense-aja/${dassOffice}`,
+      const response = await api.post(
+        `/pense-aja/${dassOffice}`,
         {
           registration: matricula,
           userName: userData.nome,
