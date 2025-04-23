@@ -1,10 +1,11 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import penseAjaRoutes from "./src/routes/pense-aja";
-import UserPenseajaRoute from "./src/routes/user-penseaja";
 import dotenv from "./src/config/dotenv";
 import { CustomError } from "./src/types/CustomError";
+import PenseAjaRoutes from "./src/routes/penseAja.route";
+import UserPenseajaRoute from "./src/routes/userPensAaja.route";
+import AiTools from "./src/routes/aiTools.route"
 
 const app = express();
 const port = 2512;
@@ -12,8 +13,9 @@ const port = 2512;
 app.use(cors({ origin: "http://localhost", credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
-app.use("/pense-aja/", penseAjaRoutes);
+app.use("/pense-aja/", PenseAjaRoutes);
 app.use("/user/", UserPenseajaRoute);
+app.use("/ai/",AiTools)
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Pense Aja API");

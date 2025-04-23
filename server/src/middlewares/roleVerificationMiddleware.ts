@@ -6,7 +6,7 @@ const roleVerificationAccess = (
   next: NextFunction
 ) => {
   try {
-    const allowedRoles = ["analista", "gerente", "automacao"];
+    const allowedRoles: Array<string> = ["analista", "gerente", "automacao"];
     const userRole = req.user?.funcao || "none";
 
     const access = allowedRoles.some((role) =>
