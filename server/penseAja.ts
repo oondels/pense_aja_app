@@ -9,7 +9,7 @@ import { CustomError } from "./src/types/CustomError";
 const app = express();
 const port = 2512;
 
-app.use(cors({ origin: "*" }));
+app.use(cors({ origin: "http://localhost", credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use("/pense-aja/", penseAjaRoutes);
