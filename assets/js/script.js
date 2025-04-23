@@ -1,5 +1,5 @@
 const unidade = localStorage.getItem("unidadeDass");
-import ip from "./ip.js";
+import { api } from "../../src/services/httpClient.js";
 
 let components = new Map();
 function showLoadingComponent(element) {
@@ -153,8 +153,8 @@ const loadEvaluateButtons = () => {
       };
 
       try {
-        const response = await axios.get(
-          `${ip}:2512/pense-aja/id/${penseAjaId}`,
+        const response = await api.get(
+          `/pense-aja/id/${penseAjaId}`,
           { params: { dassOffice: dassOffice } }
         );
 
@@ -404,8 +404,7 @@ async function listaTable() {
 
   let resBuscaDados;
   try {
-    const response = await axios.get(`${ip}:2512/pense-aja/${unidade}`);
-
+    const response = await api.get(`/pense-aja/${unidade}`);
     resBuscaDados = response.data;
     if (resBuscaDados.dados.length === 0) {
       Swal.fire({
@@ -1055,8 +1054,8 @@ async function listaTableLista() {
   let valorTotal = document.getElementById("valorTotalLista");
   valorTotal.innerHTML = `${listaSize} Registros`;
 
-  await axios
-    .get(`${ip}:2512/pense-aja/history/${unidade}`, {
+  await api
+    .get(`/pense-aja/history/${unidade}`, {
       params: {
         selectedMonth: Number(selectMes),
         selectedYear: selectAno,

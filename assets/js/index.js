@@ -1,7 +1,6 @@
-import ip from "./ip.js";
-
 const date = new Date();
-document.querySelector(".current_copyright_year").innerText = date.getFullYear();
+document.querySelector(".current_copyright_year").innerText =
+  date.getFullYear();
 
 $(document).ready(function () {
   $(".table-filter").select2({
@@ -79,7 +78,9 @@ let success = function (message) {
       var elemdivMatricula = document.getElementById("divMatricula");
       var elemNomeProjeto = document.getElementById("nomeProjeto");
       var elemDataProjeto = document.getElementById("dataProjeto");
-      var elemLblSituacaoAnterior = document.getElementById("lblSituacaoAnterior");
+      var elemLblSituacaoAnterior = document.getElementById(
+        "lblSituacaoAnterior"
+      );
       var elemSituacaoAnterior = document.getElementById("situacaoAnterior");
       var elemLblSituacaoAtual = document.getElementById("lblSituacaoAtual");
       var elemSituacaoAtual = document.getElementById("situacaoAtual");
@@ -98,13 +99,21 @@ let success = function (message) {
       var elemValorBInput = document.getElementById("valorBInput");
       var elemValorAmortizado = document.getElementById("valorAmortizadoInput");
       var elemOutGanhos = document.getElementById("outGanhos");
-      var elemdivInputCompleteColaborador = document.getElementById("divInputCompleteColaborador");
+      var elemdivInputCompleteColaborador = document.getElementById(
+        "divInputCompleteColaborador"
+      );
       var elemdivMetadeUmPerdas = document.getElementById("divMetadeUmPerdas");
-      var elemdivMetadeDoisPerdas = document.getElementById("divMetadeDoisPerdas");
+      var elemdivMetadeDoisPerdas = document.getElementById(
+        "divMetadeDoisPerdas"
+      );
       var elemdivInputsAmortiza = document.getElementById("divInputsAmortiza");
-      var elemdivInputsOutrosGanhos = document.getElementById("divInputsOutrosGanhos");
+      var elemdivInputsOutrosGanhos = document.getElementById(
+        "divInputsOutrosGanhos"
+      );
       if (elemMatricula.parentNode) {
-        elemdivInputsOutrosGanhos.parentNode.removeChild(elemdivInputsOutrosGanhos);
+        elemdivInputsOutrosGanhos.parentNode.removeChild(
+          elemdivInputsOutrosGanhos
+        );
         elemdivInputsAmortiza.parentNode.removeChild(elemdivInputsAmortiza);
         elemdivMatricula.parentNode.removeChild(elemdivMatricula);
         elemMatricula.parentNode.removeChild(elemMatricula);
@@ -133,7 +142,9 @@ let success = function (message) {
         elemValorBInput.parentNode.removeChild(elemValorBInput);
         elemValorAmortizado.parentNode.removeChild(elemValorAmortizado);
         elemOutGanhos.parentNode.removeChild(elemOutGanhos);
-        elemdivInputCompleteColaborador.parentNode.removeChild(elemdivInputCompleteColaborador);
+        elemdivInputCompleteColaborador.parentNode.removeChild(
+          elemdivInputCompleteColaborador
+        );
         elemdivMetadeUmPerdas.parentNode.removeChild(elemdivMetadeUmPerdas);
         elemdivMetadeDoisPerdas.parentNode.removeChild(elemdivMetadeDoisPerdas);
       }
@@ -221,7 +232,8 @@ let errorCracha = function (message) {
   Swal.fire({
     position: "center",
     icon: "error",
-    title: "Matrícula não encotrada na lista de funcionário, verifique se digitou corretamente!",
+    title:
+      "Matrícula não encotrada na lista de funcionário, verifique se digitou corretamente!",
     timer: 5000,
   });
 };
@@ -244,202 +256,6 @@ let required = function (message) {
   });
   return false;
 };
-import Cadastro from "./cadastro.js";
-import Login from "./login.js";
-const elemLogin = new Login();
-const elemCadastro = new Cadastro();
-
-// Login
-const loginContainer = document.querySelector("#login-popup");
-const logoutContainer = document.querySelector("#logout-popup");
-const userButton = document.querySelector("#openUser");
-userButton.addEventListener("click", () => {
-  let container;
-  const userData = sessionStorage.getItem("usuario");
-
-  if (userData) {
-    setTimeout(() => {
-      document.querySelector(".usuario-name").innerHTML = userData;
-      document.querySelector(".user-matricula").innerHTML = sessionStorage.getItem("matricula");
-    }, 100);
-
-    container = logoutContainer;
-  } else {
-    container = loginContainer;
-  }
-
-  container.classList.remove("hidden");
-});
-
-const closeLogin = document.querySelector("#login-close");
-closeLogin.addEventListener("click", () => {
-  loginContainer.classList.add("hidden");
-});
-
-const revealPassword = document.querySelector("#toggle-password");
-revealPassword.addEventListener("click", () => {
-  const passwordInput = document.querySelector("#login-password");
-  if (passwordInput.type === "password") {
-    passwordInput.type = "text";
-  } else {
-    passwordInput.type = "password";
-  }
-});
-
-axios.interceptors.request.use(
-  (config) => {
-    const token = sessionStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Realizar Login
-const login = () => {
-  const loading = document.querySelector(".spinner");
-  const warning = document.querySelector(".warning-content");
-  const username = document.querySelector("#login-user").value;
-  const password = document.querySelector("#login-password").value;
-
-  if (!username || !password) {
-    warning.classList.remove("hidden");
-    setTimeout(() => {
-      warning.classList.add("hidden");
-    }, 2000);
-    return;
-  }
-  loading.classList.remove("hidden");
-
-  axios
-    .post(`${ip}:2399/auth/login`, { usuario: username, senha: password })
-    .then((response) => {
-      const data = response.data;
-      sessionStorage.setItem("token", data.token);
-
-      const decoded = JSON.parse(atob(data.userData));
-      sessionStorage.setItem("matricula", decoded.matricula);
-      sessionStorage.setItem("haveEmail", decoded.haveEmail);
-      sessionStorage.setItem("usuario", decoded.usuario);
-      sessionStorage.setItem("nome", decoded.nome);
-      sessionStorage.setItem("funcao", decoded.funcao);
-
-      showNotification("Sucesso!", "Login realizado com sucesso!", "success", 1500);
-      setTimeout(() => {
-        window.location.reload();
-      }, 1900);
-    })
-    .catch(() => {
-      showNotification("Erro", "Usuario ou senha incorretos.", "warning", 1500);
-      // console.error("Falha ao executar login:", error);
-    })
-    .finally(() => {
-      loading.classList.add("hidden");
-    });
-};
-
-const loginButton = document.querySelector(".login-btn");
-const loginPassInput = document.querySelector("#login-password");
-loginButton.addEventListener("click", login);
-loginPassInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    login();
-  }
-});
-
-// Esqueci Senha
-const forgotPassword = document.querySelector(".forgot-password");
-forgotPassword.addEventListener("click", () => {
-  document.querySelector(".forgot-container").classList.remove("hidden");
-});
-
-const closeForgotPass = document.querySelector("#forgot-close");
-closeForgotPass.addEventListener("click", () => {
-  document.querySelector(".forgot-container").classList.add("hidden");
-});
-
-const passwordInput = document.querySelector("#forgot-password");
-const passwordInputConfirm = document.querySelector("#forgot-password-confirm");
-const revealForgotPass = document.querySelectorAll(".forgot-pass");
-revealForgotPass.forEach((element) => {
-  element.addEventListener("click", () => {
-    if (passwordInput.type === "password") {
-      passwordInput.type = "text";
-      passwordInputConfirm.type = "text";
-    } else {
-      passwordInput.type = "password";
-      passwordInputConfirm.type = "password";
-    }
-  });
-});
-
-// Verifica se senhas estão iguais
-function checkPasswordsEqual() {
-  const changePassword = document.querySelector("#changePassButton");
-  if (passwordInput.value !== passwordInputConfirm.value) {
-    passwordInputConfirm.classList.add("diff");
-    passwordInput.classList.add("diff");
-    changePassword.classList.add("diff");
-  } else {
-    passwordInputConfirm.classList.remove("diff");
-    passwordInput.classList.remove("diff");
-    changePassword.classList.remove("diff");
-  }
-}
-passwordInput.addEventListener("input", checkPasswordsEqual);
-passwordInputConfirm.addEventListener("input", checkPasswordsEqual);
-
-// Logout
-const logoutButton = document.querySelector("#logout");
-logoutButton.addEventListener("click", () => {
-  
-  const loading = document.querySelector(".spinner-logout");
-  loading.classList.remove("hidden");
-
-  axios
-    .post(`${ip}:2399/auth/logout`)
-    .then(() => {
-      sessionStorage.clear();
-
-      setTimeout(() => window.location.reload(), 1000);
-    })
-    .catch((error) => {
-      showNotification("Erro", "Erro ao efetuar logout. Tente novamente mais tarde!", "warning", 3000);
-      console.error("Erro ao efetuar logout: ", error);
-    })
-    .finally(() => {
-      loading.classList.add("hidden");
-    });
-});
-
-const testeProtectedRoute = async () => {
-  axios
-    .get(`${ip}:2512/pense-aja/protected`, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-      },
-    })
-    .then((response) => {
-      console.log(response.data);
-    })
-    .catch((error) => {
-      if (error.response && error.response.status === 401) {
-        showNotification("Acesso negado", error.response.data.message, "warning", 4000);
-      }
-      console.error("Error: ", error);
-    });
-};
-document.querySelector("#protected-route").addEventListener("click", testeProtectedRoute);
-
-const closeLogout = document.querySelector("#logout-close");
-closeLogout.addEventListener("click", () => {
-  logoutContainer.classList.add("hidden");
-});
 
 const listaHistorico = document.getElementById("lista");
 openLista.addEventListener("click", () => {
@@ -551,7 +367,10 @@ function alterarSenha(dados) {
           showConfirmButton: true,
           confirmButtonText: "Alterar",
           preConfirm: () => {
-            return [document.getElementById("swal-input1").value, document.getElementById("swal-input2").value];
+            return [
+              document.getElementById("swal-input1").value,
+              document.getElementById("swal-input2").value,
+            ];
           },
         });
         if (formValues[0] === "") {
@@ -615,7 +434,9 @@ function alterarSenha(dados) {
                 document.getElementById("loginForm").reset();
                 return success("Senha atualizada");
               } else {
-                return error("Não foi possível atualizar a senha, verifique a matrícula digitada e tente novamente!");
+                return error(
+                  "Não foi possível atualizar a senha, verifique a matrícula digitada e tente novamente!"
+                );
               }
             });
         }

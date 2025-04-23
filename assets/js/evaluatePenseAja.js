@@ -1,4 +1,5 @@
-import ip from "./ip.js";
+import { api } from "../../src/services/httpClient.js";
+
 import CacheManager from "./cacheManager.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -56,8 +57,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const response = await axios.put(
-        `${ip}:2512/pense-aja/avaliar/${penseAjaId}`,
+      const response = await api.put(
+        `/pense-aja/avaliar/${penseAjaId}`,
         {
           avaliacao: avaliacaoPenseAja,
           emEspera: emEspera,

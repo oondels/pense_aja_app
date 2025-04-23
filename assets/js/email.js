@@ -1,4 +1,5 @@
-import ip from "./ip.js";
+import { authApi } from "../../src/services/httpClient.js";
+
 
 const emailPopup = document.querySelector(".email-popup");
 const emailOverlay = document.querySelector(".email-popup-overlay");
@@ -106,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let error = false;
 
     try {
-      const response = await axios.put(`${ip}:2399/user/email/${userMatricula}`, { email: email });
+      const response = await authApi.put(`/user/email/${userMatricula}`, { email: email });
 
       message = response.data.message;
       localStorage.setItem("emailProvided", "true");
