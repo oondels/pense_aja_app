@@ -41,4 +41,33 @@ export const UserPenseaja = {
       client.release();
     }
   },
+
+  async getManagerByUser(registration: string | number, dassOffice: string) {
+    checkDassOffice(dassOffice);
+
+    const client = await pool.connect();
+    try {
+      const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
+
+      const query = await client.query(
+        `
+        SELECT lf.gerente, u.matricula, ue.email
+        FROM colaborador.lista_funcionario${office} lf
+        INNER JOIN autenticacao.usuarios u ON LOWER(TRIM(lf.gerente)) = LOWER(TRIM(u.nome)) AND u.funcao = 'GERENTE'
+        INNER JOIN autenticacao.emails ue ON u.matricula = ue.matricula
+        WHERE lf.matricula = $1
+      `,
+        [registration]
+      );
+
+      return query.rows[0];
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+
+      logger.error("user-pense-aja", `Erro ao buscar gerente do usuario: ${errorMessage}`);
+      throw error;
+    } finally {
+      client.release();
+    }
+  },
 };
