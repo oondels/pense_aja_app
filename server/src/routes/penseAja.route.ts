@@ -65,7 +65,7 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
 
     const formatUserName = (name: string) => {
       const splitedName = name.split(" ")
-      return name[0] + " " + name[name.length -1]
+      return splitedName[0] + " " + splitedName[splitedName.length - 1]
     }
 
     if (notification) {
