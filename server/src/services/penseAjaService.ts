@@ -1,6 +1,7 @@
 import logger from "../utils/logger";
 import pool from "../config/db";
 import { CustomError } from "../types/CustomError";
+import { UserPenseaja } from "./UserPenseaja";
 
 const checkDassOffice = (dassOffice: string) => {
   const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF"];
@@ -92,8 +93,9 @@ export const PenseAjaService = {
           gerente_aprovador, analista_avaliador, status_gerente,
           status_analista, em_espera, createdat as criado
         FROM pense_aja.${dbName}
-        WHERE excluido = '' AND
-        createdat BETWEEN $1 AND $2
+        WHERE excluido = ''
+        AND createdat >= $1
+        AND createdat < ($2::timestamp + INTERVAL '1 day')
         ORDER BY createdat DESC
       `,
         [startDate, endDate]
@@ -320,7 +322,7 @@ export const PenseAjaService = {
           a3_mae, ganhos, outros_ganhos, fabrica, createdat, updatedat, lider, excluido
         ) VALUES
          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, NOW(), NOW(), '', '')
-        RETURNING id;`,
+        RETURNING nome, nome_projeto, ganhos;`,
         params
       );
 
@@ -333,8 +335,10 @@ export const PenseAjaService = {
         );
       }
 
+      const userManager = await UserPenseaja.getManagerByUser(data.registration, dassOffice);
+
       await client.query("COMMIT");
-      return newPenseAja.rows[0];
+      return {pense_aja: newPenseAja.rows[0], userManager: userManager};
     } catch (error) {
       await client.query("ROLLBACK");
       const messageError =

@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { PenseAjaService } from "../services/penseAjaService";
 import { verifyToken } from "../middlewares/auth";
 import roleVerificationAccess from "../middlewares/roleVerificationMiddleware";
+import { NotificationService } from "../services/NotificationService";
 
 const router = Router();
 
@@ -55,8 +56,28 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
   try {
     const { dassOffice } = req.params;
     const penseajaData = req.body;
+    let notification = true;
 
-    await PenseAjaService.createPenseAja(penseajaData, dassOffice);
+    const { pense_aja, userManager } = await PenseAjaService.createPenseAja(penseajaData, dassOffice);
+    if (!userManager) {
+      notification = false;
+    }
+
+    const formatUserName = (name: string) => {
+      const splitedName = name.split(" ")
+      return splitedName[0] + " " + splitedName[splitedName.length - 1]
+    }
+
+    if (notification) {
+      await NotificationService.sendNotification({
+        to: "hendrius.santana@grupodass.com.br",
+        subject: "Aplicativo Pense Aja",
+        title: "Novo Pense Aja Cadastrado.",
+        message: `Um novo registro de Pense Aja foi cadastrado pelo usuário ${formatUserName(pense_aja.nome)}. Projeto: ${pense_aja.nome_projeto}.`,
+        application: "Pense e Aja",
+        link: "http://localhost/pense-aja"
+      });
+    }
 
     res.status(201).json({ message: "Pense aja cadastrado com sucesso!" });
   } catch (error) {
