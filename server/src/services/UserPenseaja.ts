@@ -70,4 +70,25 @@ export const UserPenseaja = {
       client.release();
     }
   },
+
+  async getUserEmail(registration: string | number, dassOffice: string) {
+    const client = await pool.connect();
+    try {
+      const query = await client.query(`
+        SELECT ue.email
+        FROM autenticacao.usuarios u
+        INNER JOIN autenticacao.emails ue ON u.matricula = ue.matricula
+        WHERE u.matricula = $1 AND u.unidade = $2
+      `, [registration, dassOffice]);
+      
+      return query.rows[0];
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+
+      logger.error("user-pense-aja", `Erro ao buscar email do usuario: ${errorMessage}`);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
 };

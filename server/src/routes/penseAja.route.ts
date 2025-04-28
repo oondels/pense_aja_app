@@ -3,8 +3,14 @@ import { PenseAjaService } from "../services/penseAjaService";
 import { verifyToken } from "../middlewares/auth";
 import roleVerificationAccess from "../middlewares/roleVerificationMiddleware";
 import { NotificationService } from "../services/NotificationService";
+import { UserPenseaja } from "../services/UserPenseaja";
 
 const router = Router();
+
+const formatUserName = (name: string) => {
+  const splitedName = name.split(" ")
+  return splitedName[0] + " " + splitedName[splitedName.length - 1]
+}
 
 router.get("/protected", verifyToken, (req: Request, res: Response) => {
   console.log(req.user);
@@ -63,11 +69,6 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
       notification = false;
     }
 
-    const formatUserName = (name: string) => {
-      const splitedName = name.split(" ")
-      return splitedName[0] + " " + splitedName[splitedName.length - 1]
-    }
-
     if (notification) {
       await NotificationService.sendNotification({
         to: "hendrius.santana@grupodass.com.br",
@@ -79,7 +80,12 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
       });
     }
 
-    res.status(201).json({ message: "Pense aja cadastrado com sucesso!" });
+    const message = notification ? "Pense aja cadastrado com sucesso!" : "Pense aja cadastrado com sucesso! Solicite seu gerente para ativar as notificações para vizualizar mais rápido."
+
+    res.status(201).json({
+      message: message,
+      notification: notification
+    });
   } catch (error) {
     next(error);
   }
@@ -114,6 +120,28 @@ router.put("/avaliar/:id", verifyToken, roleVerificationAccess, async (req: Requ
       id,
       evaluationData
     );
+
+    const userEmail = await UserPenseaja.getUserEmail(evaluationData.matricula, data.dassOffice)
+
+    let avaliadorNome
+    if (newEvaluation.analista_avaliador) {
+      avaliadorNome = newEvaluation.analista_avaliador
+        .split(".")
+        .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
+    }
+
+    if (userEmail) {
+      await NotificationService.sendNotification({
+        to: userEmail.email,
+        subject: "Aplicativo Pense Aja",
+        title: "Pense Aja Avaliado.",
+        message: `Seu registro de Pense Aja foi avaliado${avaliadorNome ? " pelo usuário " + avaliadorNome : "!"}. 
+        Abra o aplicativo e veja sua pontuação e feedbacks!`,
+        application: "Pense e Aja",
+        link: "http://localhost/pense-aja"
+      });
+    }
 
     res.status(200).json({
       message: "Pense Aja avaliado com sucesso!",
