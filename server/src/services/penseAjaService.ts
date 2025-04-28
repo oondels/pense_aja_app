@@ -398,8 +398,8 @@ export const PenseAjaService = {
 
     const checkUserRole = (role: string) => {
       return role.includes("analista")
-        ? "status_analista = $1, analista_avaliador = $2, data_avaanalista = NOW(), "
-        : "status_gerente = $1, gerente_avaliador = $2, data_aprogerente = NOW(), ";
+        ? "status_analista = $1, analista_avaliador = $2, data_avaanalista = NOW(), justificativa_analista = $3, "
+        : "status_gerente = $1, gerente_avaliador = $2, data_aprogerente = NOW(), justificativa_gerente = $3, ";
     };
 
     try {
@@ -414,6 +414,7 @@ export const PenseAjaService = {
       query += checkUserRole(userRole);
       params.push(statusAvaliacao);
       params.push(avaliador);
+      params.push(evaluationData.justificativa ?? "Sem justificativa.");
 
       if (statusAvaliacao === "EXCLUIR") {
         if (userRole.includes("gerente")) {
@@ -426,7 +427,7 @@ export const PenseAjaService = {
           );
         }
       } else {
-        query += `classificacao = $3, a3_mae = $4, em_espera = $5, replicavel = $6, updatedat = NOW() `;
+        query += `classificacao = $4, a3_mae = $5, em_espera = $6, replicavel = $7, updatedat = NOW() `;
         params.push(evaluationData.avaliacao);
         params.push(evaluationData.a3Mae || "");
         params.push(evaluationData.emEspera);
@@ -434,7 +435,7 @@ export const PenseAjaService = {
       }
       query += `
       WHERE id = $${params.length + 1} 
-      RETURNING id, data_realizada, fabrica, nome, setor, gerente, nome_projeto,
+      RETURNING id, data_realizada, fabrica, nome, matricula, setor, gerente, nome_projeto,
       turno, situacao_anterior, situacao_atual, gerente_aprovador, analista_avaliador,
       status_gerente, status_analista, em_espera, createdat AS criado;`;
       params.push(id);
