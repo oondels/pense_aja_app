@@ -1,0 +1,1292 @@
+/* Botões Desabilitados */
+.disabled-button {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: linear-gradient(145deg, #9e9e9e, #bdbdbd) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  border-color: #9e9e9e !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.disabled-button::before {
+  opacity: 0.5;
+}
+
+.disabled-button:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.disabled-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(0, 0, 0, 0.05) 10px,
+    rgba(0, 0, 0, 0.05) 20px
+  );
+  pointer-events: none;
+}
+
+.disabled-button:hover::before {
+  animation: none;
+}
+
+/* Adicionando tooltip informativo ao passar o mouse */
+.disabled-button {
+  position: relative;
+}
+
+.disabled-button:hover::before {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background-color: rgba(33, 33, 33, 0.9);
+  color: white;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 5;
+  font-weight: normal;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Triângulo do tooltip */
+.disabled-button:hover::after {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: rgba(33, 33, 33, 0.9);
+  z-index: 5;
+}
+
+/* Estilos para o componente de loading */
+.loading-cdata {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+.text-yellow {
+  color: #ffc107 !important;
+}
+
+.loading-spinner {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  perspective: 600px;
+}
+
+.info-row {
+  padding: 20px;
+  gap: 25px;
+}
+
+.spinner-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-top-color: #b0062b;
+  border-left-color: #b0062b;
+  -webkit-animation: spin-one 1.5s linear infinite, pulse 2s ease-in-out infinite alternate;
+  animation: spin-one 1.5s linear infinite, pulse 2s ease-in-out infinite alternate;
+  box-shadow: 0 0 15px rgba(176, 6, 43, 0.3);
+}
+
+.spinner-core {
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  top: 15%;
+  left: 15%;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-right-color: #b0062b;
+  border-bottom-color: #b0062b;
+  -webkit-animation: spin-reverse-2 1s linear infinite, pulse 1.5s ease-in-out infinite alternate;
+  animation: spin-reverse-2 1s linear infinite, pulse 1.5s ease-in-out infinite alternate;
+}
+
+.spinner-text {
+  position: absolute;
+  width: 200px;
+  text-align: center;
+  top: 140%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  color: #333;
+  white-space: nowrap;
+}
+
+.spinner-text span {
+  display: inline-block;
+  opacity: 0.2;
+  font-size: 14px;
+  letter-spacing: 1px;
+  margin-right: -1px;
+  animation: pulse-text 1.2s ease-in-out infinite alternate !important;
+}
+
+.spinner-text span:nth-child(1) {
+  animation-delay: 0s;
+}
+.spinner-text span:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.spinner-text span:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.spinner-text span:nth-child(4) {
+  animation-delay: 0.3s;
+}
+.spinner-text span:nth-child(5) {
+  animation-delay: 0.4s;
+}
+.spinner-text span:nth-child(6) {
+  animation-delay: 0.5s;
+}
+.spinner-text span:nth-child(7) {
+  animation-delay: 0.6s;
+}
+.spinner-text span:nth-child(8) {
+  animation-delay: 0.7s;
+}
+.spinner-text span:nth-child(9) {
+  animation-delay: 0.8s;
+}
+.spinner-text span:nth-child(10) {
+  animation-delay: 0.9s;
+}
+
+/* Animações */
+@keyframes spin-one {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse-2 {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 5px rgba(176, 6, 43, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(176, 6, 43, 0.6);
+  }
+}
+
+@keyframes pulse-text {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* Estado oculto */
+.loading-cdata.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Classes auxiliares */
+.d-none {
+  display: none !important;
+}
+
+.text-start {
+  text-align: left !important;
+}
+
+/* Separador */
+hr {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
+  margin: 20px 0;
+}
+
+/* Footer */
+.modal-footer {
+  padding: 20px 24px;
+  background-color: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+/* Checkboxes */
+.flag {
+  display: flex;
+  gap: 20px;
+}
+
+.flagEsperar,
+.flagReplicar {
+  position: relative;
+}
+
+.flagEsperar label,
+.flagReplicar label {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+}
+
+.flagEsperar input,
+.flagReplicar input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  position: relative;
+  appearance: none;
+  border: 2px solid #bbb;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.flagEsperar input:checked,
+.flagReplicar input:checked {
+  background-color: #c62828;
+  border-color: #c62828;
+}
+
+.flagEsperar input:checked::after,
+.flagReplicar input:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Botões */
+.btn-outline-success,
+.btn-outline-danger,
+.btn-outline-warning,
+.btn-outline-secondary {
+  font-weight: 500;
+  border-width: 2px;
+  border-radius: 8px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-outline-success:hover,
+.btn-outline-danger:hover,
+.btn-outline-warning:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline-success {
+  color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.btn-outline-success:hover {
+  background-color: #2e7d32;
+}
+
+.btn-outline-danger {
+  color: #c62828;
+  border-color: #c62828;
+}
+
+.btn-outline-danger:hover {
+  background-color: #c62828;
+}
+
+.btn-outline-warning {
+  color: #f57f17;
+  border-color: #f57f17;
+}
+
+.btn-outline-warning:hover {
+  background-color: #f57f17;
+}
+
+.btn-outline-secondary {
+  color: #546e7a;
+  border-color: #78909c;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #78909c;
+  color: white;
+}
+
+/* Adiciona ícones aos botões */
+.btn-outline-success::before {
+  content: "\f633";
+  font-family: "Bootstrap-icons";
+}
+
+.btn-outline-danger::before {
+  content: "\f623";
+  font-family: "Bootstrap-icons";
+}
+
+.btn-outline-warning::before {
+  content: "\f5de";
+  font-family: "Bootstrap-icons";
+}
+
+.btn-outline-secondary::before {
+  content: "\f129";
+  font-family: "Bootstrap-icons";
+}
+
+/* Scrollbar personalizado */
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .modal-body.mBody {
+    padding: 16px;
+  }
+
+  .row.text-start {
+    padding: 15px;
+    gap: 15px;
+  }
+
+  .divisaoColaborador,
+  .divisaoSituacao,
+  .divisaoAmais {
+    min-width: 100%;
+  }
+
+  .subClassificacao {
+    flex-direction: column;
+  }
+
+  .classificacaoA,
+  .classificacaoB,
+  .classificacaoC {
+    width: 100%;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .flag {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .btn-outline-success,
+  .btn-outline-danger,
+  .btn-outline-warning,
+  .btn-outline-secondary {
+    width: 48%;
+    justify-content: center;
+  }
+}
+
+.modal-backdrop {
+  background: linear-gradient(135deg, rgba(27, 38, 44, 0.95), rgba(34, 46, 52, 0.98));
+  backdrop-filter: blur(10px);
+}
+
+.modal-backdrop.show {
+  opacity: 1;
+}
+
+/* Container do modal */
+.modal-xl.modalBack {
+  max-width: 1140px;
+}
+
+/* Conteúdo do modal */
+.modal-content.modalForm {
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25), 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  background-color: #f8f9fc;
+}
+
+/* ==============================================
+   CABEÇALHO DO MODAL
+   ============================================== */
+.modal-header {
+  background: linear-gradient(135deg, #991a1a 0%, #c62828 100%);
+  padding: 22px 26px;
+  border-bottom: none;
+  position: relative;
+  z-index: 1;
+}
+
+/* Efeito de brilho no cabeçalho */
+.modal-header::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  z-index: -1;
+  animation: shimmerEffect 2.5s infinite;
+}
+
+@keyframes shimmerEffect {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(50%);
+  }
+}
+
+/* Título do modal */
+.modal-title {
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  padding-left: 52px;
+  line-height: 1.2;
+}
+
+/* Ícone do título */
+.modal-title::before {
+  content: "\f4cb";
+  font-family: "Bootstrap-icons";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Botão de fechar */
+.btn-close {
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 1;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  border-radius: 50%;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-close:hover,
+.btn-close:focus {
+  background-color: rgba(255, 255, 255, 0.25);
+  opacity: 1;
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-body.mBody {
+  padding: 30px;
+  background-color: #f8f9fc;
+  background-image: radial-gradient(circle at 50% 0, rgba(255, 255, 255, 0.8), transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(176, 6, 43, 0.05), transparent 40%);
+}
+
+/* Container para dados do cadastrante */
+.dadosCadastrante {
+  background-color: white;
+  border-radius: 16px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  position: relative;
+}
+
+/* Cabeçalho do card de dados */
+.dadosCadastrante::before {
+  content: "Dados do Colaborador";
+  display: block;
+  padding: 20px 25px 20px 60px;
+  background: linear-gradient(to right, #f9fafb, #f5f6fa);
+  font-weight: 700;
+  color: #2c3e50;
+  font-size: 16px;
+  border-bottom: 1px solid #f0f2f7;
+  position: relative;
+}
+
+/* Ícone do cabeçalho */
+.dadosCadastrante::after {
+  content: "\f4d3";
+  font-family: "Bootstrap-icons";
+  position: absolute;
+  top: 20px;
+  left: 25px;
+  color: #c62828;
+  font-size: 20px;
+  background-color: rgba(198, 40, 40, 0.08);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Layout das linhas de informações */
+.row.text-start {
+  padding: 25px 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 0;
+}
+
+/* Layout dos grupos de informação */
+.divisaoColaborador,
+.divisaoSituacao,
+.divisaoAmais {
+  flex: 1;
+  min-width: 280px;
+  background: #fafbfd;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+/* Campos de informação individuais */
+.rowW {
+  position: relative;
+  display: block;
+  padding: 30px 16px 14px;
+  margin-bottom: 16px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 500;
+  color: #2c3e50;
+  min-height: 62px;
+  transition: all 0.25s;
+  border-left: 3px solid #c62828;
+}
+
+/* Destacar campo ao passar o mouse */
+.rowW:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+/* Rótulos dos campos */
+.rowW::before {
+  content: attr(data-label);
+  position: absolute;
+  top: 10px;
+  left: 16px;
+  right: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8395a7;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+/* Separador */
+hr {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.07), transparent);
+  margin: 28px 0;
+  position: relative;
+}
+
+hr::after {
+  content: "";
+  position: absolute;
+  height: 7px;
+  width: 7px;
+  background: rgba(176, 6, 43, 0.4);
+  border-radius: 50%;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Avaliadores */
+.avaliadores {
+  background-color: white;
+  border-radius: 16px;
+  padding: 72px 25px 25px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.avaliadores::before {
+  content: "Avaliadores";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 25px 20px 60px;
+  background: linear-gradient(to right, #f9fafb, #f5f6fa);
+  font-weight: 700;
+  color: #2c3e50;
+  font-size: 16px;
+  border-bottom: 1px solid #f0f2f7;
+}
+
+.avaliadores::after {
+  content: "\f4d5";
+  font-family: "Bootstrap-icons";
+  position: absolute;
+  top: 20px;
+  left: 25px;
+  color: #2e7d32;
+  font-size: 20px;
+  background-color: rgba(46, 125, 50, 0.08);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Cartões de avaliadores */
+.gerAprovador,
+.anaAprovador {
+  flex: 1;
+  min-width: 280px;
+  padding: 40px 20px 20px;
+  border-radius: 12px;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s;
+}
+
+.gerAprovador:hover,
+.anaAprovador:hover {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+/* Rótulos dos avaliadores */
+.gerAprovador::before,
+.anaAprovador::before {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #627281;
+}
+
+.gerAprovador::before {
+  content: "Gerente";
+}
+
+.anaAprovador::before {
+  content: "Analista";
+}
+
+.gerAprovador::after,
+.anaAprovador::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 4px 4px 0 0;
+}
+
+.gerAprovador::after {
+  background: linear-gradient(to right, #2e7d32, #4caf50);
+}
+
+.anaAprovador::after {
+  background: linear-gradient(to right, #1565c0, #42a5f5);
+}
+
+/* Avaliação */
+.avaliacao {
+  background-color: white;
+  border-radius: 16px;
+  padding: 72px 25px 25px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  margin-bottom: 10px;
+}
+
+.avaliacao::before {
+  content: "Avaliação do Projeto";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 25px 20px 60px;
+  background: linear-gradient(to right, #f9fafb, #f5f6fa);
+  font-weight: 700;
+  color: #2c3e50;
+  font-size: 16px;
+  border-bottom: 1px solid #f0f2f7;
+}
+
+.avaliacao::after {
+  content: "\f586";
+  font-family: "Bootstrap-icons";
+  position: absolute;
+  top: 20px;
+  left: 25px;
+  color: #f57f17;
+  font-size: 20px;
+  background-color: rgba(245, 127, 23, 0.08);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Interior da avaliação */
+.avaliacaoInterior {
+  margin-bottom: 30px;
+}
+
+/* Seção de classificação */
+.lblclass {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+}
+
+.lblclass::after {
+  content: "";
+  height: 1px;
+  flex-grow: 1;
+  margin-left: 15px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent);
+}
+
+/* Opções de classificação */
+.subClassificacao {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+/* Classes para as opções A, B e C */
+.classificacaoA,
+.classificacaoB,
+.classificacaoC {
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Backgrounds das classificações */
+.classificacaoA {
+  background: linear-gradient(145deg, rgba(46, 125, 50, 0.08), rgba(46, 125, 50, 0.14));
+  border: 1px solid rgba(46, 125, 50, 0.15);
+}
+
+.classificacaoB {
+  background: linear-gradient(145deg, rgba(245, 127, 23, 0.08), rgba(245, 127, 23, 0.14));
+  border: 1px solid rgba(245, 127, 23, 0.15);
+}
+
+.classificacaoC {
+  background: linear-gradient(145deg, rgba(198, 40, 40, 0.08), rgba(198, 40, 40, 0.14));
+  border: 1px solid rgba(198, 40, 40, 0.15);
+}
+
+/* Efeito hover */
+.classificacaoA:hover,
+.classificacaoB:hover,
+.classificacaoC:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Efeito de ripple ao clicar */
+.classificacaoA::after,
+.classificacaoB::after,
+.classificacaoC::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+.classificacaoA:active::after,
+.classificacaoB:active::after,
+.classificacaoC:active::after {
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0) translate(-50%, -50%);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20) translate(-50%, -50%);
+    opacity: 0;
+  }
+}
+
+/* Estilo dos rótulos */
+.classificacaoA label,
+.classificacaoB label,
+.classificacaoC label {
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 0;
+  transition: all 0.25s;
+}
+
+/* Cores dos rótulos */
+.classificacaoA i {
+  color: #2e7d32;
+}
+
+.classificacaoB i {
+  color: #f57f17;
+}
+
+.classificacaoC i {
+  color: #c62828;
+}
+
+/* Estilo quando selecionado */
+.classificacaoA input:checked + label i,
+.classificacaoB input:checked + label i,
+.classificacaoC input:checked + label i {
+  transform: scale(1.2);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Ocultar radio button */
+.radio {
+  position: absolute;
+  opacity: 0;
+}
+
+/* Seletor A3 Mãe */
+.a3Mae h5 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+}
+
+.a3Mae h5::after {
+  content: "";
+  height: 1px;
+  flex-grow: 1;
+  margin-left: 15px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent);
+}
+
+/* Estilização do select */
+.form-select-lg {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 14px 45px 14px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  background-color: white;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%232c3e50' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-position: right 20px center;
+  background-size: 12px;
+  appearance: none;
+  transition: all 0.25s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  color: #2c3e50;
+}
+
+.form-select-lg:focus {
+  box-shadow: 0 0 0 3px rgba(176, 6, 43, 0.15);
+  border-color: #b0062b;
+  outline: none;
+}
+
+/* Footer */
+.modal-footer {
+  padding: 24px 30px;
+  background-color: #f8f9fc;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  position: relative;
+}
+
+/* Adicionar uma sombra sutil no topo do footer */
+.modal-footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.03), transparent);
+  pointer-events: none;
+}
+
+/* Container de checkboxes */
+.flag {
+  display: flex;
+  gap: 24px;
+}
+
+/* Container para cada checkbox */
+.flagEsperar,
+.flagReplicar {
+  position: relative;
+}
+
+/* Estilo para os rótulos */
+.flagEsperar label,
+.flagReplicar label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #546e7a;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+/* Estilo para o checkbox customizado */
+.flagEsperar label::before,
+.flagReplicar label::before {
+  content: "";
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid #b0b9c0;
+  background-color: white;
+  transition: all 0.25s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Esconder o checkbox original */
+.flagEsperar input,
+.flagReplicar input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Estilo para quando estiver checado */
+.flagEsperar input:checked + label::before,
+.flagReplicar input:checked + label::before {
+  background-color: #b0062b;
+  border-color: #b0062b;
+  box-shadow: 0 0 0 2px rgba(176, 6, 43, 0.2);
+}
+
+/* Adicionar o símbolo de check */
+.flagEsperar input:checked + label::after,
+.flagReplicar input:checked + label::after {
+  content: "\2713";
+  position: absolute;
+  left: 6px;
+  top: 0px;
+  font-size: 14px;
+  color: white;
+  font-weight: bold;
+}
+
+/* Container de botões */
+.modal-footer .btn {
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  border: none;
+}
+
+/* Efeito de hover para botões */
+.modal-footer .btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Efeito de clique */
+.modal-footer .btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Botão Aprovar */
+.btn-outline-success {
+  background: linear-gradient(145deg, #2e7d32, #388e3c);
+  color: white;
+}
+
+.btn-outline-success::before {
+  content: "\f633";
+  font-family: "Bootstrap-icons";
+  font-size: 16px;
+}
+
+.btn-outline-danger {
+  background: linear-gradient(145deg, #c62828, #d32f2f);
+  color: white;
+}
+
+.btn-outline-danger::before {
+  content: "\f623";
+  font-family: "Bootstrap-icons";
+  font-size: 16px;
+}
+
+.btn-outline-warning {
+  background: linear-gradient(145deg, #f57f17, #ff8f00);
+  color: white;
+}
+
+.btn-outline-warning::before {
+  content: "\f5de";
+  font-family: "Bootstrap-icons";
+  font-size: 16px;
+}
+
+/* Botão Cancelar */
+.btn-outline-secondary {
+  background: linear-gradient(145deg, #78909c, #90a4ae);
+  color: white;
+}
+
+.btn-outline-secondary::before {
+  content: "\f129";
+  font-family: "Bootstrap-icons";
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .modal-body.mBody {
+    padding: 20px;
+  }
+
+  .row.text-start {
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .divisaoColaborador,
+  .divisaoSituacao,
+  .divisaoAmais {
+    min-width: 100%;
+  }
+
+  .avaliadores,
+  .avaliacao {
+    padding-top: 65px;
+  }
+
+  .modal-footer {
+    padding: 20px;
+    flex-direction: column;
+  }
+
+  .flag {
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 15px;
+  }
+
+  /* Grid de 2x2 para botões em mobile */
+  .modal-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 12px;
+  }
+
+  .flag {
+    grid-column: 1 / span 2;
+  }
+
+  .btn-outline-success,
+  .btn-outline-danger,
+  .btn-outline-warning,
+  .btn-outline-secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Ajustes para telas muito pequenas */
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-title {
+    font-size: 18px;
+    padding-left: 46px;
+  }
+
+  .modal-title::before {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .subClassificacao {
+    flex-direction: column;
+  }
+
+  .classificacaoA,
+  .classificacaoB,
+  .classificacaoC {
+    width: 100%;
+  }
+
+  .modal-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .flag {
+    grid-column: 1;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .flagEsperar,
+  .flagReplicar {
+    flex: 1;
+    min-width: 120px;
+  }
+}
