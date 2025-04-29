@@ -73,7 +73,17 @@ a:focus {
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.1);
   --shadow-md:  0 4px 6px rgba(0,0,0,0.1);
   --shadow-lg:  0 10px 15px rgba(0,0,0,0.1);
+
+  --red-primary:   #EF5350;
+  --red-light:     #FFCDD2;
+  --bg-page:       #FFF5F5;
+  --bg-card:       #FFFFFF;
+  --text-dark:     #333333;
+  --text-muted:    #666666;
+  --shadow-light:  rgba(0,0,0,0.05);
+  --shadow-strong: rgba(0,0,0,0.15);
 }
+
 
 .container-app {
   padding: 2rem;

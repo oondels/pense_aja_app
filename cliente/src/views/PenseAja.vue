@@ -1,3 +1,4 @@
+<!-- PenseAja.vue -->
 <template>
   <div class="penseaja-app">
     <main>
@@ -8,16 +9,33 @@
         role="region"
       >
         <header class="penseaja-list-header">
-          <h2 class="penseaja-list-title gradient-text">Projetos Pense&Aja</h2>
+          <h2 class="penseaja-list-title">Projetos Pense&Aja</h2>
         </header>
-        <ListaPenseAja />
+
+        <!-- toolbar de busca -->
+        <div class="list-toolbar">
+          <svg class="toolbar-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M9.5 3A6.5 6.5 0 1 0 16 9.5C16 11.11 15.47 12.61 14.55 13.8L19.707 19L18.293 20.414L13.138 15.257A6.472 6.472 0 0 0 9.5 16A6.5 6.5 0 0 0 9.5 3M9.5 5A4.5 4.5 0 1 1 5 9.5A4.505 4.505 0 0 1 9.5 5Z" /></svg>
+          <input
+            type="search"
+            v-model="search"
+            placeholder="Buscar projeto..."
+            class="toolbar-input"
+          />
+        </div>
+
+        <ListaPenseAja
+          :filter-text="search"
+        />
       </section>
     </main>
   </div>
 </template>
 
 <script setup>
-import ListaPenseAja from '../components/ListaPenseAja.vue';
+import { ref } from 'vue'
+import ListaPenseAja from '../components/ListaPenseAja.vue'
+
+const search = ref('')
 </script>
 
 <style scoped>
@@ -25,91 +43,70 @@ import ListaPenseAja from '../components/ListaPenseAja.vue';
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  /* background: linear-gradient(120deg, #f3f4f6 0%, #e0e7ff 100%); */
+  background: linear-gradient(120deg, var(--bg-page) 0%, var(--red-light) 100%);
+  background-size: 400% 400%;
   animation: bg-move 12s ease-in-out infinite alternate;
 }
+
 @keyframes bg-move {
   0% { background-position: 0% 50%; }
   100% { background-position: 100% 50%; }
-}
-
-.animate-fade-in {
-  animation: fadeInUp 0.8s cubic-bezier(.23,1.01,.32,1) both;
-}
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(40px) scale(0.98);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .penseaja-list-section.container {
   width: 100%;
   max-width: 1200px;
   margin: 2.5rem auto;
-  padding: 2.5rem 1.5rem;
-  background: var(--bg-card, #fff);
-  border-radius: 2rem;
-  box-shadow: 0 8px 32px 0 rgba(76, 110, 245, 0.10), 0 1.5px 8px 0 rgba(16,185,129,0.07);
-  outline: none;
+  padding: 2rem 1.5rem;
+  background: var(--bg-card);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px var(--shadow-light), 0 1.5px 8px var(--shadow-light);
   transition: box-shadow 0.3s, transform 0.3s;
-  position: relative;
-  overflow: hidden;
-  border: 1.5px solid var(--border, #e5e7eb);
-}
-.penseaja-list-section.container:focus {
-  box-shadow: 0 0 0 4px #6366f1aa;
-  transform: scale(1.01);
 }
 .penseaja-list-section.container:hover {
-  box-shadow: 0 12px 40px 0 rgba(76, 110, 245, 0.18), 0 2px 12px 0 rgba(16,185,129,0.10);
-  transform: translateY(-2px) scale(1.012);
+  box-shadow: 0 12px 40px var(--shadow-strong), 0 2px 12px var(--shadow-strong);
+  transform: translateY(-2px);
 }
+
 .penseaja-list-header {
-  margin-bottom: 2rem;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.7rem;
+  margin-bottom: 1.5rem;
 }
 .penseaja-list-title {
-  font-size: 2.1rem;
-  font-weight: 800;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--red-primary);
   margin: 0;
-  letter-spacing: -1px;
-  line-height: 1.1;
-  background: none;
-  color: #3730a3;
-  text-shadow: 0 2px 8px #e0e7ff88;
-  transition: color 0.2s;
 }
-.gradient-text {
-  background: linear-gradient(90deg, #6366f1 30%, #10b981 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+
+/* toolbar de busca */
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  background: var(--red-light);
+  border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px var(--shadow-light);
 }
-@media (max-width: 900px) {
-  .penseaja-list-section.container {
-    max-width: 100%;
-    padding: 1.2rem 0.3rem;
-    border-radius: 1.2rem;
-  }
-  .penseaja-list-title {
-    font-size: 1.3rem;
-  }
+.toolbar-icon {
+  width: 24px;
+  height: 24px;
+  fill: var(--red-primary);
+  margin-right: 0.75rem;
 }
-@media (max-width: 600px) {
-  .penseaja-list-section.container {
-    border-radius: 0.7rem;
-    padding: 0.7rem 0.1rem;
-  }
-  .penseaja-list-header {
-    margin-bottom: 0.7rem;
-  }
+.toolbar-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  color: var(--text-dark);
+}
+.toolbar-input::placeholder {
+  color: var(--text-muted);
+}
+.toolbar-input:focus {
+  outline: none;
 }
 </style>
