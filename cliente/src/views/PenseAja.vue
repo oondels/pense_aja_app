@@ -43,7 +43,6 @@ const search = ref('')
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(120deg, var(--bg-page) 0%, var(--red-light) 100%);
   background-size: 400% 400%;
   animation: bg-move 12s ease-in-out infinite alternate;
 }

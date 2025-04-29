@@ -7,7 +7,14 @@
 <script setup>
 import Navbar from './components/Navbar.vue'
 import Footer from './components/Footer.vue'
-// Entry point: Vue Router handles view rendering
+import { onMounted } from 'vue'
+import {useUserStore} from "@/stores/userStore.js"
+
+onMounted(() => {
+  const userStore = useUserStore()
+  userStore.carregarUsuario()
+})
+
 </script>
 
 <style>

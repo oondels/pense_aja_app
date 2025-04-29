@@ -17,7 +17,7 @@
             
             <div class="feature-card">
               <div class="feature-icon">
-                <img src="/assets/img/solucoes192.png" alt="Colaboração" class="feature-img" />
+                <img src="/assets/img/ideiaOn.png" alt="Colaboração" class="feature-img" />
               </div>
               <h3>Incentive a colaboração</h3>
               <p>Conecte colaboradores e gestores em torno de novas ideias</p>
@@ -25,7 +25,7 @@
             
             <div class="feature-card">
               <div class="feature-icon">
-                <img src="/assets/img/loja-virtual.png" alt="Reconhecimento" class="feature-img" />
+                <img src="/assets/img/ideiaOn.png" alt="Reconhecimento" class="feature-img" />
               </div>
               <h3>Reconheça contribuições</h3>
               <p>Sistema de recompensas para os colaboradores mais inovadores</p>
