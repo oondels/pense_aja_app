@@ -20,14 +20,26 @@ export const UserPenseaja = {
       const query = await client.query(
         `
         SELECT
-          lf.nome, lf.nome_setor, lf.gerente, lf.funcao
+          lf.nome,
+          lf.nome_setor AS setor,
+          lf.gerente,
+          lf.funcao,
+          COALESCE(p.soma_pontos, 0) AS pontos,
+          COALESCE(pm.soma_premios, 0) AS pontos_resgatados
         FROM
           colaborador.lista_funcionario${office} lf
-        LEFT JOIN
-          pense_aja.pontos${office} p ON lf.matricula = p.matricula
+        LEFT JOIN (
+          SELECT matricula, SUM(valor) AS soma_pontos
+          FROM pense_aja.pontos${office}
+          GROUP BY matricula
+        ) p ON lf.matricula = p.matricula
+        LEFT JOIN (
+          SELECT matricula, SUM(pontos_premio_solicitado) AS soma_premios
+          FROM pense_aja.premio${office}
+          GROUP BY matricula
+        ) pm ON lf.matricula = pm.matricula
         WHERE
-          lf.matricula = $1;
-      `,
+          lf.matricula = $1;`,
         [registration]
       );
 

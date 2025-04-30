@@ -43,13 +43,13 @@
 
             <!-- Conteúdo do Pense e Aja -->
             <template v-slot:default="{ isActive }">
-              <v-card title="Dialog">
-                <v-card-text>
-                  <div class="avaliar-container active">
-                    <div class="avaliar-content active">
-                      <!-- Header -->
-                      <div class="avaliar-header">
-                        <div class="avaliar-title">
+              <div class="avaliar-container active">
+                <div class="avaliar-content active">
+                  <!-- Header -->
+                  <div class="avaliar-header position-relative container-fluid">
+                    <div class="d-flex justify-content-around">
+                      <div class="row">
+                        <div class="avaliar-title col-md-6">
                           <img
                             src="/assets/img/icons/dass-penseaja-light.png"
                             alt="Logo"
@@ -67,358 +67,342 @@
                           </div>
                         </div>
 
-                        <div class="avaliar-projeto">
+                        <!-- Titulo Projetoi -->
+                        <div class="avaliar-projeto col-md-6">
                           <i class="bi bi-lightbulb"></i>
                           Projeto:
-                          <strong id="nome-projeto ">
+                          <strong id="nome-projeto">
                             {{ item.nome_projeto }}
                           </strong>
                         </div>
-
-                        <button
-                          @click="isActive.value = false"
-                          class="avaliar-close"
-                          aria-label="Fechar"
-                        >
-                          <i class="bi bi-x-lg"></i>
-                        </button>
                       </div>
+                    </div>
 
-                      <!-- Main Content -->
-                      <div class="avaliar-body">
-                        <!-- Status Badge -->
-                        <div class="avaliar-status pending">
-                          <i class="bi bi-hourglass-split"></i>
-                          <span class="pense-aja-status"
-                            >Aguardando avaliação</span
-                          >
-                        </div>
+                    <button
+                      @click="isActive.value = false"
+                      class="avaliar-close position-absolute top-0 end-0 m-3"
+                      aria-label="Fechar"
+                    >
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </div>
 
-                        <!-- Avaliadores -->
-                        <div class="avaliar-card-revisores">
-                          <div class="avaliar-card-header">
-                            <i class="bi bi-people-fill"></i>
-                            <h3>Avaliadores</h3>
-                          </div>
-                          <div class="avaliar-revisores-content">
-                            <div class="avaliar-revisor">
-                              <div
-                                class="avaliar-avatar avaliar-avatar-gerente"
-                              >
-                                <i class="mdi mdi-briefcase-account"></i>
-                              </div>
-                              <div class="avaliar-revisor-info">
-                                <span class="avaliar-label">
-                                  Gerente Avaliador
-                                </span>
-                                <span
-                                  class="avaliar-value"
-                                  id="gerente-avaliador"
-                                >
-                                  {{ item.gerente_aprovador ?? "Não avaliado" }}
-                                </span>
-                              </div>
-                            </div>
-                            <div class="avaliar-revisor">
-                              <div
-                                class="avaliar-avatar avaliar-avatar-analista"
-                              >
-                                <i class="mdi mdi-account-check"></i>
-                              </div>
-                              <div class="avaliar-revisor-info">
-                                <span class="avaliar-label">
-                                  Analista Avaliador
-                                </span>
-                                <span
-                                  class="avaliar-value"
-                                  id="analista-avaliador"
-                                >
-                                  {{
-                                    item.analista_avaliador ?? "Não avaliado"
-                                  }}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                  <!-- Main Content -->
+                  <div class="avaliar-body">
+                    <!-- Status Badge -->
+                    <div class="avaliar-status pending">
+                      <i class="bi bi-hourglass-split"></i>
+                      <span class="pense-aja-status">
+                        Aguardando avaliação
+                      </span>
+                    </div>
 
-                        <!-- Dados do Colaborador -->
-                        <div class="avaliar-card-user">
-                          <div class="avaliar-card-header">
-                            <i class="bi bi-person-vcard"></i>
-                            <h3>Dados do Colaborador</h3>
-                          </div>
-
-                          <div class="avaliar-user-content">
-                            <div class="avaliar-user-row">
-                              <div class="avaliar-user-item">
-                                <span class="avaliar-label">Matrícula</span>
-                                <span
-                                  class="avaliar-value"
-                                  id="matricula-penseaja-avaliacao"
-                                >
-                                  {{ item.matricula ?? "*******" }}
-                                </span>
-                              </div>
-
-                              <div class="avaliar-user-item">
-                                <span class="avaliar-label">Nome</span>
-                                <span
-                                  class="avaliar-value"
-                                  id="nome-penseaja-avaliacao"
-                                >
-                                  {{ item.nome }}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div class="avaliar-user-row">
-                              <div class="avaliar-user-item">
-                                <span class="avaliar-label">Gerente</span>
-                                <span
-                                  class="avaliar-value"
-                                  id="gerente-penseaja-avaliacao"
-                                >
-                                  {{ item.gerente }}
-                                </span>
-                              </div>
-
-                              <div class="avaliar-user-item">
-                                <span class="avaliar-label">Turno</span>
-                                <span
-                                  class="avaliar-value"
-                                  id="turno-penseaja-avaliacao"
-                                >
-                                  {{ item.turno }}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div class="avaliar-user-row">
-                              <div class="avaliar-user-item">
-                                <span class="avaliar-label">Setor</span>
-                                <span
-                                  class="avaliar-value"
-                                  id="setor-penseaja-avaliacao"
-                                >
-                                  {{ item.setor }}
-                                </span>
-                              </div>
-
-                              <div class="avaliar-user-item">
-                                <span class="avaliar-label">
-                                  Data de Realização
-                                </span>
-                                <span
-                                  class="avaliar-value"
-                                  id="data-penseaja-avaliacao"
-                                >
-                                  {{ item.criado }}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Situação Antes e Depois -->
-                        <div class="avaliar-card-situacao">
-                          <div class="avaliar-card-header">
-                            <i class="mdi mdi-arrow-right-circle-outline"></i>
-                            <h3>Situação Antes e Depois</h3>
-                          </div>
-
-                          <div class="avaliar-situacao-content">
-                            <div class="avaliar-tabs">
-                              <button
-                                class="avaliar-tab-btn"
-                                :class="!beforeAfter ? 'active' : ''"
-                                @click="beforeAfter = false"
-                                data-tab="antes"
-                              >
-                                <i class="mdi mdi-arrow-left-circle-outline" />
-                                <span>Antes</span>
-                              </button>
-
-                              <button
-                                class="avaliar-tab-btn"
-                                :class="beforeAfter ? 'active' : ''"
-                                @click="beforeAfter = true"
-                                data-tab="depois"
-                              >
-                                <i
-                                  class="mdi mdi-arrow-right-circle-outline"
-                                ></i>
-                                <span>Depois</span>
-                              </button>
-                            </div>
-
-                            <div
-                              class="avaliar-tab-content"
-                              id="antes-tab"
-                              :class="!beforeAfter ? 'active' : ''"
-                            >
-                              <p id="texto-antes-penseaja">
-                                {{ item.situacao_anterior }}
-                              </p>
-                            </div>
-
-                            <div
-                              class="avaliar-tab-content"
-                              :class="beforeAfter ? 'active' : ''"
-                              id="depois-tab"
-                            >
-                              <p id="texto-depois-penseaja">
-                                {{ item.situacao_atual }}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Avaliação -->
-                        <div class="avaliar-card-nivel">
-                          <div class="avaliar-card-header">
-                            <i class="bi bi-trophy"></i>
-                            <h3>
-                              Classificação do Pense<span
-                                class="avaliar-highlight"
-                                >&</span
-                              >Aja
-                            </h3>
-                          </div>
-
-                          <div class="avaliar-nivel-content">
-                            <div class="avaliar-rating">
-                              <label class="avaliar-rating-option">
-                                <input
-                                  type="radio"
-                                  name="avaliacao-pense-aja"
-                                  value="A"
-                                />
-                                <div class="avaliar-rating-display">
-                                  <span class="avaliar-rating-value">A</span>
-                                  <span class="avaliar-rating-icon">
-                                    <i class="bi bi-star-fill"></i>
-                                  </span>
-                                  <span class="avaliar-rating-label"
-                                    >Básica</span
-                                  >
-                                </div>
-                              </label>
-
-                              <label class="avaliar-rating-option">
-                                <input
-                                  type="radio"
-                                  name="avaliacao-pense-aja"
-                                  value="B"
-                                />
-                                <div class="avaliar-rating-display">
-                                  <span class="avaliar-rating-value">B</span>
-                                  <span class="avaliar-rating-icon">
-                                    <i class="bi bi-stars"></i>
-                                  </span>
-                                  <span class="avaliar-rating-label"
-                                    >Intermediária</span
-                                  >
-                                </div>
-                              </label>
-
-                              <label class="avaliar-rating-option">
-                                <input
-                                  type="radio"
-                                  name="avaliacao-pense-aja"
-                                  value="C"
-                                />
-                                <div class="avaliar-rating-display">
-                                  <span class="avaliar-rating-value">C</span>
-                                  <span class="avaliar-rating-icon">
-                                    <i class="bi bi-award-fill"></i>
-                                  </span>
-                                  <span class="avaliar-rating-label">
-                                    Avançada
-                                  </span>
-                                </div>
-                              </label>
-                            </div>
-                          </div>
-
-                          <div class="justifica-avaliacao hidden">
-                            <textarea
-                              placeholder="Justifique a avaliação do pense e aja."
-                              name="justificativa-avaliacao"
-                              id="justificativa-avaliacao"
-                            ></textarea>
-                          </div>
-                        </div>
-
-                        <!-- Flags -->
-                        <div class="avaliar-card-flags">
-                          <div class="avaliar-flags-content">
-                            <label class="avaliar-toggle">
-                              <input type="checkbox" id="em-espera" />
-                              <span class="avaliar-toggle-slider"></span>
-                              <span class="avaliar-toggle-label">
-                                <i class="bi bi-hourglass"></i>
-                                Em Espera
-                              </span>
-                            </label>
-
-                            <label class="avaliar-toggle">
-                              <input type="checkbox" id="replicavel" />
-                              <span class="avaliar-toggle-slider"></span>
-                              <span class="avaliar-toggle-label">
-                                <i class="bi bi-diagram-3"></i>
-                                Replicável
-                              </span>
-                            </label>
-                          </div>
-                          <select id="a3-penseAja" class="form-select">
-                            <option value="" selected disabled id="escolha">
-                              Selecione
-                            </option>
-                            <option value="lean">LEAN</option>
-                            <option value="pessoas">PESSOAS</option>
-                            <option value="digitalizacao">DIGITALIZAÇÃO</option>
-                            <option value="produtividade">PRODUTIVIDADE</option>
-                            <option value="padronizacao">PADRONIZAÇÃO</option>
-                            <option value="comunicacao">COMUNICAÇÃO</option>
-                            <option value="ssma">SSMA</option>
-                            <option value="orcamento">ORÇAMENTO</option>
-                            <option value="qualidade">QUALIDADE</option>
-                          </select>
-                        </div>
+                    <!-- Avaliadores -->
+                    <div class="avaliar-card-revisores">
+                      <div class="avaliar-card-header">
+                        <i class="bi bi-people-fill"></i>
+                        <h3>Avaliadores</h3>
                       </div>
-
-                      <!-- Footer -->
-                      <div class="avaliar-footer">
-                        <div class="avaliar-actions">
-                          <button class="avaliar-btn avaliar-btn-aprovar">
-                            <i class="bi bi-check-circle"></i>
-                            <span>Aprovar</span>
-                          </button>
-
-                          <button class="avaliar-btn avaliar-btn-reprovar">
-                            <i class="bi bi-x-circle"></i>
-                            <span>Reprovar</span>
-                          </button>
-
-                          <button class="avaliar-btn avaliar-btn-excluir">
-                            <i class="bi bi-trash"></i>
-                            <span>Excluir</span>
-                          </button>
-
-                          <button
-                            @click="isActive.value = false"
-                            class="avaliar-btn avaliar-btn-cancelar"
-                          >
-                            <i class="bi bi-arrow-return-left"></i>
-                            <span>Cancelar</span>
-                          </button>
+                      <div class="avaliar-revisores-content">
+                        <div class="avaliar-revisor">
+                          <div class="avaliar-avatar avaliar-avatar-gerente">
+                            <i class="mdi mdi-briefcase-account"></i>
+                          </div>
+                          <div class="avaliar-revisor-info">
+                            <span class="avaliar-label">
+                              Gerente Avaliador
+                            </span>
+                            <span class="avaliar-value" id="gerente-avaliador">
+                              {{ item.gerente_aprovador ?? "Não avaliado" }}
+                            </span>
+                          </div>
+                        </div>
+                        <div class="avaliar-revisor">
+                          <div class="avaliar-avatar avaliar-avatar-analista">
+                            <i class="mdi mdi-account-check"></i>
+                          </div>
+                          <div class="avaliar-revisor-info">
+                            <span class="avaliar-label">
+                              Analista Avaliador
+                            </span>
+                            <span class="avaliar-value" id="analista-avaliador">
+                              {{ item.analista_avaliador ?? "Não avaliado" }}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
+
+                    <!-- Dados do Colaborador -->
+                    <div class="avaliar-card-user">
+                      <div class="avaliar-card-header">
+                        <i class="bi bi-person-vcard"></i>
+                        <h3>Dados do Colaborador</h3>
+                      </div>
+
+                      <div class="avaliar-user-content">
+                        <div class="avaliar-user-row">
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">Matrícula</span>
+                            <span
+                              class="avaliar-value"
+                              id="matricula-penseaja-avaliacao"
+                            >
+                              {{ item.matricula ?? "*******" }}
+                            </span>
+                          </div>
+
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">Nome</span>
+                            <span
+                              class="avaliar-value"
+                              id="nome-penseaja-avaliacao"
+                            >
+                              {{ item.nome }}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div class="avaliar-user-row">
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">Gerente</span>
+                            <span
+                              class="avaliar-value"
+                              id="gerente-penseaja-avaliacao"
+                            >
+                              {{ item.gerente }}
+                            </span>
+                          </div>
+
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">Turno</span>
+                            <span
+                              class="avaliar-value"
+                              id="turno-penseaja-avaliacao"
+                            >
+                              {{ item.turno }}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div class="avaliar-user-row">
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">Setor</span>
+                            <span
+                              class="avaliar-value"
+                              id="setor-penseaja-avaliacao"
+                            >
+                              {{ item.setor }}
+                            </span>
+                          </div>
+
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">
+                              Data de Realização
+                            </span>
+                            <span
+                              class="avaliar-value"
+                              id="data-penseaja-avaliacao"
+                            >
+                              {{ item.criado }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Situação Antes e Depois -->
+                    <div class="avaliar-card-situacao">
+                      <div class="avaliar-card-header">
+                        <i class="mdi mdi-arrow-right-circle-outline"></i>
+                        <h3>Situação Antes e Depois</h3>
+                      </div>
+
+                      <div class="avaliar-situacao-content">
+                        <div class="avaliar-tabs">
+                          <button
+                            class="avaliar-tab-btn"
+                            :class="!beforeAfter ? 'active' : ''"
+                            @click="beforeAfter = false"
+                            data-tab="antes"
+                          >
+                            <i class="mdi mdi-arrow-left-circle-outline" />
+                            <span>Antes</span>
+                          </button>
+
+                          <button
+                            class="avaliar-tab-btn"
+                            :class="beforeAfter ? 'active' : ''"
+                            @click="beforeAfter = true"
+                            data-tab="depois"
+                          >
+                            <i class="mdi mdi-arrow-right-circle-outline"></i>
+                            <span>Depois</span>
+                          </button>
+                        </div>
+
+                        <div
+                          class="avaliar-tab-content"
+                          id="antes-tab"
+                          :class="!beforeAfter ? 'active' : ''"
+                        >
+                          <p id="texto-antes-penseaja">
+                            {{ item.situacao_anterior }}
+                          </p>
+                        </div>
+
+                        <div
+                          class="avaliar-tab-content"
+                          :class="beforeAfter ? 'active' : ''"
+                          id="depois-tab"
+                        >
+                          <p id="texto-depois-penseaja">
+                            {{ item.situacao_atual }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Avaliação -->
+                    <div class="avaliar-card-nivel">
+                      <div class="avaliar-card-header">
+                        <i class="bi bi-trophy"></i>
+                        <h3>
+                          Classificação do Pense<span class="avaliar-highlight"
+                            >&</span
+                          >Aja
+                        </h3>
+                      </div>
+
+                      <div class="avaliar-nivel-content">
+                        <div class="avaliar-rating">
+                          <label class="avaliar-rating-option">
+                            <input
+                              type="radio"
+                              name="avaliacao-pense-aja"
+                              value="A"
+                            />
+                            <div class="avaliar-rating-display">
+                              <span class="avaliar-rating-value">A</span>
+                              <span class="avaliar-rating-icon">
+                                <i class="bi bi-star-fill"></i>
+                              </span>
+                              <span class="avaliar-rating-label">Básica</span>
+                            </div>
+                          </label>
+
+                          <label class="avaliar-rating-option">
+                            <input
+                              type="radio"
+                              name="avaliacao-pense-aja"
+                              value="B"
+                            />
+                            <div class="avaliar-rating-display">
+                              <span class="avaliar-rating-value">B</span>
+                              <span class="avaliar-rating-icon">
+                                <i class="bi bi-stars"></i>
+                              </span>
+                              <span class="avaliar-rating-label"
+                                >Intermediária</span
+                              >
+                            </div>
+                          </label>
+
+                          <label class="avaliar-rating-option">
+                            <input
+                              type="radio"
+                              name="avaliacao-pense-aja"
+                              value="C"
+                            />
+                            <div class="avaliar-rating-display">
+                              <span class="avaliar-rating-value">C</span>
+                              <span class="avaliar-rating-icon">
+                                <i class="bi bi-award-fill"></i>
+                              </span>
+                              <span class="avaliar-rating-label">
+                                Avançada
+                              </span>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div class="justifica-avaliacao hidden">
+                        <textarea
+                          placeholder="Justifique a avaliação do pense e aja."
+                          name="justificativa-avaliacao"
+                          id="justificativa-avaliacao"
+                        ></textarea>
+                      </div>
+                    </div>
+
+                    <!-- Flags -->
+                    <div class="avaliar-card-flags">
+                      <div class="avaliar-flags-content">
+                        <label class="avaliar-toggle">
+                          <input type="checkbox" id="em-espera" />
+                          <span class="avaliar-toggle-slider"></span>
+                          <span class="avaliar-toggle-label">
+                            <i class="bi bi-hourglass"></i>
+                            Em Espera
+                          </span>
+                        </label>
+
+                        <label class="avaliar-toggle">
+                          <input type="checkbox" id="replicavel" />
+                          <span class="avaliar-toggle-slider"></span>
+                          <span class="avaliar-toggle-label">
+                            <i class="bi bi-diagram-3"></i>
+                            Replicável
+                          </span>
+                        </label>
+                      </div>
+                      <select id="a3-penseAja" class="form-select">
+                        <option value="" selected disabled id="escolha">
+                          Selecione
+                        </option>
+                        <option value="lean">LEAN</option>
+                        <option value="pessoas">PESSOAS</option>
+                        <option value="digitalizacao">DIGITALIZAÇÃO</option>
+                        <option value="produtividade">PRODUTIVIDADE</option>
+                        <option value="padronizacao">PADRONIZAÇÃO</option>
+                        <option value="comunicacao">COMUNICAÇÃO</option>
+                        <option value="ssma">SSMA</option>
+                        <option value="orcamento">ORÇAMENTO</option>
+                        <option value="qualidade">QUALIDADE</option>
+                      </select>
+                    </div>
                   </div>
-                </v-card-text>
-              </v-card>
+
+                  <!-- Footer -->
+                  <div class="avaliar-footer">
+                    <div class="avaliar-actions">
+                      <button class="avaliar-btn avaliar-btn-aprovar">
+                        <i class="bi bi-check-circle"></i>
+                        <span>Aprovar</span>
+                      </button>
+
+                      <button class="avaliar-btn avaliar-btn-reprovar">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Reprovar</span>
+                      </button>
+
+                      <button class="avaliar-btn avaliar-btn-excluir">
+                        <i class="bi bi-trash"></i>
+                        <span>Excluir</span>
+                      </button>
+
+                      <button
+                        @click="isActive.value = false"
+                        class="avaliar-btn avaliar-btn-cancelar"
+                      >
+                        <i class="bi bi-arrow-return-left"></i>
+                        <span>Cancelar</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </template>
           </v-dialog>
         </div>
@@ -454,7 +438,6 @@ const fetchData = async () => {
   const office = "SEST";
   const { data } = await axios.get(`http://localhost:2512/pense-aja/${office}`);
   penseAjas.value = data.dados;
-  console.log(penseAjas.value);
 };
 onMounted(fetchData);
 
@@ -547,6 +530,11 @@ const beforeAfter = ref(false);
   text-overflow: ellipsis;
   max-width: 350px;
   display: block;
+}
+
+#nome-projeto {
+  font-size: 0.7rem;
+  font-weight: bold;
 }
 
 @media screen and (max-width: 768px) {

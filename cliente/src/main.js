@@ -11,6 +11,7 @@ import "vuetify/styles";
 import VueVirtualScroller from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
+import './assets/fonts.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import "@mdi/font/css/materialdesignicons.css";

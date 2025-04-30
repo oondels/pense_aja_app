@@ -88,17 +88,31 @@ export const PenseAjaService = {
       const result = await client.query(
         `
         SELECT
-          id, data_realizada, fabrica, nome, setor, gerente,
-          nome_projeto, turno, situacao_anterior, situacao_atual,
-          gerente_aprovador, analista_avaliador, status_gerente,
-          status_analista, em_espera, createdat as criado
-        FROM pense_aja.${dbName}
-        WHERE excluido = ''
-        AND createdat >= $1
-        AND createdat < ($2::timestamp + INTERVAL '1 day')
-        ORDER BY createdat DESC
+          id,
+          data_realizada,
+          fabrica,
+          nome,
+          setor,
+          gerente,
+          nome_projeto,
+          turno,
+          situacao_anterior,
+          situacao_atual,
+          gerente_aprovador,
+          analista_avaliador,
+          status_gerente,
+          status_analista,
+          em_espera,
+          createdat AS criado
+        FROM
+          pense_aja.${dbName}
+        WHERE
+          excluido = ''
+          AND createdat >= date_trunc('month', current_date) - INTERVAL '1 month'
+          AND createdat <  date_trunc('year',  current_date) + INTERVAL '1 year'
+        ORDER BY
+          criado DESC;
       `,
-        [startDate, endDate]
       );
 
       const filterQuery = await client.query(

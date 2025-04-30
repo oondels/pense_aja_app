@@ -1,1 +1,1 @@
-export const ip = "http://localhost:2399"
+export const ip = "http://localhost"

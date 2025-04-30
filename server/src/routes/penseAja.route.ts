@@ -13,8 +13,6 @@ const formatUserName = (name: string) => {
 }
 
 router.get("/protected", verifyToken, (req: Request, res: Response) => {
-  console.log(req.user);
-
   res.status(200).json({ message: "Protected route accessed!" });
 });
 

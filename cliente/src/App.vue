@@ -14,9 +14,10 @@ onMounted(() => {
   const userStore = useUserStore()
   userStore.carregarUsuario()
 })
-
 </script>
 
 <style>
-/* global styles */
+body {
+  font-family: 'Poppins', sans-serif;
+}
 </style>

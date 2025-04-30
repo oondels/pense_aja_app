@@ -23,6 +23,7 @@
         <span id="mes" class="month-value"></span>
         <span>Olá {{ user.formattedUserName }}</span>
       </div>
+
       <div class="col-3 d-flex align-items-center banner-user-info">
         <span id="usuario" class="usuario"></span>
         <span id="nome" class="nome"></span>
@@ -30,18 +31,11 @@
         <span id="avaliacaoMensal" class="valorTotal"></span>
         <span id="valorTotal" class="valorTotal"></span>
       </div>
+
       <div class="banner-right">
         <div class="button-group">
-          <button id="openLoja" class="action-button">
-            <div class="button-icon-container">
-              <img
-                src="/assets/img/icons/store.png"
-                alt="loja"
-                class="button-icon"
-              />
-            </div>
-            <span class="button-label">Loja</span>
-          </button>
+          <Store />
+
           <button id="openLista" class="action-button">
             <div class="button-icon-container">
               <img
@@ -52,6 +46,7 @@
             </div>
             <span class="button-label">Listagem</span>
           </button>
+
           <button id="openMenu" class="action-button">
             <div class="button-icon-container">
               <img
@@ -76,6 +71,7 @@
         </div>
       </div>
     </div>
+
     <div class="banner-decoration">
       <div class="decoration-circle circle-1"></div>
       <div class="decoration-circle circle-2"></div>
@@ -87,6 +83,7 @@
 <script setup>
 import { ref } from "vue";
 import Login from "./Login.vue";
+import Store from "./Store.vue"
 import { useUserStore } from "@/stores/userStore";
 
 const user = useUserStore();

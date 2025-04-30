@@ -1,20 +1,5 @@
 @charset "UTF-8";
 
-@font-face {
-  font-family: "roboto-regular";
-  src: url(../../Roboto/Roboto-Regular.ttf);
-}
-
-@font-face {
-  font-family: "roboto-black";
-  src: url(../../Roboto/Roboto-Black.ttf);
-}
-
-@font-face {
-  font-family: "roboto-bold";
-  src: url(../../Roboto/Roboto-Bold.ttf);
-}
-
 ::-webkit-scrollbar {
   width: 7px;
   background: #f73737;
@@ -32,7 +17,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "roboto-regular";
   user-select: none;
 }
 

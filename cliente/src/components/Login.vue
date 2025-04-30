@@ -91,7 +91,7 @@
             <img src="/assets/img/dass.png"></img>
           </div>
           <h2>Dass Pense&Aja</h2>
-          <button class="login-close" id="logout-close">&times;</button>
+          <button @click="isActive.value = false" class="login-close" id="logout-close">&times;</button>
         </div>
 
         <div class="login-form">
@@ -119,7 +119,7 @@ import { login, logout } from "@/services/auth.js";
 import {useUserStore} from "@/stores/userStore.js";
 
 // Carregad dados do usuário se estiver logado
-const user = useUserStore()
+const user = useUserStore();
 
 const username = ref("");
 const password = ref("");
