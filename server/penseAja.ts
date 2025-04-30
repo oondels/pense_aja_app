@@ -10,19 +10,19 @@ import AiTools from "./src/routes/aiTools.route"
 const app = express();
 const port = 2512;
 
-app.use(cors({ origin: "http://127.0.0.1:5173", credentials: true }));
+app.use(cors({ origin: ["http://127.0.0.1:5173", "http://localhost:5173"], credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use("/pense-aja/", PenseAjaRoutes);
 app.use("/user/", UserPenseajaRoute);
-app.use("/ai/",AiTools)
+app.use("/ai/", AiTools)
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Pense Aja API");
 });
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
-  
+
   const statusCode = error instanceof CustomError ? error.statusCode : 500;
   console.log("Status code: ", statusCode);
   const message = error.message || "Erro interno no servidor.";

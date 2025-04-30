@@ -68,8 +68,16 @@
                 placeholder="Digite sua matrícula"
                 id="lojaMatricula"
                 class="search-input"
+                :value="user.matricula"
+                :class="user.matricula ? 'disabled' : ''"
               />
-              <button class="search-button" id="pesqLoja">
+
+              <button
+                :disabled="user.matricula"
+                :class="user.matricula ? 'disabled' : ''"
+                class="search-button"
+                id="pesqLoja"
+              >
                 <i class="bi bi-search"></i>
                 <span>Buscar</span>
               </button>
@@ -84,16 +92,20 @@
           </div>
 
           <!-- Informações do usuário -->
-          <div class="user-details d-none">
+          <div v-if="user?.matricula" class="user-details">
             <div class="user-info-card">
               <div class="user-avatar">
                 <i class="bi bi-person-circle text-primary"></i>
               </div>
+
               <div class="user-data">
-                <p id="nomeLoja" class="nomeLoja">Nome:</p>
-                <p id="setorLoja" class="setorLoja">Setor:</p>
-                <p id="gerenteLoja" class="gerenteLoja">Gerente:</p>
-                <p id="liderLoja" class="liderLoja">Líder:</p>
+                <p id="nomeLoja" class="nomeLoja">
+                  Nome: {{ user.formattedUserName }}
+                </p>
+                <p id="setorLoja" class="setorLoja">Setor: {{ user.setor }}</p>
+                <p id="gerenteLoja" class="gerenteLoja">
+                  Gerente: {{ userData?.gerente }}
+                </p>
               </div>
             </div>
           </div>
@@ -103,187 +115,26 @@
             <h2 class="products-heading">Produtos Disponíveis</h2>
 
             <div class="products-grid">
-              <div
-                class="product-card polaroid pontosSEM"
-                data-value="10"
-                data-text="bloco de notas"
-              >
-                <div class="product-badge">10 pts</div>
-                <div class="product-image-container">
-                  <img
-                    src="/assets/img/bloco.png"
-                    alt="Bloco de Notas"
-                    data-value="10"
-                    class="product-image"
-                  />
-                </div>
-                <div class="product-info">
-                  <h3 class="product-name">Bloco de Notas</h3>
-                  <button class="product-button">
-                    <span>Resgatar</span>
-                    <i class="bi bi-bag-plus"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div
-                class="product-card polaroid pontosSEM"
-                data-value="20"
-                data-text="necessaire"
-              >
-                <div class="product-badge">20 pts</div>
-                <div class="product-image-container">
-                  <img
-                    src="/assets/img/bolsa.png"
-                    alt="Necessaire"
-                    data-value="20"
-                    class="product-image"
-                  />
-                </div>
-                <div class="product-info">
-                  <h3 class="product-name">Necessaire</h3>
-                  <button class="product-button">
-                    <span>Resgatar</span>
-                    <i class="bi bi-bag-plus"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div
-                class="product-card polaroid pontosSEM"
-                data-value="30"
-                data-text="camisa"
-              >
-                <div class="product-badge">30 pts</div>
-                <div class="product-image-container">
-                  <img
-                    src="/assets/img/camisa.png"
-                    alt="Camisa"
-                    data-value="30"
-                    class="product-image"
-                  />
-                </div>
-                <div class="product-info">
-                  <h3 class="product-name">Camisa</h3>
-                  <button class="product-button">
-                    <span>Resgatar</span>
-                    <i class="bi bi-bag-plus"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div
-                class="product-card polaroid pontosSEM"
-                data-value="15"
-                data-text="caneca"
-              >
-                <div class="product-badge">15 pts</div>
-                <div class="product-image-container">
-                  <img
-                    src="/assets/img/caneca.png"
-                    alt="Caneca"
-                    data-value="15"
-                    class="product-image"
-                  />
-                </div>
-                <div class="product-info">
-                  <h3 class="product-name">Caneca</h3>
-                  <button class="product-button">
-                    <span>Resgatar</span>
-                    <i class="bi bi-bag-plus"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div
-                class="product-card polaroid pontosSEM"
-                data-value="4"
-                data-text="caneta"
-              >
-                <div class="product-badge">4 pts</div>
-                <div class="product-image-container">
-                  <img
-                    src="/assets/img/caneta.png"
-                    alt="Caneta"
-                    data-value="4"
-                    class="product-image"
-                  />
-                </div>
-                <div class="product-info">
-                  <h3 class="product-name">Caneta</h3>
-                  <button class="product-button">
-                    <span>Resgatar</span>
-                    <i class="bi bi-bag-plus"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div
-                class="product-card polaroid pontosSEM"
-                data-value="5"
-                data-text="chaveiro"
-              >
-                <div class="product-badge">5 pts</div>
-                <div class="product-image-container">
-                  <img
-                    src="/assets/img/chaveiro.png"
-                    alt="Chaveiro"
-                    data-value="5"
-                    class="product-image"
-                  />
-                </div>
-                <div class="product-info">
-                  <h3 class="product-name">Chaveiro</h3>
-                  <button class="product-button">
-                    <span>Resgatar</span>
-                    <i class="bi bi-bag-plus"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div
-                class="product-card polaroid pontosSEM"
-                data-value="10"
-                data-text="copo"
-              >
-                <div class="product-badge">10 pts</div>
-                <div class="product-image-container">
-                  <img
-                    src="/assets/img/copo.png"
-                    alt="Copo"
-                    data-value="10"
-                    class="product-image"
-                  />
-                </div>
-                <div class="product-info">
-                  <h3 class="product-name">Copo</h3>
-                  <button class="product-button">
-                    <span>Resgatar</span>
-                    <i class="bi bi-bag-plus"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div
-                class="product-card polaroid pontosSEM premium-product"
-                data-value="40"
-                data-text="tenis"
-              >
-                <div class="product-badge premium-badge">40 pts</div>
-                <div class="product-image-container">
-                  <img
-                    src="/assets/img/tenis.png"
-                    alt="Tênis"
-                    data-value="40"
-                    class="product-image"
-                  />
-                </div>
-                <div class="product-info">
-                  <h3 class="product-name">Tênis</h3>
-                  <button class="product-button">
-                    <span>Resgatar</span>
-                    <i class="bi bi-bag-plus"></i>
-                  </button>
+              <div v-for="(product, index) in storeProducts" :key="index">
+                <div
+                  class="product-card polaroid"
+                  :class="product.points > pontos ? 'disabled' : ''"
+                >
+                  <div class="product-badge">{{ product.points }} pts</div>
+                  <div class="product-image-container">
+                    <img
+                      :src="product.image"
+                      :alt="product.name"
+                      class="product-image"
+                    />
+                  </div>
+                  <div class="product-info">
+                    <h3 class="product-name">{{product.name}}</h3>
+                    <button class="product-button">
+                      <span>Resgatar</span>
+                      <i class="bi bi-bag-plus"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -299,7 +150,50 @@ import { ref, onMounted } from "vue";
 import { getUserData } from "@/services/userService";
 import { useUserStore } from "@/stores/userStore";
 
-const user = useUserStore()
+const storeProducts = [
+  {
+    name: "Bloco de Notas",
+    points: 10,
+    image: "/assets/img/bloco.png",
+  },
+  {
+    name: "Necessaire",
+    points: 20,
+    image: "/assets/img/bolsa.png",
+  },
+  {
+    name: "Camisa",
+    points: 30,
+    image: "/assets/img/camisa.png",
+  },
+  {
+    name: "Caneca",
+    points: 15,
+    image: "/assets/img/caneca.png",
+  },
+  {
+    name: "Caneta",
+    points: 4,
+    image: "/assets/img/caneta.png",
+  },
+  {
+    name: "Chaveiro",
+    points: 5,
+    image: "/assets/img/chaveiro.png",
+  },
+  {
+    name: "Copo",
+    points: 10,
+    image: "/assets/img/copo.png",
+  },
+  {
+    name: "Tênis",
+    points: 40,
+    image: "/assets/img/tenis.png",
+  },
+];
+
+const user = useUserStore();
 
 const userData = ref(null);
 let pontos = ref(0);
@@ -465,6 +359,13 @@ const handleUserData = async () => {
   100% {
     transform: translateX(50%);
   }
+}
+
+.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+  filter: grayscale(60%);
+  cursor: not-allowed !important;
 }
 
 .store-title {
@@ -700,6 +601,16 @@ const handleUserData = async () => {
 .product-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Produtos desabilitados */
+.product-card.disabled,
+.product-card.disabled * {
+  opacity: 1 !important;
+  filter: grayscale(90%) blur(1px);
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  transition: opacity 0.5s, filter 0.5s;
 }
 
 .product-badge {

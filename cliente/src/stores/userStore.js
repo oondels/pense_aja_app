@@ -4,8 +4,10 @@ import { ref } from 'vue'
 export const useUserStore = defineStore('user', () => {
   const matricula = ref('')
   const nome = ref('')
+  const setor = ref('')
   const funcao = ref('')
   const usuario = ref('')
+  const gerente = ref('')
   const haveEmail = ref(false)
   const formattedUserName = ref('')
 
@@ -14,6 +16,8 @@ export const useUserStore = defineStore('user', () => {
     nome.value = sessionStorage.getItem('nome') || ''
     funcao.value = sessionStorage.getItem('funcao') || ''
     usuario.value = sessionStorage.getItem('usuario') || ''
+    setor.value = sessionStorage.getItem('setor') || ''
+    gerente.value = sessionStorage.getItem('gerente') || ''
     haveEmail.value = sessionStorage.getItem('haveEmail') === 'true'
     formattedUserName.value = formateUserName();
   }
@@ -37,5 +41,5 @@ export const useUserStore = defineStore('user', () => {
     return 'Usuário'
   }
 
-  return { matricula, nome, funcao, usuario, haveEmail, carregarUsuario, limparUsuario, formattedUserName }
+  return { matricula, nome, funcao, usuario, setor, haveEmail, carregarUsuario, limparUsuario, formattedUserName }
 })

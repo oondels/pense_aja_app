@@ -1,8 +1,94 @@
 <!-- ListaPenseAja.vue -->
 <template>
   <div class="list-container">
+    <div class="filters container-fluid">
+      <v-text-field
+        label="Pesquisar Pense e Aja"
+        variant="outlined"
+        color="info"
+        prepend-inner-icon="mdi mdi-text-search"
+        density="compact"
+      />
+
+      <div class="row">
+        <v-combobox
+          clearable
+          v-model="filters.name"
+          :items="filterOptions.names"
+          density="compact"
+          class="col-md-4"
+          label="Nome"
+          variant="outlined"
+          prepend-inner-icon="mdi mdi-account"
+          color="info"
+        />
+
+        <v-combobox
+          clearable
+          v-model="filters.manager"
+          :items="filterOptions.managers"
+          density="compact"
+          class="col-md-4"
+          label="Gerente"
+          variant="outlined"
+          prepend-inner-icon="mdi mdi-badge-account"
+          color="info"
+        />
+
+        <v-combobox
+          clearable
+          v-model="filters.sector"
+          :items="filterOptions.sectors"
+          density="compact"
+          class="col-md-4"
+          label="Setor"
+          variant="outlined"
+          prepend-inner-icon="mdi mdi-factory"
+          color="info"
+        />
+      </div>
+
+      <div class="row">
+        <v-combobox
+          v-model="filters.status"
+          :items="filterOptions.status"
+          clearable
+          density="compact"
+          class="col-md-4"
+          label="Status"
+          variant="outlined"
+          prepend-inner-icon="mdi mdi-calendar-range"
+          color="info"
+        />
+
+        <v-combobox
+          clearable
+          v-model="filters.project"
+          :items="filterOptions.projects"
+          density="compact"
+          class="col-md-4"
+          label="Projeto"
+          variant="outlined"
+          prepend-inner-icon="mdi mdi-lightbulb-on"
+          color="info"
+        />
+
+        <v-combobox
+          clearable
+          v-model="filters.turno"
+          :items="filterOptions.turnos"
+          density="compact"
+          class="col-md-4"
+          label="Turno"
+          variant="outlined"
+          prepend-inner-icon="mdi mdi-clipboard-text-clock"
+          color="info"
+        />
+      </div>
+    </div>
+
     <RecycleScroller
-      :items="filteredItems"
+      :items="filteredList"
       :item-size="130"
       key-field="id"
       class="virtual-list"
@@ -14,7 +100,7 @@
               <div
                 v-bind="activatorProps"
                 class="item-content"
-                :class="`${setPenseAjaStatus(item)}`"
+                :class="`${computeStatusData(item).className}`"
               >
                 <div class="item-accent"></div>
                 <div class="item-main">
@@ -264,7 +350,7 @@
                     </div>
 
                     <!-- Avaliação -->
-                    <div class="avaliar-card-nivel">
+                    <div class="avaliar-card-nivel" v-if="getUserRole()">
                       <div class="avaliar-card-header">
                         <i class="bi bi-trophy"></i>
                         <h3>
@@ -276,71 +362,52 @@
 
                       <div class="avaliar-nivel-content">
                         <div class="avaliar-rating">
-                          <label class="avaliar-rating-option">
+                          <label
+                            v-for="(classification, key) in classifications"
+                            :key="key"
+                            class="avaliar-rating-option"
+                          >
                             <input
                               type="radio"
                               name="avaliacao-pense-aja"
-                              value="A"
+                              @click="setEvaluationValue(classification.value)"
                             />
                             <div class="avaliar-rating-display">
-                              <span class="avaliar-rating-value">A</span>
+                              <span class="avaliar-rating-value">
+                                {{ key }}
+                              </span>
                               <span class="avaliar-rating-icon">
                                 <i class="bi bi-star-fill"></i>
                               </span>
-                              <span class="avaliar-rating-label">Básica</span>
-                            </div>
-                          </label>
-
-                          <label class="avaliar-rating-option">
-                            <input
-                              type="radio"
-                              name="avaliacao-pense-aja"
-                              value="B"
-                            />
-                            <div class="avaliar-rating-display">
-                              <span class="avaliar-rating-value">B</span>
-                              <span class="avaliar-rating-icon">
-                                <i class="bi bi-stars"></i>
-                              </span>
-                              <span class="avaliar-rating-label"
-                                >Intermediária</span
-                              >
-                            </div>
-                          </label>
-
-                          <label class="avaliar-rating-option">
-                            <input
-                              type="radio"
-                              name="avaliacao-pense-aja"
-                              value="C"
-                            />
-                            <div class="avaliar-rating-display">
-                              <span class="avaliar-rating-value">C</span>
-                              <span class="avaliar-rating-icon">
-                                <i class="bi bi-award-fill"></i>
-                              </span>
                               <span class="avaliar-rating-label">
-                                Avançada
+                                {{ classification.name }}
                               </span>
                             </div>
                           </label>
                         </div>
                       </div>
 
-                      <div class="justifica-avaliacao hidden">
+                      <div class="justifica-avaliacao" v-if="evaluationValue">
                         <textarea
                           placeholder="Justifique a avaliação do pense e aja."
                           name="justificativa-avaliacao"
                           id="justificativa-avaliacao"
+                          v-model="justification"
                         ></textarea>
                       </div>
                     </div>
 
                     <!-- Flags -->
-                    <div class="avaliar-card-flags">
-                      <div class="avaliar-flags-content">
-                        <label class="avaliar-toggle">
-                          <input type="checkbox" id="em-espera" />
+                    <div class="avaliar-card-flags" v-if="getUserRole()">
+                      <div
+                        class="row p-3 d-flex justify-content-around align-items-center"
+                      >
+                        <label class="avaliar-toggle col-md-4">
+                          <input
+                            type="checkbox"
+                            id="em-espera"
+                            v-model="emEspera"
+                          />
                           <span class="avaliar-toggle-slider"></span>
                           <span class="avaliar-toggle-label">
                             <i class="bi bi-hourglass"></i>
@@ -348,46 +415,62 @@
                           </span>
                         </label>
 
-                        <label class="avaliar-toggle">
-                          <input type="checkbox" id="replicavel" />
+                        <label class="avaliar-toggle col-md-4">
+                          <input
+                            type="checkbox"
+                            id="replicavel"
+                            v-model="replicavel"
+                          />
                           <span class="avaliar-toggle-slider"></span>
                           <span class="avaliar-toggle-label">
                             <i class="bi bi-diagram-3"></i>
                             Replicável
                           </span>
                         </label>
+
+                        <v-combobox
+                          v-model="a3PenseAja"
+                          :items="opcoesA3"
+                          item-title="label"
+                          item-value="value"
+                          label="A3 Mãe"
+                          clearable
+                          return-object
+                          class="col-md-4 mt-2"
+                          variant="outlined"
+                          color="red"
+                          density="compact"
+                        />
                       </div>
-                      <select id="a3-penseAja" class="form-select">
-                        <option value="" selected disabled id="escolha">
-                          Selecione
-                        </option>
-                        <option value="lean">LEAN</option>
-                        <option value="pessoas">PESSOAS</option>
-                        <option value="digitalizacao">DIGITALIZAÇÃO</option>
-                        <option value="produtividade">PRODUTIVIDADE</option>
-                        <option value="padronizacao">PADRONIZAÇÃO</option>
-                        <option value="comunicacao">COMUNICAÇÃO</option>
-                        <option value="ssma">SSMA</option>
-                        <option value="orcamento">ORÇAMENTO</option>
-                        <option value="qualidade">QUALIDADE</option>
-                      </select>
                     </div>
                   </div>
 
-                  <!-- Footer -->
-                  <div class="avaliar-footer">
+                  <!-- Action Buttons -->
+                  <div class="avaliar-footer" v-if="getUserRole()">
                     <div class="avaliar-actions">
-                      <button class="avaliar-btn avaliar-btn-aprovar">
+                      <button
+                        @click="handleEvaluationValue('approve', item)"
+                        class="avaliar-btn avaliar-btn-aprovar"
+                        :class="setButtonPermission(item)"
+                      >
                         <i class="bi bi-check-circle"></i>
                         <span>Aprovar</span>
                       </button>
 
-                      <button class="avaliar-btn avaliar-btn-reprovar">
+                      <button
+                        @click="handleEvaluationValue('reprove', item)"
+                        class="avaliar-btn avaliar-btn-reprovar"
+                        :class="setButtonPermission(item)"
+                      >
                         <i class="bi bi-x-circle"></i>
                         <span>Reprovar</span>
                       </button>
 
-                      <button class="avaliar-btn avaliar-btn-excluir">
+                      <button
+                        @click="handleEvaluationValue('exclude', item)"
+                        class="avaliar-btn avaliar-btn-excluir"
+                        :class="setButtonPermission(item)"
+                      >
                         <i class="bi bi-trash"></i>
                         <span>Excluir</span>
                       </button>
@@ -409,13 +492,19 @@
       </template>
     </RecycleScroller>
   </div>
+
+  <Notification ref="notification" />
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, reactive } from "vue";
 import { RecycleScroller } from "vue-virtual-scroller";
 import axios from "axios";
 import { useUserStore } from "@/stores/userStore";
+import { evaluatePenseAja } from "@/services/evaluatePenseAjaService";
+import Notification from "./Notification.vue";
+
+const notification = ref(null);
 
 // Carrega dados do usuario se estiver logado
 const user = useUserStore();
@@ -428,12 +517,17 @@ const formateName = (name) => {
   return names[0];
 };
 
-const props = defineProps({
-  filterText: { type: String, default: "" },
+const penseAjas = ref([]);
+const filters = reactive({
+  name: null,
+  sector: null,
+  manager: null,
+  project: null,
+  turno: null,
+  status: null,
 });
 
-const penseAjas = ref([]);
-
+const beforeAfter = ref(false);
 const fetchData = async () => {
   const office = "SEST";
   const { data } = await axios.get(`http://localhost:2512/pense-aja/${office}`);
@@ -441,40 +535,166 @@ const fetchData = async () => {
 };
 onMounted(fetchData);
 
-const setPenseAjaStatus = (penseAja) => {
-  if (penseAja.status_gerente === "REPROVAR") {
-    return "reprovado";
-  }
-  if (penseAja.em_espera === "1") {
-    return "em-espera";
-  }
-  if (!penseAja.gerente_aprovador && !penseAja.analista_avaliador) {
-    return "sem-ambos";
-  }
-  if (!penseAja.gerente_aprovador) {
-    return "sem-gerente";
-  }
-  if (!penseAja.analista_avaliador) {
-    return "sem-analista";
-  }
-  if (penseAja.gerente_aprovador && penseAja.analista_avaliador) {
-    return "avaliado";
-  }
-  return "nao-avaliado";
-};
+const filterOptions = computed(() => {
+  // primeiro anota cada item sem mutar o original
+  const annotated = penseAjas.value.map(item => {
+    const { status } = computeStatusData(item)
+    return { ...item, status }
+  })
 
-const filteredItems = computed(() => {
-  const term = props.filterText.trim().toLowerCase();
-  if (!term) return penseAjas.value;
-  return penseAjas.value.filter(
-    (i) =>
-      i.nome_projeto.toLowerCase().includes(term) ||
-      i.setor.toLowerCase().includes(term) ||
-      i.gerente.toLowerCase().includes(term)
-  );
+  const unique = key =>
+    Array.from(new Set(annotated.map(i => i[key])))
+      .filter(v => v).sort()
+
+  return {
+    names:    unique("nome"),
+    sectors:  unique("setor"),
+    managers: unique("gerente"),
+    projects: unique("nome_projeto"),
+    turnos:   unique("turno"),
+    status:   unique("status")
+  }
+})
+
+
+// Filtra a lista de pense e ajas de acordo com os filtros
+const filteredList = computed(() => {
+  const term = filters?.name?.trim()?.toLowerCase();
+
+  return penseAjas.value.filter((item) => {
+    const nome = (item.nome || "").toLowerCase();
+    const setor = item.setor || "";
+    const gerente = item.gerente || "";
+    const projeto = item.nome_projeto || "";
+    const turno = item.turno || "";
+
+    // Obtém o status do pense e aja
+    const { status } = computeStatusData(item)
+
+    const byName = !term || nome.includes(term);
+    const bySector = !filters.sector || setor === filters.sector;
+    const byManager = !filters.manager || gerente === filters.manager;
+    const byProject = !filters.project || projeto === filters.project;
+    const byTurno = !filters.turno || turno === filters.turno;
+    const byStatus = !filters.status || status === filters.status
+
+    return byName && bySector && byManager && byProject && byTurno && byStatus;
+  });
 });
 
-const beforeAfter = ref(false);
+function computeStatusData(penseAja) {
+  let status
+
+  if (penseAja.status_gerente === "REPROVAR") {
+    status = "Reprovado"
+  }
+  else if (penseAja.em_espera === "1") {
+    status = "Em Espera"
+  }
+  else if (!penseAja.gerente_aprovador && !penseAja.analista_avaliador) {
+    status = "Sem Análise"
+  }
+  else if (!penseAja.gerente_aprovador) {
+    status = "Visto pelo Analista"
+  }
+  else if (!penseAja.analista_avaliador) {
+    status = "Visto pelo Gerente"
+  }
+  else if (penseAja.gerente_aprovador && penseAja.analista_avaliador) {
+    status = "Avaliado"
+  }
+  else {
+    status = "Não Avaliado"
+  }
+
+  // mapeia status → classe (exemplo)
+  const classMap = {
+    "Reprovado":           "reprovado",
+    "Em Espera":           "em-espera",
+    "Sem Análise":         "sem-ambos",
+    "Visto pelo Analista": "sem-gerente",
+    "Visto pelo Gerente":  "sem-analista",
+    "Avaliado":            "avaliado",
+    "Não Avaliado":        "nao-avaliado"
+  }
+
+  return {
+    status,
+    className: classMap[status] || ""
+  }
+}
+
+const getUserRole = () => {
+  if (!user.matricula) {
+    return false;
+  }
+  if (
+    user.funcao?.toLowerCase().includes("analista") ||
+    user.funcao?.toLowerCase().includes("gerente") ||
+    user.funcao?.toLowerCase().includes("automacao")
+  ) {
+    return true;
+  }
+};
+
+// Avaliação
+const classifications = {
+  A: { name: "Avançada", value: 3 },
+  B: { name: "Intermediária", value: 2 },
+  C: { name: "Básica", value: 1 },
+};
+
+const evaluationValue = ref(null);
+const emEspera = ref(false);
+const replicavel = ref(false);
+const a3PenseAja = ref(null);
+const opcoesA3 = [
+  { value: "lean", label: "LEAN" },
+  { value: "pessoas", label: "PESSOAS" },
+  { value: "digitalizacao", label: "DIGITALIZAÇÃO" },
+  { value: "produtividade", label: "PRODUTIVIDADE" },
+  { value: "padronizacao", label: "PADRONIZAÇÃO" },
+  { value: "comunicacao", label: "COMUNICAÇÃO" },
+  { value: "ssma", label: "SSMA" },
+  { value: "orcamento", label: "ORÇAMENTO" },
+  { value: "qualidade", label: "QUALIDADE" },
+];
+const justification = ref("");
+const setEvaluationValue = (value) => {
+  evaluationValue.value = value;
+};
+
+const setButtonPermission = (penseAja) => {
+  if (
+    penseAja.status_analista !== "0" &&
+    user.funcao?.toLowerCase().includes("analista")
+  ) {
+    return "disabled";
+  }
+  if (
+    penseAja.status_gerente !== "0" &&
+    user.funcao?.toLowerCase().includes("gerente")
+  ) {
+    return "disabled";
+  }
+  return "";
+};
+
+const handleEvaluationValue = async (action, penseAja) => {
+  const dassOffice = "SEST";
+  const evaluationData = {
+    id: penseAja.id,
+    status: action,
+    emEspera: emEspera.value ? "1" : "0",
+    replicavel: replicavel.value ? "1" : "0",
+    a3Mae: a3PenseAja.value?.value,
+    avaliacao: evaluationValue?.value,
+    justificativa: justification.value,
+    dassOffice: dassOffice,
+  };
+
+  await evaluatePenseAja(evaluationData, notification);
+};
 </script>
 
 <style scoped>

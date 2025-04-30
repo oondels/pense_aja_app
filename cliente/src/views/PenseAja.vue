@@ -9,33 +9,19 @@
         role="region"
       >
         <header class="penseaja-list-header">
-          <h2 class="penseaja-list-title">Projetos Pense&Aja</h2>
+          <h2 class="penseaja-list-title w-100 text-center">Projetos Pense&Aja</h2>
         </header>
 
-        <!-- toolbar de busca -->
-        <div class="list-toolbar">
-          <svg class="toolbar-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M9.5 3A6.5 6.5 0 1 0 16 9.5C16 11.11 15.47 12.61 14.55 13.8L19.707 19L18.293 20.414L13.138 15.257A6.472 6.472 0 0 0 9.5 16A6.5 6.5 0 0 0 9.5 3M9.5 5A4.5 4.5 0 1 1 5 9.5A4.505 4.505 0 0 1 9.5 5Z" /></svg>
-          <input
-            type="search"
-            v-model="search"
-            placeholder="Buscar projeto..."
-            class="toolbar-input"
-          />
-        </div>
-
-        <ListaPenseAja
-          :filter-text="search"
-        />
+        <ListaPenseAja />
       </section>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import ListaPenseAja from '../components/ListaPenseAja.vue'
+import { ref } from "vue";
+import ListaPenseAja from "../components/ListaPenseAja.vue";
 
-const search = ref('')
 </script>
 
 <style scoped>
@@ -48,8 +34,12 @@ const search = ref('')
 }
 
 @keyframes bg-move {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
 }
 
 .penseaja-list-section.container {

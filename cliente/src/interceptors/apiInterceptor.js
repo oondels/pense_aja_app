@@ -58,7 +58,6 @@ export function attachInterceptors(api, apiAuth) {
 
   api.interceptors.request.use(async (config) => {
     if (
-      isTokenNearExpiration() &&
       !isRefreshing &&
       !config.url.includes("/auth/token/refresh")
     ) {

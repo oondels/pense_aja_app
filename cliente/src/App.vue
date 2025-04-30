@@ -20,4 +20,11 @@ onMounted(() => {
 body {
   font-family: 'Poppins', sans-serif;
 }
+
+.disabled {
+  opacity: 0.7;
+  pointer-events: none;
+  filter: grayscale(60%);
+  cursor: not-allowed !important;
+}
 </style>

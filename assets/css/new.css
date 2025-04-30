@@ -1,50 +1,5 @@
 /* Notificação */
-.notification {
-  position: fixed;
-  top: -150px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 400px;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  z-index: 10000;
-  transition: top 0.5s ease, opacity 0.5s ease;
-  opacity: 0;
-}
 
-.notification.show {
-  top: 30px;
-  opacity: 1;
-}
-
-.notification.hidden {
-  display: none;
-}
-
-.notification-inner {
-  display: flex;
-  align-items: center;
-  padding: 20px;
-}
-
-.notification-icon {
-  font-size: 36px;
-  margin-right: 15px;
-}
-
-.notification-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.notification-message {
-  margin: 5px 0 0;
-  font-size: 16px;
-}
 
 /* Menu Principal */
 header {

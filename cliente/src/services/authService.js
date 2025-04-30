@@ -1,6 +1,6 @@
 import { authApi } from "./httpClient";
 
-export const login = (username, password, loading) => {
+export const login = (username, password, loading, notification) => {
   loading.value = true
 
   authApi.post("/auth/login", { usuario: username, senha: password },)
@@ -13,17 +13,29 @@ export const login = (username, password, loading) => {
       sessionStorage.setItem("usuario", decoded.usuario);
       sessionStorage.setItem("nome", decoded.nome);
       sessionStorage.setItem("funcao", decoded.funcao);
+      sessionStorage.setItem("gerente", decoded.gerente);
+      sessionStorage.setItem("setor", decoded.setor);
       sessionStorage.setItem("expirationTime", data.tokenExpirationTime)
 
-      alert("Success")
+      notification.value.showPopup(
+        "success",
+        "Sucesso",
+        "Login realizado com sucesso!",
+        1600
+      );
+
       setTimeout(() => {
         window.location.reload();
-      }, 1600);
+      }, 2000);
     })
     .catch((error) => {
+      notification.value.showPopup(
+        "error",
+        "Erro",
+        "Erro ao realizar login! Tente novamente.",
+        3000
+      );
       console.error("Erro ao fazer login:", error);
-
-      alert("Erro ao fazer login")
     })
     .finally(() => {
       loading.value = false

@@ -15,7 +15,7 @@
 
     <template v-slot:default="{ isActive }">
       <!-- Login -->
-      <div v-if="!user.matricula" class="login-popup" style="z-index: 9999">
+      <div v-if="!user?.matricula" class="login-popup" style="z-index: 9999">
         <div class="login-overlay" @click="close"></div>
         <div class="login-container">
           <div class="login-header">
@@ -83,41 +83,61 @@
       </div>
 
       <!-- Logout -->
-    <div v-else id="logout-popup" class="login-popup">
-      <div class="login-overlay"></div>
-      <div class="login-container">
-        <div class="login-header">
-          <div class="unidade-popup-icon login-imagem">
-            <img src="/assets/img/dass.png"></img>
-          </div>
-          <h2>Dass Pense&Aja</h2>
-          <button @click="isActive.value = false" class="login-close" id="logout-close">&times;</button>
-        </div>
-
-        <div class="login-form">
-          <div class="login-field">
-            <label for="login-user">Usuário: {{ user?.usuario }}<span class="usuario-name"></span></label>
-            <label for="login-user">Matrícula: {{ user?.matricula }}<span class="user-matricula"></span></label>
-          </div>
-
-          <div class="login-actions">
-            <button @click="handleLogout" type="button" id="logout" class="btn btn-outline-danger">
-              Sair
-              <span class="spinner-logout hidden"></span>
+      <div v-else id="logout-popup" class="login-popup">
+        <div class="login-overlay"></div>
+        <div class="login-container">
+          <div class="login-header">
+            <div class="unidade-popup-icon login-imagem">
+              <img src="/assets/img/dass.png" />
+            </div>
+            <h2>Dass Pense&Aja</h2>
+            <button
+              @click="isActive.value = false"
+              class="login-close"
+              id="logout-close"
+            >
+              &times;
             </button>
+          </div>
+
+          <div class="login-form">
+            <div class="login-field">
+              <label for="login-user"
+                >Usuário: {{ user?.usuario }}<span class="usuario-name"></span
+              ></label>
+              <label for="login-user"
+                >Matrícula: {{ user?.matricula
+                }}<span class="user-matricula"></span
+              ></label>
+            </div>
+
+            <div class="login-actions">
+              <button
+                @click="handleLogout"
+                type="button"
+                id="logout"
+                class="btn btn-outline-danger"
+              >
+                Sair
+                <span class="spinner-logout hidden"></span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </template>
   </v-dialog>
+
+  <Notification ref="notification" />
 </template>
 
 <script setup>
 import { ref, defineEmits, watch } from "vue";
-import { login, logout } from "@/services/auth.js";
-import {useUserStore} from "@/stores/userStore.js";
+import { login, logout } from "@/services/authService.js";
+import { useUserStore } from "@/stores/userStore.js";
+import Notification from "@/components/Notification.vue";
 
+const notification = ref(null);
 // Carregad dados do usuário se estiver logado
 const user = useUserStore();
 
@@ -128,12 +148,12 @@ const loading = ref(false);
 const warning = ref("");
 
 const handleLogin = async () => {
-  await login(username.value, password.value, loading);
+  await login(username.value, password.value, loading, notification);
 };
 
 const handleLogout = async () => {
   await logout(loading);
-}
+};
 </script>
 
 <style scoped>
