@@ -63,10 +63,9 @@ function scrollToTop() {
 
 <style scoped>
 .app-footer {
-  background-color: #111; /* tom escuro */
+  background-color: #111;
   color: #eee;
   padding: 2rem 1rem;
-  margin-top: 3rem;
 }
 
 .footer-container {

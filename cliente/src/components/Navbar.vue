@@ -36,37 +36,8 @@
         <div class="button-group">
           <Store />
 
-          <button id="openLista" class="action-button">
-            <div class="button-icon-container">
-              <img
-                src="/assets/img/lista.png"
-                alt="lista"
-                class="button-icon"
-              />
-            </div>
-            <span class="button-label">Listagem</span>
-          </button>
+          <RegisterPenseAja />
 
-          <button id="openMenu" class="action-button">
-            <div class="button-icon-container">
-              <img
-                id="imgPenseAja"
-                src="/assets/img/icons/idea-off.png"
-                alt="ideiaoff"
-                class="button-icon"
-                data-src-normal="/assets/img/icons/idea-off.png"
-                data-src-hover="/assets/img/icons/idea-on.png"
-              />
-            </div>
-            <span class="button-label">Cadastrar</span>
-          </button>
-
-          <!-- <button id="openUser" class="action-button" @click="openLogin">
-            <div class="button-icon-container">
-              <img src="/assets/img/icons/login.png" alt="user" class="button-icon" />
-            </div>
-            <span class="button-label">Login</span>
-          </button> -->
           <Login />
         </div>
       </div>
@@ -84,6 +55,7 @@
 import { ref } from "vue";
 import Login from "./Login.vue";
 import Store from "./Store.vue"
+import RegisterPenseAja from "./RegisterPenseAja.vue";
 import { useUserStore } from "@/stores/userStore";
 
 const user = useUserStore();

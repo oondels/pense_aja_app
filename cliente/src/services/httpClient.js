@@ -12,4 +12,9 @@ export const api = axios.create({
   withCredentials: true
 })
 
+export const commonApi = axios.create({
+  baseURL: `${ip}:2512`,
+  withCredentials: true
+})
+
 attachInterceptors(api, authApi)

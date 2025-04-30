@@ -210,6 +210,7 @@ const handleUserData = async () => {
 </script>
 
 <style scoped>
+
 .store-container {
   width: 100%;
   height: 100%;

@@ -41,5 +41,5 @@ export const useUserStore = defineStore('user', () => {
     return 'Usuário'
   }
 
-  return { matricula, nome, funcao, usuario, setor, haveEmail, carregarUsuario, limparUsuario, formattedUserName }
+  return { matricula, nome, funcao, usuario, setor, gerente, haveEmail, carregarUsuario, limparUsuario, formattedUserName }
 })

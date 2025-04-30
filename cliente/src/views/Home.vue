@@ -47,12 +47,6 @@
         </div>
       </section>
     </main>
-    
-    <footer class="home-footer">
-      <div class="container">
-        <p>&copy; 2025 Pense & Aja. Todos os direitos reservados.</p>
-      </div>
-    </footer>
   </div>
 </template>
 
