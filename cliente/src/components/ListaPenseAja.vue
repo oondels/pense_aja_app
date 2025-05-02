@@ -115,9 +115,9 @@
                 <div class="item-meta">
                   <div class="meta-row">
                     <span class="mdi mdi-account"></span>
-                    <span class="text-ellipsis-2">{{
-                      formateName(item.nome)
-                    }}</span>
+                    <span class="text-ellipsis-2">
+                      {{ formateName(item.nome) }}
+                    </span>
                   </div>
                   <div class="meta-row">
                     <span class="mdi mdi-calendar-clock"></span>
@@ -176,10 +176,30 @@
                   <!-- Main Content -->
                   <div class="avaliar-body">
                     <!-- Status Badge -->
-                    <div class="avaliar-status pending">
-                      <i class="bi bi-hourglass-split"></i>
-                      <span class="pense-aja-status">
-                        Aguardando avaliação
+                    <div class="avaliar-status">
+                      <span class="pense-aja-status p-2 rounded-lg" :class="computeStatusData(item).className">
+                        <template v-if="computeStatusData(item).status === 'Reprovado'">
+                          <i class="bi bi-x-octagon-fill"></i>
+                        </template>
+                        <template v-else-if="computeStatusData(item).status === 'Em Espera'">
+                          <i class="bi bi-hourglass-split"></i>
+                        </template>
+                        <template v-else-if="computeStatusData(item).status === 'Sem Análise'">
+                          <i class="bi bi-eye-slash"></i>
+                        </template>
+                        <template v-else-if="computeStatusData(item).status === 'Visto pelo Analista'">
+                          <i class="bi bi-person-badge"></i>
+                        </template>
+                        <template v-else-if="computeStatusData(item).status === 'Visto pelo Gerente'">
+                          <i class="bi bi-person-check"></i>
+                        </template>
+                        <template v-else-if="computeStatusData(item).status === 'Avaliado'">
+                          <i class="bi bi-check-circle-fill"></i>
+                        </template>
+                        <template v-else>
+                          <i class="bi bi-question-circle"></i>
+                        </template>
+                        {{ computeStatusData(item).status }}
                       </span>
                     </div>
 
@@ -350,7 +370,11 @@
                     </div>
 
                     <!-- Avaliação -->
-                    <div class="avaliar-card-nivel" v-if="getUserRole()">
+                    <!-- {{checkRoleAndEvaluation(item)}} -->
+                    <div
+                      class="avaliar-card-nivel"
+                      v-if="getUserPermission(user) && checkRoleAndEvaluation(item)"
+                    >
                       <div class="avaliar-card-header">
                         <i class="bi bi-trophy"></i>
                         <h3>
@@ -398,7 +422,10 @@
                     </div>
 
                     <!-- Flags -->
-                    <div class="avaliar-card-flags" v-if="getUserRole()">
+                    <div
+                      class="avaliar-card-flags"
+                      v-if="getUserPermission(user) && checkRoleAndEvaluation(item)"
+                    >
                       <div
                         class="row p-3 d-flex justify-content-around align-items-center"
                       >
@@ -446,7 +473,7 @@
                   </div>
 
                   <!-- Action Buttons -->
-                  <div class="avaliar-footer" v-if="getUserRole()">
+                  <div class="avaliar-footer" v-if="getUserPermission(user) && checkRoleAndEvaluation(item)">
                     <div class="avaliar-actions">
                       <button
                         @click="handleEvaluationValue('approve', item)"
@@ -503,19 +530,14 @@ import axios from "axios";
 import { useUserStore } from "@/stores/userStore";
 import { evaluatePenseAja } from "@/services/evaluatePenseAjaService";
 import Notification from "./Notification.vue";
+import { getUserPermission } from "@/services/userService";
+import { setUserRole } from "@/services/userService";
+import { formateName } from "@/services/userService";
 
 const notification = ref(null);
 
 // Carrega dados do usuario se estiver logado
 const user = useUserStore();
-
-const formateName = (name) => {
-  const names = name.split(" ");
-  if (names.length > 1) {
-    return `${names[0]} ${names[names.length - 1]}`;
-  }
-  return names[0];
-};
 
 const penseAjas = ref([]);
 const filters = reactive({
@@ -532,30 +554,42 @@ const fetchData = async () => {
   const office = "SEST";
   const { data } = await axios.get(`http://localhost:2512/pense-aja/${office}`);
   penseAjas.value = data.dados;
+  
 };
 onMounted(fetchData);
 
 const filterOptions = computed(() => {
   // primeiro anota cada item sem mutar o original
-  const annotated = penseAjas.value.map(item => {
-    const { status } = computeStatusData(item)
-    return { ...item, status }
-  })
+  const annotated = penseAjas.value.map((item) => {
+    const { status } = computeStatusData(item);
+    return { ...item, status };
+  });
 
-  const unique = key =>
-    Array.from(new Set(annotated.map(i => i[key])))
-      .filter(v => v).sort()
+  const unique = (key) =>
+    Array.from(new Set(annotated.map((i) => i[key])))
+      .filter((v) => v)
+      .sort();
 
   return {
-    names:    unique("nome"),
-    sectors:  unique("setor"),
+    names: unique("nome"),
+    sectors: unique("setor"),
     managers: unique("gerente"),
     projects: unique("nome_projeto"),
-    turnos:   unique("turno"),
-    status:   unique("status")
-  }
-})
+    turnos: unique("turno"),
+    status: unique("status"),
+  };
+});
 
+const checkRoleAndEvaluation = (penseAja) => { 
+  if (setUserRole(user) === 'analista' && penseAja.analista_avaliador) {
+    return false;
+  }
+  if (setUserRole(user) === 'analista' && penseAja.gerente_aprovador) {
+    return false;
+  }
+
+  return true
+}
 
 // Filtra a lista de pense e ajas de acordo com os filtros
 const filteredList = computed(() => {
@@ -569,73 +603,56 @@ const filteredList = computed(() => {
     const turno = item.turno || "";
 
     // Obtém o status do pense e aja
-    const { status } = computeStatusData(item)
+    const { status } = computeStatusData(item);
 
     const byName = !term || nome.includes(term);
     const bySector = !filters.sector || setor === filters.sector;
     const byManager = !filters.manager || gerente === filters.manager;
     const byProject = !filters.project || projeto === filters.project;
     const byTurno = !filters.turno || turno === filters.turno;
-    const byStatus = !filters.status || status === filters.status
+    const byStatus = !filters.status || status === filters.status;
 
     return byName && bySector && byManager && byProject && byTurno && byStatus;
   });
 });
 
 function computeStatusData(penseAja) {
-  let status
+  let status;
 
   if (penseAja.status_gerente === "REPROVAR") {
-    status = "Reprovado"
-  }
-  else if (penseAja.em_espera === "1") {
-    status = "Em Espera"
-  }
-  else if (!penseAja.gerente_aprovador && !penseAja.analista_avaliador) {
-    status = "Sem Análise"
-  }
-  else if (!penseAja.gerente_aprovador) {
-    status = "Visto pelo Analista"
-  }
-  else if (!penseAja.analista_avaliador) {
-    status = "Visto pelo Gerente"
-  }
-  else if (penseAja.gerente_aprovador && penseAja.analista_avaliador) {
-    status = "Avaliado"
-  }
-  else {
-    status = "Não Avaliado"
+    status = "Reprovado";
+  } else if (penseAja.em_espera === "1") {
+    status = "Em Espera";
+  } else if (!penseAja.gerente_aprovador && !penseAja.analista_avaliador) {
+    status = "Sem Análise";
+  } else if (!penseAja.gerente_aprovador) {
+    status = "Visto pelo Analista";
+  } else if (!penseAja.analista_avaliador) {
+    status = "Visto pelo Gerente";
+  } else if (penseAja.gerente_aprovador && penseAja.analista_avaliador) {
+    status = "Avaliado";
+  } else {
+    status = "Não Avaliado";
   }
 
   // mapeia status → classe (exemplo)
   const classMap = {
-    "Reprovado":           "reprovado",
-    "Em Espera":           "em-espera",
-    "Sem Análise":         "sem-ambos",
+    Reprovado: "reprovado",
+    "Em Espera": "em-espera",
+    "Sem Análise": "sem-ambos",
     "Visto pelo Analista": "sem-gerente",
-    "Visto pelo Gerente":  "sem-analista",
-    "Avaliado":            "avaliado",
-    "Não Avaliado":        "nao-avaliado"
-  }
+    "Visto pelo Gerente": "sem-analista",
+    Avaliado: "avaliado",
+    "Não Avaliado": "nao-avaliado",
+  };
 
   return {
     status,
-    className: classMap[status] || ""
-  }
+    className: classMap[status] || "",
+  };
 }
 
-const getUserRole = () => {
-  if (!user.matricula) {
-    return false;
-  }
-  if (
-    user.funcao?.toLowerCase().includes("analista") ||
-    user.funcao?.toLowerCase().includes("gerente") ||
-    user.funcao?.toLowerCase().includes("automacao")
-  ) {
-    return true;
-  }
-};
+const canEvaluate = () => {};
 
 // Avaliação
 const classifications = {

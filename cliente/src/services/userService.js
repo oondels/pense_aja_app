@@ -20,3 +20,39 @@ export const getUserData = async (registration, userData, loading = null, notifi
     if (loading) loading.value = false
   }
 }
+
+export const setUserRole = (user) => {
+  if (!user.matricula) {
+    return "common-user";
+  }
+  if (user.funcao?.toLowerCase().includes("analista")) {
+    return "analista";
+  }
+  if (user.funcao?.toLowerCase().includes("gerente")) {
+    return "gerente";
+  }
+  if (user.funcao?.toLowerCase().includes("automacao")) {
+    return "automacao";
+  }
+};
+
+export const getUserPermission = (user) => {
+  if (!user?.matricula) {
+    return false;
+  }
+  if (
+    user.funcao?.toLowerCase().includes("analista") ||
+    user.funcao?.toLowerCase().includes("gerente") ||
+    user.funcao?.toLowerCase().includes("automacao")
+  ) {
+    return true;
+  }
+};
+
+export const formateName = (name) => {
+  const names = name.split(" ");
+  if (names.length > 1) {
+    return `${names[0]} ${names[names.length - 1]}`;
+  }
+  return names[0];
+};

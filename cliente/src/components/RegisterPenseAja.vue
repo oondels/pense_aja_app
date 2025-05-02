@@ -155,7 +155,16 @@
 
               <!-- AI button -->
               <div class="tooltip-container">
-                <button @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" @click="handleImproveText" id="ai-button" class="ai-enhance-button" type="button" :disabled="loadingImprove">
+                <button
+                  @mouseenter="showTooltip = true"
+                  @mouseleave="showTooltip = false"
+                  @click="handleImproveText"
+                  id="ai-button"
+                  class="ai-enhance-button"
+                  :class="disableIaButton ? 'disabled' : ''"
+                  type="button"
+                  :disabled="loadingImprove"
+                >
                   <div class="ai-enhance-icon">
                     <i class="bi bi-robot"></i>
                     <i class="bi bi-stars icon-spark"></i>
@@ -164,13 +173,19 @@
                   <span v-else class="spinner-ai"></span>
                   <div class="ai-enhance-effect"></div>
                 </button>
-                
-                <div @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" :class="showTooltip ? 'visible' : ''" class="ai-tooltip">
+
+                <div
+                  @mouseenter="showTooltip = true"
+                  @mouseleave="showTooltip = false"
+                  :class="showTooltip ? 'visible' : ''"
+                  class="ai-tooltip"
+                >
                   <strong>
                     <span class="lamp-icon bi bi-lightbulb"></span>
                     Dica inteligente!
                   </strong>
-                  Revise seu texto com inteligência artificial para facilitar a avaliação!
+                  Revise seu texto com inteligência artificial para facilitar a
+                  avaliação!
                 </div>
               </div>
             </div>
@@ -270,8 +285,9 @@ const user = useUserStore();
 const handleUserClick = async () => {
   await nextTick();
 
+  
   if (user?.matricula) {
-    await getUserData(user.value.matricula, userData, loading);
+    await getUserData(user.matricula, userData, loading);
   }
 };
 
@@ -299,10 +315,10 @@ const serachUser = async (e) => {
 };
 
 const penseAjaData = ref({
-  projectName: null,
+  projectName: "Melhoria do processo",
   projectDate: null,
-  situationBefore: null,
-  situationNow: null,
+  situationBefore: "NA COSTURA DO DW12, A OPERADORA SE QUEIXAVA QUE A MÁQUINA DE 1 AG DA ANTIGA NÃO CONSEGUIA ACOMPANHAR O RITMO DA PRODUÇÃO, NA OPERAÇÃO DA COSTURA DA BOCA DA LINGUETA. ASSIM FICANDO ESTOCADA DE SERVIÇO E GERANDO PERDA DE PRODUÇÃO.",
+  situationNow: "DEPOIS DE UM ACOMPANHAMENTO, FOI NOTADO QUE A COSTURA DO TRASEIRO ERA A MAIS SIMPLES DO SETOR, POIS ERA APENAS UMA COSTURA EM LINHA RETA, ASSIM PODENDO FAZER UMA TROCA DENTRO DO PRÓPRIO SETOR, ONDE A LÍDER ACEITOU A SUGESTÃO E AS OPERADORAS TAMBÉM. SENDO ASSIM, GANHANDO PRODUTIVIDADE.",
   setor: null,
   perdas: [],
   ganhos: {
@@ -310,22 +326,50 @@ const penseAjaData = ref({
     justificativa: null,
   },
 });
+
+const replaceText = async (text, component) => {
+  penseAjaData.value[component] = "";
+  for (let i = 0; i < text.length; i++) {
+    penseAjaData.value[component] += text[i];
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+};
+
 const loadingImprove = ref(false);
 const showTooltip = ref(false);
+const disableIaButton = ref(false)
 const handleImproveText = async () => {
-  loadingImprove.value = true;
-  try {
-    // const text = await improveText(
-    //   penseAjaData.value.situationBefore,
-    //   penseAjaData.value.situationNow,
-    //   penseAjaData.value.projectName,
-    //   loadingImprove
-    // );
-    // Se quiser atualizar o campo situationNow, descomente a linha abaixo
-    // if (text) penseAjaData.value.situationNow = text;
-    // console.log(text);
-  } finally {
-    // loadingImprove.value = false;
+  if (!penseAjaData.value.situationBefore || !penseAjaData.value.situationNow) {
+    notification.value.showPopup(
+      "warning",
+      "Atenção!",
+      "Preencha os campos de situação antes de usar a IA.",
+      3000
+    );
+    return;
+  }
+
+  const result = await improveText(
+    penseAjaData.value.situationBefore,
+    penseAjaData.value.situationNow,
+    penseAjaData.value.projectName,
+    loadingImprove
+  );
+
+  if (Object.keys(result).length === 0) {
+    notification.value.showPopup(
+      "error",
+      "Erro!",
+      "Não foi possível melhorar o texto com a IA. Tente novamente mais tarde!",
+      3000
+    );
+    return;
+  }
+
+  disableIaButton.value = true
+  if (Object.keys(result).length > 0) {
+    replaceText(result?.before, "situationBefore");
+    replaceText(result?.after, "situationNow");
   }
 };
 
@@ -717,8 +761,12 @@ const handleRegister = () => {
 }
 
 @keyframes penseaja-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse-gentle {

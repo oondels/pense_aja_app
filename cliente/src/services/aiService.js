@@ -10,7 +10,7 @@ export const improveText = async (situationBefore, situationNow, projectName, lo
       projectName
     })
 
-    return response.data
+    return response.data.result
   } catch (error) {
     console.error("Erro ao melhorar o texto:", error);
   } finally {

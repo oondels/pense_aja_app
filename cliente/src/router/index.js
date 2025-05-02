@@ -6,7 +6,7 @@ import AiMicrofone from '../components/AiTools/AiMicrofone.vue'
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/pense-aja', name: 'Pense & Aja', component: PenseAja },
-  { path: '/mic', name: 'Pense & Aja', component: AiMicrofone },
+  { path: '/mic', name: 'Mic', component: AiMicrofone },
 
 ]
 

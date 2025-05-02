@@ -98,4 +98,23 @@ body {
   filter: grayscale(60%);
   cursor: not-allowed !important;
 }
+
+.close-container {
+  background: rgba(231, 76, 60, 0.7);
+  border: none;
+  color: #e74c3c;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.close-container:hover{
+  background: rgba(231, 76, 60, 0.4);
+  transform: rotate(90deg);
+}
 </style>

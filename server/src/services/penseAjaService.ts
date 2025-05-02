@@ -61,7 +61,7 @@ const turnoMap: Record<string, string> = {
 };
 
 export const PenseAjaService = {
-  async getCurrentMonthData(dassOffice: string) {
+  async fetchPenseAja(dassOffice: string) {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonthIndex = currentDate.getMonth();
@@ -83,8 +83,6 @@ export const PenseAjaService = {
     checkDassOffice(dassOffice);
     const client = await pool.connect();
     try {
-      let dbName =
-        dassOffice === "SEST" ? "pense_aja" : `pense_aja_${dassOffice}`;
       const result = await client.query(
         `
         SELECT
@@ -105,31 +103,33 @@ export const PenseAjaService = {
           em_espera,
           createdat AS criado
         FROM
-          pense_aja.${dbName}
+          pense_aja.pense_aja_dass
        WHERE
           excluido = ''
           AND createdat >= date_trunc('year', current_date) - INTERVAL '1 year'
           AND createdat <  date_trunc('day', current_date) + INTERVAL '1 day'
+          AND unidade_dass = $1
         ORDER BY
           criado DESC;
       `,
+        [dassOffice]
       );
 
       const filterQuery = await client.query(
         `
         SELECT
-        (SELECT array_agg(DISTINCT gerente) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+        (SELECT array_agg(DISTINCT gerente) FROM pense_aja.pense_aja_dass WHERE excluido = '' AND createdat BETWEEN $1 AND $2 AND unidade_dass = $3)
         AS gerentes,
-        (SELECT array_agg(DISTINCT nome) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+        (SELECT array_agg(DISTINCT nome) FROM pense_aja.pense_aja_dass WHERE excluido = '' AND createdat BETWEEN $1 AND $2 AND unidade_dass = $3)
         AS nomes,
-        (SELECT array_agg(DISTINCT setor) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+        (SELECT array_agg(DISTINCT setor) FROM pense_aja.pense_aja_dass WHERE excluido = '' AND createdat BETWEEN $1 AND $2 AND unidade_dass = $3)
         AS setores,
-        (SELECT array_agg(DISTINCT nome_projeto) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+        (SELECT array_agg(DISTINCT nome_projeto) FROM pense_aja.pense_aja_dass WHERE excluido = '' AND createdat BETWEEN $1 AND $2 AND unidade_dass = $3)
         AS projetos,
-        (SELECT array_agg(DISTINCT turno) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
+        (SELECT array_agg(DISTINCT turno) FROM pense_aja.pense_aja_dass WHERE excluido = '' AND createdat BETWEEN $1 AND $2 AND unidade_dass = $3)
         AS turnos
       `,
-        [startDate, endDate]
+        [startDate, endDate, dassOffice]
       );
 
       if (filterQuery.rows.length === 0 || result.rows.length === 0) {
@@ -170,100 +170,6 @@ export const PenseAjaService = {
     }
   },
 
-  async getHistoryData(dassOffice: string, filter: SelectFilter) {
-    checkDassOffice(dassOffice);
-
-    const client = await pool.connect();
-    try {
-      const selectedYear = Number(filter.selectedYear);
-      const selectedMonth = Number(filter.selectedMonth);
-      let firstYear: number;
-      let firstMonth: number;
-
-      if (selectedMonth === 0) {
-        firstMonth = 11;
-        firstYear = selectedYear - 1;
-      } else {
-        firstMonth = selectedMonth - 1;
-        firstYear = selectedYear;
-      }
-
-      const firstDate = new Date(firstYear, firstMonth, 28);
-      const lastDate = new Date(selectedYear, selectedMonth, 28);
-
-      let dbName =
-        dassOffice === "SEST" ? "pense_aja" : `pense_aja_${dassOffice}`;
-
-      const historyQuery = await client.query(
-        `
-        SELECT
-          id, data_realizada, fabrica, nome, setor, gerente,
-          nome_projeto, turno, situacao_anterior, situacao_atual,
-          gerente_aprovador, analista_avaliador, status_gerente,
-          status_analista, em_espera, data_realizada as criado
-        FROM pense_aja.${dbName}
-        WHERE excluido = '' AND
-        data_realizada BETWEEN $1 AND $2
-        ORDER BY data_realizada DESC
-      `,
-        [firstDate, lastDate]
-      );
-
-      const filterQuery = await client.query(
-        `
-        SELECT
-          (SELECT array_agg(DISTINCT gerente) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
-          AS gerentes,
-          (SELECT array_agg(DISTINCT nome) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
-          AS nomes,
-          (SELECT array_agg(DISTINCT setor) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
-          AS setores,
-          (SELECT array_agg(DISTINCT nome_projeto) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
-          AS projetos,
-          (SELECT array_agg(DISTINCT turno) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
-          AS turnos
-      `,
-        [firstDate, lastDate]
-      );
-
-      if (filterQuery.rows.length === 0 || historyQuery.rows.length === 0) {
-        return { dados: [], filters: {} };
-      }
-
-      const filterData = filterQuery.rows[0] || {};
-      const history = historyQuery.rows || [];
-
-      // Atualizar referencia de turno
-      if (Object.keys(filterData).length > 0 && filterData.turnos) {
-        filterData.turnos = filterData.turnos.map((turno: string) => {
-          return turnoMap[turno] || "Comercial";
-        });
-      }
-
-      const result = {
-        dados: history,
-        filters: {
-          "3": filterData.nomes,
-          "4": filterData.setores,
-          "5": filterData.gerentes,
-          "6": filterData.projetos,
-          "7": filterData.turnos,
-        },
-      };
-
-      return result;
-    } catch (error) {
-      const messageError =
-        error instanceof Error ? error.message : "Erro desconhecido!";
-      logger.error(
-        "Pense-aja",
-        `Erro ao consultar registros da tabela de histórico: ${messageError}`
-      );
-
-      throw error;
-    }
-  },
-
   async createPenseAja(data: PenseAjaData, dassOffice: string) {
     checkDassOffice(dassOffice);
 
@@ -286,7 +192,6 @@ export const PenseAjaService = {
       data.perdas = [];
     }
 
-    const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
     const perdasLean: Record<string, string> = {
       Superprodução: "super_producao",
       Transporte: "transporte",
@@ -325,17 +230,18 @@ export const PenseAjaService = {
         JSON.stringify(data.ganhos),
         data.ganhoDetalhes || "",
         data.areaMelhoria,
+        dassOffice,
       ];
 
       const newPenseAja = await client.query(
         `
-        INSERT INTO pense_aja.pense_aja${office} (
+        INSERT INTO pense_aja.pense_aja_dass (
           matricula, nome, turno, setor, gerente, nome_projeto, data_realizada,
           situacao_anterior, situacao_atual, super_producao, transporte, processamento, movimento,
           estoque, espera, talento, retrabalho,
-          a3_mae, ganhos, outros_ganhos, fabrica, createdat, updatedat, lider, excluido
+          a3_mae, ganhos, outros_ganhos, fabrica, unidade_dass, createdat, updatedat, lider, excluido
         ) VALUES
-         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, NOW(), NOW(), '', '')
+         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW(), '', '')
         RETURNING nome, nome_projeto, ganhos;`,
         params
       );
@@ -367,7 +273,6 @@ export const PenseAjaService = {
 
   async getPenseAjaById(id: string, dassOffice: string) {
     checkDassOffice(dassOffice);
-    const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
     const client = await pool.connect();
 
     try {
@@ -378,11 +283,10 @@ export const PenseAjaService = {
           situacao_anterior, situacao_atual, nome_projeto, super_producao, transporte, 
           processamento, movimento, estoque, espera, talento, retrabalho, gerente_aprovador, 
           data_aprogerente, analista_avaliador, classificacao, a3_mae, fabrica
-
         FROM 
-          pense_aja.pense_aja${office}
-        WHERE id = $1`,
-        [id]
+          pense_aja.pense_aja_dass
+        WHERE id = $1 AND unidade_dass = $2 AND excluido = ''`,
+        [id, dassOffice]
       );
 
       if (data.rows.length === 0) {
@@ -404,10 +308,6 @@ export const PenseAjaService = {
 
   async evaluatePenseAja(id: string, evaluationData: EvaluationData) {
     checkDassOffice(evaluationData.dassOffice);
-    const office =
-      evaluationData.dassOffice !== "SEST"
-        ? "_" + evaluationData.dassOffice
-        : "";
     const client = await pool.connect();
 
     const checkUserRole = (role: string) => {
@@ -423,7 +323,7 @@ export const PenseAjaService = {
       const userRole = evaluationData.funcao.toLowerCase();
 
       let params: Array<string | boolean> = [];
-      let query = `UPDATE pense_aja.pense_aja${office} SET `;
+      let query = `UPDATE pense_aja.pense_aja_dass SET `;
 
       query += checkUserRole(userRole);
       params.push(statusAvaliacao);
@@ -447,12 +347,14 @@ export const PenseAjaService = {
         params.push(evaluationData.emEspera);
         params.push(evaluationData.replicavel);
       }
+
       query += `
-      WHERE id = $${params.length + 1} 
+      WHERE id = $${params.length + 1} AND unidade_dass = $${params.length + 2} AND excluido = ''
       RETURNING id, data_realizada, fabrica, nome, matricula, setor, gerente, nome_projeto,
       turno, situacao_anterior, situacao_atual, gerente_aprovador, analista_avaliador,
       status_gerente, status_analista, em_espera, createdat AS criado;`;
       params.push(id);
+      params.push(evaluationData.dassOffice);
 
       const result = await client.query(query, params);
       if (result.rows.length === 0) {

@@ -4,11 +4,13 @@
       <div class="banner-left">
         <div class="logo-container">
           <div class="logo-circle">
-            <img
-              src="/assets/img/icons/dass-penseaja.png"
-              alt="Logo Dass"
-              class="logo-img"
-            />
+            <router-link to="/">
+              <img
+                src="/assets/img/icons/dass-penseaja.png"
+                alt="Logo Dass"
+                class="logo-img"
+              />
+            </router-link>
           </div>
         </div>
         <div class="banner-titles">
@@ -54,7 +56,7 @@
 <script setup>
 import { ref } from "vue";
 import Login from "./Login.vue";
-import Store from "./Store.vue"
+import Store from "./Store/Store.vue";
 import RegisterPenseAja from "./RegisterPenseAja.vue";
 import { useUserStore } from "@/stores/userStore";
 

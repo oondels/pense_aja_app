@@ -1,4 +1,3 @@
-<!-- PenseAja.vue -->
 <template>
   <div class="penseaja-app">
     <main>
@@ -19,7 +18,6 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
 import ListaPenseAja from "../components/ListaPenseAja.vue";
 
 </script>

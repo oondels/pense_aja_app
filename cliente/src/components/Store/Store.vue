@@ -110,16 +110,34 @@
             </div>
           </div>
 
+          <!-- Filtro de produtos -->
+          <div class="store-filter-bar">
+            <button :class="['filter-btn', filterType === 'all' ? 'active' : '']" @click="filterType = 'all'">
+              <i class="bi bi-grid"></i> Todos
+            </button>
+            <button :class="['filter-btn', filterType === 'available' ? 'active' : '']" @click="filterType = 'available'">
+              <i class="bi bi-bag-check-fill text-success"></i> Disponíveis
+            </button>
+            <button :class="['filter-btn', filterType === 'unavailable' ? 'active' : '']" @click="filterType = 'unavailable'">
+              <i class="bi bi-emoji-frown-fill text-danger"></i> Não disponíveis
+            </button>
+          </div>
+
           <!-- Produtos -->
           <div class="store-products">
             <h2 class="products-heading">Produtos Disponíveis</h2>
 
             <div class="products-grid">
-              <div v-for="(product, index) in storeProducts" :key="index">
+              <div v-for="(product, index) in filteredProducts" :key="index">
                 <div
                   class="product-card polaroid"
-                  :class="product.points > pontos ? '' : ''"
+                  :class="product.points > pontos ? 'disabled-buy' : ''"
                 >
+                  <div v-if="product.points > pontos" class="disabled-overlay">
+                    <i class="bi bi-emoji-frown-fill unavailable-icon"></i>
+                    <span class="unavailable-text">Pontos Insuficientes</span>
+                    <span class="unavailable-hint">Junte mais pontos para resgatar!</span>
+                  </div>
                   <div class="product-badge">{{ product.points }} pts</div>
                   <div class="product-image-container">
                     <img
@@ -130,10 +148,8 @@
                   </div>
                   <div class="product-info">
                     <h3 class="product-name">{{product.name}}</h3>
-                    <button class="product-button">
-                      <span>Resgatar</span>
-                      <i class="bi bi-bag-plus"></i>
-                    </button>
+
+                    <BuyItem :PenseAjaProduct="product"/>
                   </div>
                 </div>
               </div>
@@ -146,9 +162,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { getUserData } from "@/services/userService";
 import { useUserStore } from "@/stores/userStore";
+import BuyItem from '@/components/Store/BuyItem.vue'
 
 const storeProducts = [
   {
@@ -197,6 +214,17 @@ const user = useUserStore();
 
 const userData = ref(null);
 let pontos = ref(0);
+const filterType = ref('all');
+
+const filteredProducts = computed(() => {
+  if (filterType.value === 'available') {
+    return storeProducts.filter(p => p.points <= pontos.value);
+  } else if (filterType.value === 'unavailable') {
+    return storeProducts.filter(p => p.points > pontos.value);
+  }
+  return storeProducts;
+});
+
 const handleUserData = async () => {
   try {
     if (!userData.value && user.matricula) {
@@ -210,7 +238,6 @@ const handleUserData = async () => {
 </script>
 
 <style scoped>
-
 .store-container {
   width: 100%;
   height: 100%;
@@ -362,11 +389,61 @@ const handleUserData = async () => {
   }
 }
 
-.disabled {
-  opacity: 0.3;
+.disabled-buy {
+  opacity: 0.7;
   pointer-events: none;
-  filter: grayscale(60%);
+  filter: grayscale(90%) blur(1px) brightness(1.1);
   cursor: not-allowed !important;
+  position: relative;
+}
+
+.disabled-buy::after {
+  content: "Pontos Insuficientes";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(220, 53, 69, 0.92);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 8px 18px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.15);
+  z-index: 10;
+  letter-spacing: 1px;
+  pointer-events: none;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.disabled-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: white;
+  border-radius: 12px;
+}
+
+.unavailable-icon {
+  font-size: 2rem;
+}
+
+.unavailable-text {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.unavailable-hint {
+  font-size: 0.9rem;
+  opacity: 0.8;
 }
 
 .store-title {
@@ -561,6 +638,34 @@ const handleUserData = async () => {
   color: #34495e;
 }
 
+/* Filtro de produtos */
+.store-filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  justify-content: center;
+}
+
+.filter-btn {
+  background: #f5f7fa;
+  border: 1px solid #d1d5db;
+  color: #333;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-btn.active, .filter-btn:hover {
+  background: #007aff;
+  color: #fff;
+  border-color: #007aff;
+}
+
 /* Produtos */
 .products-heading {
   font-size: 22px;
@@ -671,36 +776,6 @@ const handleUserData = async () => {
   font-size: 18px;
   font-weight: 600;
   color: #2c3e50;
-}
-
-.product-button {
-  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
-}
-
-.product-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(46, 204, 113, 0.4);
-}
-
-.premium-product .product-button {
-  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-  box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3);
-}
-
-.premium-product .product-button:hover {
-  box-shadow: 0 6px 12px rgba(243, 156, 18, 0.4);
 }
 
 /* Animações para entrada de produtos */
