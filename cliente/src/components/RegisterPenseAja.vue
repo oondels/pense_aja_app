@@ -5,12 +5,15 @@
         @click="handleUserClick"
         v-bind="activatorProps"
         id="openMenu"
+        @mouseover="isHover = true"
+        @mouseleave="isHover = false"
         class="action-button"
+        v-if="!isMobile"
       >
         <div class="button-icon-container">
           <img
             id="imgPenseAja"
-            src="/assets/img/icons/idea-off.png"
+            :src="isHover ? '/assets/img/icons/idea-on.png' : '/assets/img/icons/idea-off.png'"
             alt="ideiaoff"
             class="button-icon"
             data-src-normal="/assets/img/icons/idea-off.png"
@@ -18,6 +21,24 @@
           />
         </div>
         <span class="button-label">Cadastrar</span>
+      </button>
+
+      <button
+        v-else
+        @click="handleUserData"
+        v-bind="activatorProps"
+        class="mobile-action-button"
+        @mouseover="isHover = true"
+        @mouseleave="isHover = false"
+      >
+        <transition name="fade-icon" mode="out-in">
+          <i
+            :key="isHover"
+            class="icon mdi"
+            :class="isHover ? 'mdi-lightbulb-on text-yellow-accent-4' : 'mdi-lightbulb-on-outline'"
+          ></i>
+        </transition>
+        <span class="label">Registrar</span>
       </button>
     </template>
 
@@ -174,6 +195,8 @@
                   <div class="ai-enhance-effect"></div>
                 </button>
 
+                <AiMicrofone/>
+
                 <div
                   @mouseenter="showTooltip = true"
                   @mouseleave="showTooltip = false"
@@ -269,12 +292,27 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from "vue";
+import { ref, nextTick, onMounted, onBeforeUnmount } from "vue";
 import { useUserStore } from "@/stores/userStore";
 import { getUserData } from "@/services/userService";
 import { registerPenseAja } from "@/services/penseAjaService";
 import Notification from "@/components/Notification.vue";
 import { improveText } from "@/services/aiService";
+import AiMicrofone from "./AiTools/AiMicrofone.vue";
+
+const isHover = ref(false);
+const isMobile = ref(false);
+function handleResize() {
+  isMobile.value = window.innerWidth <= 1024;
+}
+onMounted(() => {
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
+});
 
 const notification = ref(null);
 const loading = ref(false);
@@ -285,7 +323,6 @@ const user = useUserStore();
 const handleUserClick = async () => {
   await nextTick();
 
-  
   if (user?.matricula) {
     await getUserData(user.matricula, userData, loading);
   }
@@ -317,8 +354,10 @@ const serachUser = async (e) => {
 const penseAjaData = ref({
   projectName: "Melhoria do processo",
   projectDate: null,
-  situationBefore: "NA COSTURA DO DW12, A OPERADORA SE QUEIXAVA QUE A MÁQUINA DE 1 AG DA ANTIGA NÃO CONSEGUIA ACOMPANHAR O RITMO DA PRODUÇÃO, NA OPERAÇÃO DA COSTURA DA BOCA DA LINGUETA. ASSIM FICANDO ESTOCADA DE SERVIÇO E GERANDO PERDA DE PRODUÇÃO.",
-  situationNow: "DEPOIS DE UM ACOMPANHAMENTO, FOI NOTADO QUE A COSTURA DO TRASEIRO ERA A MAIS SIMPLES DO SETOR, POIS ERA APENAS UMA COSTURA EM LINHA RETA, ASSIM PODENDO FAZER UMA TROCA DENTRO DO PRÓPRIO SETOR, ONDE A LÍDER ACEITOU A SUGESTÃO E AS OPERADORAS TAMBÉM. SENDO ASSIM, GANHANDO PRODUTIVIDADE.",
+  situationBefore:
+    "NA COSTURA DO DW12, A OPERADORA SE QUEIXAVA QUE A MÁQUINA DE 1 AG DA ANTIGA NÃO CONSEGUIA ACOMPANHAR O RITMO DA PRODUÇÃO, NA OPERAÇÃO DA COSTURA DA BOCA DA LINGUETA. ASSIM FICANDO ESTOCADA DE SERVIÇO E GERANDO PERDA DE PRODUÇÃO.",
+  situationNow:
+    "DEPOIS DE UM ACOMPANHAMENTO, FOI NOTADO QUE A COSTURA DO TRASEIRO ERA A MAIS SIMPLES DO SETOR, POIS ERA APENAS UMA COSTURA EM LINHA RETA, ASSIM PODENDO FAZER UMA TROCA DENTRO DO PRÓPRIO SETOR, ONDE A LÍDER ACEITOU A SUGESTÃO E AS OPERADORAS TAMBÉM. SENDO ASSIM, GANHANDO PRODUTIVIDADE.",
   setor: null,
   perdas: [],
   ganhos: {
@@ -337,7 +376,7 @@ const replaceText = async (text, component) => {
 
 const loadingImprove = ref(false);
 const showTooltip = ref(false);
-const disableIaButton = ref(false)
+const disableIaButton = ref(false);
 const handleImproveText = async () => {
   if (!penseAjaData.value.situationBefore || !penseAjaData.value.situationNow) {
     notification.value.showPopup(
@@ -366,7 +405,7 @@ const handleImproveText = async () => {
     return;
   }
 
-  disableIaButton.value = true
+  disableIaButton.value = true;
   if (Object.keys(result).length > 0) {
     replaceText(result?.before, "situationBefore");
     replaceText(result?.after, "situationNow");
@@ -395,6 +434,19 @@ const handleRegister = () => {
 </script>
 
 <style scoped>
+.fade-icon-enter-active,
+.fade-icon-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-icon-enter-from,
+.fade-icon-leave-to {
+  opacity: 0;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
 .ai-tooltip {
   position: absolute;
   top: -15px;

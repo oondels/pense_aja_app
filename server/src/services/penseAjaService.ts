@@ -15,11 +15,6 @@ const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString("pt-BR");
 };
 
-interface SelectFilter {
-  selectedMonth?: string;
-  selectedYear?: string;
-}
-
 interface PenseAjaData {
   nome: string;
   createDate: string | Date;
@@ -61,30 +56,34 @@ const turnoMap: Record<string, string> = {
 };
 
 export const PenseAjaService = {
-  async fetchPenseAja(dassOffice: string) {
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonthIndex = currentDate.getMonth();
-
-    let lastMonthIndex: number;
-    let lastMonthYear: number;
-    if (currentMonthIndex === 0) {
-      lastMonthIndex = 11;
-      lastMonthYear = currentYear - 1;
-    } else {
-      lastMonthIndex = currentMonthIndex - 1;
-      lastMonthYear = currentYear;
-    }
-
-    let penseAjaDay = 28;
-    let startDate = new Date(lastMonthYear, lastMonthIndex, penseAjaDay);
-    let endDate = new Date(currentYear, currentMonthIndex, penseAjaDay);
+  async fetchPenseAja(dassOffice: string, startDateParsed: Date, endDateParsed: Date, name: string, sector: string, manager: string, project: string) {
 
     checkDassOffice(dassOffice);
     const client = await pool.connect();
     try {
-      const result = await client.query(
-        `
+      let params = []
+      let filters = []
+      params.push(dassOffice)
+
+      // TODO: Finalizar implementação de pesquisa com offset e filtros
+      if (name) {
+        filters.push(`nome = $${params.length + 1}`);
+        params.push(name);
+      }
+      if (sector) {
+        filters.push(`setor = $${params.length + 1}`);
+        params.push(sector);
+      }
+      if (manager) {
+        filters.push(`gerente = $${params.length + 1}`);
+        params.push(manager);
+      }
+      if (project) {
+        filters.push(`nome_projeto = $${params.length + 1}`);
+        params.push(project);
+      }
+
+      let baseQuery = `
         SELECT
           id,
           data_realizada,
@@ -106,48 +105,16 @@ export const PenseAjaService = {
           pense_aja.pense_aja_dass
        WHERE
           excluido = ''
-          AND createdat >= date_trunc('year', current_date) - INTERVAL '1 year'
-          AND createdat <  date_trunc('day', current_date) + INTERVAL '1 day'
-          AND unidade_dass = $1
-        ORDER BY
-          criado DESC;
-      `,
-        [dassOffice]
-      );
+          AND createdat >= $1
+          AND createdat <  $2
+          AND unidade_dass = $3
+      `
 
-      const filterQuery = await client.query(
-        `
-        SELECT
-        (SELECT array_agg(DISTINCT gerente) FROM pense_aja.pense_aja_dass WHERE excluido = '' AND createdat BETWEEN $1 AND $2 AND unidade_dass = $3)
-        AS gerentes,
-        (SELECT array_agg(DISTINCT nome) FROM pense_aja.pense_aja_dass WHERE excluido = '' AND createdat BETWEEN $1 AND $2 AND unidade_dass = $3)
-        AS nomes,
-        (SELECT array_agg(DISTINCT setor) FROM pense_aja.pense_aja_dass WHERE excluido = '' AND createdat BETWEEN $1 AND $2 AND unidade_dass = $3)
-        AS setores,
-        (SELECT array_agg(DISTINCT nome_projeto) FROM pense_aja.pense_aja_dass WHERE excluido = '' AND createdat BETWEEN $1 AND $2 AND unidade_dass = $3)
-        AS projetos,
-        (SELECT array_agg(DISTINCT turno) FROM pense_aja.pense_aja_dass WHERE excluido = '' AND createdat BETWEEN $1 AND $2 AND unidade_dass = $3)
-        AS turnos
-      `,
-        [startDate, endDate, dassOffice]
-      );
-
-      if (filterQuery.rows.length === 0 || result.rows.length === 0) {
-        return { dados: [], filters: {} };
+      if (filters.length > 0) {
+        baseQuery = baseQuery.concat(` AND ${filters.join(" AND ")}`);
       }
 
-      const filtersData = filterQuery.rows[0];
-      filtersData.turnos = filtersData?.turnos?.map((filter: string) => {
-        return turnoMap[filter] || "Comercial";
-      });
-
-      const filters = {
-        "3": filtersData.nomes,
-        "4": filtersData.setores,
-        "5": filtersData.gerentes,
-        "6": filtersData.projetos,
-        "7": filtersData.turnos,
-      };
+      const result = await client.query(baseQuery, params)
 
       const dados = result.rows;
       result.rows.forEach((row) => {
@@ -155,7 +122,7 @@ export const PenseAjaService = {
         row.turno = turnoMap[row.turno] || "Comercial";
       });
 
-      return { dados: dados, filters: filters };
+      return dados;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Erro desconhecido!";

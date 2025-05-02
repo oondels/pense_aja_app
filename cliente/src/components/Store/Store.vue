@@ -2,6 +2,7 @@
   <v-dialog max-width="850">
     <template v-slot:activator="{ props: activatorProps }">
       <button
+        v-if="!isMobile"
         @click="handleUserData"
         v-bind="activatorProps"
         id="openLoja"
@@ -15,6 +16,16 @@
           />
         </div>
         <span class="button-label">Loja</span>
+      </button>
+
+      <button
+        v-else
+        @click="handleUserData"
+        v-bind="activatorProps"
+        class="mobile-action-button"
+      >
+        <i class="mdi mdi-store-outline icon"></i>
+        <span class="label">Loja</span>
       </button>
     </template>
 
@@ -112,13 +123,28 @@
 
           <!-- Filtro de produtos -->
           <div class="store-filter-bar">
-            <button :class="['filter-btn', filterType === 'all' ? 'active' : '']" @click="filterType = 'all'">
+            <button
+              :class="['filter-btn', filterType === 'all' ? 'active' : '']"
+              @click="filterType = 'all'"
+            >
               <i class="bi bi-grid"></i> Todos
             </button>
-            <button :class="['filter-btn', filterType === 'available' ? 'active' : '']" @click="filterType = 'available'">
+            <button
+              :class="[
+                'filter-btn',
+                filterType === 'available' ? 'active' : '',
+              ]"
+              @click="filterType = 'available'"
+            >
               <i class="bi bi-bag-check-fill text-success"></i> Disponíveis
             </button>
-            <button :class="['filter-btn', filterType === 'unavailable' ? 'active' : '']" @click="filterType = 'unavailable'">
+            <button
+              :class="[
+                'filter-btn',
+                filterType === 'unavailable' ? 'active' : '',
+              ]"
+              @click="filterType = 'unavailable'"
+            >
               <i class="bi bi-emoji-frown-fill text-danger"></i> Não disponíveis
             </button>
           </div>
@@ -136,7 +162,9 @@
                   <div v-if="product.points > pontos" class="disabled-overlay">
                     <i class="bi bi-emoji-frown-fill unavailable-icon"></i>
                     <span class="unavailable-text">Pontos Insuficientes</span>
-                    <span class="unavailable-hint">Junte mais pontos para resgatar!</span>
+                    <span class="unavailable-hint"
+                      >Junte mais pontos para resgatar!</span
+                    >
                   </div>
                   <div class="product-badge">{{ product.points }} pts</div>
                   <div class="product-image-container">
@@ -147,9 +175,9 @@
                     />
                   </div>
                   <div class="product-info">
-                    <h3 class="product-name">{{product.name}}</h3>
+                    <h3 class="product-name">{{ product.name }}</h3>
 
-                    <BuyItem :PenseAjaProduct="product"/>
+                    <BuyItem :PenseAjaProduct="product" />
                   </div>
                 </div>
               </div>
@@ -162,10 +190,22 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { getUserData } from "@/services/userService";
 import { useUserStore } from "@/stores/userStore";
-import BuyItem from '@/components/Store/BuyItem.vue'
+import BuyItem from "@/components/Store/BuyItem.vue";
+
+const isMobile = ref(false);
+function handleResize() {
+  isMobile.value = window.innerWidth <= 1024;
+}
+onMounted(() => {
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
+});
 
 const storeProducts = [
   {
@@ -214,13 +254,13 @@ const user = useUserStore();
 
 const userData = ref(null);
 let pontos = ref(0);
-const filterType = ref('all');
+const filterType = ref("all");
 
 const filteredProducts = computed(() => {
-  if (filterType.value === 'available') {
-    return storeProducts.filter(p => p.points <= pontos.value);
-  } else if (filterType.value === 'unavailable') {
-    return storeProducts.filter(p => p.points > pontos.value);
+  if (filterType.value === "available") {
+    return storeProducts.filter((p) => p.points <= pontos.value);
+  } else if (filterType.value === "unavailable") {
+    return storeProducts.filter((p) => p.points > pontos.value);
   }
   return storeProducts;
 });
@@ -413,7 +453,7 @@ const handleUserData = async () => {
   z-index: 10;
   letter-spacing: 1px;
   pointer-events: none;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .disabled-overlay {
@@ -660,7 +700,8 @@ const handleUserData = async () => {
   gap: 8px;
 }
 
-.filter-btn.active, .filter-btn:hover {
+.filter-btn.active,
+.filter-btn:hover {
   background: #007aff;
   color: #fff;
   border-color: #007aff;

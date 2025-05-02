@@ -1,15 +1,26 @@
 <template>
   <v-dialog max-width="400">
     <template v-slot:activator="{ props: activatorProps }">
-      <button v-bind="activatorProps" id="openUser" class="action-button">
+      <button
+        v-if="!isMobile"
+        v-bind="activatorProps"
+        id="openUser"
+        class="action-button"
+      >
         <div class="button-icon-container">
-          <img
-            src="/assets/img/icons/login.png"
-            alt="user"
-            class="button-icon"
-          />
+          <i :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'" class="icon"></i>
         </div>
-        <span class="button-label">Login</span>
+        <span class="button-label">{{user?.matricula ? 'Sair' : 'Login'}}</span>
+      </button>
+
+      <button
+        v-else
+        @click="handleUserData"
+        v-bind="activatorProps"
+        class="mobile-action-button"
+      >
+        <i :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'" class="icon"></i>
+        <span class="label">{{user?.matricula ? 'Sair' : 'Login'}}</span>
       </button>
     </template>
 
@@ -132,10 +143,22 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, watch } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { login, logout } from "@/services/authService.js";
 import { useUserStore } from "@/stores/userStore.js";
 import Notification from "@/components/Notification.vue";
+
+const isMobile = ref(false);
+function handleResize() {
+  isMobile.value = window.innerWidth <= 1024;
+}
+onMounted(() => {
+  handleResize();
+  window.addEventListener("resize", handleResize);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
+});
 
 const notification = ref(null);
 // Carregad dados do usuário se estiver logado

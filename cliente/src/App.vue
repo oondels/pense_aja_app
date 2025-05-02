@@ -7,22 +7,22 @@
 </template>
 
 <script setup>
-import Navbar from './components/Navbar.vue'
-import Footer from './components/Footer.vue'
-import GetUserOffice from './components/GetUserOffice.vue'
-import GetUserEmail from './components/GetUserEmail.vue'
-import { onMounted } from 'vue'
-import {useUserStore} from "@/stores/userStore.js"
+import Navbar from "./components/Navbar.vue";
+import Footer from "./components/Footer.vue";
+import GetUserOffice from "./components/GetUserOffice.vue";
+import GetUserEmail from "./components/GetUserEmail.vue";
+import { onMounted } from "vue";
+import { useUserStore } from "@/stores/userStore.js";
 
 onMounted(() => {
-  const userStore = useUserStore()
-  userStore.carregarUsuario()
-})
+  const userStore = useUserStore();
+  userStore.carregarUsuario();
+});
 </script>
 
 <style>
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .action-button {
@@ -57,7 +57,11 @@ body {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(176, 6, 43, 0), rgba(255, 0, 55, 0.5));
+  background: linear-gradient(
+    135deg,
+    rgba(176, 6, 43, 0),
+    rgba(255, 0, 55, 0.5)
+  );
   top: 0;
   left: -100%;
   transition: 0.5s;
@@ -113,8 +117,43 @@ body {
   transition: all 0.2s ease;
 }
 
-.close-container:hover{
+.close-container:hover {
   background: rgba(231, 76, 60, 0.4);
   transform: rotate(90deg);
+}
+
+.mobile-action-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background-color: #fff;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+  color: #c0392b; /* vermelho suave */
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 100%;
+}
+
+.mobile-action-button:hover {
+  background-color: #f33e3e;
+  color: white
+}
+
+.mobile-action-button:active {
+  background-color: #f1d6d6;
+  transform: scale(0.97);
+}
+
+.mobile-action-button .icon {
+  font-size: 1.5rem;
+}
+
+.mobile-action-button .label {
+  flex-grow: 1;
+  text-align: left;
 }
 </style>
