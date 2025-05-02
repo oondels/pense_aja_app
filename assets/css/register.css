@@ -422,47 +422,6 @@
   position: relative;
 }
 
-.ai-tooltip {
-  position: absolute;
-  top: -15px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-100%) scale(0.3);
-  width: 280px;
-  background: white;
-  border-radius: 12px;
-  padding: 12px 15px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  color: #333;
-  font-size: 14px;
-  line-height: 1.5;
-  z-index: 9999;
-  opacity: 0;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  pointer-events: none;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  border-left: 4px solid #ef5350;
-  margin-bottom: 15px;
-}
-
-.ai-tooltip.visible {
-  opacity: 1 !important;
-  transform: translateX(-50%) translateY(-100%) scale(1);
-  top: -15px;
-}
-
-/* Triângulo na parte inferior (rabinho do balão) */
-.ai-tooltip::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid white;
-}
 
 /* Ícone da lâmpada */
 .lamp-icon {

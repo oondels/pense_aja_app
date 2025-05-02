@@ -22,7 +22,7 @@
     </template>
 
     <template v-slot:default="{ isActive }">
-      <div id="penseaja-popup" class="penseaja-popup hidden">
+      <div id="penseaja-popup" class="penseaja-popup">
         <div class="penseaja-container">
           <div class="penseaja-header">
             <div class="penseaja-header-content">
@@ -155,22 +155,22 @@
 
               <!-- AI button -->
               <div class="tooltip-container">
-                <button id="ai-button" class="ai-enhance-button" type="button">
+                <button @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" @click="handleImproveText" id="ai-button" class="ai-enhance-button" type="button" :disabled="loadingImprove">
                   <div class="ai-enhance-icon">
                     <i class="bi bi-robot"></i>
                     <i class="bi bi-stars icon-spark"></i>
                   </div>
-                  <span>Melhorar texto com IA</span>
+                  <span v-if="!loadingImprove">Melhorar texto com IA</span>
+                  <span v-else class="spinner-ai"></span>
                   <div class="ai-enhance-effect"></div>
-                  <span class="spinner-ai hidden"></span>
                 </button>
-                <div class="ai-tooltip">
+                
+                <div @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" :class="showTooltip ? 'visible' : ''" class="ai-tooltip">
                   <strong>
                     <span class="lamp-icon bi bi-lightbulb"></span>
                     Dica inteligente!
                   </strong>
-                  Revise seu texto com inteligência artificial para facilitar a
-                  avaliação!
+                  Revise seu texto com inteligência artificial para facilitar a avaliação!
                 </div>
               </div>
             </div>
@@ -209,7 +209,7 @@
                 </label>
               </div>
 
-              <div v-if="ganhos" id="ganhos-form" class="hidden">
+              <div v-if="ganhos" id="ganhos-form">
                 <label for="ganhos-descricao">Descreva os ganhos obtidos</label>
                 <div class="ganhos-tipos">
                   <v-combobox
@@ -241,8 +241,8 @@
               type="button"
               class="penseaja-submit-button"
             >
-              <span>Salvar</span>
-              <span class="bi bi-save"></span>
+              <span>Salvar </span>
+              <span class="mdi mdi-content-save-check-outline fs-5"></span>
             </button>
           </div>
         </div>
@@ -259,6 +259,7 @@ import { useUserStore } from "@/stores/userStore";
 import { getUserData } from "@/services/userService";
 import { registerPenseAja } from "@/services/penseAjaService";
 import Notification from "@/components/Notification.vue";
+import { improveText } from "@/services/aiService";
 
 const notification = ref(null);
 const loading = ref(false);
@@ -297,8 +298,6 @@ const serachUser = async (e) => {
   }
 };
 
-const setoresDass = ["Montagem", "Apoio", "Costura", "Manutenção"];
-const ganhos = ref(false);
 const penseAjaData = ref({
   projectName: null,
   projectDate: null,
@@ -311,15 +310,89 @@ const penseAjaData = ref({
     justificativa: null,
   },
 });
+const loadingImprove = ref(false);
+const showTooltip = ref(false);
+const handleImproveText = async () => {
+  loadingImprove.value = true;
+  try {
+    // const text = await improveText(
+    //   penseAjaData.value.situationBefore,
+    //   penseAjaData.value.situationNow,
+    //   penseAjaData.value.projectName,
+    //   loadingImprove
+    // );
+    // Se quiser atualizar o campo situationNow, descomente a linha abaixo
+    // if (text) penseAjaData.value.situationNow = text;
+    // console.log(text);
+  } finally {
+    // loadingImprove.value = false;
+  }
+};
+
+const setoresDass = ["Montagem", "Apoio", "Costura", "Manutenção"];
+const ganhos = ref(false);
+
 const handleRegister = () => {
   if (!registrationEntry.value || !userData.value) {
-    notification.value.showPopup("warning", "Aviso!", "Dados do usuário ausentes.", 3000)
+    notification.value.showPopup(
+      "warning",
+      "Aviso!",
+      "Dados do usuário ausentes.",
+      3000
+    );
   }
-  registerPenseAja(penseAjaData.value, registrationEntry.value, notification, userData.value);
+  registerPenseAja(
+    penseAjaData.value,
+    registrationEntry.value,
+    notification,
+    userData.value
+  );
 };
 </script>
 
 <style scoped>
+.ai-tooltip {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%) scale(0.3);
+  width: 280px;
+  background: white;
+  border-radius: 12px;
+  padding: 12px 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  color: #333;
+  font-size: 14px;
+  line-height: 1.5;
+  z-index: 9999;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-left: 4px solid #ef5350;
+  margin-bottom: 15px;
+}
+
+.ai-tooltip.visible {
+  opacity: 1 !important;
+  transform: translateX(-50%) translateY(-100%) scale(1);
+  top: -15px;
+}
+
+/* Triângulo na parte inferior (rabinho do balão) */
+.ai-tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid white;
+}
+
 .penseaja-popup {
   position: fixed;
   top: 0;
@@ -644,9 +717,8 @@ const handleRegister = () => {
 }
 
 @keyframes penseaja-spin {
-  to {
-    transform: translateY(-50%) rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @keyframes pulse-gentle {
@@ -657,6 +729,17 @@ const handleRegister = () => {
   50% {
     transform: scale(1.05);
   }
+}
+
+.spinner-ai {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fff;
+  border-top: 2px solid #ef5350;
+  border-radius: 50%;
+  animation: penseaja-spin 0.8s linear infinite;
+  vertical-align: middle;
 }
 
 .penseaja-header h2 {

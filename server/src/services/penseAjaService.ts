@@ -106,10 +106,10 @@ export const PenseAjaService = {
           createdat AS criado
         FROM
           pense_aja.${dbName}
-        WHERE
+       WHERE
           excluido = ''
-          AND createdat >= date_trunc('month', current_date) - INTERVAL '1 month'
-          AND createdat <  date_trunc('year',  current_date) + INTERVAL '1 year'
+          AND createdat >= date_trunc('year', current_date) - INTERVAL '1 year'
+          AND createdat <  date_trunc('day', current_date) + INTERVAL '1 day'
         ORDER BY
           criado DESC;
       `,
@@ -137,7 +137,7 @@ export const PenseAjaService = {
       }
 
       const filtersData = filterQuery.rows[0];
-      filtersData.turnos = filtersData.turnos.map((filter: string) => {
+      filtersData.turnos = filtersData?.turnos?.map((filter: string) => {
         return turnoMap[filter] || "Comercial";
       });
 
@@ -352,7 +352,7 @@ export const PenseAjaService = {
       const userManager = await UserPenseaja.getManagerByUser(data.registration, dassOffice);
 
       await client.query("COMMIT");
-      return {pense_aja: newPenseAja.rows[0], userManager: userManager};
+      return { pense_aja: newPenseAja.rows[0], userManager: userManager };
     } catch (error) {
       await client.query("ROLLBACK");
       const messageError =

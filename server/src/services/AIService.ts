@@ -10,7 +10,7 @@ const AIService = {
   },
 
   parseAIResponse(response: string): { before: string; after: string } {
-    const [beforePart, afterPart] = response.replace(/^Antes:\s*/i, '').split(/-\s*\n?\n?Depois:\s*/i);
+    const [beforePart, afterPart] = response?.replace(/^Antes:\s*/i, '').split(/-\s*\n?\n?Depois:\s*/i);
 
     return {
       before: beforePart.trim(),

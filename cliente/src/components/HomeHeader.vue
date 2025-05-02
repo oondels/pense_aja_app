@@ -1,29 +1,30 @@
 <template>
   <header class="home-header">
-    <div class="hero-card">
-      <!-- Logo -->
-      <div class="logo-circle">
-        <img src="/assets/img/icons/dass-penseaja.png" alt="Dass Pense & Aja" class="logo-img" />
-      </div>
-      <!-- Títulos -->
-      <h1 class="main-title">
-        Pense <span class="amp">&</span> Aja
-      </h1>
-      <h2 class="tagline">
-        Bem-vindo ao Pense & Aja
-      </h2>
-      <!-- Descrição -->
-      <p class="description">
-        Transforme suas ideias em ações concretas. Uma plataforma que valoriza sua criatividade e incentiva a inovação no ambiente de trabalho.
-      </p>
-      <!-- Botões -->
-      <div class="button-group">
-        <router-link to="/pense-aja" class="btn btn-primary">
-          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M10 17l5-5-5-5v10z"/>
-          </svg>
-          Acessar app
-        </router-link>
+    <div class="banner-background">
+      <div class="banner-container">
+        <div class="banner-content">
+          <!-- Título com ícone de lâmpada -->
+          <div class="title-group">
+            <h1 class="main-title">
+              PENSE & AJA
+              <span class="idea-icon" aria-hidden="true"><img src="/assets/img/icons/idea-on-brain.png" alt="Pessoa pensativa" /></span>
+            </h1>
+            <p class="description">
+              Transforme suas ideias em ações concretas. Uma plataforma que valoriza sua criatividade e incentiva a inovação no ambiente de trabalho.
+            </p>
+            <router-link to="/pense-aja" class="btn btn-primary">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M10 17l5-5-5-5v10z"/>
+              </svg>
+              Acessar app
+            </router-link>
+          </div>
+
+          <!-- Ilustração de pessoa pensativa -->
+          <div class="illustration">
+            <img src="/assets/img/illustrations/3d-ide-hand.png" alt="Pessoa pensativa" />
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -34,89 +35,92 @@
 
 <style scoped>
 .home-header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2.5rem 1rem 2rem 1rem;
-  min-height: 100px;
-  background: linear-gradient(135deg, #ffe5e9 0%, #fbeaec 100%);
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
 }
 
-.hero-card {
+.banner-background {
+  background: linear-gradient(135deg, #ffe5e9 0%, #fbeaec 100%);
+  position: relative;
+  padding: 4rem 1rem 5rem;
+}
+
+.banner-background::before {
+  content: "";
+  position: absolute;
+  top: -80px;
+  right: -60px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle at center, #ffccd5, transparent 70%);
+  border-radius: 50%;
+  opacity: 0.4;
+  z-index: 0;
+}
+
+.banner-container {
+  max-width: 1200px;
+  width: 100%;
   background: #fff;
   border-radius: 1.5rem;
   box-shadow: 0 8px 32px rgba(176, 6, 43, 0.08);
-  padding: 2.5rem 2rem 2rem 2rem;
-  max-width: 420px;
-  width: 100%;
-  text-align: center;
-  position: relative;
-  animation: fadeInUp 0.8s;
-}
-
-.logo-circle {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fbeaec 0%, #ffe5e9 100%);
-  box-shadow: 0 4px 16px rgba(176, 6, 43, 0.10);
+  padding: 3rem;
   display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.banner-content {
+  display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.2rem auto;
-  animation: float 6s ease-in-out infinite;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
 }
 
-.logo-img {
-  width: 70%;
-  height: auto;
-  filter: drop-shadow(0 2px 6px rgba(176, 6, 43, 0.10));
-  transition: transform 0.4s;
-}
-
-.logo-circle:hover .logo-img {
-  transform: scale(1.08) rotate(-2deg);
+.title-group {
+  flex: 1;
+  min-width: 280px;
 }
 
 .main-title {
-  font-size: 2.3rem;
+  font-size: 3rem;
   font-weight: 800;
-  margin: 0;
-  background: linear-gradient(135deg, #b0062b 0%, #ff335f 100%);
+  margin: 0 0 1rem;
+  background: linear-gradient(135deg, #b0062b 0%, #ffa733 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-fill-color: transparent;
-  letter-spacing: -0.5px;
-  animation: fadeInUp 0.8s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: fadeInDown 1.2s ease-out;
 }
 
-.amp {
-  font-weight: bold;
-  font-size: 1.1em;
-}
-
-.tagline {
-  font-size: 1.1rem;
-  font-weight: 400;
-  color: #b0062b;
-  margin: 1rem 0 0.5rem;
-  opacity: 0.85;
-  animation: fadeInUp 0.8s 0.2s forwards;
+.idea-icon {
+  margin-left: 20px;
+  width: 80px;
+  animation: pulse 1.8s infinite ease-in-out;
 }
 
 .description {
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: #555;
   margin-bottom: 1.7rem;
+  max-width: 480px;
   line-height: 1.6;
+  animation: fadeInUp 1s ease-out 0.2s both;
 }
 
-.button-group {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
+.illustration img {
+  max-width: 280px;
+  height: auto;
+  animation: float 5s ease-in-out infinite;
 }
 
 .btn {
@@ -131,29 +135,14 @@
   gap: 0.5rem;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(176, 6, 43, 0.08);
-}
-
-.btn-primary {
   background: linear-gradient(135deg, #b0062b 0%, #ff335f 100%);
   color: #fff;
   border: none;
 }
 
-.btn-primary:hover {
+.btn:hover {
   opacity: 0.95;
   box-shadow: 0 4px 16px rgba(176, 6, 43, 0.13);
-}
-
-.btn-outline {
-  background: transparent;
-  color: #b0062b;
-  border: 2px solid #b0062b;
-}
-
-.btn-outline:hover {
-  background: #ffe5e9;
-  color: #b0062b;
-  border-color: #ff335f;
 }
 
 .icon {
@@ -162,16 +151,14 @@
   fill: currentColor;
 }
 
-@media (max-width: 480px) {
-  .hero-card {
-    padding: 1.5rem 0.7rem;
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
-  .main-title {
-    font-size: 1.6rem;
-  }
-  .logo-circle {
-    width: 64px;
-    height: 64px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -191,7 +178,31 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-5px);
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .banner-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .main-title {
+    justify-content: center;
+    font-size: 2.4rem;
+  }
+
+  .illustration img {
+    max-width: 200px;
+    margin-top: 2rem;
   }
 }
 </style>

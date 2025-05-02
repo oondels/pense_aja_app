@@ -118,7 +118,7 @@
               <div v-for="(product, index) in storeProducts" :key="index">
                 <div
                   class="product-card polaroid"
-                  :class="product.points > pontos ? 'disabled' : ''"
+                  :class="product.points > pontos ? '' : ''"
                 >
                   <div class="product-badge">{{ product.points }} pts</div>
                   <div class="product-image-container">

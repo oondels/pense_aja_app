@@ -94,7 +94,7 @@
       class="virtual-list"
     >
       <template #default="{ item }">
-        <div class="list-item" role="button" :key="item.id">
+        <div class="list-item mr-3" role="button" :key="item.id">
           <v-dialog max-width="900">
             <template v-slot:activator="{ props: activatorProps }">
               <div

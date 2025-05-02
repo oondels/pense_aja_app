@@ -134,6 +134,7 @@ async function submitEmail() {
     const response = await authApi.put(`/user/email/${userMatricula}`, {
       email: userEmail,
     });
+
     message = response.data.message;
     localStorage.setItem("emailProvided", "true");
     show.value = false;
@@ -144,27 +145,6 @@ async function submitEmail() {
   } finally {
     loading.value = false;
     validationMessage.value = "";
-    setTimeout(() => {
-      if (typeof Swal !== "undefined") {
-        Swal.fire({
-          icon: error ? "warning" : "success",
-          title: error ? "Erro" : "Sucesso",
-          html: `<div style = \"display:flex;text-align:center;flex-direction:column\"><div><strong>${
-            message || "Erro Desconhecido!"
-          }</strong></div></div>`,
-          showConfirmButton: false,
-          showCloseButton: true,
-          timer: 1500,
-        });
-      } else {
-        alert(
-          message ||
-            (error
-              ? "Erro ao cadastrar email"
-              : "Email cadastrado com sucesso!")
-        );
-      }
-    }, 300);
   }
 }
 

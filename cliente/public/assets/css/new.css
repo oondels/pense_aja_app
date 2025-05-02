@@ -16,10 +16,10 @@ header #logo {
 .banner-wrapper {
   width: 100%;
   position: relative;
-  background: linear-gradient(135deg, #f3f4f6, #e9ecef);
-  border-radius: 16px;
+  background: linear-gradient(135deg, #f3f4f6, #efe9e9);
   padding: 10px;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+  /* border-radius: 16px; */
+  /* box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15); */
   overflow: hidden;
   margin-bottom: 20px !important;
 }
