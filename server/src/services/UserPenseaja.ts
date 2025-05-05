@@ -1,5 +1,6 @@
 import logger from "../utils/logger";
 import pool from "../config/db";
+import { CustomError } from "../types/CustomError";
 
 const checkDassOffice = (dassOffice: string) => {
   const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF"];
@@ -42,6 +43,11 @@ export const UserPenseaja = {
           lf.matricula = $1;`,
         [registration]
       );
+
+      if (query.rowCount === 0) {
+        logger.error("user-pense-aja", `Usuário não encontrado: ${registration}`);
+        throw new CustomError(`Usuário não encontrado: ${registration}`);
+      }
 
       return query.rows[0];
     } catch (error) {
