@@ -56,31 +56,48 @@ const turnoMap: Record<string, string> = {
 };
 
 export const PenseAjaService = {
-  async fetchPenseAja(dassOffice: string, startDateParsed: Date, endDateParsed: Date, name: string, sector: string, manager: string, project: string) {
-
+  async fetchPenseAja(dassOffice: string, startDateParsed: Date, endDateParsed: Date, name: string, sector: string, manager: string, project: string, turno: string, status: string) {
     checkDassOffice(dassOffice);
+
     const client = await pool.connect();
     try {
       let params = []
       let filters = []
+      params.push(startDateParsed)
+      params.push(endDateParsed)
       params.push(dassOffice)
 
-      // TODO: Finalizar implementação de pesquisa com offset e filtros
       if (name) {
-        filters.push(`nome = $${params.length + 1}`);
+        filters.push(` nome = $${params.length + 1} `);
         params.push(name);
       }
       if (sector) {
-        filters.push(`setor = $${params.length + 1}`);
+        filters.push(` setor = $${params.length + 1} `);
         params.push(sector);
       }
       if (manager) {
-        filters.push(`gerente = $${params.length + 1}`);
+        filters.push(` gerente = $${params.length + 1} `);
         params.push(manager);
       }
       if (project) {
-        filters.push(`nome_projeto = $${params.length + 1}`);
+        filters.push(` nome_projeto = $${params.length + 1} `);
         params.push(project);
+      }
+      if (turno) {
+        let turnoValue;
+        if (turno === "1° Turno") {
+          turnoValue = "A";
+        } else if (turno === "2° Turno") {
+          turnoValue = "B";
+        } else {
+          turnoValue = "C";
+        }
+        filters.push(` turno = $${params.length + 1}`);
+        params.push(turnoValue);
+      }
+      if (status) {
+        filters.push(` status = $${params.length + 1}`);
+        params.push(status);
       }
 
       let baseQuery = `
@@ -113,11 +130,12 @@ export const PenseAjaService = {
       if (filters.length > 0) {
         baseQuery = baseQuery.concat(` AND ${filters.join(" AND ")}`);
       }
+      baseQuery = baseQuery.concat(` ORDER BY createdat DESC`);
 
       const result = await client.query(baseQuery, params)
 
       const dados = result.rows;
-      result.rows.forEach((row) => {
+      dados.forEach((row) => {
         row.criado = formatDate(row.criado);
         row.turno = turnoMap[row.turno] || "Comercial";
       });

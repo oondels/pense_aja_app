@@ -123,6 +123,7 @@
             <v-icon icon="mdi mdi-filter-multiple"></v-icon>
           </template>
         </v-expansion-panel-title>
+
         <v-expansion-panel-text>
           <div class="filters container-fluid">
             <v-text-field
@@ -248,6 +249,7 @@
         :item-size="105"
         key-field="id"
         class="virtual-list"
+        @scroll="onScroll"
       >
         <template #default="{ item }">
           <div
@@ -764,6 +766,7 @@ import { getUserPermission } from "@/services/userService";
 import { setUserRole } from "@/services/userService";
 import { formateName } from "@/services/userService";
 
+const notification = ref(null);
 const isMobile = ref(false);
 function handleResize() {
   isMobile.value = window.innerWidth <= 1024;
@@ -825,10 +828,10 @@ const setupDate = (yearValue, monthValue) => {
 
 const availableYears = ref([]);
 const availableMonths = ref([]);
-/* 
+/*
   Atualiza a lista de anos e meses disponíveis
   Verifica se o ano selecionad é o ano atual
-  se for pega os meses disponíveis, caso contrário pega todos os meses 
+  se for pega os meses disponíveis, caso contrário pega todos os meses
 */
 const updateYearsAndMonths = (onlyMonths) => {
   if (!onlyMonths) {
@@ -851,57 +854,74 @@ const updateYearsAndMonths = (onlyMonths) => {
 // Verifica seleção do pense aja -> Antes \\ Depois
 const beforeAfter = ref(false);
 
-// TODO: Finalizar implementação de pesquisa com offset e filtros
 // Busca pense aja de acordo com filtro de datas -> Default mês atual
-const fetchData = async () => {
-  const office = "SEST";
+const penseAjaCount = ref(0);
+const penseAjas = ref([]);
+const loadContent = async () => {
+  const dassOffice = localStorage.getItem("unidadeDass");
+  if (!dassOffice) {
+    console.error("Unidade não encontrada no localStorage");
+    notification.value.showPopup(
+      "error",
+      "Unidade do colaborador não encontrada.",
+      "Entre em contato com a equipe de automação",
+      10000
+    );
+    return;
+  }
+  const params = {
+    startDate: filterDate.value.startDate,
+    endDate: filterDate.value.endDate,
+  };
+
   try {
     const { data } = await axios.get(
-      `http://localhost:2512/pense-aja/${office}`,
+      `http://localhost:2512/pense-aja/${dassOffice}`,
       {
-        params: {
-          startDate: filterDate.value.startDate,
-          endDate: filterDate.value.endDate,
-          offset: 0,
-          limit: 30,
-          name: filters.name,
-          sector: filters.sector,
-          manager: filters.manager,
-          project: filters.project,
-        },
+        params,
       }
     );
 
     penseAjas.value = data;
+    penseAjaCount.value = data.length;
+    emit('penseAjaCount', penseAjaCount.value)
   } catch (error) {
     console.error("Erro ao buscar dados:", error);
   }
 };
 
+const emit = defineEmits(['penseAjaCount'])
+
+// Configura watchers para os filtros
 function setupWatchers() {
   watch(year, (newYear) => {
     if (!newYear || !month.value) return;
     setupDate(newYear, month.value.index);
     updateYearsAndMonths(true);
-
-    fetchData();
+    loadContent();
   });
 
   watch(month, (newMonth) => {
     if (!newMonth) return;
     setupDate(year.value, newMonth.index);
     updateYearsAndMonths(true);
-
-    fetchData();
+    loadContent();
   });
 }
 
-const notification = ref(null);
+// Carrega mais conteúdo quando o usuário rola para baixo e esta a 100px de terminar a lista
+const onScroll = (event) => {
+  if (
+    event.target.scrollTop + event.target.clientHeight >=
+    event.target.scrollHeight - 50
+  ) {
+    loadContent();
+  }
+};
 
 // Carrega dados do usuario se estiver logado
 const user = useUserStore();
 
-const penseAjas = ref([]);
 const filters = reactive({
   name: [],
   sector: [],
@@ -1072,7 +1092,7 @@ onMounted(() => {
   updateYearsAndMonths();
   handleResize();
 
-  fetchData();
+  loadContent();
   setupWatchers();
   window.addEventListener("resize", handleResize);
 });
@@ -1157,6 +1177,7 @@ onBeforeUnmount(() => {
 }
 
 .list-container {
+  position: relative;
   width: 100%;
   max-width: 900px;
   margin: 0 auto;

@@ -2,27 +2,125 @@
   <div class="penseaja-app">
     <main>
       <section
-        class="penseaja-list-section container animate-fade-in"
+        class="penseaja-list-section container animate-fade-in position-relative"
         aria-label="Lista de projetos Pense&Aja"
         tabindex="-1"
         role="region"
       >
         <header class="penseaja-list-header">
-          <h2 class="penseaja-list-title w-100 text-center">Projetos Pense&Aja</h2>
+          <h2 class="penseaja-list-title w-100 text-center">
+            Projetos Pense&Aja
+          </h2>
         </header>
 
-        <ListaPenseAja />
+        <!-- Badge de contagem de registros -->
+        <div
+          class="record-badge-fixed"
+          v-show="penseAjaCount > 0"
+          @mouseover="isTabExpanded = true"
+          @mouseleave="isTabExpanded = false"
+          :class="{ expanded: isTabExpanded }"
+        >
+          <div class="tab-content">
+            <div class="tab-icon">
+              <v-icon icon="mdi-clipboard-text-outline" size="small" />
+              <span class="tab-number">{{ penseAjaCount }}</span>
+            </div>
+            <span class="tab-text" v-if="isTabExpanded">
+              Registros disponíveis
+            </span>
+          </div>
+          <div class="tab-arrow" :class="{ 'rotate-arrow': isTabExpanded }">
+            <v-icon icon="mdi-chevron-right" size="small" />
+          </div>
+        </div>
+
+        <ListaPenseAja @penseAjaCount="updateCount" />
       </section>
     </main>
   </div>
 </template>
 
 <script setup>
+import { ref } from "vue";
 import ListaPenseAja from "../components/ListaPenseAja.vue";
 
+// Estado para controlar a expansão do badge
+const isTabExpanded = ref(false);
+const penseAjaCount = ref(0);
+const updateCount = (count) => {
+  penseAjaCount.value = count;
+};
 </script>
 
 <style scoped>
+.record-badge-fixed {
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  top: 2rem;
+  display: flex;
+  align-items: center;
+  background-color: var(--v-info-base, #2196f3);
+  color: white;
+  border-radius: 0 1rem 1rem 0;
+  padding: 0.8rem;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  cursor: pointer;
+  transform-origin: left center;
+  max-width: 80px;
+  overflow: hidden;
+}
+
+.record-badge-fixed.expanded {
+  max-width: 240px;
+  background-color: var(--v-info-darken1, #1976d2);
+  box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tab-content {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 36px;
+}
+
+.tab-number {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.tab-text {
+  margin-left: 4px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease-in-out;
+}
+
+.expanded .tab-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.tab-arrow {
+  margin-left: auto;
+  transition: transform 0.3s ease;
+}
+
+.tab-arrow.rotate-arrow {
+  transform: rotate(180deg);
+}
+
 .penseaja-app {
   min-height: 100vh;
   display: flex;

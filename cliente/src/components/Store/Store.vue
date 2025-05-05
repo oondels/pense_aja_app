@@ -9,11 +9,7 @@
         class="action-button"
       >
         <div class="button-icon-container">
-          <img
-            src="/assets/img/icons/store.png"
-            alt="loja"
-            class="button-icon"
-          />
+          <span class="mdi mdi-store fs-4"></span>
         </div>
         <span class="button-label">Loja</span>
       </button>
@@ -79,18 +75,14 @@
                 placeholder="Digite sua matrícula"
                 id="lojaMatricula"
                 class="search-input"
-                :value="user.matricula"
-                :class="user.matricula ? 'disabled' : ''"
+                v-model="registrationInput"
+                @keyup.enter="handleUserData"
               />
 
-              <button
-                :disabled="user.matricula"
-                :class="user.matricula ? 'disabled' : ''"
-                class="search-button"
-                id="pesqLoja"
-              >
+              <button class="search-button" id="pesqLoja">
                 <i class="bi bi-search"></i>
                 <span>Buscar</span>
+                <span class="spinner" v-if="loading"></span>
               </button>
             </div>
             <div class="points-container">
@@ -103,7 +95,7 @@
           </div>
 
           <!-- Informações do usuário -->
-          <div v-if="user?.matricula" class="user-details">
+          <div v-if="user?.matricula || userData" class="user-details">
             <div class="user-info-card">
               <div class="user-avatar">
                 <i class="bi bi-person-circle text-primary"></i>
@@ -111,9 +103,9 @@
 
               <div class="user-data">
                 <p id="nomeLoja" class="nomeLoja">
-                  Nome: {{ user.formattedUserName }}
+                  Nome: {{ userData?.nome }}
                 </p>
-                <p id="setorLoja" class="setorLoja">Setor: {{ user.setor }}</p>
+                <p id="setorLoja" class="setorLoja">Setor: {{ userData?.setor }}</p>
                 <p id="gerenteLoja" class="gerenteLoja">
                   Gerente: {{ userData?.gerente }}
                 </p>
@@ -187,6 +179,8 @@
       </div>
     </template>
   </v-dialog>
+
+  <Notification ref="notification" />
 </template>
 
 <script setup>
@@ -194,6 +188,10 @@ import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { getUserData } from "@/services/userService";
 import { useUserStore } from "@/stores/userStore";
 import BuyItem from "@/components/Store/BuyItem.vue";
+import Notification from "../Notification.vue";
+
+const loading = ref(false);
+const notification = ref(null);
 
 const isMobile = ref(false);
 function handleResize() {
@@ -265,11 +263,21 @@ const filteredProducts = computed(() => {
   return storeProducts;
 });
 
-const handleUserData = async () => {
+const registrationInput = ref(null);
+const handleUserData = async (e) => {
   try {
+    // Se estiver logado ja pesquisa os dados
     if (!userData.value && user.matricula) {
+      registrationInput.value = user.matricula;
       await getUserData(user.matricula, userData);
       pontos.value = userData.value.pontos - userData.value.pontos_resgatados;
+    }
+
+    // Espera input do usuário
+    if (e.key === "Enter") {
+      await getUserData(registrationInput.value, userData, loading, notification);
+      pontos.value =
+        userData.value.pontos - userData.value.pontos_resgatados;
     }
   } catch (error) {
     console.error("Error fetching user data:", error);

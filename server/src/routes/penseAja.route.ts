@@ -16,11 +16,10 @@ router.get("/protected", verifyToken, (req: Request, res: Response) => {
   res.status(200).json({ message: "Protected route accessed!" });
 });
 
-// TODO: Finalizar implementação de pesquisa com offset e filtros
 router.get("/:dassOffice", async (req: Request, res: Response) => {
   try {
     const { dassOffice } = req.params;
-    const { startDate, endDate, offset = 0, limit = 30, name, sector, manager, project } = req.query;
+    const { startDate, endDate, name, sector, manager, project, turno, status } = req.query;
 
     if (!dassOffice) {
       res.status(400).json({
@@ -53,7 +52,7 @@ router.get("/:dassOffice", async (req: Request, res: Response) => {
     const startDateParsed = new Date(startDate as string)
     const endDateParsed = new Date(endDate as string)
 
-    const result = await PenseAjaService.fetchPenseAja(dassOffice, startDateParsed, endDateParsed, name as string, sector as string, manager as string, project as string);
+    const result = await PenseAjaService.fetchPenseAja(dassOffice, startDateParsed, endDateParsed, name as string, sector as string, manager as string, project as string, turno as string, status as string);
 
     res.status(200).json(result);
   } catch (error) {

@@ -11,14 +11,11 @@
         v-if="!isMobile"
       >
         <div class="button-icon-container">
-          <img
-            id="imgPenseAja"
-            :src="isHover ? '/assets/img/icons/idea-on.png' : '/assets/img/icons/idea-off.png'"
-            alt="ideiaoff"
-            class="button-icon"
-            data-src-normal="/assets/img/icons/idea-off.png"
-            data-src-hover="/assets/img/icons/idea-on.png"
-          />
+          <i
+            :key="isHover"
+            class="icon mdi"
+            :class="isHover ? 'mdi-lightbulb-on text-amber-accent-4' : 'mdi-lightbulb-on-outline'"
+          ></i>
         </div>
         <span class="button-label">Cadastrar</span>
       </button>
