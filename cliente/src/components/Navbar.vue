@@ -35,19 +35,10 @@
 
       <div class="banner-right">
         <div class="button-group desktop-menu">
-          <Store />
-          <RegisterPenseAja />
-          <Login />
+          <Store ref="storeRef" />
+          <RegisterPenseAja ref="registerRef" />
+          <Login ref="loginRef" />
         </div>
-        <!-- FAB menu icon for tablet/mobile -->
-        <v-fab
-          v-if="isMobile"
-          class="menu-fab"
-          color="info"
-          :icon="isMenuOpen ? 'mdi mdi-menu-open' : 'mdi mdi-menu'"
-          variant="flat"
-          @click="isMenuOpen = !isMenuOpen"
-        ></v-fab>
       </div>
     </div>
 
@@ -74,6 +65,36 @@
         </div>
       </div>
     </transition>
+
+    <!-- Bottom Navigation para Mobile -->
+    <v-layout class="overflow-visible" v-if="isMobile" style="height: 56px">
+      <v-bottom-navigation grow class="bg-red-lighten-5" elevation="7">
+        <v-btn @click="goHome">
+          <i class="mdi mdi-home-lightbulb-outline fs-4"></i>
+          PA's
+        </v-btn>
+
+        <v-btn @click="handleStoreClick">
+          <i class="mdi mdi-store fs-4"></i>
+          Loja
+        </v-btn>
+
+        <v-btn @click="handleRegisterClick">
+          <i class="mdi mdi-lightbulb-on-outline fs-4"></i>
+          Registrar
+        </v-btn>
+
+        <v-btn @click="handleLoginClick">
+          <i
+            :class="
+              user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'
+            "
+            class="fs-4"
+          ></i>
+          {{ user?.matricula ? "Sair" : "Entrar" }}
+        </v-btn>
+      </v-bottom-navigation>
+    </v-layout>
   </div>
 </template>
 
@@ -88,12 +109,31 @@ const user = useUserStore();
 
 const isMenuOpen = ref(false);
 const isMobile = ref(false);
+
+const goHome = () => {
+  window.location.href = "/pense-aja";
+};
+
+const storeRef = ref(null);
+const registerRef = ref(null);
+const loginRef = ref(null);
+
 function handleResize() {
   isMobile.value = window.innerWidth <= 1024;
 }
 const monthNames = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
 ];
 const currentMonth = ref("");
 onMounted(() => {
@@ -102,17 +142,23 @@ onMounted(() => {
   const now = new Date();
   currentMonth.value = monthNames[now.getMonth()];
 });
+
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
 });
 
-const loginDialog = ref(false);
-function openLogin() {
-  loginDialog.value = true;
-}
-function closeLogin() {
-  loginDialog.value = false;
-}
+// Handlers para botões do bottom navigation
+const handleStoreClick = () => {
+  storeRef.value?.openStoreBottomNav();
+};
+
+const handleRegisterClick = () => {
+  registerRef.value?.openRegisterBottomNav();
+};
+
+const handleLoginClick = () => {
+  loginRef.value?.openLoginBottomNav();
+};
 </script>
 
 <style scoped>
@@ -131,27 +177,25 @@ function closeLogin() {
   .button-group.desktop-menu {
     display: none;
   }
-  .menu-fab {
-    display: inline-flex !important;
-  }
 }
 
-.menu-fab {
-  display: none;
+.mobile-bottom-nav {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 1200;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .side-drawer {
   position: fixed;
-  top: 1rem; 
-  left: 1rem; 
+  top: 1rem;
+  left: 1rem;
   width: 240px;
-  height: calc(100vh - 2rem); 
+  height: calc(100vh - 2rem);
   background: #ffffff;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); 
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   z-index: 2000;
   display: flex;
   flex-direction: column;
@@ -172,7 +216,6 @@ function closeLogin() {
 
 .side-drawer.left {
   left: 0;
-  
 }
 
 .drawer-content {
@@ -250,13 +293,15 @@ function closeLogin() {
   transition: color 0.2s;
 }
 
-.month-value, .user-value {
+.month-value,
+.user-value {
   font-weight: bold;
   color: #e53935; /* vermelho suave */
   letter-spacing: 0.5px;
 }
 
-.user-label, .month-label {
+.user-label,
+.month-label {
   color: #b71c1c;
 }
 

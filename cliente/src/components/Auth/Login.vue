@@ -1,162 +1,193 @@
 <template>
-  <v-dialog max-width="400">
-    <template v-slot:activator="{ props: activatorProps }">
-      <button
-        v-if="!isMobile"
-        v-bind="activatorProps"
-        id="openUser"
-        class="action-button"
-      >
-        <div class="button-icon-container">
+  <div class="auth">
+    <v-dialog v-model="openAuth" max-width="400">
+      <template v-slot:activator="{ props: activatorProps }">
+        <button
+          v-if="!isMobile"
+          v-bind="activatorProps"
+          id="openUser"
+          class="action-button"
+        >
+          <div class="button-icon-container">
+            <i
+              :class="
+                user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'
+              "
+              class="icon fs-4"
+            ></i>
+          </div>
+          <span class="button-label">{{
+            user?.matricula ? "Sair" : "Login"
+          }}</span>
+        </button>
+
+        <button
+          v-else
+          @click="handleUserData"
+          v-bind="activatorProps"
+          class="mobile-action-button"
+        >
           <i
             :class="
               user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'
             "
-            class="icon fs-4"
+            class="icon"
           ></i>
-        </div>
-        <span class="button-label">{{
-          user?.matricula ? "Sair" : "Login"
-        }}</span>
-      </button>
+          <span class="label">{{ user?.matricula ? "Sair" : "Login" }}</span>
+        </button>
+      </template>
 
-      <button
-        v-else
-        @click="handleUserData"
-        v-bind="activatorProps"
-        class="mobile-action-button"
-      >
-        <i
-          :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'"
-          class="icon"
-        ></i>
-        <span class="label">{{ user?.matricula ? "Sair" : "Login" }}</span>
-      </button>
-    </template>
-
-    <template v-slot:default="{ isActive }">
-      <!-- Login -->
-      <div v-if="!user?.matricula" class="login-popup" style="z-index: 9999">
-        <div class="login-overlay" @click="close"></div>
-        <div class="login-container">
-          <div class="login-header">
-            <div class="unidade-popup-icon login-imagem">
-              <img src="/assets/img/dass.png" alt="dass-logo" />
-            </div>
-            <h2>Login</h2>
-
-            <span
-              @click="isActive.value = false"
-              class="mdi mdi-close-circle login-close"
-            ></span>
-          </div>
-
-          <div class="login-form">
-            <div class="login-field">
-              <label for="login-user">Usuário</label>
-              <div class="input-with-icon">
-                <span class="bi bi-person-fill input-icon"></span>
-                <input
-                  type="text"
-                  id="login-user"
-                  v-model="username"
-                  placeholder="Digite seu usuário"
-                />
+      <template v-slot:default="{ isActive }">
+        <!-- Login -->
+        <div v-if="!user?.matricula" class="login-popup" style="z-index: 9999">
+          <div class="login-overlay" @click="close"></div>
+          <div class="login-container">
+            <div class="login-header">
+              <div class="unidade-popup-icon login-imagem">
+                <img src="/assets/img/dass.png" alt="dass-logo" />
               </div>
+              <h2>Login</h2>
+
+              <span
+                @click="isActive.value = false"
+                class="mdi mdi-close-circle login-close"
+              ></span>
             </div>
 
-            <div class="login-field">
-              <label for="login-password">Senha</label>
-              <div class="input-with-icon">
-                <span class="bi bi-lock-fill input-icon"></span>
-                <input
-                  :type="showPassword ? 'text' : 'password'"
-                  id="login-password"
-                  v-model="password"
-                  placeholder="Digite sua senha"
-                />
-
-                <span
-                  class="bi"
-                  :class="showPassword ? 'bi-eye' : 'bi-eye-slash'"
-                  @click="showPassword = !showPassword"
-                  style="cursor: pointer"
-                ></span>
+            <div class="login-form">
+              <div class="login-field">
+                <label for="login-user">Usuário</label>
+                <div class="input-with-icon">
+                  <span class="bi bi-person-fill input-icon"></span>
+                  <input
+                    type="text"
+                    id="login-user"
+                    v-model="username"
+                    placeholder="Digite seu usuário"
+                  />
+                </div>
               </div>
 
-              <div class="warning-container">
-                <span class="warning-content" v-if="warning">
-                  {{ warning }}
-                </span>
+              <div class="login-field">
+                <label for="login-password">Senha</label>
+                <div class="input-with-icon">
+                  <span class="bi bi-lock-fill input-icon"></span>
+                  <input
+                    :type="showPassword ? 'text' : 'password'"
+                    id="login-password"
+                    v-model="password"
+                    placeholder="Digite sua senha"
+                  />
+
+                  <span
+                    class="bi"
+                    :class="showPassword ? 'bi-eye' : 'bi-eye-slash'"
+                    @click="showPassword = !showPassword"
+                    style="cursor: pointer"
+                  ></span>
+                </div>
+
+                <div class="warning-container">
+                  <span class="warning-content" v-if="warning">
+                    {{ warning }}
+                  </span>
+                </div>
               </div>
-            </div>
 
-            <ForgotPassword @notify="(data) => notification.showPopup(data.type, data.title, data.message)"/>
+              <ForgotPassword
+                @notify="
+                  (data) =>
+                    notification.showPopup(data.type, data.title, data.message)
+                "
+              />
 
-            <div class="login-actions">
-              <button class="login-btn" @click="handleLogin">
-                <span class="btn-text">Entrar</span>
-                <span class="spinner" v-if="loading"></span>
-              </button>
+              <div class="login-actions">
+                <button class="login-btn" @click="handleLogin">
+                  <span class="btn-text">Entrar</span>
+                  <span class="spinner" v-if="loading"></span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Logout -->
-      <div v-else id="logout-popup" class="login-popup">
-        <div class="login-overlay"></div>
-        <div class="login-container">
-          <div class="login-header">
-            <div class="unidade-popup-icon login-imagem">
-              <img src="/assets/img/dass.png" />
-            </div>
-            <h2>Dass Pense&Aja</h2>
+        <!-- Logout -->
+        <div v-else id="logout-popup" class="login-popup">
+          <div class="login-overlay"></div>
+          <div class="login-container">
+            <div class="login-header">
+              <div class="unidade-popup-icon login-imagem">
+                <img src="/assets/img/dass.png" />
+              </div>
+              <h2>Dass Pense&Aja</h2>
 
-            <span
-              @click="isActive.value = false"
-              class="mdi mdi-close-circle login-close"
-            ></span>
-          </div>
-
-          <div class="login-form">
-            <div class="login-field">
-              <label for="login-user"
-                >Usuário: {{ user?.usuario }}<span class="usuario-name"></span
-              ></label>
-              <label for="login-user"
-                >Matrícula: {{ user?.matricula
-                }}<span class="user-matricula"></span
-              ></label>
+              <span
+                @click="isActive.value = false"
+                class="mdi mdi-close-circle login-close"
+              ></span>
             </div>
 
-            <div class="login-actions">
-              <button
-                @click="handleLogout"
-                type="button"
-                id="logout"
-                class="btn btn-outline-danger"
-              >
-                Sair
-                <span class="spinner-logout hidden"></span>
-              </button>
+            <div class="login-form">
+              <div class="user-info">
+                <div class="user-avatar">
+                  <span class="avatar-initials">{{ getUserInitials }}</span>
+                </div>
+                <div class="user-details">
+                  <h3 class="user-name">{{ formateName(user?.nome) }}</h3>
+                  <div class="user-field">
+                    <span class="field-label">Usuário:</span>
+                    <span class="field-value">{{ user?.usuario }}</span>
+                  </div>
+                  <div class="user-field">
+                    <span class="field-label">Matrícula:</span>
+                    <span class="field-value">{{ user?.matricula }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="login-actions user-actions">
+                <button @click="goToProfile" class="profile-btn">
+                  <i class="mdi mdi-account-circle"></i>
+                  <span>Meu Perfil</span>
+                </button>
+
+                <button
+                  @click="handleLogout"
+                  type="button"
+                  id="logout"
+                  class="logout-btn"
+                >
+                  <i class="mdi mdi-logout"></i>
+                  <span>Sair</span>
+                  <span class="spinner-logout hidden"></span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </template>
-  </v-dialog>
+      </template>
+    </v-dialog>
+  </div>
 
   <Notification ref="notification" />
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, defineExpose } from "vue";
 import { login, logout } from "@/services/authService.js";
+import { formateName } from "@/services/userService.js";
 import { useUserStore } from "@/stores/userStore.js";
+import { useRouter } from "vue-router";
 import Notification from "@/components/Notification.vue";
 import ForgotPassword from "./ForgotPassword.vue";
 
+const openAuth = ref(false);
+const openLoginBottomNav = () => {
+  openAuth.value = !openAuth.value;
+};
+defineExpose({ openLoginBottomNav });
+
+const router = useRouter();
 const isMobile = ref(false);
 function handleResize() {
   isMobile.value = window.innerWidth <= 1024;
@@ -179,12 +210,26 @@ const showPassword = ref(false);
 const loading = ref(false);
 const warning = ref("");
 
+// Computa as iniciais do nome do usuário para o avatar
+const getUserInitials = computed(() => {
+  if (!user?.nome) return "?";
+  return user.nome
+    .split(" ")
+    .map((name) => name.charAt(0).toUpperCase())
+    .slice(0, 2)
+    .join("");
+});
+
 const handleLogin = async () => {
   await login(username.value, password.value, loading, notification);
 };
 
 const handleLogout = async () => {
   await logout(loading);
+};
+
+const goToProfile = () => {
+  router.push("/user");
 };
 </script>
 
@@ -440,5 +485,104 @@ const handleLogout = async () => {
 
 .warning-content.hidden {
   display: none;
+}
+
+/* Estilos novos para o perfil do usuário */
+.user-info {
+  display: flex;
+  align-items: center;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.user-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ef5350, #c62828);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  box-shadow: 0 4px 10px rgba(239, 83, 80, 0.3);
+  flex-shrink: 0;
+}
+
+.avatar-initials {
+  font-size: 22px;
+  color: white;
+  font-weight: bold;
+}
+
+.user-details {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 18px;
+  margin: 0 0 5px;
+  color: #333;
+}
+
+.user-field {
+  font-size: 14px;
+  margin-bottom: 3px;
+  color: #666;
+}
+
+.field-label {
+  font-weight: 600;
+  margin-right: 5px;
+}
+
+.user-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profile-btn,
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.profile-btn {
+  background-color: #f8f9fa;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.profile-btn:hover {
+  background-color: #eee;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logout-btn {
+  background: linear-gradient(135deg, #e74c3c, #d9534f);
+  color: white;
+  border: none;
+}
+
+.logout-btn:hover {
+  background: linear-gradient(135deg, #d9534f, #c9302c);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.profile-btn i,
+.logout-btn i {
+  font-size: 18px;
 }
 </style>

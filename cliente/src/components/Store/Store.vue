@@ -1,200 +1,224 @@
 <template>
-  <v-dialog max-width="850">
-    <template v-slot:activator="{ props: activatorProps }">
-      <button
-        v-if="!isMobile"
-        @click="handleUserData($event, false)"
-        v-bind="activatorProps"
-        id="openLoja"
-        class="action-button"
-      >
-        <div class="button-icon-container">
-          <span class="mdi mdi-store fs-4"></span>
-        </div>
-        <span class="button-label">Loja</span>
-      </button>
-
-      <button
-        v-else
-        @click="handleUserData($event, false)"
-        v-bind="activatorProps"
-        class="mobile-action-button"
-      >
-        <i class="mdi mdi-store-outline icon"></i>
-        <span class="label">Loja</span>
-      </button>
-    </template>
-
-    <template v-slot:default="{ isActive }">
-      <div id="loja" class="loja store-container rounded-b-shaped">
-        <div class="store-wrapper rounded-b-shaped">
-          <div class="store-header red-theme rounded-b-shaped">
-            <div class="header-gradient-overlay"></div>
-            <div class="store-title-container">
-              <div class="store-logo">
-                <img
-                  src="/assets/img/icons/dass-penseaja.png"
-                  alt="Dass Pense Aja Logo"
-                />
-              </div>
-
-              <div class="store-title-content">
-                <h1>Loja de Recompensas</h1>
-                <span class="store-subtitle">Sistema Pense & Aja</span>
-              </div>
-            </div>
-
-            <div class="store-notification">
-              <div class="notification-icon">
-                <i class="bi bi-exclamation-circle-fill"></i>
-              </div>
-
-              <div class="notification-content">
-                <span class="notification-title">Atenção</span>
-                <span class="notification-text">
-                  Pontuação sujeita a avaliação do gerente
-                </span>
-              </div>
-            </div>
-
-            <button
-              @click="isActive.value = false"
-              class="close-store-button position-absolute top-0 end-0 m-4"
-              id="closeLoja"
-            >
-              <span class="bi bi-x-lg text-white"></span>
-            </button>
+  <div class="store-container">
+    <v-dialog v-model="openStore" max-width="850">
+      <template v-slot:activator="{ props: activatorProps }">
+        <button
+          v-if="!isMobile"
+          @click="handleUserData($event, false)"
+          v-bind="activatorProps"
+          id="openLoja"
+          class="action-button"
+        >
+          <div class="button-icon-container">
+            <span class="mdi mdi-store fs-4"></span>
           </div>
+          <span class="button-label">Loja</span>
+        </button>
 
-          <!-- Barra de pesquisa e pontos -->
-          <div class="store-search-bar">
-            <div class="search-container" id="divLojaMatricula">
-              <i class="bi bi-person-badge search-icon"></i>
-              <input
-                type="number"
-                placeholder="Digite sua matrícula"
-                id="lojaMatricula"
-                class="search-input"
-                v-model="registrationInput"
-                @keyup.enter="handleUserData($event, false)"
-              />
+        <button
+          v-else
+          @click="handleUserData($event, false)"
+          v-bind="activatorProps"
+          class="mobile-action-button"
+        >
+          <i class="mdi mdi-store-outline icon"></i>
+          <span class="label">Loja</span>
+        </button>
+      </template>
+
+      <template v-slot:default="{ isActive }">
+        <div id="loja" class="loja store-container rounded-b-shaped">
+          <div class="store-wrapper rounded-b-shaped">
+            <div class="store-header red-theme rounded-b-shaped">
+              <div class="header-gradient-overlay"></div>
+              <div class="store-title-container">
+                <div class="store-logo">
+                  <img
+                    src="/assets/img/icons/dass-penseaja.png"
+                    alt="Dass Pense Aja Logo"
+                  />
+                </div>
+
+                <div class="store-title-content">
+                  <h1>Loja de Recompensas</h1>
+                  <span class="store-subtitle">Sistema Pense & Aja</span>
+                </div>
+              </div>
+
+              <div class="store-notification">
+                <div class="notification-icon">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                </div>
+
+                <div class="notification-content">
+                  <span class="notification-title">Atenção</span>
+                  <span class="notification-text">
+                    Pontuação sujeita a avaliação do gerente
+                  </span>
+                </div>
+              </div>
 
               <button
-                @click="handleUserData($event, true)"
-                class="search-button"
-                id="pesqLoja"
+                @click="isActive.value = false"
+                class="close-store-button position-absolute top-0 end-0 m-4"
+                id="closeLoja"
               >
-                <i class="bi bi-search"></i>
-                <span>Buscar</span>
-                <span class="spinner" v-if="loading"></span>
+                <span class="bi bi-x-lg text-white"></span>
               </button>
             </div>
-            <div class="points-container">
-              <div class="points-badge">
-                <i class="bi bi-star-fill"></i>
-                <span id="pontosLoja" class="points-value">{{ pontos }}</span>
-                <span class="points-label">pontos</span>
-              </div>
-            </div>
-          </div>
 
-          <!-- Informações do usuário -->
-          <div v-if="user?.matricula || userData" class="user-details">
-            <div class="user-info-card">
-              <div class="user-avatar">
-                <i class="bi bi-person-circle text-primary"></i>
-              </div>
+            <!-- Barra de pesquisa e pontos -->
+            <div class="store-search-bar">
+              <div class="search-container" id="divLojaMatricula">
+                <i class="bi bi-person-badge search-icon"></i>
+                <input
+                  type="number"
+                  placeholder="Digite sua matrícula"
+                  id="lojaMatricula"
+                  class="search-input"
+                  v-model="registrationInput"
+                  @keyup.enter="handleUserData($event, false)"
+                />
 
-              <div class="user-data">
-                <p id="nomeLoja" class="nomeLoja">Nome: {{ userData?.nome }}</p>
-                <p id="setorLoja" class="setorLoja">
-                  Setor: {{ userData?.setor }}
-                </p>
-                <p id="gerenteLoja" class="gerenteLoja">
-                  Gerente: {{ userData?.gerente }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Filtro de produtos -->
-          <div class="store-filter-bar">
-            <button
-              :class="['filter-btn', filterType === 'all' ? 'active' : '']"
-              @click="filterType = 'all'"
-            >
-              <i class="bi bi-grid"></i> Todos
-            </button>
-            <button
-              :class="[
-                'filter-btn',
-                filterType === 'available' ? 'active' : '',
-              ]"
-              @click="filterType = 'available'"
-            >
-              <i class="bi bi-bag-check-fill text-success"></i> Disponíveis
-            </button>
-            <button
-              :class="[
-                'filter-btn',
-                filterType === 'unavailable' ? 'active' : '',
-              ]"
-              @click="filterType = 'unavailable'"
-            >
-              <i class="bi bi-emoji-frown-fill text-danger"></i> Não disponíveis
-            </button>
-          </div>
-
-          <!-- Produtos -->
-          <div class="store-products">
-            <h2 class="products-heading">Produtos Disponíveis</h2>
-
-            <div v-if="filteredProducts" class="products-grid">
-              <div v-for="product in filteredProducts" :key="product.id">
-                <div
-                  class="product-card polaroid"
-                  :class="product.points > pontos ? 'disabled-buy' : ''"
+                <button
+                  @click="handleUserData($event, true)"
+                  class="search-button"
+                  id="pesqLoja"
                 >
-                  <div v-if="product.points > pontos" class="disabled-overlay">
-                    <i class="bi bi-emoji-frown-fill unavailable-icon"></i>
-                    <span class="unavailable-text">Pontos Insuficientes</span>
-                    <span class="unavailable-hint">
-                      Junte mais pontos para resgatar!
-                    </span>
-                  </div>
-                  <div class="product-badge">{{ product.points }} pts</div>
-                  <div class="product-image-container">
-                    <img
-                      :src="product.image"
-                      :alt="product.name"
-                      class="product-image"
-                    />
-                  </div>
-                  <div v-if="userData" class="product-info">
-                    <h3 class="product-name">{{ product.name }}</h3>
+                  <i class="bi bi-search"></i>
+                  <span>Buscar</span>
+                  <span class="spinner" v-if="loading"></span>
+                </button>
+              </div>
+              <div class="points-container">
+                <div class="points-badge">
+                  <i class="bi bi-star-fill"></i>
+                  <span id="pontosLoja" class="points-value">{{ pontos }}</span>
+                  <span class="points-label">pontos</span>
+                </div>
+              </div>
+            </div>
 
-                    <BuyItem @updatePoints="updatePoints" :colaboradorData="{...userData, matricula: registrationInput}" :PenseAjaProduct="product" />
+            <!-- Informações do usuário -->
+            <div v-if="user?.matricula || userData" class="user-details">
+              <div class="user-info-card">
+                <div class="user-avatar">
+                  <i class="bi bi-person-circle text-primary"></i>
+                </div>
+
+                <div class="user-data">
+                  <p id="nomeLoja" class="nomeLoja">
+                    Nome: {{ userData?.nome }}
+                  </p>
+                  <p id="setorLoja" class="setorLoja">
+                    Setor: {{ userData?.setor }}
+                  </p>
+                  <p id="gerenteLoja" class="gerenteLoja">
+                    Gerente: {{ userData?.gerente }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filtro de produtos -->
+            <div class="store-filter-bar">
+              <button
+                :class="['filter-btn', filterType === 'all' ? 'active' : '']"
+                @click="filterType = 'all'"
+              >
+                <i class="bi bi-grid"></i> Todos
+              </button>
+              <button
+                :class="[
+                  'filter-btn',
+                  filterType === 'available' ? 'active' : '',
+                ]"
+                @click="filterType = 'available'"
+              >
+                <i class="bi bi-bag-check-fill text-success"></i> Disponíveis
+              </button>
+              <button
+                :class="[
+                  'filter-btn',
+                  filterType === 'unavailable' ? 'active' : '',
+                ]"
+                @click="filterType = 'unavailable'"
+              >
+                <i class="bi bi-emoji-frown-fill text-danger"></i> Não
+                disponíveis
+              </button>
+            </div>
+
+            <!-- Produtos -->
+            <div class="store-products">
+              <h2 class="products-heading">Produtos Disponíveis</h2>
+
+              <div v-if="filteredProducts" class="products-grid">
+                <div v-for="product in filteredProducts" :key="product.id">
+                  <div
+                    class="product-card polaroid"
+                    :class="product.points > pontos ? 'disabled-buy' : ''"
+                  >
+                    <div
+                      v-if="product.points > pontos"
+                      class="disabled-overlay"
+                    >
+                      <i class="bi bi-emoji-frown-fill unavailable-icon"></i>
+                      <span class="unavailable-text">Pontos Insuficientes</span>
+                      <span class="unavailable-hint">
+                        Junte mais pontos para resgatar!
+                      </span>
+                    </div>
+                    <div class="product-badge">{{ product.points }} pts</div>
+                    <div class="product-image-container">
+                      <img
+                        :src="product.image"
+                        :alt="product.name"
+                        class="product-image"
+                      />
+                    </div>
+                    <div v-if="userData" class="product-info">
+                      <h3 class="product-name">{{ product.name }}</h3>
+
+                      <BuyItem
+                        @updatePoints="updatePoints"
+                        :colaboradorData="{
+                          ...userData,
+                          matricula: registrationInput,
+                        }"
+                        :PenseAjaProduct="product"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </template>
-  </v-dialog>
+      </template>
+    </v-dialog>
+  </div>
 
   <Notification ref="notification" />
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount, defineExpose } from "vue";
 import { getUserData } from "@/services/userService";
 import { useUserStore } from "@/stores/userStore";
 import BuyItem from "@/components/Store/BuyItem.vue";
 import Notification from "../Notification.vue";
 // TODO: Passar dados para banco de dados
-import storeProducts from "@/utils/penseAjaProducts.json"
+import storeProducts from "@/utils/penseAjaProducts.json";
+
+// Abre a loja pelo bottomNav
+const openStore = ref(false);
+const openStoreBottomNav = () => {
+  openStore.value = !openStore.value;
+}
+defineExpose({
+  openStoreBottomNav,
+});
 
 const loading = ref(false);
 const notification = ref(null);
@@ -232,8 +256,8 @@ const filterProduct = () => {
     );
     return;
   }
-  
-  filteredProducts.value = storeProducts
+
+  filteredProducts.value = storeProducts;
 };
 
 watch(filterType, (newValue) => {
@@ -242,7 +266,7 @@ watch(filterType, (newValue) => {
   } else {
     filterProduct();
   }
-})
+});
 
 const registrationInput = ref(null);
 const handleUserData = async (e, click) => {
@@ -253,7 +277,6 @@ const handleUserData = async (e, click) => {
       await getUserData(user.matricula, userData);
       pontos.value = userData.value.pontos - userData.value.pontos_resgatados;
       console.log(userData.value);
-      
     }
 
     // Espera input do usuário
@@ -266,7 +289,6 @@ const handleUserData = async (e, click) => {
       );
       pontos.value = userData.value.pontos - userData.value.pontos_resgatados;
     }
-    
   } catch (error) {
     console.error("Error fetching user data:", error);
   }
@@ -278,8 +300,7 @@ const updatePoints = async (update) => {
     await getUserData(user.matricula, userData);
     pontos.value = userData.value.pontos - userData.value.pontos_resgatados;
   }
-}
-
+};
 </script>
 
 <style scoped>

@@ -1,301 +1,319 @@
 <template>
-  <v-dialog max-width="850">
-    <template v-slot:activator="{ props: activatorProps }">
-      <button
-        @click="handleUserClick"
-        v-bind="activatorProps"
-        id="openMenu"
-        @mouseover="isHover = true"
-        @mouseleave="isHover = false"
-        class="action-button"
-        v-if="!isMobile"
-      >
-        <div class="button-icon-container">
-          <i
-            :key="isHover"
-            class="icon mdi"
-            :class="isHover ? 'mdi-lightbulb-on text-amber-accent-4' : 'mdi-lightbulb-on-outline'"
-          ></i>
-        </div>
-        <span class="button-label">Cadastrar</span>
-      </button>
+  <div class="register">
+    <v-dialog v-model="openRegister" max-width="850">
+      <template v-slot:activator="{ props: activatorProps }">
+        <button
+          @click="handleUserClick"
+          v-bind="activatorProps"
+          id="openMenu"
+          @mouseover="isHover = true"
+          @mouseleave="isHover = false"
+          class="action-button"
+          v-if="!isMobile"
+        >
+          <div class="button-icon-container">
+            <i
+              :key="isHover"
+              class="icon mdi"
+              :class="
+                isHover
+                  ? 'mdi-lightbulb-on text-amber-accent-4'
+                  : 'mdi-lightbulb-on-outline'
+              "
+            ></i>
+          </div>
+          <span class="button-label">Cadastrar</span>
+        </button>
 
-      <button
-        v-else
-        @click="handleUserData"
-        v-bind="activatorProps"
-        class="mobile-action-button"
-        @mouseover="isHover = true"
-        @mouseleave="isHover = false"
-      >
-        <transition name="fade-icon" mode="out-in">
-          <i
-            :key="isHover"
-            class="icon mdi"
-            :class="isHover ? 'mdi-lightbulb-on text-yellow-accent-4' : 'mdi-lightbulb-on-outline'"
-          ></i>
-        </transition>
-        <span class="label">Registrar</span>
-      </button>
-    </template>
+        <button
+          v-else
+          @click="handleUserData"
+          v-bind="activatorProps"
+          class="mobile-action-button"
+          @mouseover="isHover = true"
+          @mouseleave="isHover = false"
+        >
+          <transition name="fade-icon" mode="out-in">
+            <i
+              :key="isHover"
+              class="icon mdi"
+              :class="
+                isHover
+                  ? 'mdi-lightbulb-on text-yellow-accent-4'
+                  : 'mdi-lightbulb-on-outline'
+              "
+            ></i>
+          </transition>
+          <span class="label">Registrar</span>
+        </button>
+      </template>
 
-    <template v-slot:default="{ isActive }">
-      <div id="penseaja-popup" class="penseaja-popup">
-        <div class="penseaja-container">
-          <div class="penseaja-header">
-            <div class="penseaja-header-content">
-              <div class="penseaja-header-left">
-                <div class="penseaja-icon-wrapper">
-                  <img
-                    src="/assets/img/icons/dass-penseaja.png"
-                    alt="Ícone Cadastro"
-                    class="penseaja-icon"
-                  />
+      <template v-slot:default="{ isActive }">
+        <div id="penseaja-popup" class="penseaja-popup">
+          <div class="penseaja-container">
+            <div class="penseaja-header">
+              <div class="penseaja-header-content">
+                <div class="penseaja-header-left">
+                  <div class="penseaja-icon-wrapper">
+                    <img
+                      src="/assets/img/icons/dass-penseaja.png"
+                      alt="Ícone Cadastro"
+                      class="penseaja-icon"
+                    />
+                  </div>
+
+                  <div class="penseaja-title-container">
+                    <h2>
+                      Cadastro Pense<span class="penseaja-highlight">&</span>Aja
+                    </h2>
+                    <span class="penseaja-subtitle">
+                      Transformando ideias em ações
+                    </span>
+                  </div>
                 </div>
 
-                <div class="penseaja-title-container">
-                  <h2>
-                    Cadastro Pense<span class="penseaja-highlight">&</span>Aja
-                  </h2>
-                  <span class="penseaja-subtitle">
-                    Transformando ideias em ações
-                  </span>
+                <button
+                  @click="isActive.value = false"
+                  class="close-register position-absolute top-0 end-0 m-1"
+                  id="closeLoja"
+                >
+                  <span class="bi bi-x-lg text-black"></span>
+                </button>
+              </div>
+              <div class="penseaja-header-accent"></div>
+            </div>
+
+            <div id="penseaja-form" class="penseaja-form">
+              <div class="penseaja-field">
+                <label for="penseaja-matricula">Matrícula</label>
+
+                <div class="penseaja-input-container">
+                  <input
+                    ref="matriculaInput"
+                    type="number"
+                    id="penseaja-matricula"
+                    placeholder="Digite sua matrícula"
+                    v-model="registrationEntry"
+                    @keyup="serachUser"
+                  />
+                  <span class="penseaja-spinner" v-if="loading"></span>
+                </div>
+              </div>
+
+              <div v-if="userData?.nome" class="user-penseaja-info">
+                <div class="user-penseaja-avatar">
+                  <span class="bi bi-person-circle"></span>
+                </div>
+                <div class="user-penseaja-details">
+                  <div class="user-detail">
+                    <span class="detail-label">Nome:</span>
+                    <span class="user-name">{{ userData?.nome }}</span>
+                  </div>
+                  <div class="user-detail">
+                    <span class="detail-label">Gerente:</span>
+                    <span class="user-gerente">{{ userData?.gerente }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Seção de Projeto e Data -->
+              <div class="penseaja-profile-section oito-perdas mt-3">
+                <div class="penseaja-field-group">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label for="penseaja-projeto">Nome do projeto</label>
+                      <input
+                        v-model="penseAjaData.projectName"
+                        type="text"
+                        id="penseaja-projeto"
+                        placeholder="Ex: Melhoria do processo"
+                      />
+                    </div>
+
+                    <div class="col-md-6">
+                      <label for="penseaja-data">Data</label>
+                      <input
+                        v-model="penseAjaData.projectDate"
+                        type="date"
+                        id="penseaja-data"
+                        min="<?php echo date('Y-m-d'); ?>"
+                        value="<?php echo date('Y-m-d'); ?>"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div>
+                      <label for="penseaja-projeto-area">
+                        Onde será implementado essa melhoria?
+                      </label>
+
+                      <v-combobox
+                        label="Selecione o Setor"
+                        v-model="penseAjaData.setor"
+                        :items="setoresDass"
+                        variant="outlined"
+                        color="red"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Situações -->
+              <div class="oito-perdas">
+                <div class="penseaja-field">
+                  <label for="penseaja-anterior">Situação anterior</label>
+                  <textarea
+                    v-model="penseAjaData.situationBefore"
+                    id="penseaja-anterior"
+                    placeholder="Descreva a situação anterior..."
+                  ></textarea>
+                </div>
+
+                <div class="penseaja-field">
+                  <label for="penseaja-atual">Situação atual</label>
+                  <textarea
+                    v-model="penseAjaData.situationNow"
+                    id="penseaja-atual"
+                    placeholder="Descreva a situação atual..."
+                  ></textarea>
+                </div>
+
+                <!-- AI button -->
+                <div class="tooltip-container">
+                  <button
+                    @mouseenter="showTooltip = true"
+                    @mouseleave="showTooltip = false"
+                    @click="handleImproveText"
+                    id="ai-button"
+                    class="ai-enhance-button"
+                    :class="disableIaButton ? 'disabled' : ''"
+                    type="button"
+                    :disabled="loadingImprove"
+                  >
+                    <div class="ai-enhance-icon">
+                      <i class="bi bi-robot"></i>
+                      <i class="bi bi-stars icon-spark"></i>
+                    </div>
+                    <span v-if="!loadingImprove">Melhorar texto com IA</span>
+                    <span v-else class="spinner-ai"></span>
+                    <div class="ai-enhance-effect"></div>
+                  </button>
+
+                  <AiMicrofone />
+
+                  <div
+                    @mouseenter="showTooltip = true"
+                    @mouseleave="showTooltip = false"
+                    :class="showTooltip ? 'visible' : ''"
+                    class="ai-tooltip"
+                  >
+                    <strong>
+                      <span class="lamp-icon bi bi-lightbulb"></span>
+                      Dica inteligente!
+                    </strong>
+                    Revise seu texto com inteligência artificial para facilitar
+                    a avaliação!
+                  </div>
+                </div>
+              </div>
+
+              <!-- 8 Perdas -->
+              <div class="oito-perdas mt-3">
+                <span class="mt-3">
+                  <strong>8 Perdas!</strong>
+                </span>
+
+                <v-combobox
+                  v-model="penseAjaData.perdas"
+                  :items="[
+                    'Superprodução',
+                    'Transporte',
+                    'Processamento',
+                    'Movimento',
+                    'Estoque',
+                    'Espera',
+                    'Talento',
+                    'Retrabalho',
+                  ]"
+                  label="Selecione as perdas"
+                  multiple
+                  variant="outlined"
+                  color="red"
+                />
+              </div>
+
+              <!-- Ganhos Pense Aja -->
+              <div class="ganhos-penseaja">
+                <div class="penseaja-checkbox-ganho-ask">
+                  <input v-model="ganhos" type="checkbox" id="ganho-penseaja" />
+                  <label for="ganho-penseaja" class="ganhos-penseaja-label">
+                    O que ganhei com essa melhoria?
+                  </label>
+                </div>
+
+                <div v-if="ganhos" id="ganhos-form">
+                  <label for="ganhos-descricao"
+                    >Descreva os ganhos obtidos</label
+                  >
+                  <div class="ganhos-tipos">
+                    <v-combobox
+                      v-model="penseAjaData.ganhos.values"
+                      :items="['Dinheiro', 'Tempo', 'Processo', 'Qualidade']"
+                      label="Selecione os ganhos"
+                      multiple
+                      variant="outlined"
+                      color="red"
+                    />
+
+                    <textarea
+                      v-model="penseAjaData.ganhos.justificativa"
+                      id="ganhos-descricao"
+                      placeholder="Explique detalhadamente quais ganhos foram obtidos com sua melhoria..."
+                    ></textarea>
+
+                    <div class="input-helper">
+                      <span class="bi bi-lightbulb text-yellow"></span>
+                      Mencione dados, números e resultados que demonstram o
+                      impacto positivo da sua ideia.
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <button
-                @click="isActive.value = false"
-                class="close-register position-absolute top-0 end-0 m-1"
-                id="closeLoja"
+                @click="handleRegister"
+                type="button"
+                class="penseaja-submit-button"
               >
-                <span class="bi bi-x-lg text-black"></span>
+                <span>Salvar </span>
+                <span class="mdi mdi-content-save-check-outline fs-5"></span>
               </button>
             </div>
-            <div class="penseaja-header-accent"></div>
-          </div>
-
-          <div id="penseaja-form" class="penseaja-form">
-            <div class="penseaja-field">
-              <label for="penseaja-matricula">Matrícula</label>
-
-              <div class="penseaja-input-container">
-                <input
-                  ref="matriculaInput"
-                  type="number"
-                  id="penseaja-matricula"
-                  placeholder="Digite sua matrícula"
-                  v-model="registrationEntry"
-                  @keyup="serachUser"
-                />
-                <span class="penseaja-spinner" v-if="loading"></span>
-              </div>
-            </div>
-
-            <div v-if="userData?.nome" class="user-penseaja-info">
-              <div class="user-penseaja-avatar">
-                <span class="bi bi-person-circle"></span>
-              </div>
-              <div class="user-penseaja-details">
-                <div class="user-detail">
-                  <span class="detail-label">Nome:</span>
-                  <span class="user-name">{{ userData?.nome }}</span>
-                </div>
-                <div class="user-detail">
-                  <span class="detail-label">Gerente:</span>
-                  <span class="user-gerente">{{ userData?.gerente }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Seção de Projeto e Data -->
-            <div class="penseaja-profile-section oito-perdas mt-3">
-              <div class="penseaja-field-group">
-                <div class="row">
-                  <div class="col-md-6">
-                    <label for="penseaja-projeto">Nome do projeto</label>
-                    <input
-                      v-model="penseAjaData.projectName"
-                      type="text"
-                      id="penseaja-projeto"
-                      placeholder="Ex: Melhoria do processo"
-                    />
-                  </div>
-
-                  <div class="col-md-6">
-                    <label for="penseaja-data">Data</label>
-                    <input
-                      v-model="penseAjaData.projectDate"
-                      type="date"
-                      id="penseaja-data"
-                      min="<?php echo date('Y-m-d'); ?>"
-                      value="<?php echo date('Y-m-d'); ?>"
-                    />
-                  </div>
-                </div>
-
-                <div class="row">
-                  <div>
-                    <label for="penseaja-projeto-area">
-                      Onde será implementado essa melhoria?
-                    </label>
-
-                    <v-combobox
-                      label="Selecione o Setor"
-                      v-model="penseAjaData.setor"
-                      :items="setoresDass"
-                      variant="outlined"
-                      color="red"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Situações -->
-            <div class="oito-perdas">
-              <div class="penseaja-field">
-                <label for="penseaja-anterior">Situação anterior</label>
-                <textarea
-                  v-model="penseAjaData.situationBefore"
-                  id="penseaja-anterior"
-                  placeholder="Descreva a situação anterior..."
-                ></textarea>
-              </div>
-
-              <div class="penseaja-field">
-                <label for="penseaja-atual">Situação atual</label>
-                <textarea
-                  v-model="penseAjaData.situationNow"
-                  id="penseaja-atual"
-                  placeholder="Descreva a situação atual..."
-                ></textarea>
-              </div>
-
-              <!-- AI button -->
-              <div class="tooltip-container">
-                <button
-                  @mouseenter="showTooltip = true"
-                  @mouseleave="showTooltip = false"
-                  @click="handleImproveText"
-                  id="ai-button"
-                  class="ai-enhance-button"
-                  :class="disableIaButton ? 'disabled' : ''"
-                  type="button"
-                  :disabled="loadingImprove"
-                >
-                  <div class="ai-enhance-icon">
-                    <i class="bi bi-robot"></i>
-                    <i class="bi bi-stars icon-spark"></i>
-                  </div>
-                  <span v-if="!loadingImprove">Melhorar texto com IA</span>
-                  <span v-else class="spinner-ai"></span>
-                  <div class="ai-enhance-effect"></div>
-                </button>
-
-                <AiMicrofone/>
-
-                <div
-                  @mouseenter="showTooltip = true"
-                  @mouseleave="showTooltip = false"
-                  :class="showTooltip ? 'visible' : ''"
-                  class="ai-tooltip"
-                >
-                  <strong>
-                    <span class="lamp-icon bi bi-lightbulb"></span>
-                    Dica inteligente!
-                  </strong>
-                  Revise seu texto com inteligência artificial para facilitar a
-                  avaliação!
-                </div>
-              </div>
-            </div>
-
-            <!-- 8 Perdas -->
-            <div class="oito-perdas mt-3">
-              <span class="mt-3">
-                <strong>8 Perdas!</strong>
-              </span>
-
-              <v-combobox
-                v-model="penseAjaData.perdas"
-                :items="[
-                  'Superprodução',
-                  'Transporte',
-                  'Processamento',
-                  'Movimento',
-                  'Estoque',
-                  'Espera',
-                  'Talento',
-                  'Retrabalho',
-                ]"
-                label="Selecione as perdas"
-                multiple
-                variant="outlined"
-                color="red"
-              />
-            </div>
-
-            <!-- Ganhos Pense Aja -->
-            <div class="ganhos-penseaja">
-              <div class="penseaja-checkbox-ganho-ask">
-                <input v-model="ganhos" type="checkbox" id="ganho-penseaja" />
-                <label for="ganho-penseaja" class="ganhos-penseaja-label">
-                  O que ganhei com essa melhoria?
-                </label>
-              </div>
-
-              <div v-if="ganhos" id="ganhos-form">
-                <label for="ganhos-descricao">Descreva os ganhos obtidos</label>
-                <div class="ganhos-tipos">
-                  <v-combobox
-                    v-model="penseAjaData.ganhos.values"
-                    :items="['Dinheiro', 'Tempo', 'Processo', 'Qualidade']"
-                    label="Selecione os ganhos"
-                    multiple
-                    variant="outlined"
-                    color="red"
-                  />
-
-                  <textarea
-                    v-model="penseAjaData.ganhos.justificativa"
-                    id="ganhos-descricao"
-                    placeholder="Explique detalhadamente quais ganhos foram obtidos com sua melhoria..."
-                  ></textarea>
-
-                  <div class="input-helper">
-                    <span class="bi bi-lightbulb text-yellow"></span>
-                    Mencione dados, números e resultados que demonstram o
-                    impacto positivo da sua ideia.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button
-              @click="handleRegister"
-              type="button"
-              class="penseaja-submit-button"
-            >
-              <span>Salvar </span>
-              <span class="mdi mdi-content-save-check-outline fs-5"></span>
-            </button>
           </div>
         </div>
-      </div>
-    </template>
-  </v-dialog>
+      </template>
+    </v-dialog>
+  </div>
 
   <Notification ref="notification" />
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, onBeforeUnmount } from "vue";
+import { ref, nextTick, onMounted, onBeforeUnmount, defineExpose } from "vue";
 import { useUserStore } from "@/stores/userStore";
 import { getUserData } from "@/services/userService";
 import { registerPenseAja } from "@/services/penseAjaService";
 import Notification from "@/components/Notification.vue";
 import { improveText } from "@/services/aiService";
 import AiMicrofone from "./AiTools/AiMicrofone.vue";
+
+const openRegister = ref(false);
+const openRegisterBottomNav = () => {
+  openRegister.value = !openRegister.value;
+};
+defineExpose({ openRegisterBottomNav });
 
 const isHover = ref(false);
 const isMobile = ref(false);
