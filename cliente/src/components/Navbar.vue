@@ -79,7 +79,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import Login from "./Login.vue";
+import Login from "./Auth/Login.vue";
 import Store from "./Store/Store.vue";
 import RegisterPenseAja from "./RegisterPenseAja.vue";
 import { useUserStore } from "@/stores/userStore";
