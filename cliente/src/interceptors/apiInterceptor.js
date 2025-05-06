@@ -20,8 +20,6 @@ export function attachInterceptors(api, apiAuth) {
     isRefreshing = true;
 
     try {
-      console.log("Token expirado, atualizando token...");
-
       const response = await authInstance.post("/auth/token/refresh", null, {
         withCredentials: true,
       });
