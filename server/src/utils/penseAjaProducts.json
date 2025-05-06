@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "name": "Bloco de Notas",
+    "points": 10,
+    "image": "/assets/img/bloco.png"
+  },
+  {
+    "id": 2,
+    "name": "Necessaire",
+    "points": 20,
+    "image": "/assets/img/bolsa.png"
+  },
+  {
+    "id": 3,
+    "name": "Camisa",
+    "points": 30,
+    "image": "/assets/img/camisa.png"
+  },
+  {
+    "id": 4,
+    "name": "Caneca",
+    "points": 15,
+    "image": "/assets/img/caneca.png"
+  },
+  {
+    "id": 5,
+    "name": "Caneta",
+    "points": 4,
+    "image": "/assets/img/caneta.png"
+  },
+  {
+    "id": 6,
+    "name": "Chaveiro",
+    "points": 5,
+    "image": "/assets/img/chaveiro.png"
+  },
+  {
+    "id": 7,
+    "name": "Copo",
+    "points": 10,
+    "image": "/assets/img/copo.png"
+  },
+  {
+    "id": 8,
+    "name": "Tênis",
+    "points": 40,
+    "image": "/assets/img/tenis.png"
+  }
+]

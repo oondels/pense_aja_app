@@ -2,6 +2,7 @@ import logger from "../utils/logger";
 import pool from "../config/db";
 import { CustomError } from "../types/CustomError";
 import { UserPenseaja } from "./UserPenseaja";
+import penseAjaProducts from "../utils/penseAjaProducts.json"
 
 const checkDassOffice = (dassOffice: string) => {
   const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF"];
@@ -250,7 +251,11 @@ export const PenseAjaService = {
         error instanceof Error ? error.message : "Erro desconhecido!";
       logger.error("Pense-aja", `Erro ao registrar pense aja: ${messageError}`);
 
-      throw new CustomError("Erro ao registrar pense aja.");
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        throw new CustomError("Erro ao registrar pense aja.");
+      }
     } finally {
       client.release();
     }
@@ -285,7 +290,11 @@ export const PenseAjaService = {
       return data.rows[0];
     } catch (error) {
       logger.error("Pense-aja", `Erro ao consultar pense aja por ID: ${error}`);
-      throw new CustomError("Erro ao consultar pense aja por ID.");
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        throw new CustomError("Erro ao consultar pense aja.");
+      }
     } finally {
       await client.release();
     }
@@ -366,4 +375,74 @@ export const PenseAjaService = {
       await client.release();
     }
   },
+
+  async buyProduct(dassOffice: string, product: Record<string, any>, colaboradorData: Record<string, any>, analista: Record<string, any>, userPoints: Record<string, any>) {
+    checkDassOffice(dassOffice);
+
+    const pontosRestantes = userPoints.pontos - userPoints.pontos_resgatados;
+
+    const client = await pool.connect();
+    try {
+      const getProduct = penseAjaProducts.find((p) => Number(p.id) === product.id);
+      if (!getProduct) {
+        throw new CustomError(
+          "Produto não encontrado.",
+          404,
+          "Produto não encontrado."
+        );
+      }
+
+      if (pontosRestantes < getProduct.points) {
+        throw new CustomError(
+          "Pontos insuficientes para resgatar o prêmio.",
+          400,
+          "Pontos insuficientes para resgatar o prêmio."
+        );
+      }
+
+      await client.query("BEGIN");
+
+      const params = [
+        colaboradorData.matricula,
+        colaboradorData.nome,
+        getProduct.name,
+        getProduct.points,
+        analista.analistaUser,
+        analista.analistaName,
+        dassOffice,
+      ];
+
+      const query = await client.query(`
+        INSERT INTO 
+        pense_aja.pense_aja_premios
+          (matricula, nome, premio_solicitado, pontos_premio_solicitado, usuario_entregador, nome_entregador, 
+          data_solicitacao, data_entrega, createdat, updatedat, unidade_dass)  
+        VALUES 
+          ($1, $2, $3, $4, $5, $6, NOW(), NOW(), NOW(), NOW(), $7)
+        RETURNING id
+      `, params)
+
+      if (query.rows.length === 0) {
+        await client.query("ROLLBACK");
+        throw new CustomError(
+          "Erro ao registrar prêmio.",
+          400,
+          "Erro ao inserir no banco de dados."
+        );
+      }
+
+      await client.query("COMMIT");
+      return query?.rows[0]?.id
+    } catch (error) {
+      await client.query("ROLLBACK");
+      logger.error("Pense-aja", `Erro ao comprar produto: ${error}`);
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        throw new CustomError("Erro ao comprar produto.");
+      }
+    } finally {
+      await client.release();
+    }
+  }
 };

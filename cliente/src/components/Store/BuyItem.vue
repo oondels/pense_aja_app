@@ -2,7 +2,9 @@
   <v-dialog max-width="500">
     <template v-slot:activator="{ props: activatorProps }">
       <button v-bind="activatorProps" class="product-button">
-        <span>Resgatar</span>
+        <span>
+          {{ getUserPermission() ? "Resgatar" : "Solicitar Para Analista" }}
+        </span>
         <i class="bi bi-bag-plus"></i>
       </button>
     </template>
@@ -35,59 +37,66 @@
               Ao confirmar o resgate,
               <b>os pontos necessários serão descontados</b> da sua pontuação
               disponível.<br />
-              <span class="buy-item-highlight"
-                >Esta ação não pode ser desfeita.</span
-              >
+              <span class="buy-item-highlight">
+                Esta ação não pode ser desfeita.
+              </span>
             </span>
           </div>
           <div class="buy-item-info">
             <div class="buy-item-image-illustration">
-              <img src="/assets/img/bolsa.png" alt="Bolsa Loja Dass" />
+              <img :src="PenseAjaProduct.image" :alt="PenseAjaProduct.name" />
             </div>
             <div class="buy-item-details">
-              <h3 class="item-name">Bolsa Exclusiva Dass</h3>
+              <h3 class="item-name">{{ PenseAjaProduct.name }}</h3>
               <p class="item-desc">
                 Leve para casa um brinde especial e mostre sua conquista!
               </p>
               <div class="item-points">
                 <i class="bi bi-star-fill"></i>
-                <span>Resgate por <b>20 pontos</b></span>
+                <span>Resgate por <b>{{PenseAjaProduct.points}} pontos</b></span>
               </div>
             </div>
           </div>
-          <button
-            class="buy-item-action-btn"
-            @click="handleRedeem"
-            :class="{ loading: isLoading }"
-          >
-            <span v-if="!isLoading">Confirmar Resgate</span>
-            <span v-else class="loader"></span>
-          </button>
+
+          <AnalistaConfirmation
+            :product="props.PenseAjaProduct"
+            :colaboradorData="props.colaboradorData"
+            @updatePoints="updatePoints"
+            @redeem="
+              (data) =>
+                notification.showPopup(data.type, data.title, data.message)
+            "
+          />
         </div>
       </div>
     </template>
   </v-dialog>
 
-  <Notification ref="notification"/>
+  <Notification ref="notification" />
 </template>
 
 <script setup>
 import { ref } from "vue";
-import Notification from "@/components/Notification.vue"
+import Notification from "@/components/Notification.vue";
+import { getUserPermission } from "@/services/userService.js";
+import AnalistaConfirmation from "../AnalistaConfirmation.vue";
 
-const notification = ref(null)
+const emit = defineEmits(["updatePoints"]);
+const updatePoints = (update) => {
+  emit("updatePoints", update);
+};
+
+const notification = ref(null);
 const props = defineProps({
   PenseAjaProduct: {
     type: Object,
     required: true,
   },
+  colaboradorData: {
+    type: Object,
+    required: true
+  }
 });
-
-const isLoading = ref(false);
-function handleRedeem() {
-  if (isLoading.value) return;
-  isLoading.value = true;
-}
 </script>
 
 <style scoped>
@@ -279,42 +288,6 @@ function handleRedeem() {
   color: #f9a825;
   font-size: 1.2rem;
 }
-.buy-item-action-btn {
-  margin-top: 1.2rem;
-  background: linear-gradient(135deg, #ef5350, #d32f2f);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 16px 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(239, 83, 80, 0.13);
-  transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-  outline: none;
-  animation: fadeInUp 0.7s 0.2s backwards;
-}
-.buy-item-action-btn:hover {
-  background: linear-gradient(135deg, #d32f2f, #ef5350);
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 8px 24px rgba(239, 83, 80, 0.18);
-}
-.buy-item-action-btn:active {
-  transform: scale(0.98);
-}
-.buy-item-action-btn .loader {
-  width: 24px;
-  height: 24px;
-  border: 3px solid #fff;
-  border-top: 3px solid #ef5350;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto;
-  display: block;
-}
 .buy-item-success {
   position: absolute;
   top: 50%;
@@ -377,14 +350,6 @@ function handleRedeem() {
   }
   100% {
     background: #ffebee;
-  }
-}
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
   }
 }
 

@@ -21,12 +21,12 @@ export const login = (username, password, loading, notification) => {
         "success",
         "Sucesso",
         "Login realizado com sucesso!",
-        1600
+        1000
       );
 
       setTimeout(() => {
         window.location.reload();
-      }, 2000);
+      }, 1000);
     })
     .catch((error) => {
       notification.value.showPopup(
@@ -40,6 +40,21 @@ export const login = (username, password, loading, notification) => {
     .finally(() => {
       loading.value = false
     });
+};
+
+export const checkLogin = async (username, password, loading) => {
+  let result
+  await authApi.post("/auth/login", { usuario: username, senha: password },)
+    .then(() => {
+      result = true
+    })
+    .catch((error) => {
+      console.error("Erro ao fazer login:", error);
+
+      result = false;
+    })
+
+  return result
 };
 
 export const logout = (loading) => {

@@ -4,6 +4,7 @@ import { verifyToken } from "../middlewares/auth";
 import roleVerificationAccess from "../middlewares/roleVerificationMiddleware";
 import { NotificationService } from "../services/NotificationService";
 import { UserPenseaja } from "../services/UserPenseaja";
+import { request } from "http";
 
 const router = Router();
 
@@ -11,10 +12,6 @@ const formatUserName = (name: string) => {
   const splitedName = name.split(" ")
   return splitedName[0] + " " + splitedName[splitedName.length - 1]
 }
-
-router.get("/protected", verifyToken, (req: Request, res: Response) => {
-  res.status(200).json({ message: "Protected route accessed!" });
-});
 
 router.get("/:dassOffice", async (req: Request, res: Response) => {
   try {
@@ -161,5 +158,32 @@ router.put("/avaliar/:id", verifyToken, roleVerificationAccess, async (req: Requ
   }
 }
 );
+
+router.put("/purchase/:registration", verifyToken, roleVerificationAccess, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { registration } = req.params;
+    const { product, colaboradorData, analista, dassOffice } = req.body;
+
+    if (Number.isNaN(Number(registration))) {
+      res.status(400).json({ message: "Matrícula Inválida." });
+      return
+    }
+
+    const user = await UserPenseaja.getUserData(Number(registration), dassOffice);
+    if (!user) {
+      res.status(400).json({ message: "Erro ao resgatar produto! Usuário não encontrado." });
+      return
+    }
+    const userPoints = { pontos: user.pontos, pontos_resgatados: user.pontos_resgatados }
+    const result = await PenseAjaService.buyProduct(dassOffice, product, colaboradorData, analista, userPoints);
+
+    res.status(200).json({
+      message: "Produto Resgatado com sucesso!",
+      data: result,
+    });
+  } catch (error) {
+    next(error)
+  }
+})
 
 export default router;

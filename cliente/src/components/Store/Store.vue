@@ -3,7 +3,7 @@
     <template v-slot:activator="{ props: activatorProps }">
       <button
         v-if="!isMobile"
-        @click="handleUserData"
+        @click="handleUserData($event, false)"
         v-bind="activatorProps"
         id="openLoja"
         class="action-button"
@@ -16,7 +16,7 @@
 
       <button
         v-else
-        @click="handleUserData"
+        @click="handleUserData($event, false)"
         v-bind="activatorProps"
         class="mobile-action-button"
       >
@@ -76,10 +76,14 @@
                 id="lojaMatricula"
                 class="search-input"
                 v-model="registrationInput"
-                @keyup.enter="handleUserData"
+                @keyup.enter="handleUserData($event, false)"
               />
 
-              <button class="search-button" id="pesqLoja">
+              <button
+                @click="handleUserData($event, true)"
+                class="search-button"
+                id="pesqLoja"
+              >
                 <i class="bi bi-search"></i>
                 <span>Buscar</span>
                 <span class="spinner" v-if="loading"></span>
@@ -102,10 +106,10 @@
               </div>
 
               <div class="user-data">
-                <p id="nomeLoja" class="nomeLoja">
-                  Nome: {{ userData?.nome }}
+                <p id="nomeLoja" class="nomeLoja">Nome: {{ userData?.nome }}</p>
+                <p id="setorLoja" class="setorLoja">
+                  Setor: {{ userData?.setor }}
                 </p>
-                <p id="setorLoja" class="setorLoja">Setor: {{ userData?.setor }}</p>
                 <p id="gerenteLoja" class="gerenteLoja">
                   Gerente: {{ userData?.gerente }}
                 </p>
@@ -145,8 +149,8 @@
           <div class="store-products">
             <h2 class="products-heading">Produtos Disponíveis</h2>
 
-            <div class="products-grid">
-              <div v-for="(product, index) in filteredProducts" :key="index">
+            <div v-if="filteredProducts" class="products-grid">
+              <div v-for="product in filteredProducts" :key="product.id">
                 <div
                   class="product-card polaroid"
                   :class="product.points > pontos ? 'disabled-buy' : ''"
@@ -154,9 +158,9 @@
                   <div v-if="product.points > pontos" class="disabled-overlay">
                     <i class="bi bi-emoji-frown-fill unavailable-icon"></i>
                     <span class="unavailable-text">Pontos Insuficientes</span>
-                    <span class="unavailable-hint"
-                      >Junte mais pontos para resgatar!</span
-                    >
+                    <span class="unavailable-hint">
+                      Junte mais pontos para resgatar!
+                    </span>
                   </div>
                   <div class="product-badge">{{ product.points }} pts</div>
                   <div class="product-image-container">
@@ -166,10 +170,10 @@
                       class="product-image"
                     />
                   </div>
-                  <div class="product-info">
+                  <div v-if="userData" class="product-info">
                     <h3 class="product-name">{{ product.name }}</h3>
 
-                    <BuyItem :PenseAjaProduct="product" />
+                    <BuyItem @updatePoints="updatePoints" :colaboradorData="{...userData, matricula: registrationInput}" :PenseAjaProduct="product" />
                   </div>
                 </div>
               </div>
@@ -184,11 +188,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { getUserData } from "@/services/userService";
 import { useUserStore } from "@/stores/userStore";
 import BuyItem from "@/components/Store/BuyItem.vue";
 import Notification from "../Notification.vue";
+// TODO: Passar dados para banco de dados
+import storeProducts from "@/utils/penseAjaProducts.json"
 
 const loading = ref(false);
 const notification = ref(null);
@@ -198,55 +204,14 @@ function handleResize() {
   isMobile.value = window.innerWidth <= 1024;
 }
 onMounted(() => {
+  filterProduct();
   handleResize();
   window.addEventListener("resize", handleResize);
 });
+
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
 });
-
-const storeProducts = [
-  {
-    name: "Bloco de Notas",
-    points: 10,
-    image: "/assets/img/bloco.png",
-  },
-  {
-    name: "Necessaire",
-    points: 20,
-    image: "/assets/img/bolsa.png",
-  },
-  {
-    name: "Camisa",
-    points: 30,
-    image: "/assets/img/camisa.png",
-  },
-  {
-    name: "Caneca",
-    points: 15,
-    image: "/assets/img/caneca.png",
-  },
-  {
-    name: "Caneta",
-    points: 4,
-    image: "/assets/img/caneta.png",
-  },
-  {
-    name: "Chaveiro",
-    points: 5,
-    image: "/assets/img/chaveiro.png",
-  },
-  {
-    name: "Copo",
-    points: 10,
-    image: "/assets/img/copo.png",
-  },
-  {
-    name: "Tênis",
-    points: 40,
-    image: "/assets/img/tenis.png",
-  },
-];
 
 const user = useUserStore();
 
@@ -254,35 +219,67 @@ const userData = ref(null);
 let pontos = ref(0);
 const filterType = ref("all");
 
-const filteredProducts = computed(() => {
+const filteredProducts = ref(null);
+const filterProduct = () => {
   if (filterType.value === "available") {
-    return storeProducts.filter((p) => p.points <= pontos.value);
+    filteredProducts.value = storeProducts.filter(
+      (p) => p.points <= pontos.value
+    );
+    return;
   } else if (filterType.value === "unavailable") {
-    return storeProducts.filter((p) => p.points > pontos.value);
+    filteredProducts.value = storeProducts.filter(
+      (p) => p.points > pontos.value
+    );
+    return;
   }
-  return storeProducts;
-});
+  
+  filteredProducts.value = storeProducts
+};
+
+watch(filterType, (newValue) => {
+  if (newValue === "all") {
+    filteredProducts.value = storeProducts;
+  } else {
+    filterProduct();
+  }
+})
 
 const registrationInput = ref(null);
-const handleUserData = async (e) => {
+const handleUserData = async (e, click) => {
   try {
     // Se estiver logado ja pesquisa os dados
     if (!userData.value && user.matricula) {
       registrationInput.value = user.matricula;
       await getUserData(user.matricula, userData);
       pontos.value = userData.value.pontos - userData.value.pontos_resgatados;
+      console.log(userData.value);
+      
     }
 
     // Espera input do usuário
-    if (e.key === "Enter") {
-      await getUserData(registrationInput.value, userData, loading, notification);
-      pontos.value =
-        userData.value.pontos - userData.value.pontos_resgatados;
+    if ((e.key && e.key === "Enter") || click) {
+      await getUserData(
+        registrationInput.value,
+        userData,
+        loading,
+        notification
+      );
+      pontos.value = userData.value.pontos - userData.value.pontos_resgatados;
     }
+    
   } catch (error) {
     console.error("Error fetching user data:", error);
   }
 };
+
+// Atualiza pontuação apos resgate de item
+const updatePoints = async (update) => {
+  if (update) {
+    await getUserData(user.matricula, userData);
+    pontos.value = userData.value.pontos - userData.value.pontos_resgatados;
+  }
+}
+
 </script>
 
 <style scoped>
