@@ -1,31 +1,35 @@
 <template>
-  <div class="home-page ">
+  <div class="home-page">
     <HomeHeader />
     <main class="home-main">
       <section class="features-section">
         <div class="container">
           <h2 class="section-title">Por que usar o Pense & Aja?</h2>
-          
+
+          <div v-if="isInstallable" class="install-button-container">
+            <button class="btn btn-primary" @click="installApp">📲 Instalar App</button>
+          </div>
+
           <div class="features-grid">
             <div class="feature-card">
               <div class="feature-icon">
-                <img src="/assets/img/ideiaOn.png" alt="Inovação" class="feature-img" />
+                <img src="/assets/img/icons/idea-on-brain.png" alt="Inovação" class="feature-img" />
               </div>
               <h3>Promova a inovação</h3>
               <p>Transforme ideias criativas em soluções reais para sua empresa</p>
             </div>
-            
+
             <div class="feature-card">
               <div class="feature-icon">
-                <img src="/assets/img/ideiaOn.png" alt="Colaboração" class="feature-img" />
+                <img src="/assets/img/icons/idea-on-brain.png" alt="Colaboração" class="feature-img" />
               </div>
               <h3>Incentive a colaboração</h3>
               <p>Conecte colaboradores e gestores em torno de novas ideias</p>
             </div>
-            
+
             <div class="feature-card">
               <div class="feature-icon">
-                <img src="/assets/img/ideiaOn.png" alt="Reconhecimento" class="feature-img" />
+                <img src="/assets/img/icons/idea-on-brain.png" alt="Reconhecimento" class="feature-img" />
               </div>
               <h3>Reconheça contribuições</h3>
               <p>Sistema de recompensas para os colaboradores mais inovadores</p>
@@ -33,7 +37,7 @@
           </div>
         </div>
       </section>
-      
+
       <section class="cta-section">
         <div class="container">
           <div class="cta-content">
@@ -51,13 +55,16 @@
 </template>
 
 <script setup>
-import HomeHeader from '../components/HomeHeader.vue'
+import HomeHeader from "../components/HomeHeader.vue";
+import { usePwaInstall } from "@/composables/usePwaInstall";
+
+const { isInstallable, installApp } = usePwaInstall();
 </script>
 
 <style scoped>
 .home-page {
   /* fundo “normal” da página: branco puro */
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -207,12 +214,12 @@ import HomeHeader from '../components/HomeHeader.vue'
   .features-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .cta-buttons {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .cta-content h2 {
     font-size: 2rem;
   }

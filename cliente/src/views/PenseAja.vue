@@ -43,8 +43,10 @@
 
 <script setup>
 import { ref } from "vue";
-import ListaPenseAja from "../components/ListaPenseAja.vue";
-
+import { defineAsyncComponent } from 'vue'
+const ListaPenseAja = defineAsyncComponent(() =>
+  import("../components/ListaPenseAja.vue")
+);
 // Estado para controlar a expansão do badge
 const isTabExpanded = ref(false);
 const penseAjaCount = ref(0);
@@ -163,6 +165,33 @@ const updateCount = (count) => {
   font-weight: 700;
   color: var(--red-primary);
   margin: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .penseaja-list-section.container {
+    padding: 1.5rem 1rem;
+    margin: 1.5rem auto;
+  }
+  .penseaja-list-title {
+    font-size: 1.5rem;
+  }
+
+  .record-badge-fixed {
+    border-radius: 0 0.7rem 0.7rem 0;
+    padding: 0.5rem;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    cursor: pointer;
+    transform-origin: left center;
+    max-width: 70px;
+    overflow: hidden;
+  }
+
+  .record-badge-fixed.expanded {
+    max-width: 240px;
+    background-color: var(--v-info-darken1, #1976d2);
+    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.3);
+  }
 }
 
 /* toolbar de busca */

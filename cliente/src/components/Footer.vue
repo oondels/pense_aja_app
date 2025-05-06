@@ -13,19 +13,6 @@
         </p>
       </div>
 
-      <!-- Links úteis -->
-      <div class="footer-links">
-        <a href="/privacy-policy" class="footer-link">Política de Privacidade</a>
-        <a href="/terms-of-use"    class="footer-link">Termos de Uso</a>
-      </div>
-
-      <!-- Redes sociais -->
-      <div class="footer-social">
-        <a v-for="(item, i) in social" :key="i" :href="item.url" target="_blank" rel="noopener" class="social-icon">
-          <img :src="item.icon" :alt="item.name" />
-        </a>
-      </div>
-
       <!-- Back to top -->
       <button class="back-to-top" @click="scrollToTop" aria-label="Voltar ao topo">
         ↑

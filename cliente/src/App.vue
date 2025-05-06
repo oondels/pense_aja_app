@@ -1,5 +1,6 @@
 <template>
   <Navbar />
+
   <GetUserEmail />
   <GetUserOffice />
   <router-view />

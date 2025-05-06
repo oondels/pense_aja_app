@@ -99,19 +99,24 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { defineAsyncComponent } from 'vue'
 import Login from "./Auth/Login.vue";
-import Store from "./Store/Store.vue";
-import RegisterPenseAja from "./RegisterPenseAja.vue";
 import { useUserStore } from "@/stores/userStore";
+import { useRouter } from "vue-router";
+
+const Store = defineAsyncComponent(() => import("./Store/Store.vue"));
+const RegisterPenseAja = defineAsyncComponent(() => import("./RegisterPenseAja.vue"));
 
 const user = useUserStore();
 
 const isMenuOpen = ref(false);
 const isMobile = ref(false);
 
+
+const router = useRouter();
 const goHome = () => {
-  window.location.href = "/pense-aja";
+  router.push("/pense-aja");
 };
 
 const storeRef = ref(null);
