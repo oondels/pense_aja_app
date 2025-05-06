@@ -67,4 +67,45 @@ router.get("/unidade/:registration", async (req: Request, res: Response, next: N
   }
 });
 
+// Atualiza perfil do usuario (Notificações)
+router.put("/:registration", verifyToken, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { registration } = req.params;
+    const { formData, dassOffice } = req.body;
+
+    if (registration.length < 7) {
+      res.status(400).json({ message: "Matricula inválida. O tamanho mínimo deve ser 7." });
+      return;
+    }
+
+    let matricula = Number(registration);
+    if (!matricula) {
+      res.status(400).json({ message: "Dados inválidos. Matrícula deve ser um número válido!" });
+      return;
+    }
+
+    if (typeof formData?.email !== "string") {
+      res.status(400).json({ message: "Email Inválido!" });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData?.email)) {
+      res.status(400).json({ message: "Email inválido!" });
+      return;
+    }
+
+    if (!formData?.email.includes("@grupodass.com.br")) {
+      res.status(400).json({ message: "Insira um email do Grupo Dass!" });
+      return;
+    }
+
+    const updatedUser = await UserPenseaja.updateUserData(matricula, dassOffice, formData);
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    next(error)
+  }
+})
+
 export default router;
