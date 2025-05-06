@@ -3,6 +3,7 @@ import './style.css'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import { useRegisterSW } from 'virtual:pwa-register/vue'
 
 import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
@@ -34,3 +35,5 @@ appInstance.use(VueVirtualScroller)
 appInstance.use(vuetify);
 appInstance.use(router);
 appInstance.mount('#app');
+
+useRegisterSW()
