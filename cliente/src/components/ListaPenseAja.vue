@@ -116,7 +116,7 @@
       </div>
     </div>
 
-    <v-expansion-panels v-else class="position-absolute">
+    <v-expansion-panels v-else class="mb-4">
       <v-expansion-panel>
         <v-expansion-panel-title>
           Filtros
@@ -245,7 +245,7 @@
       </v-expansion-panel>
     </v-expansion-panels>
 
-    <div v-if="penseAjas.length > 0">
+    <div  v-if="penseAjas.length > 0">
       <RecycleScroller
         :items="filteredList"
         :item-size="105"
@@ -254,486 +254,458 @@
         @scroll="onScroll"
       >
         <template #default="{ item }">
-          <div
-            class="list-item mr-3"
-            :class="isMobile ? 'mobile' : ''"
-            role="button"
-            :key="item.id"
-          >
-            <v-dialog max-width="900">
-              <template v-slot:activator="{ props: activatorProps }">
-                <div
-                  v-bind="activatorProps"
-                  class="item-content"
-                  :class="`${computeStatusData(item).className}`"
-                >
-                  <div class="item-main">
-                    <img
-                      src="/assets/img/icons/idea-on.png"
-                      class="icon-main"
-                    />
-                    <div>
-                      <h3 class="item-title text-ellipsis">
-                        {{ item.nome_projeto }}
-                      </h3>
-                      <p class="item-subtitle">{{ item.setor }}</p>
-                    </div>
-                  </div>
-                  <div class="item-meta">
-                    <div class="meta-row">
-                      <span class="mdi mdi-account"></span>
-                      <span class="text-ellipsis-2">
-                        {{ formateName(item.nome) }}
-                      </span>
-                    </div>
-                    <div class="meta-row">
-                      <span class="mdi mdi-calendar-clock"></span>
-                      <span>{{ item.criado }}</span>
-                    </div>
+          <v-dialog max-width="900">
+            <template v-slot:activator="{ props: activatorProps }">
+              <div
+                v-bind="activatorProps"
+                class="item-content"
+                :class="`${computeStatusData(item).className}`"
+                role="button"
+              >
+                <div class="item-main">
+                  <img src="/assets/img/icons/idea-on.png" class="icon-main" />
+                  <div>
+                    <h3 class="item-title text-ellipsis">
+                      {{ item.nome_projeto }}
+                    </h3>
+                    <p class="item-subtitle">{{ item.setor }}</p>
                   </div>
                 </div>
-              </template>
+                <div class="item-meta">
+                  <div class="meta-row">
+                    <span class="mdi mdi-account"></span>
+                    <span class="text-ellipsis-2">
+                      {{ formateName(item.nome) }}
+                    </span>
+                  </div>
+                  <div class="meta-row">
+                    <span class="mdi mdi-calendar-clock"></span>
+                    <span>{{ item.criado }}</span>
+                  </div>
+                </div>
+              </div>
+            </template>
 
+            <template v-slot:default="{ isActive }">
+              <div class="list-item mr-3" role="button" :key="item.id">
               <!-- Conteúdo do Pense e Aja -->
-              <template v-slot:default="{ isActive }">
-                <div class="avaliar-container active">
-                  <div class="avaliar-content active">
-                    <!-- Header -->
-                    <div
-                      class="avaliar-header position-relative container-fluid"
-                    >
-                      <div class="d-flex justify-content-around">
-                        <div class="row">
-                          <div class="avaliar-title col-md-6">
-                            <img
-                              src="/assets/img/icons/dass-penseaja-light.png"
-                              alt="Logo"
-                              class="avaliar-logo"
-                            />
-                            <div class="avaliar-title-text">
-                              <h2>
-                                Avaliação Pense
-                                <span class="avaliar-highlight">& </span>
-                                Aja
-                              </h2>
-                              <span class="avaliar-subtitle">
-                                Análise de melhoria contínua
-                              </span>
-                            </div>
+              <div class="avaliar-container active">
+                <div class="avaliar-content active">
+                  <!-- Header -->
+                  <div class="avaliar-header position-relative container-fluid">
+                    <div class="d-flex justify-content-around">
+                      <div class="row">
+                        <div class="avaliar-title col-md-6">
+                          <img
+                            src="/assets/img/icons/dass-penseaja-light.png"
+                            alt="Logo"
+                            class="avaliar-logo"
+                          />
+                          <div class="avaliar-title-text">
+                            <h2>
+                              Avaliação Pense
+                              <span class="avaliar-highlight">& </span>
+                              Aja
+                            </h2>
+                            <span class="avaliar-subtitle">
+                              Análise de melhoria contínua
+                            </span>
                           </div>
+                        </div>
 
-                          <!-- Titulo Projetoi -->
-                          <div class="avaliar-projeto col-md-6">
-                            <i class="bi bi-lightbulb"></i>
-                            Projeto:
-                            <strong id="nome-projeto">
-                              {{ item.nome_projeto }}
-                            </strong>
+                        <!-- Titulo Projetoi -->
+                        <div class="avaliar-projeto col-md-6">
+                          <i class="bi bi-lightbulb"></i>
+                          Projeto:
+                          <strong id="nome-projeto">
+                            {{ item.nome_projeto }}
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      @click="isActive.value = false"
+                      class="avaliar-close position-absolute top-0 end-0 m-3"
+                      aria-label="Fechar"
+                    >
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </div>
+
+                  <!-- Main Content -->
+                  <div class="avaliar-body">
+                    <!-- Status Badge -->
+                    <div class="avaliar-status">
+                      <span
+                        class="pense-aja-status p-2 rounded-lg"
+                        :class="computeStatusData(item).className"
+                      >
+                        <template
+                          v-if="computeStatusData(item).status === 'Reprovado'"
+                        >
+                          <i class="bi bi-x-octagon-fill"></i>
+                        </template>
+                        <template
+                          v-else-if="
+                            computeStatusData(item).status === 'Em Espera'
+                          "
+                        >
+                          <i class="bi bi-hourglass-split"></i>
+                        </template>
+                        <template
+                          v-else-if="
+                            computeStatusData(item).status === 'Sem Análise'
+                          "
+                        >
+                          <i class="bi bi-eye-slash"></i>
+                        </template>
+                        <template
+                          v-else-if="
+                            computeStatusData(item).status ===
+                            'Visto pelo Analista'
+                          "
+                        >
+                          <i class="bi bi-person-badge"></i>
+                        </template>
+                        <template
+                          v-else-if="
+                            computeStatusData(item).status ===
+                            'Visto pelo Gerente'
+                          "
+                        >
+                          <i class="bi bi-person-check"></i>
+                        </template>
+                        <template
+                          v-else-if="
+                            computeStatusData(item).status === 'Avaliado'
+                          "
+                        >
+                          <i class="bi bi-check-circle-fill"></i>
+                        </template>
+                        <template v-else>
+                          <i class="bi bi-question-circle"></i>
+                        </template>
+                        {{ computeStatusData(item).status }}
+                      </span>
+                    </div>
+
+                    <!-- Avaliadores -->
+                    <div class="avaliar-card-revisores">
+                      <div class="avaliar-card-header">
+                        <i class="bi bi-people-fill"></i>
+                        <h3>Avaliadores</h3>
+                      </div>
+                      <div class="avaliar-revisores-content">
+                        <div class="avaliar-revisor">
+                          <div class="avaliar-avatar avaliar-avatar-gerente">
+                            <i class="mdi mdi-briefcase-account"></i>
+                          </div>
+                          <div class="avaliar-revisor-info">
+                            <span class="avaliar-label">
+                              Gerente Avaliador
+                            </span>
+                            <span class="avaliar-value" id="gerente-avaliador">
+                              {{ item.gerente_aprovador ?? "Não avaliado" }}
+                            </span>
+                          </div>
+                        </div>
+                        <div class="avaliar-revisor">
+                          <div class="avaliar-avatar avaliar-avatar-analista">
+                            <i class="mdi mdi-account-check"></i>
+                          </div>
+                          <div class="avaliar-revisor-info">
+                            <span class="avaliar-label">
+                              Analista Avaliador
+                            </span>
+                            <span class="avaliar-value" id="analista-avaliador">
+                              {{ item.analista_avaliador ?? "Não avaliado" }}
+                            </span>
                           </div>
                         </div>
                       </div>
+                    </div>
+
+                    <!-- Dados do Colaborador -->
+                    <div class="avaliar-card-user">
+                      <div class="avaliar-card-header">
+                        <i class="bi bi-person-vcard"></i>
+                        <h3>Dados do Colaborador</h3>
+                      </div>
+
+                      <div class="avaliar-user-content">
+                        <div class="avaliar-user-row">
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">Matrícula</span>
+                            <span
+                              class="avaliar-value"
+                              id="matricula-penseaja-avaliacao"
+                            >
+                              {{ item.matricula ?? "*******" }}
+                            </span>
+                          </div>
+
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">Nome</span>
+                            <span
+                              class="avaliar-value"
+                              id="nome-penseaja-avaliacao"
+                            >
+                              {{ item.nome }}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div class="avaliar-user-row">
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">Gerente</span>
+                            <span
+                              class="avaliar-value"
+                              id="gerente-penseaja-avaliacao"
+                            >
+                              {{ item.gerente }}
+                            </span>
+                          </div>
+
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">Turno</span>
+                            <span
+                              class="avaliar-value"
+                              id="turno-penseaja-avaliacao"
+                            >
+                              {{ item.turno }}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div class="avaliar-user-row">
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">Setor</span>
+                            <span
+                              class="avaliar-value"
+                              id="setor-penseaja-avaliacao"
+                            >
+                              {{ item.setor }}
+                            </span>
+                          </div>
+
+                          <div class="avaliar-user-item">
+                            <span class="avaliar-label">
+                              Data de Realização
+                            </span>
+                            <span
+                              class="avaliar-value"
+                              id="data-penseaja-avaliacao"
+                            >
+                              {{ item.criado }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Situação Antes e Depois -->
+                    <div class="avaliar-card-situacao">
+                      <div class="avaliar-card-header">
+                        <i class="mdi mdi-arrow-right-circle-outline"></i>
+                        <h3>Situação Antes e Depois</h3>
+                      </div>
+
+                      <div class="avaliar-situacao-content">
+                        <div class="avaliar-tabs">
+                          <button
+                            class="avaliar-tab-btn"
+                            :class="!beforeAfter ? 'active' : ''"
+                            @click="beforeAfter = false"
+                            data-tab="antes"
+                          >
+                            <i class="mdi mdi-arrow-left-circle-outline" />
+                            <span>Antes</span>
+                          </button>
+
+                          <button
+                            class="avaliar-tab-btn"
+                            :class="beforeAfter ? 'active' : ''"
+                            @click="beforeAfter = true"
+                            data-tab="depois"
+                          >
+                            <i class="mdi mdi-arrow-right-circle-outline"></i>
+                            <span>Depois</span>
+                          </button>
+                        </div>
+
+                        <div
+                          class="avaliar-tab-content"
+                          id="antes-tab"
+                          :class="!beforeAfter ? 'active' : ''"
+                        >
+                          <p id="texto-antes-penseaja">
+                            {{ item.situacao_anterior }}
+                          </p>
+                        </div>
+
+                        <div
+                          class="avaliar-tab-content"
+                          :class="beforeAfter ? 'active' : ''"
+                          id="depois-tab"
+                        >
+                          <p id="texto-depois-penseaja">
+                            {{ item.situacao_atual }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Avaliação -->
+                    <!-- {{checkRoleAndEvaluation(item)}} -->
+                    <div
+                      class="avaliar-card-nivel"
+                      v-if="getUserPermission() && checkRoleAndEvaluation(item)"
+                    >
+                      <div class="avaliar-card-header">
+                        <i class="bi bi-trophy"></i>
+                        <h3>
+                          Classificação do Pense<span class="avaliar-highlight"
+                            >&</span
+                          >Aja
+                        </h3>
+                      </div>
+
+                      <div class="avaliar-nivel-content">
+                        <div class="avaliar-rating">
+                          <label
+                            v-for="(classification, key) in classifications"
+                            :key="key"
+                            class="avaliar-rating-option"
+                          >
+                            <input
+                              type="radio"
+                              name="avaliacao-pense-aja"
+                              @click="setEvaluationValue(classification.value)"
+                            />
+                            <div class="avaliar-rating-display">
+                              <span class="avaliar-rating-value">
+                                {{ key }}
+                              </span>
+                              <span class="avaliar-rating-icon">
+                                <i class="bi bi-star-fill"></i>
+                              </span>
+                              <span class="avaliar-rating-label">
+                                {{ classification.name }}
+                              </span>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div class="justifica-avaliacao" v-if="evaluationValue">
+                        <textarea
+                          placeholder="Justifique a avaliação do pense e aja."
+                          name="justificativa-avaliacao"
+                          id="justificativa-avaliacao"
+                          v-model="justification"
+                        ></textarea>
+                      </div>
+                    </div>
+
+                    <!-- Flags -->
+                    <div
+                      class="avaliar-card-flags"
+                      v-if="getUserPermission() && checkRoleAndEvaluation(item)"
+                    >
+                      <div
+                        class="row p-3 d-flex justify-content-around align-items-center"
+                      >
+                        <label class="avaliar-toggle col-md-4">
+                          <input
+                            type="checkbox"
+                            id="em-espera"
+                            v-model="emEspera"
+                          />
+                          <span class="avaliar-toggle-slider"></span>
+                          <span class="avaliar-toggle-label">
+                            <i class="bi bi-hourglass"></i>
+                            Em Espera
+                          </span>
+                        </label>
+
+                        <label class="avaliar-toggle col-md-4">
+                          <input
+                            type="checkbox"
+                            id="replicavel"
+                            v-model="replicavel"
+                          />
+                          <span class="avaliar-toggle-slider"></span>
+                          <span class="avaliar-toggle-label">
+                            <i class="bi bi-diagram-3"></i>
+                            Replicável
+                          </span>
+                        </label>
+
+                        <v-combobox
+                          v-model="a3PenseAja"
+                          :items="opcoesA3"
+                          item-title="label"
+                          item-value="value"
+                          label="A3 Mãe"
+                          clearable
+                          return-object
+                          class="col-md-4 mt-2"
+                          variant="outlined"
+                          color="red"
+                          density="compact"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div
+                    class="avaliar-footer"
+                    v-if="getUserPermission() && checkRoleAndEvaluation(item)"
+                  >
+                    <div class="avaliar-actions">
+                      <button
+                        @click="handleEvaluationValue('approve', item)"
+                        class="avaliar-btn avaliar-btn-aprovar"
+                        :class="setButtonPermission(item)"
+                      >
+                        <i class="bi bi-check-circle"></i>
+                        <span>Aprovar</span>
+                      </button>
+
+                      <button
+                        @click="handleEvaluationValue('reprove', item)"
+                        class="avaliar-btn avaliar-btn-reprovar"
+                        :class="setButtonPermission(item)"
+                      >
+                        <i class="bi bi-x-circle"></i>
+                        <span>Reprovar</span>
+                      </button>
+
+                      <button
+                        @click="handleEvaluationValue('exclude', item)"
+                        class="avaliar-btn avaliar-btn-excluir"
+                        :class="setButtonPermission(item)"
+                      >
+                        <i class="bi bi-trash"></i>
+                        <span>Excluir</span>
+                      </button>
 
                       <button
                         @click="isActive.value = false"
-                        class="avaliar-close position-absolute top-0 end-0 m-3"
-                        aria-label="Fechar"
+                        class="avaliar-btn avaliar-btn-cancelar"
                       >
-                        <i class="bi bi-x-lg"></i>
+                        <i class="bi bi-arrow-return-left"></i>
+                        <span>Cancelar</span>
                       </button>
-                    </div>
-
-                    <!-- Main Content -->
-                    <div class="avaliar-body">
-                      <!-- Status Badge -->
-                      <div class="avaliar-status">
-                        <span
-                          class="pense-aja-status p-2 rounded-lg"
-                          :class="computeStatusData(item).className"
-                        >
-                          <template
-                            v-if="
-                              computeStatusData(item).status === 'Reprovado'
-                            "
-                          >
-                            <i class="bi bi-x-octagon-fill"></i>
-                          </template>
-                          <template
-                            v-else-if="
-                              computeStatusData(item).status === 'Em Espera'
-                            "
-                          >
-                            <i class="bi bi-hourglass-split"></i>
-                          </template>
-                          <template
-                            v-else-if="
-                              computeStatusData(item).status === 'Sem Análise'
-                            "
-                          >
-                            <i class="bi bi-eye-slash"></i>
-                          </template>
-                          <template
-                            v-else-if="
-                              computeStatusData(item).status ===
-                              'Visto pelo Analista'
-                            "
-                          >
-                            <i class="bi bi-person-badge"></i>
-                          </template>
-                          <template
-                            v-else-if="
-                              computeStatusData(item).status ===
-                              'Visto pelo Gerente'
-                            "
-                          >
-                            <i class="bi bi-person-check"></i>
-                          </template>
-                          <template
-                            v-else-if="
-                              computeStatusData(item).status === 'Avaliado'
-                            "
-                          >
-                            <i class="bi bi-check-circle-fill"></i>
-                          </template>
-                          <template v-else>
-                            <i class="bi bi-question-circle"></i>
-                          </template>
-                          {{ computeStatusData(item).status }}
-                        </span>
-                      </div>
-
-                      <!-- Avaliadores -->
-                      <div class="avaliar-card-revisores">
-                        <div class="avaliar-card-header">
-                          <i class="bi bi-people-fill"></i>
-                          <h3>Avaliadores</h3>
-                        </div>
-                        <div class="avaliar-revisores-content">
-                          <div class="avaliar-revisor">
-                            <div class="avaliar-avatar avaliar-avatar-gerente">
-                              <i class="mdi mdi-briefcase-account"></i>
-                            </div>
-                            <div class="avaliar-revisor-info">
-                              <span class="avaliar-label">
-                                Gerente Avaliador
-                              </span>
-                              <span
-                                class="avaliar-value"
-                                id="gerente-avaliador"
-                              >
-                                {{ item.gerente_aprovador ?? "Não avaliado" }}
-                              </span>
-                            </div>
-                          </div>
-                          <div class="avaliar-revisor">
-                            <div class="avaliar-avatar avaliar-avatar-analista">
-                              <i class="mdi mdi-account-check"></i>
-                            </div>
-                            <div class="avaliar-revisor-info">
-                              <span class="avaliar-label">
-                                Analista Avaliador
-                              </span>
-                              <span
-                                class="avaliar-value"
-                                id="analista-avaliador"
-                              >
-                                {{ item.analista_avaliador ?? "Não avaliado" }}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Dados do Colaborador -->
-                      <div class="avaliar-card-user">
-                        <div class="avaliar-card-header">
-                          <i class="bi bi-person-vcard"></i>
-                          <h3>Dados do Colaborador</h3>
-                        </div>
-
-                        <div class="avaliar-user-content">
-                          <div class="avaliar-user-row">
-                            <div class="avaliar-user-item">
-                              <span class="avaliar-label">Matrícula</span>
-                              <span
-                                class="avaliar-value"
-                                id="matricula-penseaja-avaliacao"
-                              >
-                                {{ item.matricula ?? "*******" }}
-                              </span>
-                            </div>
-
-                            <div class="avaliar-user-item">
-                              <span class="avaliar-label">Nome</span>
-                              <span
-                                class="avaliar-value"
-                                id="nome-penseaja-avaliacao"
-                              >
-                                {{ item.nome }}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div class="avaliar-user-row">
-                            <div class="avaliar-user-item">
-                              <span class="avaliar-label">Gerente</span>
-                              <span
-                                class="avaliar-value"
-                                id="gerente-penseaja-avaliacao"
-                              >
-                                {{ item.gerente }}
-                              </span>
-                            </div>
-
-                            <div class="avaliar-user-item">
-                              <span class="avaliar-label">Turno</span>
-                              <span
-                                class="avaliar-value"
-                                id="turno-penseaja-avaliacao"
-                              >
-                                {{ item.turno }}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div class="avaliar-user-row">
-                            <div class="avaliar-user-item">
-                              <span class="avaliar-label">Setor</span>
-                              <span
-                                class="avaliar-value"
-                                id="setor-penseaja-avaliacao"
-                              >
-                                {{ item.setor }}
-                              </span>
-                            </div>
-
-                            <div class="avaliar-user-item">
-                              <span class="avaliar-label">
-                                Data de Realização
-                              </span>
-                              <span
-                                class="avaliar-value"
-                                id="data-penseaja-avaliacao"
-                              >
-                                {{ item.criado }}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Situação Antes e Depois -->
-                      <div class="avaliar-card-situacao">
-                        <div class="avaliar-card-header">
-                          <i class="mdi mdi-arrow-right-circle-outline"></i>
-                          <h3>Situação Antes e Depois</h3>
-                        </div>
-
-                        <div class="avaliar-situacao-content">
-                          <div class="avaliar-tabs">
-                            <button
-                              class="avaliar-tab-btn"
-                              :class="!beforeAfter ? 'active' : ''"
-                              @click="beforeAfter = false"
-                              data-tab="antes"
-                            >
-                              <i class="mdi mdi-arrow-left-circle-outline" />
-                              <span>Antes</span>
-                            </button>
-
-                            <button
-                              class="avaliar-tab-btn"
-                              :class="beforeAfter ? 'active' : ''"
-                              @click="beforeAfter = true"
-                              data-tab="depois"
-                            >
-                              <i class="mdi mdi-arrow-right-circle-outline"></i>
-                              <span>Depois</span>
-                            </button>
-                          </div>
-
-                          <div
-                            class="avaliar-tab-content"
-                            id="antes-tab"
-                            :class="!beforeAfter ? 'active' : ''"
-                          >
-                            <p id="texto-antes-penseaja">
-                              {{ item.situacao_anterior }}
-                            </p>
-                          </div>
-
-                          <div
-                            class="avaliar-tab-content"
-                            :class="beforeAfter ? 'active' : ''"
-                            id="depois-tab"
-                          >
-                            <p id="texto-depois-penseaja">
-                              {{ item.situacao_atual }}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Avaliação -->
-                      <!-- {{checkRoleAndEvaluation(item)}} -->
-                      <div
-                        class="avaliar-card-nivel"
-                        v-if="
-                          getUserPermission() &&
-                          checkRoleAndEvaluation(item)
-                        "
-                      >
-                        <div class="avaliar-card-header">
-                          <i class="bi bi-trophy"></i>
-                          <h3>
-                            Classificação do Pense<span
-                              class="avaliar-highlight"
-                              >&</span
-                            >Aja
-                          </h3>
-                        </div>
-
-                        <div class="avaliar-nivel-content">
-                          <div class="avaliar-rating">
-                            <label
-                              v-for="(classification, key) in classifications"
-                              :key="key"
-                              class="avaliar-rating-option"
-                            >
-                              <input
-                                type="radio"
-                                name="avaliacao-pense-aja"
-                                @click="
-                                  setEvaluationValue(classification.value)
-                                "
-                              />
-                              <div class="avaliar-rating-display">
-                                <span class="avaliar-rating-value">
-                                  {{ key }}
-                                </span>
-                                <span class="avaliar-rating-icon">
-                                  <i class="bi bi-star-fill"></i>
-                                </span>
-                                <span class="avaliar-rating-label">
-                                  {{ classification.name }}
-                                </span>
-                              </div>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div class="justifica-avaliacao" v-if="evaluationValue">
-                          <textarea
-                            placeholder="Justifique a avaliação do pense e aja."
-                            name="justificativa-avaliacao"
-                            id="justificativa-avaliacao"
-                            v-model="justification"
-                          ></textarea>
-                        </div>
-                      </div>
-
-                      <!-- Flags -->
-                      <div
-                        class="avaliar-card-flags"
-                        v-if="
-                          getUserPermission() &&
-                          checkRoleAndEvaluation(item)
-                        "
-                      >
-                        <div
-                          class="row p-3 d-flex justify-content-around align-items-center"
-                        >
-                          <label class="avaliar-toggle col-md-4">
-                            <input
-                              type="checkbox"
-                              id="em-espera"
-                              v-model="emEspera"
-                            />
-                            <span class="avaliar-toggle-slider"></span>
-                            <span class="avaliar-toggle-label">
-                              <i class="bi bi-hourglass"></i>
-                              Em Espera
-                            </span>
-                          </label>
-
-                          <label class="avaliar-toggle col-md-4">
-                            <input
-                              type="checkbox"
-                              id="replicavel"
-                              v-model="replicavel"
-                            />
-                            <span class="avaliar-toggle-slider"></span>
-                            <span class="avaliar-toggle-label">
-                              <i class="bi bi-diagram-3"></i>
-                              Replicável
-                            </span>
-                          </label>
-
-                          <v-combobox
-                            v-model="a3PenseAja"
-                            :items="opcoesA3"
-                            item-title="label"
-                            item-value="value"
-                            label="A3 Mãe"
-                            clearable
-                            return-object
-                            class="col-md-4 mt-2"
-                            variant="outlined"
-                            color="red"
-                            density="compact"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div
-                      class="avaliar-footer"
-                      v-if="
-                        getUserPermission() && checkRoleAndEvaluation(item)
-                      "
-                    >
-                      <div class="avaliar-actions">
-                        <button
-                          @click="handleEvaluationValue('approve', item)"
-                          class="avaliar-btn avaliar-btn-aprovar"
-                          :class="setButtonPermission(item)"
-                        >
-                          <i class="bi bi-check-circle"></i>
-                          <span>Aprovar</span>
-                        </button>
-
-                        <button
-                          @click="handleEvaluationValue('reprove', item)"
-                          class="avaliar-btn avaliar-btn-reprovar"
-                          :class="setButtonPermission(item)"
-                        >
-                          <i class="bi bi-x-circle"></i>
-                          <span>Reprovar</span>
-                        </button>
-
-                        <button
-                          @click="handleEvaluationValue('exclude', item)"
-                          class="avaliar-btn avaliar-btn-excluir"
-                          :class="setButtonPermission(item)"
-                        >
-                          <i class="bi bi-trash"></i>
-                          <span>Excluir</span>
-                        </button>
-
-                        <button
-                          @click="isActive.value = false"
-                          class="avaliar-btn avaliar-btn-cancelar"
-                        >
-                          <i class="bi bi-arrow-return-left"></i>
-                          <span>Cancelar</span>
-                        </button>
-                      </div>
                     </div>
                   </div>
                 </div>
-              </template>
-            </v-dialog>
-          </div>
+              </div>
+            </div>
+            </template>
+          </v-dialog>
         </template>
       </RecycleScroller>
     </div>
@@ -885,13 +857,13 @@ const loadContent = async () => {
 
     penseAjas.value = data;
     penseAjaCount.value = data.length;
-    emit('penseAjaCount', penseAjaCount.value)
+    emit("penseAjaCount", penseAjaCount.value);
   } catch (error) {
     console.error("Erro ao buscar dados:", error);
   }
 };
 
-const emit = defineEmits(['penseAjaCount'])
+const emit = defineEmits(["penseAjaCount"]);
 
 // Configura watchers para os filtros
 function setupWatchers() {
@@ -967,7 +939,7 @@ const checkRoleAndEvaluation = (penseAja) => {
 // Filtra a lista de pense e ajas de acordo com os filtros
 const filteredList = computed(() => {
   // Obtém o termo de pesquisa e normaliza para facilitar a comparação
-  const searchTerm = searchText.value?.toLowerCase().trim() || '';
+  const searchTerm = searchText.value?.toLowerCase().trim() || "";
 
   return penseAjas.value.filter((item) => {
     const nome = (item.nome || "").toLowerCase();
@@ -982,27 +954,38 @@ const filteredList = computed(() => {
     const statusLower = status.toLowerCase();
 
     // Filtro por texto de pesquisa (busca em múltiplos campos)
-    const matchesSearch = searchTerm === '' || 
-      nome.includes(searchTerm) || 
-      setor.includes(searchTerm) || 
-      gerente.includes(searchTerm) || 
-      projeto.includes(searchTerm) || 
-      turno.includes(searchTerm) || 
-      situacaoAnterior.includes(searchTerm) || 
-      situacaoAtual.includes(searchTerm) || 
-      matricula.includes(searchTerm) || 
+    const matchesSearch =
+      searchTerm === "" ||
+      nome.includes(searchTerm) ||
+      setor.includes(searchTerm) ||
+      gerente.includes(searchTerm) ||
+      projeto.includes(searchTerm) ||
+      turno.includes(searchTerm) ||
+      situacaoAnterior.includes(searchTerm) ||
+      situacaoAtual.includes(searchTerm) ||
+      matricula.includes(searchTerm) ||
       statusLower.includes(searchTerm);
 
     // Filtros de seleção múltipla
     const byName = !filters.name.length || filters.name.includes(item.nome);
     const bySector = !filters.sector.length || filters.sector.includes(setor);
-    const byManager = !filters.manager.length || filters.manager.includes(gerente);
-    const byProject = !filters.project.length || filters.project.includes(projeto);
+    const byManager =
+      !filters.manager.length || filters.manager.includes(gerente);
+    const byProject =
+      !filters.project.length || filters.project.includes(projeto);
     const byTurno = !filters.turno.length || filters.turno.includes(turno);
     const byStatus = !filters.status.length || filters.status.includes(status);
 
     // Retorna true apenas se passar por todos os filtros
-    return matchesSearch && byName && bySector && byManager && byProject && byTurno && byStatus;
+    return (
+      matchesSearch &&
+      byName &&
+      bySector &&
+      byManager &&
+      byProject &&
+      byTurno &&
+      byStatus
+    );
   });
 });
 
@@ -1209,9 +1192,9 @@ const searchText = ref("");
   margin-bottom: 1rem;
 }
 
-.list-item.mobile {
+.item-content.mobile {
   margin-top: 70px;
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
 }
 
 .item-content {
