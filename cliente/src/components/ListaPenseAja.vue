@@ -7,6 +7,7 @@
         color="info"
         prepend-inner-icon="mdi mdi-text-search"
         density="compact"
+        v-model="searchText"
       />
 
       <div class="row">
@@ -132,6 +133,7 @@
               color="info"
               prepend-inner-icon="mdi mdi-text-search"
               density="compact"
+              v-model="searchText"
             />
 
             <div class="row">
@@ -265,7 +267,6 @@
                   class="item-content"
                   :class="`${computeStatusData(item).className}`"
                 >
-                  <div class="item-accent"></div>
                   <div class="item-main">
                     <img
                       src="/assets/img/icons/idea-on.png"
@@ -965,30 +966,43 @@ const checkRoleAndEvaluation = (penseAja) => {
 
 // Filtra a lista de pense e ajas de acordo com os filtros
 const filteredList = computed(() => {
-  const term =
-    Array.isArray(filters.name) && filters.name.length === 1
-      ? filters.name[0]?.trim()?.toLowerCase()
-      : null;
+  // Obtém o termo de pesquisa e normaliza para facilitar a comparação
+  const searchTerm = searchText.value?.toLowerCase().trim() || '';
 
   return penseAjas.value.filter((item) => {
     const nome = (item.nome || "").toLowerCase();
-    const setor = item.setor || "";
-    const gerente = item.gerente || "";
-    const projeto = item.nome_projeto || "";
-    const turno = item.turno || "";
+    const setor = (item.setor || "").toLowerCase();
+    const gerente = (item.gerente || "").toLowerCase();
+    const projeto = (item.nome_projeto || "").toLowerCase();
+    const turno = (item.turno || "").toLowerCase();
+    const situacaoAnterior = (item.situacao_anterior || "").toLowerCase();
+    const situacaoAtual = (item.situacao_atual || "").toLowerCase();
+    const matricula = (item.matricula || "").toString().toLowerCase();
     const { status } = computeStatusData(item);
+    const statusLower = status.toLowerCase();
 
-    // Filtros múltiplos
+    // Filtro por texto de pesquisa (busca em múltiplos campos)
+    const matchesSearch = searchTerm === '' || 
+      nome.includes(searchTerm) || 
+      setor.includes(searchTerm) || 
+      gerente.includes(searchTerm) || 
+      projeto.includes(searchTerm) || 
+      turno.includes(searchTerm) || 
+      situacaoAnterior.includes(searchTerm) || 
+      situacaoAtual.includes(searchTerm) || 
+      matricula.includes(searchTerm) || 
+      statusLower.includes(searchTerm);
+
+    // Filtros de seleção múltipla
     const byName = !filters.name.length || filters.name.includes(item.nome);
     const bySector = !filters.sector.length || filters.sector.includes(setor);
-    const byManager =
-      !filters.manager.length || filters.manager.includes(gerente);
-    const byProject =
-      !filters.project.length || filters.project.includes(projeto);
+    const byManager = !filters.manager.length || filters.manager.includes(gerente);
+    const byProject = !filters.project.length || filters.project.includes(projeto);
     const byTurno = !filters.turno.length || filters.turno.includes(turno);
     const byStatus = !filters.status.length || filters.status.includes(status);
 
-    return byName && bySector && byManager && byProject && byTurno && byStatus;
+    // Retorna true apenas se passar por todos os filtros
+    return matchesSearch && byName && bySector && byManager && byProject && byTurno && byStatus;
   });
 });
 
@@ -1100,6 +1114,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
 });
+
+const searchText = ref("");
 </script>
 
 <style scoped>
