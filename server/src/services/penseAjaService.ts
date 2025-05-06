@@ -244,7 +244,7 @@ export const PenseAjaService = {
       const userManager = await UserPenseaja.getManagerByUser(data.registration, dassOffice);
 
       await client.query("COMMIT");
-      return { pense_aja: newPenseAja.rows[0], userManager: userManager };
+      return { pense_aja: newPenseAja.rows[0], userManager };
     } catch (error) {
       await client.query("ROLLBACK");
       const messageError =

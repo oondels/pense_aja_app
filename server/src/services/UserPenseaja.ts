@@ -93,7 +93,7 @@ export const UserPenseaja = {
         [registration]
       );
 
-      return query.rows[0];
+      return query?.rows[0] ?? null;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
 

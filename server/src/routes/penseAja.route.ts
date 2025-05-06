@@ -4,7 +4,6 @@ import { verifyToken } from "../middlewares/auth";
 import roleVerificationAccess from "../middlewares/roleVerificationMiddleware";
 import { NotificationService } from "../services/NotificationService";
 import { UserPenseaja } from "../services/UserPenseaja";
-import { request } from "http";
 
 const router = Router();
 
@@ -67,29 +66,29 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
   try {
     const { dassOffice } = req.params;
     const penseajaData = req.body;
-    let notification = true;
 
     const { pense_aja, userManager } = await PenseAjaService.createPenseAja(penseajaData, dassOffice);
-    if (!userManager) {
-      notification = false;
+
+    // Verifica se encontra gerente do usuário e se o gerente esta com notificações ativas
+    if (userManager) {
+      const notificationEnabled = await NotificationService.isNotificationEnabled(userManager.matricula, dassOffice);
+
+      if (notificationEnabled) {
+        await NotificationService.sendNotification({
+          to: "hendrius.santana@grupodass.com.br",
+          subject: "Aplicativo Pense Aja",
+          title: "Novo Pense Aja Cadastrado.",
+          message: `Um novo registro de Pense Aja foi cadastrado pelo usuário ${formatUserName(pense_aja.nome)}. Projeto: ${pense_aja.nome_projeto}.`,
+          application: "Pense e Aja",
+          link: "http://localhost/pense-aja"
+        });
+      }
     }
 
-    if (notification) {
-      await NotificationService.sendNotification({
-        to: "hendrius.santana@grupodass.com.br",
-        subject: "Aplicativo Pense Aja",
-        title: "Novo Pense Aja Cadastrado.",
-        message: `Um novo registro de Pense Aja foi cadastrado pelo usuário ${formatUserName(pense_aja.nome)}. Projeto: ${pense_aja.nome_projeto}.`,
-        application: "Pense e Aja",
-        link: "http://localhost/pense-aja"
-      });
-    }
-
-    const message = notification ? "Pense aja cadastrado com sucesso!" : "Pense aja cadastrado com sucesso! Solicite seu gerente para ativar as notificações para vizualizar mais rápido."
+    const message = userManager ? "Pense aja cadastrado com sucesso!" : "Pense aja cadastrado com sucesso! Solicite seu gerente para ativar as notificações para vizualizar mais rápido."
 
     res.status(201).json({
       message: message,
-      notification: notification
     });
   } catch (error) {
     next(error);
@@ -136,7 +135,8 @@ router.put("/avaliar/:id", verifyToken, roleVerificationAccess, async (req: Requ
         .join(" ");
     }
 
-    if (userEmail) {
+    const notificationEnabled = await NotificationService.isNotificationEnabled(evaluationData.matricula, data.dassOffice);
+    if (userEmail && notificationEnabled) {
       await NotificationService.sendNotification({
         to: userEmail.email,
         subject: "Aplicativo Pense Aja",
