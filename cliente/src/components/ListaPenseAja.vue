@@ -577,7 +577,7 @@
                       <div
                         class="avaliar-card-nivel"
                         v-if="
-                          getUserPermission(user) &&
+                          getUserPermission() &&
                           checkRoleAndEvaluation(item)
                         "
                       >
@@ -634,7 +634,7 @@
                       <div
                         class="avaliar-card-flags"
                         v-if="
-                          getUserPermission(user) &&
+                          getUserPermission() &&
                           checkRoleAndEvaluation(item)
                         "
                       >
@@ -688,7 +688,7 @@
                     <div
                       class="avaliar-footer"
                       v-if="
-                        getUserPermission(user) && checkRoleAndEvaluation(item)
+                        getUserPermission() && checkRoleAndEvaluation(item)
                       "
                     >
                       <div class="avaliar-actions">
