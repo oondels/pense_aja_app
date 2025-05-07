@@ -26,7 +26,7 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # expõe porta padrão do nginx
-EXPOSE 5050
+EXPOSE 80
 
 # comando padrão
 CMD ["nginx", "-g", "daemon off;"]
