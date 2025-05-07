@@ -246,13 +246,7 @@
     </v-expansion-panels>
 
     <div v-if="penseAjas.length > 0">
-      <RecycleScroller
-        :items="filteredList"
-        :item-size="!smallPhone ? 105 : 80"
-        key-field="id"
-        class="virtual-list"
-        @scroll="onScroll"
-      >
+      <RecycleScroller :items="filteredList" :item-size="!smallPhone ? 105 : 80" key-field="id" class="virtual-list">
         <template #default="{ item }">
           <v-dialog max-width="900">
             <template v-slot:activator="{ props: activatorProps }">
@@ -293,26 +287,18 @@
                 <div class="avaliar-container active">
                   <div class="avaliar-content active">
                     <!-- Header -->
-                    <div
-                      class="avaliar-header position-relative container-fluid"
-                    >
+                    <div class="avaliar-header position-relative container-fluid">
                       <div class="d-flex justify-content-around">
                         <div class="row">
                           <div class="avaliar-title col-md-6">
-                            <img
-                              src="/assets/img/icons/dass-penseaja-light.png"
-                              alt="Logo"
-                              class="avaliar-logo"
-                            />
+                            <img src="/assets/img/icons/dass-penseaja-light.png" alt="Logo" class="avaliar-logo" />
                             <div class="avaliar-title-text">
                               <h2>
                                 Avaliação Pense
                                 <span class="avaliar-highlight">& </span>
                                 Aja
                               </h2>
-                              <span class="avaliar-subtitle">
-                                Análise de melhoria contínua
-                              </span>
+                              <span class="avaliar-subtitle"> Análise de melhoria contínua </span>
                             </div>
                           </div>
 
@@ -340,52 +326,23 @@
                     <div class="avaliar-body">
                       <!-- Status Badge -->
                       <div class="avaliar-status">
-                        <span
-                          class="pense-aja-status p-2 rounded-lg"
-                          :class="computeStatusData(item).className"
-                        >
-                          <template
-                            v-if="
-                              computeStatusData(item).status === 'Reprovado'
-                            "
-                          >
+                        <span class="pense-aja-status p-2 rounded-lg" :class="computeStatusData(item).className">
+                          <template v-if="computeStatusData(item).status === 'Reprovado'">
                             <i class="bi bi-x-octagon-fill"></i>
                           </template>
-                          <template
-                            v-else-if="
-                              computeStatusData(item).status === 'Em Espera'
-                            "
-                          >
+                          <template v-else-if="computeStatusData(item).status === 'Em Espera'">
                             <i class="bi bi-hourglass-split"></i>
                           </template>
-                          <template
-                            v-else-if="
-                              computeStatusData(item).status === 'Sem Análise'
-                            "
-                          >
+                          <template v-else-if="computeStatusData(item).status === 'Sem Análise'">
                             <i class="bi bi-eye-slash"></i>
                           </template>
-                          <template
-                            v-else-if="
-                              computeStatusData(item).status ===
-                              'Visto pelo Analista'
-                            "
-                          >
+                          <template v-else-if="computeStatusData(item).status === 'Visto pelo Analista'">
                             <i class="bi bi-person-badge"></i>
                           </template>
-                          <template
-                            v-else-if="
-                              computeStatusData(item).status ===
-                              'Visto pelo Gerente'
-                            "
-                          >
+                          <template v-else-if="computeStatusData(item).status === 'Visto pelo Gerente'">
                             <i class="bi bi-person-check"></i>
                           </template>
-                          <template
-                            v-else-if="
-                              computeStatusData(item).status === 'Avaliado'
-                            "
-                          >
+                          <template v-else-if="computeStatusData(item).status === 'Avaliado'">
                             <i class="bi bi-check-circle-fill"></i>
                           </template>
                           <template v-else>
@@ -407,13 +364,8 @@
                               <i class="mdi mdi-briefcase-account"></i>
                             </div>
                             <div class="avaliar-revisor-info">
-                              <span class="avaliar-label">
-                                Gerente Avaliador
-                              </span>
-                              <span
-                                class="avaliar-value"
-                                id="gerente-avaliador"
-                              >
+                              <span class="avaliar-label"> Gerente Avaliador </span>
+                              <span class="avaliar-value" id="gerente-avaliador">
                                 {{ item.gerente_aprovador ?? "Não avaliado" }}
                               </span>
                             </div>
@@ -423,13 +375,8 @@
                               <i class="mdi mdi-account-check"></i>
                             </div>
                             <div class="avaliar-revisor-info">
-                              <span class="avaliar-label">
-                                Analista Avaliador
-                              </span>
-                              <span
-                                class="avaliar-value"
-                                id="analista-avaliador"
-                              >
+                              <span class="avaliar-label"> Analista Avaliador </span>
+                              <span class="avaliar-value" id="analista-avaliador">
                                 {{ item.analista_avaliador ?? "Não avaliado" }}
                               </span>
                             </div>
@@ -448,20 +395,14 @@
                           <div class="avaliar-user-row">
                             <div class="avaliar-user-item">
                               <span class="avaliar-label">Matrícula</span>
-                              <span
-                                class="avaliar-value"
-                                id="matricula-penseaja-avaliacao"
-                              >
+                              <span class="avaliar-value" id="matricula-penseaja-avaliacao">
                                 {{ item.matricula ?? "*******" }}
                               </span>
                             </div>
 
                             <div class="avaliar-user-item">
                               <span class="avaliar-label">Nome</span>
-                              <span
-                                class="avaliar-value"
-                                id="nome-penseaja-avaliacao"
-                              >
+                              <span class="avaliar-value" id="nome-penseaja-avaliacao">
                                 {{ item.nome }}
                               </span>
                             </div>
@@ -470,20 +411,14 @@
                           <div class="avaliar-user-row">
                             <div class="avaliar-user-item">
                               <span class="avaliar-label">Gerente</span>
-                              <span
-                                class="avaliar-value"
-                                id="gerente-penseaja-avaliacao"
-                              >
+                              <span class="avaliar-value" id="gerente-penseaja-avaliacao">
                                 {{ item.gerente }}
                               </span>
                             </div>
 
                             <div class="avaliar-user-item">
                               <span class="avaliar-label">Turno</span>
-                              <span
-                                class="avaliar-value"
-                                id="turno-penseaja-avaliacao"
-                              >
+                              <span class="avaliar-value" id="turno-penseaja-avaliacao">
                                 {{ item.turno }}
                               </span>
                             </div>
@@ -492,22 +427,14 @@
                           <div class="avaliar-user-row">
                             <div class="avaliar-user-item">
                               <span class="avaliar-label">Setor</span>
-                              <span
-                                class="avaliar-value"
-                                id="setor-penseaja-avaliacao"
-                              >
+                              <span class="avaliar-value" id="setor-penseaja-avaliacao">
                                 {{ item.setor }}
                               </span>
                             </div>
 
                             <div class="avaliar-user-item">
-                              <span class="avaliar-label">
-                                Data de Realização
-                              </span>
-                              <span
-                                class="avaliar-value"
-                                id="data-penseaja-avaliacao"
-                              >
+                              <span class="avaliar-label"> Data de Realização </span>
+                              <span class="avaliar-value" id="data-penseaja-avaliacao">
                                 {{ item.criado }}
                               </span>
                             </div>
@@ -545,21 +472,13 @@
                             </button>
                           </div>
 
-                          <div
-                            class="avaliar-tab-content"
-                            id="antes-tab"
-                            :class="!beforeAfter ? 'active' : ''"
-                          >
+                          <div class="avaliar-tab-content" id="antes-tab" :class="!beforeAfter ? 'active' : ''">
                             <p id="texto-antes-penseaja">
                               {{ item.situacao_anterior }}
                             </p>
                           </div>
 
-                          <div
-                            class="avaliar-tab-content"
-                            :class="beforeAfter ? 'active' : ''"
-                            id="depois-tab"
-                          >
+                          <div class="avaliar-tab-content" :class="beforeAfter ? 'active' : ''" id="depois-tab">
                             <p id="texto-depois-penseaja">
                               {{ item.situacao_atual }}
                             </p>
@@ -569,20 +488,10 @@
 
                       <!-- Avaliação -->
                       <!-- {{checkRoleAndEvaluation(item)}} -->
-                      <div
-                        class="avaliar-card-nivel"
-                        v-if="
-                          getUserPermission() && checkRoleAndEvaluation(item)
-                        "
-                      >
+                      <div class="avaliar-card-nivel" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
                         <div class="avaliar-card-header">
                           <i class="bi bi-trophy"></i>
-                          <h3>
-                            Classificação do Pense<span
-                              class="avaliar-highlight"
-                              >&</span
-                            >Aja
-                          </h3>
+                          <h3>Classificação do Pense<span class="avaliar-highlight">&</span>Aja</h3>
                         </div>
 
                         <div class="avaliar-nivel-content">
@@ -595,9 +504,7 @@
                               <input
                                 type="radio"
                                 name="avaliacao-pense-aja"
-                                @click="
-                                  setEvaluationValue(classification.value)
-                                "
+                                @click="setEvaluationValue(classification.value)"
                               />
                               <div class="avaliar-rating-display">
                                 <span class="avaliar-rating-value">
@@ -625,21 +532,10 @@
                       </div>
 
                       <!-- Flags -->
-                      <div
-                        class="avaliar-card-flags"
-                        v-if="
-                          getUserPermission() && checkRoleAndEvaluation(item)
-                        "
-                      >
-                        <div
-                          class="row p-3 d-flex justify-content-around align-items-center"
-                        >
+                      <div class="avaliar-card-flags" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
+                        <div class="row p-3 d-flex justify-content-around align-items-center">
                           <label class="avaliar-toggle col-md-4">
-                            <input
-                              type="checkbox"
-                              id="em-espera"
-                              v-model="emEspera"
-                            />
+                            <input type="checkbox" id="em-espera" v-model="emEspera" />
                             <span class="avaliar-toggle-slider"></span>
                             <span class="avaliar-toggle-label">
                               <i class="bi bi-hourglass"></i>
@@ -648,11 +544,7 @@
                           </label>
 
                           <label class="avaliar-toggle col-md-4">
-                            <input
-                              type="checkbox"
-                              id="replicavel"
-                              v-model="replicavel"
-                            />
+                            <input type="checkbox" id="replicavel" v-model="replicavel" />
                             <span class="avaliar-toggle-slider"></span>
                             <span class="avaliar-toggle-label">
                               <i class="bi bi-diagram-3"></i>
@@ -678,10 +570,7 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div
-                      class="avaliar-footer"
-                      v-if="getUserPermission() && checkRoleAndEvaluation(item)"
-                    >
+                    <div class="avaliar-footer" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
                       <div class="avaliar-actions">
                         <button
                           @click="handleEvaluationValue('approve', item)"
@@ -710,10 +599,7 @@
                           <span>Excluir</span>
                         </button>
 
-                        <button
-                          @click="isActive.value = false"
-                          class="avaliar-btn avaliar-btn-cancelar"
-                        >
+                        <button @click="isActive.value = false" class="avaliar-btn avaliar-btn-cancelar">
                           <i class="bi bi-arrow-return-left"></i>
                           <span>Cancelar</span>
                         </button>
@@ -740,14 +626,7 @@
 </template>
 
 <script setup>
-import {
-  computed,
-  watch,
-  ref,
-  onMounted,
-  onBeforeUnmount,
-  reactive,
-} from "vue";
+import { computed, watch, ref, onMounted, onBeforeUnmount, reactive } from "vue";
 import { RecycleScroller } from "vue-virtual-scroller";
 import axios from "axios";
 import { useUserStore } from "@/stores/userStore";
@@ -759,7 +638,7 @@ import { formateName } from "@/services/userService";
 
 const notification = ref(null);
 const isMobile = ref(false);
-const smallPhone = ref(false)
+const smallPhone = ref(false);
 function handleResize() {
   isMobile.value = window.innerWidth <= 1024;
   smallPhone.value = window.innerWidth <= 550;
@@ -810,11 +689,7 @@ const setupDate = (yearValue, monthValue) => {
   year.value = yearValue;
   month.value = monthIndex[monthValue];
 
-  filterDate.value.startDate = new Date(
-    lastMonthYear,
-    lastMonthIndex,
-    penseAjaDay
-  );
+  filterDate.value.startDate = new Date(lastMonthYear, lastMonthIndex, penseAjaDay);
 
   filterDate.value.endDate = new Date(yearValue, monthValue, penseAjaDay);
 };
@@ -850,6 +725,7 @@ const beforeAfter = ref(false);
 // Busca pense aja de acordo com filtro de datas -> Default mês atual
 const penseAjaCount = ref(0);
 const penseAjas = ref([]);
+
 const loadContent = async () => {
   const dassOffice = localStorage.getItem("unidadeDass");
   if (!dassOffice) {
@@ -868,12 +744,9 @@ const loadContent = async () => {
   };
 
   try {
-    const { data } = await axios.get(
-      `http://localhost:2512/pense-aja/${dassOffice}`,
-      {
-        params,
-      }
-    );
+    const { data } = await axios.get(`http://localhost:2512/pense-aja/${dassOffice}`, {
+      params,
+    });
 
     penseAjas.value = data;
     penseAjaCount.value = data.length;
@@ -901,16 +774,6 @@ function setupWatchers() {
     loadContent();
   });
 }
-
-// Carrega mais conteúdo quando o usuário rola para baixo e esta a 100px de terminar a lista
-const onScroll = (event) => {
-  if (
-    event.target.scrollTop + event.target.clientHeight >=
-    event.target.scrollHeight - 50
-  ) {
-    loadContent();
-  }
-};
 
 // Carrega dados do usuario se estiver logado
 const user = useUserStore();
@@ -989,23 +852,13 @@ const filteredList = computed(() => {
     // Filtros de seleção múltipla
     const byName = !filters.name.length || filters.name.includes(item.nome);
     const bySector = !filters.sector.length || filters.sector.includes(setor);
-    const byManager =
-      !filters.manager.length || filters.manager.includes(gerente);
-    const byProject =
-      !filters.project.length || filters.project.includes(projeto);
+    const byManager = !filters.manager.length || filters.manager.includes(gerente);
+    const byProject = !filters.project.length || filters.project.includes(projeto);
     const byTurno = !filters.turno.length || filters.turno.includes(turno);
     const byStatus = !filters.status.length || filters.status.includes(status);
 
     // Retorna true apenas se passar por todos os filtros
-    return (
-      matchesSearch &&
-      byName &&
-      bySector &&
-      byManager &&
-      byProject &&
-      byTurno &&
-      byStatus
-    );
+    return matchesSearch && byName && bySector && byManager && byProject && byTurno && byStatus;
   });
 });
 
@@ -1073,16 +926,10 @@ const setEvaluationValue = (value) => {
 };
 
 const setButtonPermission = (penseAja) => {
-  if (
-    penseAja.status_analista !== "0" &&
-    user.funcao?.toLowerCase().includes("analista")
-  ) {
+  if (penseAja.status_analista !== "0" && user.funcao?.toLowerCase().includes("analista")) {
     return "disabled";
   }
-  if (
-    penseAja.status_gerente !== "0" &&
-    user.funcao?.toLowerCase().includes("gerente")
-  ) {
+  if (penseAja.status_gerente !== "0" && user.funcao?.toLowerCase().includes("gerente")) {
     return "disabled";
   }
   return "";
@@ -1102,6 +949,7 @@ const handleEvaluationValue = async (action, penseAja) => {
   };
 
   await evaluatePenseAja(evaluationData, notification);
+  await loadContent()
 };
 
 onMounted(() => {
@@ -1184,8 +1032,7 @@ const searchText = ref("");
   letter-spacing: 0.3px;
   padding: 12px 18px;
   width: 80%;
-  box-shadow: 0 4px 16px rgba(229, 115, 115, 0.1), 
-              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 16px rgba(229, 115, 115, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23b71c1c' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -1211,16 +1058,14 @@ const searchText = ref("");
 #a3-penseAja:focus {
   outline: none;
   border-color: #e53935;
-  box-shadow: 0 4px 20px rgba(229, 57, 53, 0.15), 
-              0 0 0 2px rgba(229, 57, 53, 0.1);
+  box-shadow: 0 4px 20px rgba(229, 57, 53, 0.15), 0 0 0 2px rgba(229, 57, 53, 0.1);
   transform: translateY(-2px);
 }
 
 #a3-penseAja:hover {
   background: linear-gradient(to right, #fff5f5, #ffebee);
   border-color: #ef9a9a;
-  box-shadow: 0 6px 20px rgba(229, 115, 115, 0.15), 
-              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: 0 6px 20px rgba(229, 115, 115, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 /* Estilo das opções do select */
@@ -1721,7 +1566,6 @@ const searchText = ref("");
     max-width: 100%;
     margin-top: 20px;
   }
-  
 }
 
 .avaliar-projeto i {
@@ -1810,7 +1654,6 @@ const searchText = ref("");
     justify-content: center;
   }
 }
-
 
 .sem-gerente {
   background-color: rgba(251, 146, 60, 0.12) !important;
@@ -1998,9 +1841,9 @@ const searchText = ref("");
   .item-subtitle {
     font-size: 0.8rem;
   }
-  
-  .meta-row span{
-    font-size: 0.85rem !important; 
+
+  .meta-row span {
+    font-size: 0.85rem !important;
   }
 
   .text-ellipsis {

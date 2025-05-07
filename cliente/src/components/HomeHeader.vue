@@ -7,17 +7,24 @@
           <div class="title-group">
             <h1 class="main-title">
               PENSE & AJA
-              <span class="idea-icon" aria-hidden="true"><img src="/assets/img/icons/idea-on-brain.png" alt="Pessoa pensativa" /></span>
+              <span class="idea-icon" aria-hidden="true"
+                ><img src="/assets/img/icons/idea-on-brain.png" alt="Pessoa pensativa"
+              /></span>
             </h1>
             <p class="description">
-              Transforme suas ideias em ações concretas. Uma plataforma que valoriza sua criatividade e incentiva a inovação no ambiente de trabalho.
+              Transforme suas ideias em ações concretas. Uma plataforma que valoriza sua criatividade e incentiva a
+              inovação no ambiente de trabalho.
             </p>
-            <router-link to="/pense-aja" class="btn btn-primary">
-              <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M10 17l5-5-5-5v10z"/>
-              </svg>
-              Acessar app
-            </router-link>
+
+            <div class="">
+              <router-link to="/pense-aja">
+                <v-btn variant="outlined" prepend-icon="mdi mdi-arrow-right-bold-circle" color="danger">
+                  Acessar app
+                </v-btn>
+              </router-link>
+
+              <PwaDownload />
+            </div>
           </div>
 
           <!-- Ilustração de pessoa pensativa -->
@@ -31,6 +38,7 @@
 </template>
 
 <script setup>
+import PwaDownload from "./PwaDownload.vue";
 </script>
 
 <style scoped>
@@ -95,7 +103,6 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -174,7 +181,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -183,9 +191,18 @@
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.7; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 768px) {

@@ -6,10 +6,6 @@
         <div class="container">
           <h2 class="section-title">Por que usar o Pense & Aja?</h2>
 
-          <div v-if="isInstallable" class="install-button-container">
-            <button class="btn btn-primary" @click="installApp">📲 Instalar App</button>
-          </div>
-
           <div class="features-grid">
             <div class="feature-card">
               <div class="feature-icon">
@@ -56,9 +52,7 @@
 
 <script setup>
 import HomeHeader from "../components/HomeHeader.vue";
-import { usePwaInstall } from "@/composables/usePwaInstall";
 
-const { isInstallable, installApp } = usePwaInstall();
 </script>
 
 <style scoped>

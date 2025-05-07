@@ -30,15 +30,10 @@ export const evaluatePenseAja = async (evaluationData, notification) => {
     notification.value.showPopup("success", "Sucesso!", response.data.message, 2000);
   } catch (error) {
     if (error.status === 500) {
-      notification.value.showPopup("error", "Erro!", error.response.data.message, 3000);
+      notification.value.showPopup("error", "Erro!", error?.response?.data?.message || "Erro ao avaliar pense aja, tente novamente!", 3000);
     } else {
-      notification.value.showPopup("warning", "Aviso!", error.response.data.message, 3000);
+      notification.value.showPopup("warning", "Aviso!", error?.response?.data?.message || "Erro ao avaliar pense aja, tente novamente!", 3000);
     }
     console.error("Erro ao avaliar pense aja.", error);
-  } finally {
-    setTimeout(() => {
-      // TODO: Implementar o refresh da lista
-      window.location.reload();
-    }, 1500);
   }
 };

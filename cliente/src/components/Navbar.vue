@@ -38,6 +38,7 @@
           <Store ref="storeRef" />
           <RegisterPenseAja ref="registerRef" />
           <Login ref="loginRef" />
+
         </div>
       </div>
     </div>
@@ -104,6 +105,7 @@ import { defineAsyncComponent } from 'vue'
 import Login from "./Auth/Login.vue";
 import { useUserStore } from "@/stores/userStore";
 import { useRouter } from "vue-router";
+
 
 const Store = defineAsyncComponent(() => import("./Store/Store.vue"));
 const RegisterPenseAja = defineAsyncComponent(() => import("./RegisterPenseAja.vue"));
