@@ -2,37 +2,15 @@
   <div class="auth">
     <v-dialog v-model="openAuth" max-width="400">
       <template v-slot:activator="{ props: activatorProps }">
-        <button
-          v-if="!isMobile"
-          v-bind="activatorProps"
-          id="openUser"
-          class="action-button"
-        >
+        <button v-if="!isMobile" v-bind="activatorProps" id="openUser" class="action-button">
           <div class="button-icon-container">
-            <i
-              :class="
-                user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'
-              "
-              class="icon fs-4"
-            ></i>
+            <i :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'" class="icon fs-4"></i>
           </div>
-          <span class="button-label">{{
-            user?.matricula ? "Sair" : "Login"
-          }}</span>
+          <span class="button-label">{{ user?.matricula ? "Sair" : "Login" }}</span>
         </button>
 
-        <button
-          v-else
-          @click="handleUserData"
-          v-bind="activatorProps"
-          class="mobile-action-button"
-        >
-          <i
-            :class="
-              user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'
-            "
-            class="icon"
-          ></i>
+        <button v-else @click="handleUserData" v-bind="activatorProps" class="mobile-action-button">
+          <i :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'" class="icon"></i>
           <span class="label">{{ user?.matricula ? "Sair" : "Login" }}</span>
         </button>
       </template>
@@ -48,10 +26,7 @@
               </div>
               <h2>Login</h2>
 
-              <span
-                @click="isActive.value = false"
-                class="mdi mdi-close-circle login-close"
-              ></span>
+              <span @click="isActive.value = false" class="mdi mdi-close-circle login-close"></span>
             </div>
 
             <div class="login-form">
@@ -59,12 +34,7 @@
                 <label for="login-user">Usuário</label>
                 <div class="input-with-icon">
                   <span class="bi bi-person-fill input-icon"></span>
-                  <input
-                    type="text"
-                    id="login-user"
-                    v-model="username"
-                    placeholder="Digite seu usuário"
-                  />
+                  <input type="text" id="login-user" v-model="username" placeholder="Digite seu usuário" />
                 </div>
               </div>
 
@@ -94,12 +64,7 @@
                 </div>
               </div>
 
-              <ForgotPassword
-                @notify="
-                  (data) =>
-                    notification.showPopup(data.type, data.title, data.message)
-                "
-              />
+              <ForgotPassword @notify="(data) => notification.showPopup(data.type, data.title, data.message)" />
 
               <div class="login-actions">
                 <button class="login-btn" @click="handleLogin">
@@ -121,10 +86,7 @@
               </div>
               <h2>Dass Pense&Aja</h2>
 
-              <span
-                @click="isActive.value = false"
-                class="mdi mdi-close-circle login-close"
-              ></span>
+              <span @click="isActive.value = false" class="mdi mdi-close-circle login-close"></span>
             </div>
 
             <div class="login-form">
@@ -146,17 +108,12 @@
               </div>
 
               <div class="login-actions user-actions">
-                <button @click="goToProfile" class="profile-btn">
+                <button @click="goToProfile(isActive)" class="profile-btn">
                   <i class="mdi mdi-account-circle"></i>
                   <span>Meu Perfil</span>
                 </button>
 
-                <button
-                  @click="handleLogout"
-                  type="button"
-                  id="logout"
-                  class="logout-btn"
-                >
+                <button @click="handleLogout" type="button" id="logout" class="logout-btn">
                   <i class="mdi mdi-logout"></i>
                   <span>Sair</span>
                   <span class="spinner-logout hidden"></span>
@@ -168,8 +125,6 @@
       </template>
     </v-dialog>
   </div>
-
-  <Notification ref="notification" />
 </template>
 
 <script setup>
@@ -178,14 +133,7 @@ import { login, logout } from "@/services/authService.js";
 import { formateName } from "@/services/userService.js";
 import { useUserStore } from "@/stores/userStore.js";
 import { useRouter } from "vue-router";
-import Notification from "@/components/Notification.vue";
 import ForgotPassword from "./ForgotPassword.vue";
-
-const openAuth = ref(false);
-const openLoginBottomNav = () => {
-  openAuth.value = !openAuth.value;
-};
-defineExpose({ openLoginBottomNav });
 
 const router = useRouter();
 const isMobile = ref(false);
@@ -203,12 +151,19 @@ onBeforeUnmount(() => {
 const notification = ref(null);
 // Carregad dados do usuário se estiver logado
 const user = useUserStore();
+const emit = defineEmits(["notify"]);
 
 const username = ref("");
 const password = ref("");
 const showPassword = ref(false);
 const loading = ref(false);
 const warning = ref("");
+
+const openAuth = ref(false);
+const openLoginBottomNav = () => {
+  openAuth.value = !openAuth.value;
+};
+defineExpose({ openLoginBottomNav });
 
 // Computa as iniciais do nome do usuário para o avatar
 const getUserInitials = computed(() => {
@@ -221,14 +176,15 @@ const getUserInitials = computed(() => {
 });
 
 const handleLogin = async () => {
-  await login(username.value, password.value, loading, notification);
+  await login(username.value, password.value, loading, emit);
 };
 
 const handleLogout = async () => {
   await logout(loading);
 };
 
-const goToProfile = () => {
+const goToProfile = (isActive) => {
+  isActive.value = false;
   router.push("/user");
 };
 </script>

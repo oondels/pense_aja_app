@@ -628,13 +628,14 @@
 <script setup>
 import { computed, watch, ref, onMounted, onBeforeUnmount, reactive } from "vue";
 import { RecycleScroller } from "vue-virtual-scroller";
-import axios from "axios";
 import { useUserStore } from "@/stores/userStore";
 import { evaluatePenseAja } from "@/services/evaluatePenseAjaService";
 import Notification from "./Notification.vue";
 import { getUserPermission } from "@/services/userService";
 import { setUserRole } from "@/services/userService";
 import { formateName } from "@/services/userService";
+import { commonApi } from "@/services/httpClient.js";
+import{ip} from "@/config/ip.js"
 
 const notification = ref(null);
 const isMobile = ref(false);
@@ -744,7 +745,7 @@ const loadContent = async () => {
   };
 
   try {
-    const { data } = await axios.get(`http://localhost:2512/pense-aja/${dassOffice}`, {
+    const { data } = await commonApi.get(`${ip}:2512/pense-aja/${dassOffice}`, {
       params,
     });
 
@@ -949,7 +950,7 @@ const handleEvaluationValue = async (action, penseAja) => {
   };
 
   await evaluatePenseAja(evaluationData, notification);
-  await loadContent()
+  await loadContent();
 };
 
 onMounted(() => {

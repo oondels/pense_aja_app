@@ -35,9 +35,9 @@
 
       <div class="banner-right">
         <div class="button-group desktop-menu">
-          <Store ref="storeRef" />
-          <RegisterPenseAja ref="registerRef" />
-          <Login ref="loginRef" />
+          <Store ref="storeRef" @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)" />
+          <RegisterPenseAja ref="registerRef" @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)" />
+          <Login ref="loginRef" @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)" />
 
         </div>
       </div>
@@ -97,6 +97,8 @@
       </v-bottom-navigation>
     </v-layout>
   </div>
+
+  <Notification ref="notification" /> 
 </template>
 
 <script setup>
@@ -105,17 +107,16 @@ import { defineAsyncComponent } from 'vue'
 import Login from "./Auth/Login.vue";
 import { useUserStore } from "@/stores/userStore";
 import { useRouter } from "vue-router";
-
+import Notification from "./Notification.vue";
 
 const Store = defineAsyncComponent(() => import("./Store/Store.vue"));
 const RegisterPenseAja = defineAsyncComponent(() => import("./RegisterPenseAja.vue"));
 
+const notification = ref(null)
 const user = useUserStore();
 
 const isMenuOpen = ref(false);
 const isMobile = ref(false);
-
-
 const router = useRouter();
 const goHome = () => {
   router.push("/pense-aja");

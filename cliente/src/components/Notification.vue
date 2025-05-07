@@ -122,4 +122,34 @@ defineExpose({
   font-size: 15px;
   line-height: 1.4;
 }
+
+/* Regras responsivas para dispositivos móveis */
+@media (max-width: 768px) {
+  .notification {
+    width: 95%;
+    max-width: 100%;
+    z-index: 10010 !important; /* Garantindo que está acima de outros elementos */
+  }
+
+  .notification.show {
+    transform: translateX(-50%) translateY(20px) !important;
+  }
+  
+  .notification-inner {
+    padding: 15px;
+  }
+  
+  .notification-icon {
+    font-size: 24px;
+    margin-right: 12px;
+  }
+  
+  .notification-title {
+    font-size: 16px;
+  }
+  
+  .notification-message {
+    font-size: 14px;
+  }
+}
 </style>

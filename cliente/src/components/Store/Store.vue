@@ -211,6 +211,8 @@ import Notification from "../Notification.vue";
 // TODO: Passar dados para banco de dados
 import storeProducts from "@/utils/penseAjaProducts.json";
 
+const emit = defineEmits(["notify"])
+
 // Abre a loja pelo bottomNav
 const openStore = ref(false);
 const openStoreBottomNav = () => {
@@ -285,7 +287,7 @@ const handleUserData = async (e, click) => {
         registrationInput.value,
         userData,
         loading,
-        notification
+        emit
       );
       pontos.value = userData.value.pontos - userData.value.pontos_resgatados;
     }

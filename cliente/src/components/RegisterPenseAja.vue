@@ -15,36 +15,10 @@
             <i
               :key="isHover"
               class="icon mdi"
-              :class="
-                isHover
-                  ? 'mdi-lightbulb-on text-amber-accent-4'
-                  : 'mdi-lightbulb-on-outline'
-              "
+              :class="isHover ? 'mdi-lightbulb-on text-amber-accent-4' : 'mdi-lightbulb-on-outline'"
             ></i>
           </div>
           <span class="button-label">Cadastrar</span>
-        </button>
-
-        <button
-          v-else
-          @click="handleUserData"
-          v-bind="activatorProps"
-          class="mobile-action-button"
-          @mouseover="isHover = true"
-          @mouseleave="isHover = false"
-        >
-          <transition name="fade-icon" mode="out-in">
-            <i
-              :key="isHover"
-              class="icon mdi"
-              :class="
-                isHover
-                  ? 'mdi-lightbulb-on text-yellow-accent-4'
-                  : 'mdi-lightbulb-on-outline'
-              "
-            ></i>
-          </transition>
-          <span class="label">Registrar</span>
         </button>
       </template>
 
@@ -55,20 +29,12 @@
               <div class="penseaja-header-content">
                 <div class="penseaja-header-left">
                   <div class="penseaja-icon-wrapper">
-                    <img
-                      src="/assets/img/icons/dass-penseaja.png"
-                      alt="Ícone Cadastro"
-                      class="penseaja-icon"
-                    />
+                    <img src="/assets/img/icons/dass-penseaja.png" alt="Ícone Cadastro" class="penseaja-icon" />
                   </div>
 
                   <div class="penseaja-title-container">
-                    <h2>
-                      Cadastro Pense<span class="penseaja-highlight">&</span>Aja
-                    </h2>
-                    <span class="penseaja-subtitle">
-                      Transformando ideias em ações
-                    </span>
+                    <h2>Cadastro Pense<span class="penseaja-highlight">&</span>Aja</h2>
+                    <span class="penseaja-subtitle"> Transformando ideias em ações </span>
                   </div>
                 </div>
 
@@ -87,7 +53,7 @@
               <div class="penseaja-field">
                 <label for="penseaja-matricula">Matrícula</label>
 
-                <div class="penseaja-input-container">
+                <div class="d-flex flex-row justify-content-center align-items-center">
                   <input
                     ref="matriculaInput"
                     type="number"
@@ -96,7 +62,11 @@
                     v-model="registrationEntry"
                     @keyup="serachUser"
                   />
-                  <span class="penseaja-spinner" v-if="loading"></span>
+
+                  <v-btn @click="serachUser" variant="outlined" color="red" class="ml-2">
+                    Buscar
+                    <span class="spinner" v-if="loading"></span>
+                  </v-btn>
                 </div>
               </div>
 
@@ -122,31 +92,31 @@
                   <div class="row">
                     <div class="col-md-6">
                       <label for="penseaja-projeto">Nome do projeto</label>
-                      <input
+                      <v-text-field
                         v-model="penseAjaData.projectName"
-                        type="text"
                         id="penseaja-projeto"
-                        placeholder="Ex: Melhoria do processo"
+                        label="Ex: Melhoria do processo"
+                        variant="outlined"
+                        color="red"
                       />
                     </div>
 
                     <div class="col-md-6">
                       <label for="penseaja-data">Data</label>
-                      <input
-                        v-model="penseAjaData.projectDate"
+                      <v-text-field
                         type="date"
+                        v-model="penseAjaData.projectDate"
                         id="penseaja-data"
-                        min="<?php echo date('Y-m-d'); ?>"
-                        value="<?php echo date('Y-m-d'); ?>"
+                        :min="today"
+                        color="red"
+                        variant="outlined"
                       />
                     </div>
                   </div>
 
                   <div class="row">
                     <div>
-                      <label for="penseaja-projeto-area">
-                        Onde será implementado essa melhoria?
-                      </label>
+                      <label for="penseaja-projeto-area"> Onde será implementado essa melhoria? </label>
 
                       <v-combobox
                         label="Selecione o Setor"
@@ -201,8 +171,6 @@
                     <div class="ai-enhance-effect"></div>
                   </button>
 
-                  <AiMicrofone />
-
                   <div
                     @mouseenter="showTooltip = true"
                     @mouseleave="showTooltip = false"
@@ -213,8 +181,7 @@
                       <span class="lamp-icon bi bi-lightbulb"></span>
                       Dica inteligente!
                     </strong>
-                    Revise seu texto com inteligência artificial para facilitar
-                    a avaliação!
+                    Revise seu texto com inteligência artificial para facilitar a avaliação!
                   </div>
                 </div>
               </div>
@@ -248,15 +215,11 @@
               <div class="ganhos-penseaja">
                 <div class="penseaja-checkbox-ganho-ask">
                   <input v-model="ganhos" type="checkbox" id="ganho-penseaja" />
-                  <label for="ganho-penseaja" class="ganhos-penseaja-label">
-                    O que ganhei com essa melhoria?
-                  </label>
+                  <label for="ganho-penseaja" class="ganhos-penseaja-label"> O que ganhei com essa melhoria? </label>
                 </div>
 
                 <div v-if="ganhos" id="ganhos-form">
-                  <label for="ganhos-descricao"
-                    >Descreva os ganhos obtidos</label
-                  >
+                  <label for="ganhos-descricao">Descreva os ganhos obtidos</label>
                   <div class="ganhos-tipos">
                     <v-combobox
                       v-model="penseAjaData.ganhos.values"
@@ -275,18 +238,13 @@
 
                     <div class="input-helper">
                       <span class="bi bi-lightbulb text-yellow"></span>
-                      Mencione dados, números e resultados que demonstram o
-                      impacto positivo da sua ideia.
+                      Mencione dados, números e resultados que demonstram o impacto positivo da sua ideia.
                     </div>
                   </div>
                 </div>
               </div>
 
-              <button
-                @click="handleRegister"
-                type="button"
-                class="penseaja-submit-button"
-              >
+              <button @click="handleRegister" type="button" class="penseaja-submit-button">
                 <span>Salvar </span>
                 <span class="mdi mdi-content-save-check-outline fs-5"></span>
               </button>
@@ -296,8 +254,6 @@
       </template>
     </v-dialog>
   </div>
-
-  <Notification ref="notification" />
 </template>
 
 <script setup>
@@ -305,15 +261,16 @@ import { ref, nextTick, onMounted, onBeforeUnmount, defineExpose } from "vue";
 import { useUserStore } from "@/stores/userStore";
 import { getUserData } from "@/services/userService";
 import { registerPenseAja } from "@/services/penseAjaService";
-import Notification from "@/components/Notification.vue";
 import { improveText } from "@/services/aiService";
 import AiMicrofone from "./AiTools/AiMicrofone.vue";
 
 const openRegister = ref(false);
 const openRegisterBottomNav = () => {
+  handleUserClick();
   openRegister.value = !openRegister.value;
 };
 defineExpose({ openRegisterBottomNav });
+const emit = defineEmits(["notify"]);
 
 const isHover = ref(false);
 const isMobile = ref(false);
@@ -329,50 +286,42 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
 });
 
-const notification = ref(null);
 const loading = ref(false);
 const userData = ref(null);
 
 const user = useUserStore();
 
+const registrationEntry = ref(null);
 const handleUserClick = async () => {
-  await nextTick();
-
-  if (user?.matricula) {
+  if (user && user?.matricula) {
     await getUserData(user.matricula, userData, loading);
+    registrationEntry.value = user.matricula;
   }
 };
 
-const registrationEntry = ref(null);
 const serachUser = async (e) => {
-  if (e.key === "Enter") {
-    if (registrationEntry.value.toString().length >= 7) {
-      await getUserData(
-        registrationEntry.value,
-        userData,
-        loading,
-        notification
-      );
+  // Verifica se foi pressionado Enter ou se foi um clique do mouse
+  if ((e && e.type === "keyup" && e.key === "Enter") || (e && e.type === "click")) {
+    if (registrationEntry.value && registrationEntry.value.toString().length >= 7) {
+      await getUserData(registrationEntry.value, userData, loading, emit);
     } else {
-      if (notification.value) {
-        notification.value.showPopup(
-          "warning",
-          "Atenção!",
-          "Insira uma matrícula válida, a matrícula deve conter no mínimo 7 caracteres.",
-          3000
-        );
-      }
+      emit("notify", {
+        type: "warning",
+        title: "Atenção!",
+        message: "Insira uma matrícula válida, a matrícula deve conter no mínimo 7 caracteres.",
+        timeout: 3000,
+      });
     }
   }
 };
 
+// Format today's date as YYYY-MM-DD for the date input
+const today = ref(new Date().toISOString().split("T")[0]);
 const penseAjaData = ref({
-  projectName: "Melhoria do processo",
-  projectDate: null,
-  situationBefore:
-    "NA COSTURA DO DW12, A OPERADORA SE QUEIXAVA QUE A MÁQUINA DE 1 AG DA ANTIGA NÃO CONSEGUIA ACOMPANHAR O RITMO DA PRODUÇÃO, NA OPERAÇÃO DA COSTURA DA BOCA DA LINGUETA. ASSIM FICANDO ESTOCADA DE SERVIÇO E GERANDO PERDA DE PRODUÇÃO.",
-  situationNow:
-    "DEPOIS DE UM ACOMPANHAMENTO, FOI NOTADO QUE A COSTURA DO TRASEIRO ERA A MAIS SIMPLES DO SETOR, POIS ERA APENAS UMA COSTURA EM LINHA RETA, ASSIM PODENDO FAZER UMA TROCA DENTRO DO PRÓPRIO SETOR, ONDE A LÍDER ACEITOU A SUGESTÃO E AS OPERADORAS TAMBÉM. SENDO ASSIM, GANHANDO PRODUTIVIDADE.",
+  projectName: null,
+  projectDate: new Date().toISOString().split("T")[0],
+  situationBefore: null,
+  situationNow: null,
   setor: null,
   perdas: [],
   ganhos: {
@@ -394,12 +343,7 @@ const showTooltip = ref(false);
 const disableIaButton = ref(false);
 const handleImproveText = async () => {
   if (!penseAjaData.value.situationBefore || !penseAjaData.value.situationNow) {
-    notification.value.showPopup(
-      "warning",
-      "Atenção!",
-      "Preencha os campos de situação antes de usar a IA.",
-      3000
-    );
+    notification.value.showPopup("warning", "Atenção!", "Preencha os campos de situação antes de usar a IA.", 3000);
     return;
   }
 
@@ -432,19 +376,15 @@ const ganhos = ref(false);
 
 const handleRegister = () => {
   if (!registrationEntry.value || !userData.value) {
-    notification.value.showPopup(
-      "warning",
-      "Aviso!",
-      "Dados do usuário ausentes.",
-      3000
-    );
+    emit("notify", {
+      type: "warning",
+      title: "Aviso!",
+      message: "Dados do usuário ausentes.",
+      timeout: 3000,
+    });
   }
-  registerPenseAja(
-    penseAjaData.value,
-    registrationEntry.value,
-    notification,
-    userData.value
-  );
+
+  registerPenseAja(penseAjaData.value, registrationEntry.value, emit, userData.value);
 };
 </script>
 
@@ -457,6 +397,25 @@ const handleRegister = () => {
 .fade-icon-enter-from,
 .fade-icon-leave-to {
   opacity: 0;
+}
+
+.spinner {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #ff0000;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 0.8s linear infinite;
+  margin-left: 8px;
+  display: inline-block;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .icon {
@@ -627,8 +586,7 @@ const handleRegister = () => {
   max-height: 90vh;
   padding: 2.5rem;
   z-index: 3100;
-  box-shadow: 0 15px 50px rgba(239, 83, 80, 0.15),
-    0 5px 15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 15px 50px rgba(239, 83, 80, 0.15), 0 5px 15px rgba(0, 0, 0, 0.08);
   animation: slideUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
   overflow-y: auto;
   scroll-behavior: smooth;
@@ -645,8 +603,7 @@ const handleRegister = () => {
   max-height: 90vh;
   padding: 2.5rem;
   z-index: 3100;
-  box-shadow: 0 15px 50px rgba(239, 83, 80, 0.15),
-    0 5px 15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 15px 50px rgba(239, 83, 80, 0.15), 0 5px 15px rgba(0, 0, 0, 0.08);
   animation: slideUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
   overflow-y: auto;
   scroll-behavior: smooth;
@@ -757,12 +714,7 @@ const handleRegister = () => {
   left: 0;
   width: 100%;
   height: 1px;
-  background: linear-gradient(
-    to right,
-    #f0f0f0,
-    rgba(240, 240, 240, 0.5),
-    rgba(240, 240, 240, 0)
-  );
+  background: linear-gradient(to right, #f0f0f0, rgba(240, 240, 240, 0.5), rgba(240, 240, 240, 0));
   overflow: hidden;
 }
 
@@ -954,12 +906,7 @@ const handleRegister = () => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   animation: sweep 3s infinite;
 }
 
@@ -1036,13 +983,11 @@ const handleRegister = () => {
   }
   50% {
     opacity: 0.9;
-    text-shadow: 0 0 6px rgba(255, 177, 66, 0.6),
-      0 0 12px rgba(255, 177, 66, 0.4);
+    text-shadow: 0 0 6px rgba(255, 177, 66, 0.6), 0 0 12px rgba(255, 177, 66, 0.4);
   }
   100% {
     opacity: 1;
-    text-shadow: 0 0 10px rgba(255, 177, 66, 0.8),
-      0 0 20px rgba(255, 177, 66, 0.6);
+    text-shadow: 0 0 10px rgba(255, 177, 66, 0.8), 0 0 20px rgba(255, 177, 66, 0.6);
   }
 }
 
@@ -1098,8 +1043,7 @@ const handleRegister = () => {
   border-color: #ef5350;
   outline: none;
   background-color: #fff;
-  box-shadow: 0 0 0 3px rgba(239, 83, 80, 0.15),
-    inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 0 3px rgba(239, 83, 80, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Melhorias para textarea */
@@ -1344,12 +1288,7 @@ const handleRegister = () => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: 0.5s;
 }
 

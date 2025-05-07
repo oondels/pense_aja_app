@@ -59,6 +59,7 @@
           </div>
 
           <AnalistaConfirmation
+          v-if="getUserPermission()"
             :product="props.PenseAjaProduct"
             :colaboradorData="props.colaboradorData"
             @updatePoints="updatePoints"
