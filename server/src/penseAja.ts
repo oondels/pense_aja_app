@@ -1,11 +1,11 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import dotenv from "./src/config/dotenv";
-import { CustomError } from "./src/types/CustomError";
-import PenseAjaRoutes from "./src/routes/penseAja.route";
-import UserPenseajaRoute from "./src/routes/userPensAaja.route";
-import AiTools from "./src/routes/aiTools.route"
+import dotenv from "./config/dotenv";
+import { CustomError } from "./types/CustomError";
+import PenseAjaRoutes from "./routes/penseAja.route";
+import UserPenseajaRoute from "./routes/userPensAaja.route";
+import AiTools from "./routes/aiTools.route"
 
 const app = express();
 const port = 2512;
