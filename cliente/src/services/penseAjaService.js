@@ -9,12 +9,22 @@ export const registerPenseAja = async (penseAjaData, matricula, notification, us
   }
 
   if (!penseAjaData?.projectName || !penseAjaData?.projectDate || !penseAjaData?.situationBefore || !penseAjaData?.situationNow) {
-    notification.value.showPopup("warning", "Aviso!", "Preencha todos os campos necessários.", 3000)
+    emit("notify", {
+      type: "warning",
+      title: "Aviso!",
+      message: "Preencha todos os campos necessários.",
+      time: 3000
+    });
     return;
   }
 
   if (!userData) {
-    notification.value.showPopup("warning", "Aviso!", "Dados do usuário não encontrados.", 3000)
+    emit("notify", {
+      type: "warning",
+      title: "Aviso!",
+      message: "Dados do usuário não encontrados.",
+      time: 3000
+    });
     return;
   }
 
@@ -50,10 +60,12 @@ export const registerPenseAja = async (penseAjaData, matricula, notification, us
       areaMelhoria: penseAjaData.setor,
     });
 
-    notification.value.showPopup("success",
-      "Sucesso!",
-      response?.data?.message || "Pense e Aja cadastrado com sucesso!",
-      2000)
+    emit("notify", {
+      type: "success",
+      title: "Sucesso!",
+      message: "Pense e Aja cadastrado com sucesso!",
+      time: 3000
+    });
 
     setTimeout(() => {
       window.location.reload();
@@ -61,10 +73,12 @@ export const registerPenseAja = async (penseAjaData, matricula, notification, us
   } catch (error) {
     console.error("Erro ao cadastrar pense aja: ", error);
 
-    notification.value.showPopup("error",
-      "Error",
-      error.response?.data?.message ||
-      "Erro ao cadastrar Pense e Aja. Tente novamente mais tarde!",
-      3000)
+    emit("notify", {
+      type: "error",
+      title: "Erro!",
+      message: error.response?.data?.message ||
+        "Erro ao cadastrar Pense e Aja. Tente novamente mais tarde!",
+      time: 3000
+    });
   }
 };

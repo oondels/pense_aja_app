@@ -1,11 +1,11 @@
 import { authApi } from "./httpClient";
 
-export const login = (username, password, loading, notification) => {
+export const login = (username, password, loading, emit) => {
   loading.value = true
 
   authApi.post("/auth/login", { usuario: username, senha: password },)
     .then((response) => {
-      const data = response.data;
+      const data = response.data;      
 
       const decoded = JSON.parse(atob(data.userData));
       sessionStorage.setItem("matricula", decoded.matricula);
@@ -17,24 +17,24 @@ export const login = (username, password, loading, notification) => {
       sessionStorage.setItem("setor", decoded.setor);
       sessionStorage.setItem("expirationTime", data.tokenExpirationTime)
 
-      notification.value.showPopup(
-        "success",
-        "Sucesso",
-        "Login realizado com sucesso!",
-        1000
-      );
+      emit("notify", {
+        type: "success",
+        title: "Sucesso",
+        message: "Login realizado com sucesso!",
+        time: 1500
+      });
 
       setTimeout(() => {
         window.location.reload();
-      }, 1000);
+      }, 1600);
     })
     .catch((error) => {
-      notification.value.showPopup(
-        "error",
-        "Erro",
-        "Erro ao realizar login! Tente novamente.",
-        3000
-      );
+      emit("notify", {
+        type: "error",
+        title: "Error",
+        message: "Erro ao realizar login. Tente novamente.",
+        time: 1500
+      });
       console.error("Erro ao fazer login:", error);
     })
     .finally(() => {

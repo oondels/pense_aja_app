@@ -1,7 +1,7 @@
 import { commonApi, api } from './httpClient.js'
 
 // TODO: Corrigir coleta de unidadeDass
-export const getUserData = async (registration, userData, loading = null, notification = null) => {
+export const getUserData = async (registration, userData, loading = null, emit = null) => {
   if (loading) loading.value = true
 
   let message = "Contate a equipe de automação."
@@ -10,12 +10,16 @@ export const getUserData = async (registration, userData, loading = null, notifi
       params: { dassOffice: "SEST" },
     });
 
-    userData.value = response.data
-    
+    userData.value = response.data    
   } catch (error) {
     console.error("Erro ao buscar dados do colaborador: ", error);
     if (notification) {
-      notification.value.showPopup("error", "Erro!", error.response?.data.message ?? message, 3000)
+      emit("notify", {
+        type: "error",
+        title: "Error",
+        message: error.response?.data.message ?? message,
+        time: 3000
+      });
     }
   } finally {
     if (loading) loading.value = false
