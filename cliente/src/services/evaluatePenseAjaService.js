@@ -1,7 +1,7 @@
 import { api } from "./httpClient"
 
-export const evaluatePenseAja = async (evaluationData, notification) => {
-  if (!evaluationData.avaliacao && evaluationData.status !== "EXCLUIR") {
+export const evaluatePenseAja = async (evaluationData, notification, dialog) => {
+  if (!evaluationData.avaliacao && evaluationData.status !== "exclude" && evaluationData.status !== "reprove") {
     notification.value.showPopup(
       "warning",
       "Atenção!",
@@ -11,7 +11,7 @@ export const evaluatePenseAja = async (evaluationData, notification) => {
     return;
   }
 
-  if (!evaluationData.justificativa && evaluationData.status !== "EXCLUIR") {
+  if (!evaluationData.justificativa && evaluationData.status !== "exclude") {
     notification.value.showPopup(
       "warning",
       "Atenção!",
@@ -28,6 +28,7 @@ export const evaluatePenseAja = async (evaluationData, notification) => {
     );
 
     notification.value.showPopup("success", "Sucesso!", response.data.message, 2000);
+    dialog.value = false
   } catch (error) {
     if (error.status === 500) {
       notification.value.showPopup("error", "Erro!", error?.response?.data?.message || "Erro ao avaliar pense aja, tente novamente!", 3000);

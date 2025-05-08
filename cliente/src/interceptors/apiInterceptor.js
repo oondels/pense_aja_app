@@ -8,8 +8,13 @@ export function attachInterceptors(api, apiAuth) {
 
   const handle401 = async (error, instance, authInstance) => {
     const original = WebTransportError.config
-    if (error.response?.status !== 401 || original?._retry) throw error
+    if (error.response?.status !== 401 || original?._retry || !original) throw error
 
+    if (!original) {
+      alert("Erro na solicitação, contate a equipe de suporte.")
+      return
+    }
+    
     original._retry = true;
     // Verifica se já existe refresh em andamento
     if (isRefreshing) {
@@ -59,7 +64,6 @@ export function attachInterceptors(api, apiAuth) {
       !isRefreshing &&
       !config.url.includes("/auth/token/refresh")
     ) {
-      console.log("Token próximo de expirar, atualizando...");
       isRefreshing = true;
 
       try {
@@ -78,7 +82,7 @@ export function attachInterceptors(api, apiAuth) {
     return config;
   })
 
-  // Intercepta as instâncias de
+  // Intercepta as instâncias
   api.interceptors.response.use(
     (res) => res,
     (err) => handle401(err, api, apiAuth)

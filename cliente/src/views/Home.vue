@@ -40,8 +40,9 @@
             <h2>Pronto para começar?</h2>
             <p>Junte-se à comunidade Pense & Aja e comece a transformar ideias em realidade.</p>
             <div class="cta-buttons">
-              <button class="primary-button">Registrar agora</button>
-              <button class="text-button">Saiba mais</button>
+              <router-link to="/pense-aja">
+                <button class="text-button">Saiba mais</button>
+              </router-link>
             </div>
           </div>
         </div>
@@ -52,7 +53,6 @@
 
 <script setup>
 import HomeHeader from "../components/HomeHeader.vue";
-
 </script>
 
 <style scoped>

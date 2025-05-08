@@ -24,7 +24,6 @@ app.get("/", (req: Request, res: Response) => {
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
 
   const statusCode = error instanceof CustomError ? error.statusCode : 500;
-  console.log("Status code: ", statusCode);
   const message = error.message || "Erro interno no servidor.";
   const details = error.details || null;
 

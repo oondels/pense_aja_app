@@ -16,11 +16,6 @@ export function usePwaInstall() {
     if (deferredPrompt.value) {
       deferredPrompt.value.prompt()
       const { outcome } = await deferredPrompt.value.userChoice
-      if (outcome === 'accepted') {
-        console.log('Usuário aceitou instalar o app')
-      } else {
-        console.log('Usuário recusou instalar o app')
-      }
       deferredPrompt.value = null
       isInstallable.value = false
     }

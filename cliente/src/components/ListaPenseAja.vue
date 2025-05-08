@@ -521,8 +521,9 @@
                           </div>
                         </div>
 
-                        <div class="justifica-avaliacao" v-if="evaluationValue">
+                        <div class="justifica-avaliacao" v-if="evaluationValue || reprove">
                           <textarea
+                            ref="justificativa"
                             placeholder="Justifique a avaliação do pense e aja."
                             name="justificativa-avaliacao"
                             id="justificativa-avaliacao"
@@ -626,7 +627,7 @@
 </template>
 
 <script setup>
-import { computed, watch, ref, onMounted, onBeforeUnmount, reactive } from "vue";
+import { computed, watch, ref, onMounted, onBeforeUnmount, reactive, nextTick } from "vue";
 import { RecycleScroller } from "vue-virtual-scroller";
 import { useUserStore } from "@/stores/userStore";
 import { evaluatePenseAja } from "@/services/evaluatePenseAjaService";
@@ -635,7 +636,7 @@ import { getUserPermission } from "@/services/userService";
 import { setUserRole } from "@/services/userService";
 import { formateName } from "@/services/userService";
 import { commonApi } from "@/services/httpClient.js";
-import{ip} from "@/config/ip.js"
+import { ip } from "@/config/ip.js";
 
 const notification = ref(null);
 const isMobile = ref(false);
@@ -936,7 +937,16 @@ const setButtonPermission = (penseAja) => {
   return "";
 };
 
+const justificativa = ref(null);
+const reprove = ref(false);
+// TODO: Exibir avaliação do analista para o gerente
 const handleEvaluationValue = async (action, penseAja, dialog) => {
+  if (action === "reprove") {
+    reprove.value = true;
+    await nextTick();
+    justificativa.value.focus();
+  }
+
   const dassOffice = "SEST";
   const evaluationData = {
     id: penseAja.id,
@@ -949,9 +959,8 @@ const handleEvaluationValue = async (action, penseAja, dialog) => {
     dassOffice: dassOffice,
   };
 
-  await evaluatePenseAja(evaluationData, notification);
+  await evaluatePenseAja(evaluationData, notification, dialog);
   await loadContent();
-  dialog.value = false
 };
 
 onMounted(() => {

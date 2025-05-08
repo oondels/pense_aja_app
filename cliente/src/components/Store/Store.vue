@@ -278,7 +278,6 @@ const handleUserData = async (e, click) => {
       registrationInput.value = user.matricula;
       await getUserData(user.matricula, userData);
       pontos.value = userData.value.pontos - userData.value.pontos_resgatados;
-      console.log(userData.value);
     }
 
     // Espera input do usuário

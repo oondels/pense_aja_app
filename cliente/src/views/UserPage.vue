@@ -200,7 +200,6 @@ const loadUserData = async () => {
     }
 
     await getUserData(registration, userData, null, notification);
-    console.log(userData.value);
     formData.email = userData.value.email || "";
     
     // if (!Array.isArray(userData.value.authorized_notifications_apps)) {
