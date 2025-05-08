@@ -573,7 +573,7 @@
                     <div class="avaliar-footer" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
                       <div class="avaliar-actions">
                         <button
-                          @click="handleEvaluationValue('approve', item)"
+                          @click="handleEvaluationValue('approve', item, isActive)"
                           class="avaliar-btn avaliar-btn-aprovar"
                           :class="setButtonPermission(item)"
                         >
@@ -582,7 +582,7 @@
                         </button>
 
                         <button
-                          @click="handleEvaluationValue('reprove', item)"
+                          @click="handleEvaluationValue('reprove', item, isActive)"
                           class="avaliar-btn avaliar-btn-reprovar"
                           :class="setButtonPermission(item)"
                         >
@@ -591,7 +591,7 @@
                         </button>
 
                         <button
-                          @click="handleEvaluationValue('exclude', item)"
+                          @click="handleEvaluationValue('exclude', item, isActive)"
                           class="avaliar-btn avaliar-btn-excluir"
                           :class="setButtonPermission(item)"
                         >
@@ -936,7 +936,7 @@ const setButtonPermission = (penseAja) => {
   return "";
 };
 
-const handleEvaluationValue = async (action, penseAja) => {
+const handleEvaluationValue = async (action, penseAja, dialog) => {
   const dassOffice = "SEST";
   const evaluationData = {
     id: penseAja.id,
@@ -951,6 +951,7 @@ const handleEvaluationValue = async (action, penseAja) => {
 
   await evaluatePenseAja(evaluationData, notification);
   await loadContent();
+  dialog.value = false
 };
 
 onMounted(() => {
