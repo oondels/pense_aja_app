@@ -5,6 +5,8 @@ import roleVerificationAccess from "../middlewares/roleVerificationMiddleware";
 import { NotificationService } from "../services/NotificationService";
 import { UserPenseaja } from "../services/UserPenseaja";
 
+const ip = process.env.DEV_ENV === 'development' ? 'http://localhost:5173' : 'http://10.110.0.103:5050'
+
 const router = Router();
 
 const formatUserName = (name: string) => {
@@ -71,7 +73,8 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
 
     // Verifica se encontra gerente do usuário e se o gerente esta com notificações ativas
     if (userManager) {
-      const notificationEnabled = await NotificationService.isNotificationEnabled(userManager.matricula, dassOffice);
+      // const notificationEnabled = await NotificationService.isNotificationEnabled(userManager.matricula, dassOffice);
+      const notificationEnabled = await NotificationService.isNotificationEnabled(3020495, dassOffice);
 
       if (notificationEnabled) {
         await NotificationService.sendNotification({
@@ -80,7 +83,7 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
           title: "Novo Pense Aja Cadastrado.",
           message: `Um novo registro de Pense Aja foi cadastrado pelo usuário ${formatUserName(pense_aja.nome)}. Projeto: ${pense_aja.nome_projeto}.`,
           application: "Pense e Aja",
-          link: "http://localhost/pense-aja"
+          link: `${ip}/pense-aja/${pense_aja.id}`
         });
       }
     }
@@ -96,10 +99,9 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
 }
 );
 
-router.get("/id/:id", async (req: Request, res: Response, next: NextFunction) => {
+router.get("/:dassOffice/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
-    const dassOffice = req.query.dassOffice as string;
+    const { id, dassOffice } = req.params;
 
     const result = await PenseAjaService.getPenseAjaById(id, dassOffice);
 
@@ -144,7 +146,7 @@ router.put("/avaliar/:id", verifyToken, roleVerificationAccess, async (req: Requ
         message: `Seu registro de Pense Aja foi avaliado${avaliadorNome ? " pelo usuário " + avaliadorNome : "!"}. 
         Abra o aplicativo e veja sua pontuação e feedbacks!`,
         application: "Pense e Aja",
-        link: "http://localhost/pense-aja"
+        link: `${ip}/pense-aja/${id}`
       });
     }
 

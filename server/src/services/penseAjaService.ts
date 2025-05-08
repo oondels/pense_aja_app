@@ -228,7 +228,7 @@ export const PenseAjaService = {
           a3_mae, ganhos, outros_ganhos, fabrica, unidade_dass, createdat, updatedat, lider, excluido
         ) VALUES
          ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW(), '', '')
-        RETURNING nome, nome_projeto, ganhos;`,
+        RETURNING id, nome, nome_projeto, ganhos;`,
         params
       );
 
@@ -269,10 +269,10 @@ export const PenseAjaService = {
       const data = await client.query(
         `
         SELECT  
-          matricula, nome, setor, turno, gerente, data_realizada,
+          matricula, nome, setor, turno, gerente, data_realizada as criado,
           situacao_anterior, situacao_atual, nome_projeto, super_producao, transporte, 
           processamento, movimento, estoque, espera, talento, retrabalho, gerente_aprovador, 
-          data_aprogerente, analista_avaliador, classificacao, a3_mae, fabrica
+          data_aprogerente, analista_avaliador, classificacao, a3_mae, fabrica, ganhos, outros_ganhos
         FROM 
           pense_aja.pense_aja_dass
         WHERE id = $1 AND unidade_dass = $2 AND excluido = ''`,
