@@ -15,7 +15,7 @@
         </div>
         <div class="banner-titles">
           <h1 class="main-title">Pense <span class="highlight">&</span> Aja</h1>
-          <p class="tagline">
+          <p>
             Transformando ideias em <span class="highlight-text">ações</span>
           </p>
         </div>
@@ -38,7 +38,6 @@
           <Store ref="storeRef" @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)" />
           <RegisterPenseAja ref="registerRef" @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)" />
           <Login ref="loginRef" @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)" />
-
         </div>
       </div>
     </div>
@@ -170,8 +169,152 @@ const handleLoginClick = () => {
 </script>
 
 <style scoped>
-@import url("/assets/css/new.css");
-@import url("/assets/css/layout.css");
+header {
+  display: flex;
+  border-radius: 8px;
+  flex: 0 0 auto;
+}
+
+header #logo {
+  display: flex;
+  flex: 0 1 200px;
+  background: #fff;
+  justify-content: center;
+  align-items: center;
+}
+
+.banner-wrapper {
+  width: 100%;
+  position: relative;
+  background: linear-gradient(135deg, #f3f4f6, #efe9e9);
+  padding: 10px;
+  overflow: hidden; 
+}
+
+.banner-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  position: relative;
+}
+
+.banner-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logo-container {
+  position: relative;
+  margin-right: 10px;
+}
+
+.logo-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #f3f4f6, #e2e3e5);
+  box-shadow: 6px 6px 12px #d1d1d1, -6px -6px 12px #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: float 6s ease-in-out infinite;
+}
+
+.logo-img {
+  width: 70px;
+  height: 70px;
+  transform: rotate(-10deg);
+  transition: transform 0.5s ease;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.logo-circle:hover .logo-img {
+  transform: rotate(0deg) scale(1.1);
+}
+
+.banner-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(135deg, #b0062b, #880320);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: fadeInUp 0.8s ease;
+  letter-spacing: -0.5px;
+}
+
+.tagline {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #444;
+  margin: 0;
+  animation: fadeInUp 0.8s ease 0.2s forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.highlight {
+  color: #b0062b;
+  -webkit-text-fill-color: #b0062b;
+  position: relative;
+}
+
+.highlight-text {
+  position: relative;
+  font-weight: 600;
+  color: #b0062b;
+}
+
+.highlight-text:after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #b0062b, #ff335f);
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.5s ease;
+}
+
+.banner-titles:hover .highlight-text:after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+.current-month {
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  animation: fadeInUp 0.8s ease 0.3s forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.month-label {
+  opacity: 0.7;
+  margin-right: 5px;
+}
+
+.month-value {
+  font-weight: 600;
+  color: #b0062b;
+  position: relative;
+  padding: 2px 8px;
+  background: rgba(176, 6, 43, 0.08);
+  border-radius: 4px;
+}
+
 .banner-user-info {
   gap: 8px;
 }
@@ -180,6 +323,125 @@ const handleLoginClick = () => {
   display: flex;
   gap: 8px;
 }
+
+
+.banner-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 10px 5px;
+}
+
+.button-icon-container {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff, #f0f0f0);
+  box-shadow: 6px 6px 8px #d4d3d3, -6px -6px 12px #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.button-icon-container::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(176, 6, 43, 0), rgba(255, 0, 55, 0.5));
+  top: 0;
+  left: -100%;
+  transition: 0.5s;
+}
+
+.action-button:hover .button-icon-container::before {
+  left: 0;
+}
+
+.button-icon {
+  width: 28px;
+  height: 28px;
+  transition: transform 0.3s ease;
+}
+
+.action-button:hover .button-icon {
+  transform: scale(1.15);
+}
+
+.button-label {
+  font-size: 0.85rem;
+  color: #555;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
+}
+
+.action-button:hover .button-label {
+  color: #000000;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.banner-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.decoration-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.05;
+  background: linear-gradient(135deg, #b0062b, #ff335f);
+}
+
+.circle-1 {
+  width: 150px;
+  height: 150px;
+  top: -40px;
+  left: -40px;
+}
+
+.circle-2 {
+  width: 100px;
+  height: 100px;
+  bottom: -30px;
+  right: 25%;
+}
+
+.circle-3 {
+  width: 70px;
+  height: 70px;
+  top: 20px;
+  right: 10%;
+}
+
 
 @media (max-width: 1024px) {
   .button-group.desktop-menu {
