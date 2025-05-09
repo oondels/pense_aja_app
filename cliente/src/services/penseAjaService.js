@@ -1,10 +1,9 @@
 import { api, commonApi } from "./httpClient"
 
-// TODO: Atualizar coleta de Unidade Dass
 export const registerPenseAja = async (penseAjaData, matricula, emit, userData) => {
-  let dassOffice = "SEST"
+  const dassOffice = localStorage.getItem("unidadeDass");
   if (!dassOffice) {
-    notification.value.showPopup("warning", "Aviso!", "Unidade do colaborador não encontrada.", 3000)
+    notification.value.showPopup("warning", "Aviso!", "Unidade do colaborador não encontrada.", 3000);
     return;
   }
 

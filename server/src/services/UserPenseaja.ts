@@ -16,8 +16,6 @@ export const UserPenseaja = {
 
     const client = await pool.connect();
     try {
-      const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
-
       const query = await client.query(
         `
         SELECT
@@ -154,6 +152,26 @@ export const UserPenseaja = {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
 
       logger.error("user-pense-aja", `Erro ao atualizar dados do usuario: ${errorMessage}`);
+      throw error;
+    } finally {
+      client.release();
+    }
+  },
+
+  async getUserOffice(registration: string) {
+    const client = await pool.connect();
+    try {
+      const firstDigit = registration.charAt(0);
+      if (!firstDigit || !Number(firstDigit)) {
+        throw new Error("Registro inválido. Matrícula desconhecida!");
+      }
+      const dasOffices = await client.query("SELECT unidade, location FROM core.unidades_dass WHERE $1 = ANY (key)", [Number(firstDigit)]);
+
+      return {userOffice: dasOffices.rows[0]?.unidade ?? null, location: dasOffices.rows[0]?.location ?? null};
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+
+      logger.error("user-pense-aja", `Erro ao buscar unidade do usuario: ${errorMessage}`);
       throw error;
     } finally {
       client.release();

@@ -47,6 +47,7 @@
                     id="login-password"
                     v-model="password"
                     placeholder="Digite sua senha"
+                    @keyup.enter="handleLogin"
                   />
 
                   <span

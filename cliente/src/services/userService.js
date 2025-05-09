@@ -1,13 +1,13 @@
 import { commonApi, api } from './httpClient.js'
 
-// TODO: Corrigir coleta de unidadeDass
 export const getUserData = async (registration, userData, loading = null, emit = null) => {
+  const dassOffice = localStorage.getItem("unidadeDass");
   if (loading) loading.value = true
 
   let message = "Contate a equipe de automação."
   try {
     const response = await commonApi.get(`/user/${registration}`, {
-      params: { dassOffice: "SEST" },
+      params: { dassOffice },
     });
 
     userData.value = response.data    

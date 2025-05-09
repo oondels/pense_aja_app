@@ -5,19 +5,13 @@
         <div class="logo-container">
           <div class="logo-circle">
             <router-link to="/">
-              <img
-                src="/assets/img/icons/dass-penseaja.png"
-                alt="Logo Dass"
-                class="logo-img"
-              />
+              <img src="/assets/img/icons/dass-penseaja.png" alt="Logo Dass" class="logo-img" />
             </router-link>
           </div>
         </div>
         <div class="banner-titles">
           <h1 class="main-title">Pense <span class="highlight">&</span> Aja</h1>
-          <p>
-            Transformando ideias em <span class="highlight-text">ações</span>
-          </p>
+          <p class="tagline">Transformando ideias em <span class="highlight-text">ações</span></p>
         </div>
       </div>
       <div class="banner-info">
@@ -26,6 +20,7 @@
           <span class="month-label">Mês atual:</span>
           <span class="month-value">{{ currentMonth }}</span>
         </div>
+
         <div class="info-item user-info">
           <i class="mdi mdi-account-circle info-icon"></i>
           <span class="user-label">Olá,</span>
@@ -35,9 +30,18 @@
 
       <div class="banner-right">
         <div class="button-group desktop-menu">
-          <Store ref="storeRef" @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)" />
-          <RegisterPenseAja ref="registerRef" @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)" />
-          <Login ref="loginRef" @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)" />
+          <Store
+            ref="storeRef"
+            @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)"
+          />
+          <RegisterPenseAja
+            ref="registerRef"
+            @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)"
+          />
+          <Login
+            ref="loginRef"
+            @notify="(payload) => notification.showPopup(payload.type, payload.title, payload.message, payload.time)"
+          />
         </div>
       </div>
     </div>
@@ -50,11 +54,7 @@
 
     <!-- Side Drawer Menu -->
     <transition name="slide-menu">
-      <div
-        v-if="isMenuOpen"
-        class="side-drawer left"
-        @click.self="isMenuOpen = false"
-      >
+      <div v-if="isMenuOpen" class="side-drawer left" @click.self="isMenuOpen = false">
         <div class="drawer-content">
           <button class="close-btn" @click="isMenuOpen = false">&times;</button>
           <div class="drawer-menu">
@@ -85,24 +85,19 @@
         </v-btn>
 
         <v-btn @click="handleLoginClick">
-          <i
-            :class="
-              user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'
-            "
-            class="fs-4"
-          ></i>
+          <i :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'" class="fs-4"></i>
           {{ user?.matricula ? "Sair" : "Entrar" }}
         </v-btn>
       </v-bottom-navigation>
     </v-layout>
   </div>
 
-  <Notification ref="notification" /> 
+  <Notification ref="notification" />
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent } from "vue";
 import Login from "./Auth/Login.vue";
 import { useUserStore } from "@/stores/userStore";
 import { useRouter } from "vue-router";
@@ -111,7 +106,7 @@ import Notification from "./Notification.vue";
 const Store = defineAsyncComponent(() => import("./Store/Store.vue"));
 const RegisterPenseAja = defineAsyncComponent(() => import("./RegisterPenseAja.vue"));
 
-const notification = ref(null)
+const notification = ref(null);
 const user = useUserStore();
 
 const isMenuOpen = ref(false);
@@ -188,7 +183,7 @@ header #logo {
   position: relative;
   background: linear-gradient(135deg, #f3f4f6, #efe9e9);
   padding: 10px;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .banner-container {
@@ -197,12 +192,16 @@ header #logo {
   align-items: center;
   padding: 15px;
   position: relative;
+  flex-wrap: wrap; /* Allow items to wrap */
+  gap: 1rem; /* Add gap between wrapped items */
 }
 
 .banner-left {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: clamp(10px, 2vw, 20px); /* Responsive gap */
+  flex-grow: 1; /* Allow banner-left to grow */
+  min-width: 280px; /* Prevent excessive shrinking */
 }
 
 .logo-container {
@@ -211,9 +210,9 @@ header #logo {
 }
 
 .logo-circle {
-  width: 80px;
-  height: 80px;
-  border-radius: 24px;
+  width: clamp(60px, 10vw, 80px); /* Responsive size */
+  height: clamp(60px, 10vw, 80px); /* Responsive size */
+  border-radius: clamp(16px, 3vw, 24px); /* Responsive border-radius */
   background: linear-gradient(145deg, #f3f4f6, #e2e3e5);
   box-shadow: 6px 6px 12px #d1d1d1, -6px -6px 12px #ffffff;
   display: flex;
@@ -223,8 +222,8 @@ header #logo {
 }
 
 .logo-img {
-  width: 70px;
-  height: 70px;
+  width: clamp(50px, 8vw, 70px); /* Responsive size */
+  height: clamp(50px, 8vw, 70px); /* Responsive size */
   transform: rotate(-10deg);
   transition: transform 0.5s ease;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
@@ -240,18 +239,19 @@ header #logo {
 }
 
 .main-title {
-  font-size: 2.5rem;
+  font-size: clamp(1.8rem, 4vw, 2.5rem); /* Responsive font size */
   font-weight: 800;
   margin: 0;
   background: linear-gradient(135deg, #b0062b, #880320);
   -webkit-background-clip: text;
+  background-clip: text; /* Standard property */
   -webkit-text-fill-color: transparent;
   animation: fadeInUp 0.8s ease;
   letter-spacing: -0.5px;
 }
 
 .tagline {
-  font-size: 1.1rem;
+  font-size: clamp(0.8rem, 2vw, 1.1rem); /* Responsive font size */
   font-weight: 400;
   color: #444;
   margin: 0;
@@ -324,10 +324,11 @@ header #logo {
   gap: 8px;
 }
 
-
 .banner-right {
   display: flex;
   justify-content: flex-end;
+  flex-grow: 1; /* Allow banner-right to grow if needed */
+  min-width: 200px; /* Example, adjust as needed */
 }
 
 .button-group {
@@ -442,10 +443,26 @@ header #logo {
   right: 10%;
 }
 
-
 @media (max-width: 1024px) {
   .button-group.desktop-menu {
     display: none;
+  }
+  .banner-container {
+    justify-content: center; /* Center items when desktop menu is hidden */
+  }
+  .banner-info {
+    order: 3; /* Ensure banner-info can be reordered if necessary */
+    flex-basis: 100%; /* Allow it to take full width if other items wrap */
+    justify-content: center;
+    margin-top: 1rem; /* Add some space if it wraps below */
+  }
+  .banner-right {
+    display: none; /* Hide desktop menu container */
+  }
+  .banner-left {
+    justify-content: center; /* Center logo and title if banner-right is gone */
+    flex-basis: 100%; /* Allow it to take full width */
+    margin-bottom: 0.5rem;
   }
 }
 
@@ -536,14 +553,18 @@ header #logo {
 
 .banner-info {
   display: flex;
-  gap: 1.5rem;
+  gap: clamp(0.5rem, 2vw, 1.5rem); /* Responsive gap */
   align-items: center;
-  background: rgba(255, 235, 238, 0.92); /* vermelho suave */
+  background: rgba(255, 235, 238, 0.92);
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(244, 67, 54, 0.08);
-  padding: 0.5rem 1.5rem;
-  margin: 0 0 1rem 0;
+  padding: clamp(0.4rem, 1.5vw, 0.6rem) clamp(0.8rem, 2.5vw, 1.5rem); /* Responsive padding */
+  margin: 0; /* Rely on container gap or specific media query margins */
   transition: box-shadow 0.2s;
+  flex-wrap: wrap; /* Allow info items to wrap */
+  justify-content: center; /* Center items if they wrap or in general */
+  flex-grow: 1; /* Allow banner-info to grow if space allows */
+  min-width: 260px; /* Prevent excessive shrinking */
 }
 
 .banner-info:hover {
@@ -554,11 +575,11 @@ header #logo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.1rem;
+  font-size: clamp(0.85rem, 1.8vw, 1rem); /* Responsive font size */
 }
 
 .info-icon {
-  font-size: 1.6rem;
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem); /* Responsive font size */
   color: #e53935; /* vermelho suave */
   transition: color 0.2s;
 }
@@ -575,11 +596,72 @@ header #logo {
   color: #b71c1c;
 }
 
+/* Responsive adjustments for overall layout */
+@media (max-width: 768px) {
+  .banner-container {
+    flex-direction: column; /* Stack main sections */
+    align-items: center; /* Center items in column */
+    padding: 10px;
+  }
+  .banner-left {
+    flex-direction: column; /* Stack logo and titles */
+    text-align: center;
+    gap: 10px; /* Adjust gap for column layout */
+    margin-bottom: 1rem; /* Space between banner-left and banner-info when stacked */
+    width: 100%; /* Ensure it takes full width in column layout */
+  }
+  .logo-container {
+    margin-right: 0; /* Remove margin when stacked */
+    margin-bottom: 10px; /* Add some space below logo */
+  }
+  .banner-titles {
+    align-items: center; /* Center titles text */
+  }
+  .banner-info {
+    width: auto; /* Allow it to size based on content or flex properties */
+    max-width: 90%; /* Prevent it from becoming too wide */
+    justify-content: space-around; /* Distribute info items */
+    padding: 0.5rem 1rem; /* Adjust padding for smaller screens */
+    order: 2; /* Ensure it comes after banner-left */
+  }
+  .banner-right {
+    /* Ensure this is also hidden or handled */
+    display: none;
+  }
+}
+
 @media (max-width: 600px) {
   .banner-info {
     flex-direction: column;
     gap: 0.5rem;
-    padding: 0.5rem 0.5rem;
+    padding: 0.5rem; /* Specific padding for very small screens */
+    align-items: center; /* Center items in column */
+    width: 100%; /* Take full available width */
+    max-width: 100%;
+  }
+  .info-item {
+    width: auto; /* Let content define width, or set to 100% if needed */
+    justify-content: center; /* Center content of info item */
+    padding: 0.2rem 0;
+  }
+  .main-title {
+    font-size: clamp(1.5rem, 5vw, 1.8rem); /* Further reduce font size */
+  }
+  .tagline {
+    font-size: clamp(0.7rem, 2.5vw, 0.9rem); /* Further reduce font size */
+  }
+  .logo-circle {
+    width: clamp(50px, 8vw, 60px);
+    height: clamp(50px, 8vw, 60px);
+    border-radius: clamp(12px, 2.5vw, 18px);
+  }
+  .logo-img {
+    width: clamp(40px, 7vw, 50px);
+    height: clamp(40px, 7vw, 50px);
+  }
+  .banner-left {
+    gap: 5px;
+    margin-bottom: 0.5rem;
   }
 }
 </style>
