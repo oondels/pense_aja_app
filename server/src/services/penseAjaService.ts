@@ -273,7 +273,7 @@ export const PenseAjaService = {
           matricula, nome, setor, turno, gerente, data_realizada as criado,
           situacao_anterior, situacao_atual, nome_projeto, super_producao, transporte, 
           processamento, movimento, estoque, espera, talento, retrabalho, gerente_aprovador, 
-          data_aprogerente, analista_avaliador, classificacao, a3_mae, fabrica, ganhos, outros_ganhos
+          data_aprogerente, analista_avaliador, classificacao, a3_mae, fabrica, ganhos, justificativa_analista, outros_ganhos
         FROM 
           pense_aja.pense_aja_dass
         WHERE id = $1 AND unidade_dass = $2`,

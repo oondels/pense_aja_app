@@ -271,11 +271,15 @@
                   <span class="rating-label">{{ getRatingLabel(penseAja.classificacao) }}</span>
                 </div>
                 
-                <div v-if="penseAja.justificativa" class="rating-justification">
+                <div v-if="penseAja.justificativa_analista" class="rating-justification">
                   <h5>Justificativa da avaliação:</h5>
-                  <p>{{ penseAja.justificativa }}</p>
+                  <p>{{ penseAja.justificativa_analista }}</p>
                 </div>
               </div>
+            </div>
+
+            <div class="justification">
+
             </div>
           </div>
           
@@ -1252,7 +1256,6 @@ onMounted(() => {
 
 .rating-justification p::before {
   content: '"';
-  position: absolute;
   left: 0;
   top: 0;
   font-size: 24px;
