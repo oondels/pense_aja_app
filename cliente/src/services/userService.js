@@ -13,7 +13,7 @@ export const getUserData = async (registration, userData, loading = null, emit =
     userData.value = response.data    
   } catch (error) {
     console.error("Erro ao buscar dados do colaborador: ", error);
-    if (notification) {
+    if (emit) {
       emit("notify", {
         type: "error",
         title: "Error",

@@ -368,6 +368,10 @@
                               <span class="avaliar-value" id="gerente-avaliador">
                                 {{ item.gerente_aprovador ?? "Não avaliado" }}
                               </span>
+
+                              <span v-if="getUserPermission() && item.gerente_aprovador">
+                                Classificação: {{item.classificacao}}
+                              </span>
                             </div>
                           </div>
                           <div class="avaliar-revisor">
@@ -378,6 +382,10 @@
                               <span class="avaliar-label"> Analista Avaliador </span>
                               <span class="avaliar-value" id="analista-avaliador">
                                 {{ item.analista_avaliador ?? "Não avaliado" }}
+                              </span>
+
+                              <span v-if="getUserPermission() && item.analista_avaliador">
+                                Classificação: {{item.classificacao}}
                               </span>
                             </div>
                           </div>
@@ -487,7 +495,6 @@
                       </div>
 
                       <!-- Avaliação -->
-                      <!-- {{checkRoleAndEvaluation(item)}} -->
                       <div class="avaliar-card-nivel" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
                         <div class="avaliar-card-header">
                           <i class="bi bi-trophy"></i>
@@ -571,7 +578,7 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="avaliar-footer" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
+                    <div class="avaliar-footer" v-if="getUserPermission()">
                       <div class="avaliar-actions">
                         <button
                           @click="handleEvaluationValue('approve', item, isActive)"
@@ -928,10 +935,12 @@ const setEvaluationValue = (value) => {
 };
 
 const setButtonPermission = (penseAja) => {
-  if (penseAja.status_analista !== "0" && user.funcao?.toLowerCase().includes("analista")) {
+
+  
+  if (penseAja.status_analista && user.funcao?.toLowerCase().includes("analista")) {
     return "disabled";
   }
-  if (penseAja.status_gerente !== "0" && user.funcao?.toLowerCase().includes("gerente")) {
+  if (penseAja.status_gerente && user.funcao?.toLowerCase().includes("gerente")) {   
     return "disabled";
   }
   return "";

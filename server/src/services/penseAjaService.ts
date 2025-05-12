@@ -118,11 +118,12 @@ export const PenseAjaService = {
           status_gerente,
           status_analista,
           em_espera,
-          createdat AS criado
+          createdat AS criado,
+          classificacao
         FROM
           pense_aja.pense_aja_dass
        WHERE
-          excluido = ''
+          excluido = false
           AND createdat >= $1
           AND createdat <  $2
           AND unidade_dass = $3
@@ -225,9 +226,9 @@ export const PenseAjaService = {
           matricula, nome, turno, setor, gerente, nome_projeto, data_realizada,
           situacao_anterior, situacao_atual, super_producao, transporte, processamento, movimento,
           estoque, espera, talento, retrabalho,
-          a3_mae, ganhos, outros_ganhos, fabrica, unidade_dass, createdat, updatedat, lider, excluido
+          a3_mae, ganhos, outros_ganhos, fabrica, unidade_dass, createdat, updatedat, lider
         ) VALUES
-         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW(), '', '')
+         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW(), '')
         RETURNING id, nome, nome_projeto, ganhos;`,
         params
       );
@@ -275,7 +276,7 @@ export const PenseAjaService = {
           data_aprogerente, analista_avaliador, classificacao, a3_mae, fabrica, ganhos, outros_ganhos
         FROM 
           pense_aja.pense_aja_dass
-        WHERE id = $1 AND unidade_dass = $2 AND excluido = ''`,
+        WHERE id = $1 AND unidade_dass = $2`,
         [id, dassOffice]
       );
 
@@ -300,79 +301,119 @@ export const PenseAjaService = {
     }
   },
 
-  async evaluatePenseAja(id: string, evaluationData: EvaluationData) {
-    checkDassOffice(evaluationData.dassOffice);
+  async evaluatePenseAja(
+    id: string,
+    {
+      dassOffice,
+      status,
+      usuario: avaliador,
+      funcao,
+      justificativa = 'Sem justificativa.',
+      avaliacao,
+      a3Mae = '',
+      emEspera,
+      replicavel
+    }: EvaluationData
+  ) {
+    checkDassOffice(dassOffice);
     const client = await pool.connect();
 
-    const checkUserRole = (role: string) => {
-      return role.includes("analista")
-        ? "status_analista = $1, analista_avaliador = $2, data_avaanalista = NOW(), justificativa_analista = $3, "
-        : "status_gerente = $1, gerente_avaliador = $2, data_aprogerente = NOW(), justificativa_gerente = $3, ";
-    };
+    // Identifica o papel do usuário
+    const role = funcao.toLowerCase();
+    const isAnalista = role.includes('analista');
+    const isGerente = role.includes('gerente');
 
     try {
-      await client.query("BEGIN");
-      const statusAvaliacao = evaluationData.status;
-      const avaliador = evaluationData.usuario;
-      const userRole = evaluationData.funcao.toLowerCase();
+      await client.query('BEGIN');
 
-      let params: Array<string | boolean> = [];
-      let query = `UPDATE pense_aja.pense_aja_dass SET `;
-
-      query += checkUserRole(userRole);
-      params.push(statusAvaliacao);
-      params.push(avaliador);
-      params.push(evaluationData.justificativa ?? "Sem justificativa.");
-
-      if (statusAvaliacao === "EXCLUIR") {
-        if (userRole.includes("gerente")) {
-          query += `excluido = 'S', updatedat = NOW() `;
-        } else {
-          throw new CustomError(
-            "Somente Gerentes podem excluir um registro pense e aja!",
-            403,
-            "Somente Gerentes podem excluir um registro pense e aja!"
-          );
-        }
-      } else {
-        query += `classificacao = $4, a3_mae = $5, em_espera = $6, replicavel = $7, updatedat = NOW() `;
-        params.push(evaluationData.avaliacao);
-        params.push(evaluationData.a3Mae || "");
-        params.push(evaluationData.emEspera);
-        params.push(evaluationData.replicavel);
-      }
-
-      query += `
-      WHERE id = $${params.length + 1} AND unidade_dass = $${params.length + 2} AND excluido = ''
-      RETURNING id, data_realizada, fabrica, nome, matricula, setor, gerente, nome_projeto,
-      turno, situacao_anterior, situacao_atual, gerente_aprovador, analista_avaliador,
-      status_gerente, status_analista, em_espera, createdat AS criado;`;
-      params.push(id);
-      params.push(evaluationData.dassOffice);
-
-      const result = await client.query(query, params);
-      if (result.rows.length === 0) {
-        await client.query("ROLLBACK");
+      // Validar permissão para exclusão
+      if (status === 'exclude' && !isGerente) {
         throw new CustomError(
-          "Pense Aja não encontrado.",
-          404,
-          "Pense Aja não encontrado."
+          'Somente Gerentes podem excluir um registro pense e aja!',
+          403,
+          'Somente Gerentes podem excluir um registro pense e aja!'
         );
       }
-      await client.query("COMMIT");
 
+      // Monta cláusulas de atualização e parâmetros dinamicamente
+      const clauses: string[] = [];
+      const params: Array<string | boolean> = [];
+      let idx = 1;
+
+      // Campos comuns a analista ou gerente
+      if (isAnalista) {
+        clauses.push(
+          `status_analista = $${idx++}`,
+          `analista_avaliador = $${idx++}`,
+          `data_avaanalista  = NOW()`,
+          `justificativa_analista = $${idx++}`
+        );
+        params.push(status, avaliador, justificativa);
+      } else {
+        clauses.push(
+          `status_gerente = $${idx++}`,
+          `gerente_avaliador = $${idx++}`,
+          `data_aprogerente = NOW()`,
+          `justificativa_gerente = $${idx++}`
+        );
+        params.push(status, avaliador, justificativa);
+      }
+
+      // Campos adicionais conforme o status
+      if (status === 'exclude') {
+        clauses.push(`excluido = true`);
+      } else {
+        clauses.push(
+          `classificacao = $${idx++}`,
+          `a3_mae        = $${idx++}`,
+          `em_espera    = $${idx++}`,
+          `replicavel   = $${idx++}`
+        );
+        params.push(avaliacao, a3Mae, emEspera, replicavel);
+      }
+
+      clauses.push(`updatedat = NOW()`);
+
+      const whereClause = `id = $${idx++} AND unidade_dass = $${idx++} AND excluido = false`;
+      params.push(id, dassOffice);
+
+      const sql = `
+      UPDATE pense_aja.pense_aja_dass
+      SET ${clauses.join(', ')}
+      WHERE ${whereClause}
+      RETURNING
+        id,
+        data_realizada,
+        fabrica,
+        nome,
+        matricula,
+        setor,
+        gerente,
+        nome_projeto,
+        turno,
+        situacao_anterior,
+        situacao_atual,
+        gerente_aprovador,
+        analista_avaliador,
+        status_gerente,
+        status_analista,
+        em_espera,
+        createdat AS criado;`;
+
+      const result = await client.query(sql, params);
+      if (result.rowCount === 0) {
+        await client.query('ROLLBACK');
+        throw new CustomError('Pense Aja não encontrado.', 404, 'Pense Aja não encontrado.');
+      }
+
+      await client.query('COMMIT');
       return result.rows[0];
     } catch (error) {
-      await client.query("ROLLBACK");
-      logger.error("Pense-aja", `Erro ao avaliar pense aja: ${error}`);
-
-      if (error instanceof CustomError) {
-        throw error;
-      } else {
-        throw new CustomError("Erro ao avaliar pense aja.");
-      }
+      await client.query('ROLLBACK');
+      logger.error('PenseAjaService', `Erro ao avaliar Pense Aja: ${error}`);
+      throw error instanceof CustomError ? error : new CustomError('Erro ao avaliar Pense Aja.');
     } finally {
-      await client.release();
+      client.release();
     }
   },
 
