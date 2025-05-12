@@ -4,7 +4,6 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
-import VueRewards from 'vue-rewards'
 
 import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
@@ -50,7 +49,6 @@ appInstance.use(createPinia());
 appInstance.use(VueVirtualScroller)
 appInstance.use(vuetify);
 appInstance.use(router);
-appInstance.use(VueRewards)
 appInstance.mount('#app');
 
 useRegisterSW()

@@ -16,7 +16,6 @@
             <p class="feature-description">{{ feature.description }}</p>
           </div>
         </div>
-          <BalloonRain />
       </section>
 
       <footer class="news-footer">
@@ -32,7 +31,6 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import BalloonRain from "@/components/BalloonRain.vue";
 
 const router = useRouter();
 
