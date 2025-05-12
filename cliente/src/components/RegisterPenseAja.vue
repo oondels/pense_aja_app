@@ -149,6 +149,17 @@
                     placeholder="Descreva a situação atual..."
                   ></textarea>
                 </div>
+                
+                <!-- Explosão de Confetti para efeito visual -->
+                <ConfettiExplosion
+                  v-if="showExplosion"
+                  :particleSize="12"
+                  :particleCount="200"
+                  :duration="3000"
+                />
+
+
+                {{showExplosion}}
 
                 <!-- AI button -->
                 <div class="tooltip-container">
@@ -244,6 +255,7 @@
                 </div>
               </div>
 
+              <div id="confetti-reward"></div>
               <button @click="handleRegister" type="button" class="penseaja-submit-button">
                 <span>Salvar </span>
                 <span class="mdi mdi-content-save-check-outline fs-5"></span>
@@ -262,6 +274,7 @@ import { useUserStore } from "@/stores/userStore";
 import { getUserData } from "@/services/userService";
 import { registerPenseAja } from "@/services/penseAjaService";
 import { improveText } from "@/services/aiService";
+import ConfettiExplosion from "vue-confetti-explosion";
 import AiMicrofone from "./AiTools/AiMicrofone.vue";
 
 const openRegister = ref(false);
@@ -373,8 +386,8 @@ const handleImproveText = async () => {
 
 const setoresDass = ["Montagem", "Apoio", "Costura", "Manutenção"];
 const ganhos = ref(false);
-
-const handleRegister = () => {
+const showExplosion = ref(false);
+const handleRegister = async () => {
   if (!registrationEntry.value || !userData.value) {
     emit("notify", {
       type: "warning",
@@ -384,7 +397,7 @@ const handleRegister = () => {
     });
   }
 
-  registerPenseAja(penseAjaData.value, registrationEntry.value, emit, userData.value);
+ registerPenseAja(penseAjaData.value, registrationEntry.value, emit, userData.value, showExplosion);
 };
 </script>
 

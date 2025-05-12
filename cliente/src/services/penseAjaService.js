@@ -1,6 +1,6 @@
 import { api, commonApi } from "./httpClient"
 
-export const registerPenseAja = async (penseAjaData, matricula, emit, userData) => {
+export const registerPenseAja = async (penseAjaData, matricula, emit, userData, showExplosion) => {
   const dassOffice = localStorage.getItem("unidadeDass");
   if (!dassOffice) {
     notification.value.showPopup("warning", "Aviso!", "Unidade do colaborador não encontrada.", 3000);
@@ -43,7 +43,7 @@ export const registerPenseAja = async (penseAjaData, matricula, emit, userData) 
         break;
     }
 
-    const response = await commonApi.post(`/pense-aja/${dassOffice}`, {
+    await commonApi.post(`/pense-aja/${dassOffice}`, {
       registration: matricula,
       userName: userData.nome,
       turno: turno,
@@ -66,9 +66,12 @@ export const registerPenseAja = async (penseAjaData, matricula, emit, userData) 
       time: 3000
     });
 
+    // Anima a explosão de confetti
+    showExplosion.value = true
     setTimeout(() => {
       window.location.reload();
-    }, 2000);
+      showExplosion.value = false
+    }, 3000);
   } catch (error) {
     console.error("Erro ao cadastrar pense aja: ", error);
 
@@ -80,4 +83,5 @@ export const registerPenseAja = async (penseAjaData, matricula, emit, userData) 
       time: 3000
     });
   }
+
 };
