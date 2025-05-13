@@ -149,17 +149,9 @@
                     placeholder="Descreva a situação atual..."
                   ></textarea>
                 </div>
-                
+
                 <!-- Explosão de Confetti para efeito visual -->
-                <ConfettiExplosion
-                  v-if="showExplosion"
-                  :particleSize="12"
-                  :particleCount="200"
-                  :duration="3000"
-                />
-
-
-                {{showExplosion}}
+                <ConfettiExplosion v-if="showExplosion" :particleSize="12" :particleCount="200" :duration="3000" />
 
                 <!-- AI button -->
                 <div class="tooltip-container">
@@ -355,8 +347,14 @@ const loadingImprove = ref(false);
 const showTooltip = ref(false);
 const disableIaButton = ref(false);
 const handleImproveText = async () => {
-  if (!penseAjaData.value.situationBefore || !penseAjaData.value.situationNow) {
-    notification.value.showPopup("warning", "Atenção!", "Preencha os campos de situação antes de usar a IA.", 3000);
+  showTooltip.value = false;
+  if (!penseAjaData.value.situationBefore || !penseAjaData.value.situationNow || !penseAjaData.value.projectName) {
+    emit("notify", {
+      type: "warning",
+      title: "Atenção!",
+      message: "Preencha os campos de situação antes de usar a IA.",
+      timeout: 3000,
+    });
     return;
   }
 
@@ -368,12 +366,12 @@ const handleImproveText = async () => {
   );
 
   if (Object.keys(result).length === 0) {
-    notification.value.showPopup(
-      "error",
-      "Erro!",
-      "Não foi possível melhorar o texto com a IA. Tente novamente mais tarde!",
-      3000
-    );
+    emit("notify", {
+      type: "warning",
+      title: "Atenção!",
+      message: "Não foi possível melhorar o texto com a IA. Tente novamente mais tarde!",
+      timeout: 3000,
+    });
     return;
   }
 
@@ -397,7 +395,7 @@ const handleRegister = async () => {
     });
   }
 
- registerPenseAja(penseAjaData.value, registrationEntry.value, emit, userData.value, showExplosion);
+  registerPenseAja(penseAjaData.value, registrationEntry.value, emit, userData.value, showExplosion);
 };
 </script>
 

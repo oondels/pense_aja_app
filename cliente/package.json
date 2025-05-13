@@ -21,6 +21,7 @@
     "vue": "^3.5.13",
     "vue-chartjs": "^5.2.0",
     "vue-confetti-explosion": "^1.0.2",
+    "vue-rewards": "^1.0.3",
     "vue-router": "^4.5.1",
     "vue-virtual-scroller": "^2.0.0-beta.8",
     "vuetify": "^3.8.2",

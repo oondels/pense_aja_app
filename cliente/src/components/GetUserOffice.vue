@@ -89,13 +89,13 @@ function submitMatricula() {
         "success",
         "Sucesso!",
         message || "Matrícula validada com sucesso!",
-        2000
+        2500
       );
 
       show.value = false;
       setTimeout(() => {
         window.location.reload()
-      }, 500);
+      }, 2600);
     })
     .catch((error) => {
       console.error("Erro ao validar matricula: ", error);

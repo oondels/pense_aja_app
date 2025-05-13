@@ -16,21 +16,42 @@
             <p class="feature-description">{{ feature.description }}</p>
           </div>
         </div>
+        <span id="some-id"></span>
       </section>
 
       <footer class="news-footer">
         <button class="cta-button" @click="goToHome">Explorar o Novo App</button>
       </footer>
     </div>
-
-
   </div>
-
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useReward } from "vue-rewards";
+
+const config = {
+  startVelocity: 15,
+  spread: 100,
+  elementCount: 150,
+  elementSize: 30,
+  zIndex: 999,
+};
+
+onMounted(() => {
+  const { reward, isAnimating } = useReward("some-id", "balloons", config);
+
+  const hasSeenNews = localStorage.getItem("hasSeenNews");
+  if (hasSeenNews) {
+    return;
+  } else {
+    reward();
+    localStorage.setItem("hasSeenNews", "true");
+  }
+});
+
+// const { reward: balloonsReward, isAnimating: isBalloonsAnimating } = useReward("some-id", "balloons", config);
 
 const router = useRouter();
 

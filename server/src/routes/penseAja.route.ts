@@ -5,7 +5,7 @@ import roleVerificationAccess from "../middlewares/roleVerificationMiddleware";
 import { NotificationService } from "../services/NotificationService";
 import { UserPenseaja } from "../services/UserPenseaja";
 
-const ip = process.env.DEV_ENV === 'development' ? 'http://localhost:5173' : 'http://10.110.0.103:5050'
+const ip = process.env.DEV_ENV === 'development' ? 'http://localhost:5173' : 'http://10.100.1.43:5050'
 
 const router = Router();
 

@@ -2,10 +2,10 @@
   <v-dialog max-width="520" transition="dialog-bottom-transition">
     <!-- Botão ativador -->
     <template v-slot:activator="{ props }">
-      <!-- <button  :class="{ 'pulse-btn': isInstallable }">
+      <button  :class="{ 'pulse-btn': isInstallable }">
         <v-icon color="#b0062b" ></v-icon>
-      </button> -->
-      <!-- <v-btn
+      </button>
+      <v-btn
         v-bind="props"
         variant="outlined"
         :class="{ 'pulse-btn': isInstallable }"
@@ -14,7 +14,7 @@
         color="danger"
       >
         Baixar App
-      </v-btn> -->
+      </v-btn>
     </template>
 
     <!-- Conteúdo do diálogo -->
@@ -73,7 +73,7 @@
 
           <div v-if="!isInstallable" class="not-available-message">
             <v-icon color="#e53935" class="me-2">mdi-alert-circle</v-icon>
-            <span>Seu navegador não suporta a instalação no momento.</span>
+            <span>Este recurso ainda não está disponível. Aguarde novas atualizações!</span>
           </div>
         </v-card-text>
 
