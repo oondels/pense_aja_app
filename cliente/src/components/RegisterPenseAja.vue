@@ -1799,4 +1799,158 @@ const handleRegister = async () => {
     height: 200px;
   }
 }
+
+/* Responsive adjustments for screens smaller than 640px */
+@media (max-width: 640px) {
+  .penseaja-container {
+    width: 98%;
+    padding: 1.5rem;
+    max-height: 90vh;
+  }
+
+  .penseaja-header {
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .penseaja-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 10px;
+    margin-bottom: 0.5rem;
+  }
+
+  .penseaja-header-left {
+    gap: 10px;
+  }
+
+  .penseaja-icon-wrapper {
+    width: 50px;
+    height: 50px;
+  }
+
+  .penseaja-icon {
+    width: 35px;
+    height: 35px;
+  }
+
+  .penseaja-header h2 {
+    font-size: 20px;
+  }
+
+  .penseaja-subtitle {
+    font-size: 13px;
+  }
+
+  .penseaja-close-button {
+    width: 35px;
+    height: 35px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  .penseaja-close-button i {
+    font-size: 20px;
+  }
+
+  .user-penseaja-info {
+    padding: 10px 12px;
+    margin: 10px 0;
+    gap: 10px;
+  }
+
+  .user-penseaja-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .user-detail {
+    gap: 4px;
+  }
+
+  .detail-label {
+    font-size: 12px;
+  }
+
+  .user-name,
+  .user-gerente {
+    font-size: 14px; /* Adjusted from a potentially larger default */
+  }
+
+  /* Assuming .penseaja-form and its children like .penseaja-field, label, input, textarea exist */
+  .penseaja-form .penseaja-field {
+    margin-bottom: 1rem; /* Adjust spacing */
+  }
+
+  .penseaja-form label {
+    font-size: 14px; /* Adjust label size */
+    margin-bottom: 4px;
+  }
+
+  .penseaja-form input[type="text"],
+  .penseaja-form input[type="date"],
+  .penseaja-form input[type="number"],
+  .penseaja-form textarea,
+  .penseaja-form select {
+    padding: 0.6rem 0.8rem; /* Adjust padding for inputs */
+    font-size: 14px; /* Adjust input text size */
+  }
+
+  .penseaja-form textarea {
+    min-height: 80px; /* Adjust textarea height */
+  }
+
+  .penseaja-submit-button {
+    padding: 0.8rem 1.5rem; /* Adjust button padding */
+    font-size: 15px; /* Adjust button text size */
+  }
+
+  .ai-enhance-button {
+    padding: 0.5rem 0.8rem;
+    font-size: 13px;
+  }
+  .ai-enhance-button i {
+    font-size: 1.1em;
+  }
+
+  .ai-tooltip {
+    width: 240px;
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .oito-perdas, .ganhos-penseaja {
+    /* Add specific responsive styles if these containers have complex layouts */
+    padding: 0.5rem; /* Example adjustment */
+  }
+
+  /* Adjustments for action-button if it's used for mobile for this component */
+  .action-button {
+    /* This class is used for the desktop button, 
+       if a mobile specific button is not used or if this one needs adjustment for mobile */
+    padding: 8px 12px; /* Example */
+    font-size: 14px; /* Example */
+  }
+  .action-button .button-icon-container span {
+    font-size: 1.2rem; /* Example */
+  }
+
+  /* If there's a specific mobile button like in Store.vue, style it here */
+  .mobile-action-button { /* Assuming a similar pattern if it exists */
+    padding: 10px;
+    font-size: 1rem;
+  }
+  .mobile-action-button .icon {
+    font-size: 1.5rem;
+  }
+  .mobile-action-button .label {
+    font-size: 0.8rem;
+  }
+}
 </style>

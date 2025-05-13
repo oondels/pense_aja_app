@@ -711,6 +711,7 @@ const updatePoints = async (update) => {
   gap: 12px;
   margin-bottom: 18px;
   justify-content: center;
+  flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
 }
 
 .filter-btn {
@@ -886,5 +887,188 @@ const updatePoints = async (update) => {
 }
 .product-card:nth-child(8) {
   animation-delay: 0.8s;
+}
+
+/* Responsive adjustments for screens smaller than 640px */
+@media (max-width: 640px) {
+  .store-wrapper {
+    padding: 20px 10px;
+  }
+
+  .store-header.red-theme {
+    padding: 20px 15px;
+    margin: -20px -10px 20px;
+  }
+
+  .store-title-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .store-logo {
+    width: 50px;
+    height: 50px;
+    align-self: center;
+  }
+
+  .store-header.red-theme h1 {
+    font-size: 20px;
+  }
+
+  .store-subtitle {
+    font-size: 12px;
+  }
+  
+  .store-title-content {
+    align-items: center;
+    width: 100%;
+  }
+
+  .store-header.red-theme .store-notification {
+    padding: 10px 12px;
+    font-size: 12px;
+    gap: 8px;
+  }
+  .notification-title {
+    font-size: 13px;
+  }
+
+  .close-store-button {
+    width: 35px;
+    height: 35px;
+    margin: 0.5rem !important; /* Ensure margin is applied */
+  }
+  .close-store-button span {
+    font-size: 1rem; /* Adjust icon size if needed */
+  }
+
+
+  .store-search-bar {
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .search-container {
+    padding: 6px 10px;
+    width: 100%;
+  }
+
+  .search-input {
+    font-size: 14px;
+  }
+
+  .search-button {
+    padding: 8px 15px;
+    font-size: 14px;
+    gap: 5px;
+  }
+  .search-button i {
+    font-size: 1em;
+  }
+  .search-button span {
+    font-size: 0.9em;
+  }
+
+
+  .points-badge {
+    padding: 6px 15px;
+    gap: 8px;
+  }
+
+  .points-value {
+    font-size: 20px;
+  }
+
+  .points-label {
+    font-size: 12px;
+  }
+
+  .user-info-card {
+    padding: 15px;
+    gap: 15px;
+    flex-direction: column;
+    align-items: center;
+  }
+  .user-avatar {
+    font-size: 30px;
+  }
+  .user-data p {
+    font-size: 13px;
+    text-align: center;
+  }
+
+  .store-filter-bar {
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+
+  .filter-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    gap: 5px;
+  }
+   .filter-btn i {
+    font-size: 1em;
+  }
+
+  .products-heading {
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+  }
+  .products-heading::after {
+    width: 50px;
+    height: 2px;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+  }
+
+  .product-card {
+    border-radius: 10px;
+  }
+  
+  .disabled-buy::after {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+  }
+
+  .disabled-overlay .unavailable-icon {
+    font-size: 1.5rem;
+  }
+  .disabled-overlay .unavailable-text {
+    font-size: 1rem;
+  }
+  .disabled-overlay .unavailable-hint {
+    font-size: 0.8rem;
+  }
+
+
+  .product-badge {
+    top: 10px;
+    right: 10px;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  .product-image-container {
+    height: 120px; /* Reduced height for smaller screens */
+    padding: 15px;
+  }
+
+  .product-info {
+    padding: 15px;
+    gap: 10px;
+  }
+
+  .product-name {
+    font-size: 16px;
+  }
 }
 </style>
