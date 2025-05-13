@@ -5,7 +5,7 @@
       <!-- <button  :class="{ 'pulse-btn': isInstallable }">
         <v-icon color="#b0062b" ></v-icon>
       </button> -->
-      <v-btn
+      <!-- <v-btn
         v-bind="props"
         variant="outlined"
         :class="{ 'pulse-btn': isInstallable }"
@@ -14,7 +14,7 @@
         color="danger"
       >
         Baixar App
-      </v-btn>
+      </v-btn> -->
     </template>
 
     <!-- Conteúdo do diálogo -->
