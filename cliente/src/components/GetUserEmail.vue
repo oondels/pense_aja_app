@@ -98,9 +98,11 @@ function animateShake() {
 
 function closePopup() {
   show.value = false;
-  router.push("/news").then(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
+  if (!hasSeenNews) {
+    router.push("/news").then(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
 }
 
 async function submitEmail() {
@@ -187,22 +189,20 @@ function shouldShowPopup() {
   if (!unidadeDass) return false;
 
   // Se está logado, mostra a cada 3 dias
-  if (!haveEmail || haveEmail === "false") {
-    if (emailSkipUntil) {
-      const skipUntil = parseInt(emailSkipUntil, 10);
-      // 3 dias em ms = 259200000
-      if (now - skipUntil < 259200000) {
-        return false;
-      } else {
-        // Já passou o tempo, remove o controle
-        localStorage.removeItem("emailSkipUntil");
-        return true;
-      }
+  // TODO: Corrigir funcionalidade de "Agora não"
+  if (emailSkipUntil) {
+    const skipUntil = parseInt(emailSkipUntil, 10);
+    // 3 dias em ms = 259200000
+
+    if (now - skipUntil < 259200000) {
+      return false;
+    } else {
+      // Já passou o tempo, remove o controle
+      localStorage.removeItem("emailSkipUntil");
+      return true;
     }
-    return true;
   }
 
-  // Se não está logado, mostra sempre
   return true;
 }
 
