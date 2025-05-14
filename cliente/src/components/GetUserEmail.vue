@@ -57,17 +57,21 @@
       </div>
     </div>
   </div>
+
+  <Notification ref="notification" />
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { authApi } from "../services/httpClient.js";
+import Notification from "./Notification.vue";
 const router = useRouter();
 
 // TODO: Remover futuramente verificação de hasSeenNews
 const hasSeenNews = localStorage.getItem("hasSeenNews");
 
+const notification = ref(null);
 const show = ref(false);
 const email = ref("");
 const validationMessage = ref("");
@@ -92,6 +96,13 @@ function animateShake() {
   }
 }
 
+function closePopup() {
+  show.value = false;
+  router.push("/news").then(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
 async function submitEmail() {
   validationMessage.value = "";
   const userEmail = email.value.trim();
@@ -110,6 +121,7 @@ async function submitEmail() {
     animateShake();
     return;
   }
+
   const userMatricula = sessionStorage.getItem("matricula");
   if (!userMatricula) {
     validationMessage.value = "Erro ao buscar matrícula do usuário, contate equipe de automação!";
@@ -125,19 +137,22 @@ async function submitEmail() {
     });
 
     message = response.data.message;
+    notification.value?.showPopup("success", "Sucesso!", message, 3000);
     localStorage.setItem("emailProvided", "true");
     show.value = false;
     email.value = "";
-
-    if (!hasSeenNews) {
-      router.push("/news");
-    }
   } catch (err) {
     message = err.response ? err.response.data.message : "Erro desconhecido";
+    notification.value?.showPopup("error", "Erro!", message, 3000);
     error = true;
   } finally {
     loading.value = false;
     validationMessage.value = "";
+    if (!hasSeenNews) {
+      router.push("/news").then(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    }
   }
 }
 
@@ -148,7 +163,9 @@ function skipEmail() {
   show.value = false;
 
   if (!hasSeenNews) {
-    router.push("/news");
+    router.push("/news").then(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   }
 }
 

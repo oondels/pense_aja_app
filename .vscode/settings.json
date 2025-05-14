@@ -1,9 +1,0 @@
-{
-    "editor.fontFamily": "'CaskaydiaCove Nerd Font', 'monospace', monospace",
-    "github.copilot.enable": {
-      "*": true,
-      "plaintext": false,
-      "markdown": false,
-      "scminput": false
-    }
-}

@@ -1,35 +1,57 @@
 <template>
-  <header class="home-header">
-    <div class="banner-background">
-      <div class="banner-container">
-        <div class="banner-content">
-          <!-- Título com ícone de lâmpada -->
-          <div class="title-group">
-            <h1 class="main-title">
+  <header class="overflow-hidden p-0 m-0">
+    <div class="relative bg-gradient-to-br from-[#ffe5e9] to-[#fbeaec] py-16 px-4">
+      <div
+        class="absolute -top-20 -right-16 w-[300px] h-[300px] rounded-full opacity-40 z-0"
+        style="background: radial-gradient(circle at center, #ffccd5, transparent 70%)"
+      ></div>
+
+      <div class="relative z-10 w-full bg-white py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-10">
+          <!-- Text Content -->
+          <div class="text-center lg:text-left flex-1">
+            <h1
+              class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 flex items-center justify-center lg:justify-start animate-fade-in-down"
+            >
               PENSE & AJA
-              <span class="idea-icon" aria-hidden="true"
-                ><img src="/assets/img/icons/idea-on-brain.png" alt="Pessoa pensativa"
-              /></span>
+              <span class="ml-3 inline-block w-10 h-10">
+                <img
+                  v-lazy="'/assets/img/icons/idea-on-brain.png'"
+                  loading="lazy"
+                  :srcset="generateSrcSet('/assets/img/icons/idea-on-brain.png')"
+                  alt="Imagem de Lâmpada Mesclado com Inteligência (Cérebro)"
+                  class="w-full h-auto animate-pulse-slow"
+                />
+              </span>
             </h1>
-            <p class="description">
+            <p class="text-lg text-gray-700 mb-6 max-w-xl mx-auto lg:mx-0 animate-fade-in-up">
               Transforme suas ideias em ações concretas. Uma plataforma que valoriza sua criatividade e incentiva a
               inovação no ambiente de trabalho.
             </p>
 
-            <div class="">
+            <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-fade-in-down">
               <router-link to="/pense-aja">
-                <v-btn variant="outlined" prepend-icon="mdi mdi-arrow-right-bold-circle" color="danger">
+                <button
+                  class="flex items-center gap-2 px-6 py-2 border border-red-500 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition"
+                >
+                  <span class="mdi mdi-arrow-right-bold-circle"></span>
                   Acessar app
-                </v-btn>
+                </button>
               </router-link>
 
               <PwaDownload />
             </div>
           </div>
 
-          <!-- Ilustração de pessoa pensativa -->
-          <div class="illustration">
-            <img src="/assets/img/illustrations/3d-ide-hand.png" alt="Pessoa pensativa" />
+          <!-- Illustration -->
+          <div class="flex-1 max-w-md mx-auto lg:mx-0 animate-fade-in-up">
+            <img
+              v-lazy="'/assets/img/illustrations/3d-ide-hand.webp'"
+              loading="lazy"
+              :srcset="generateSrcSet('/assets/img/illustrations/3d-ide-hand.webp')"
+              alt="Mão Segurando Lâmpada"
+              class="max-w-full max-h-[320px] w-auto h-auto object-contain animate-float"
+            />
           </div>
         </div>
       </div>
@@ -39,125 +61,23 @@
 
 <script setup>
 import PwaDownload from "./PwaDownload.vue";
+
+const generateSrcSet = (imagePath) => {
+  const lastSlashIndex = imagePath.lastIndexOf("/");
+  const fileName = imagePath.substring(lastSlashIndex + 1);
+  const lastDotIndex = fileName.lastIndexOf(".");
+  const baseName = fileName.substring(0, lastDotIndex);
+  const extension = fileName.substring(lastDotIndex);
+  const basePath = imagePath.substring(0, lastSlashIndex + 1);
+  return `
+    ${basePath}${baseName}-small${extension} 300w,
+    ${basePath}${baseName}-medium${extension} 600w,
+    ${basePath}${baseName}${extension} 900w
+  `;
+};
 </script>
 
 <style scoped>
-.home-header {
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-}
-
-.banner-background {
-  background: linear-gradient(135deg, #ffe5e9 0%, #fbeaec 100%);
-  position: relative;
-  padding: 4rem 1rem 5rem;
-}
-
-.banner-background::before {
-  content: "";
-  position: absolute;
-  top: -80px;
-  right: -60px;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle at center, #ffccd5, transparent 70%);
-  border-radius: 50%;
-  opacity: 0.4;
-  z-index: 0;
-}
-
-.banner-container {
-  max-width: 1200px;
-  width: 100%;
-  background: #fff;
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 32px rgba(176, 6, 43, 0.08);
-  padding: 3rem;
-  display: flex;
-  flex-direction: column;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-
-.banner-content {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 2rem;
-}
-
-.title-group {
-  flex: 1;
-  min-width: 280px;
-}
-
-.main-title {
-  font-size: 3rem;
-  font-weight: 800;
-  margin: 0 0 1rem;
-  background: linear-gradient(135deg, #b0062b 0%, #ffa733 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  animation: fadeInDown 1.2s ease-out;
-}
-
-.idea-icon {
-  margin-left: 20px;
-  width: 80px;
-  animation: pulse 1.8s infinite ease-in-out;
-}
-
-.description {
-  font-size: 1.1rem;
-  color: #555;
-  margin-bottom: 1.7rem;
-  max-width: 480px;
-  line-height: 1.6;
-  animation: fadeInUp 1s ease-out 0.2s both;
-}
-
-.illustration img {
-  max-width: 280px;
-  height: auto;
-  animation: float 5s ease-in-out infinite;
-}
-
-.btn {
-  padding: 0.75rem 1.7rem;
-  border-radius: 50px;
-  font-size: 1rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.3s, color 0.3s, box-shadow 0.3s;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(176, 6, 43, 0.08);
-  background: linear-gradient(135deg, #b0062b 0%, #ff335f 100%);
-  color: #fff;
-  border: none;
-}
-
-.btn:hover {
-  opacity: 0.95;
-  box-shadow: 0 4px 16px rgba(176, 6, 43, 0.13);
-}
-
-.icon {
-  width: 1.2em;
-  height: 1.2em;
-  fill: currentColor;
-}
-
 @keyframes fadeInDown {
   from {
     opacity: 0;
@@ -190,7 +110,7 @@ import PwaDownload from "./PwaDownload.vue";
   }
 }
 
-@keyframes pulse {
+@keyframes pulseSlow {
   0% {
     transform: scale(1);
     opacity: 1;
@@ -205,21 +125,19 @@ import PwaDownload from "./PwaDownload.vue";
   }
 }
 
-@media (max-width: 768px) {
-  .banner-content {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
+.animate-fade-in-down {
+  animation: fadeInDown 1.2s ease-out;
+}
 
-  .main-title {
-    justify-content: center;
-    font-size: 2.4rem;
-  }
+.animate-fade-in-up {
+  animation: fadeInUp 1s ease-out 0.2s both;
+}
 
-  .illustration img {
-    max-width: 200px;
-    margin-top: 2rem;
-  }
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulseSlow 1.8s ease-in-out infinite;
 }
 </style>

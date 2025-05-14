@@ -2,11 +2,14 @@
   <div class="auth">
     <v-dialog v-model="openAuth" max-width="400">
       <template v-slot:activator="{ props: activatorProps }">
-        <button v-if="!isMobile" v-bind="activatorProps" id="openUser" class="action-button">
-          <div class="button-icon-container">
-            <i :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'" class="icon fs-4"></i>
-          </div>
-          <span class="button-label">{{ user?.matricula ? "Sair" : "Login" }}</span>
+        <button
+          v-if="!isMobile"
+          v-bind="activatorProps"
+          id="openUser"
+          class="flex items-center space-x-2 px-4 py-2 rounded-lg shadow transition bg-white text-gray-800 hover:bg-gray-100"
+        >
+          <i :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'" class="icon fs-4"></i>
+          <span class="">{{ user?.matricula ? "Sair" : "Login" }}</span>
         </button>
 
         <button v-else @click="handleUserData" v-bind="activatorProps" class="mobile-action-button">
@@ -123,9 +126,12 @@
             </div>
           </div>
         </div>
+        
       </template>
     </v-dialog>
   </div>
+
+  <Notification class="z-100000" ref="notification" />
 </template>
 
 <script setup>
@@ -134,6 +140,7 @@ import { login, logout } from "@/services/authService.js";
 import { formateName } from "@/services/userService.js";
 import { useUserStore } from "@/stores/userStore.js";
 import { useRouter } from "vue-router";
+import Notification from "@/components/Notification.vue";
 import ForgotPassword from "./ForgotPassword.vue";
 
 const router = useRouter();

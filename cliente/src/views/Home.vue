@@ -1,49 +1,70 @@
 <template>
-  <div class="home-page">
+  <div class="min-h-screen bg-white flex flex-col">
     <HomeHeader />
-    <main class="home-main">
-      <section class="features-section">
-        <div class="container">
-          <h2 class="section-title">Por que usar o Pense & Aja?</h2>
+    <main class="flex-1">
+      <section class="py-20 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4">
+          <h2 class="text-center text-3xl font-bold text-gray-800 mb-12">Por que usar o Pense & Aja?</h2>
 
-          <div class="features-grid">
-            <div class="feature-card">
-              <div class="feature-icon">
-                <img src="/assets/img/icons/idea-on-brain.png" alt="Inovação" class="feature-img" />
+          <div class="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div
+              class="bg-white rounded-xl p-8 text-center shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            >
+              <div class="w-20 h-20 mx-auto mb-6 flex items-center justify-center rounded-full bg-blue-100">
+                <img src="/assets/img/icons/idea-on-brain.png" alt="Inovação" class="w-3/5 h-auto" />
               </div>
-              <h3>Promova a inovação</h3>
-              <p>Transforme ideias criativas em soluções reais para sua empresa</p>
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">Promova a inovação</h3>
+              <p class="text-gray-600">Transforme ideias criativas em soluções reais para sua empresa</p>
             </div>
 
-            <div class="feature-card">
-              <div class="feature-icon">
-                <img src="/assets/img/icons/idea-on-brain.png" alt="Colaboração" class="feature-img" />
+            <div
+              class="bg-white rounded-xl p-8 text-center shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            >
+              <div class="w-20 h-20 mx-auto mb-6 flex items-center justify-center rounded-full bg-blue-100">
+                <img src="/assets/img/icons/idea-on-brain.png" alt="Colaboração" class="w-3/5 h-auto" />
               </div>
-              <h3>Incentive a colaboração</h3>
-              <p>Conecte colaboradores e gestores em torno de novas ideias</p>
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">Incentive a colaboração</h3>
+              <p class="text-gray-600">Conecte colaboradores e gestores em torno de novas ideias</p>
             </div>
 
-            <div class="feature-card">
-              <div class="feature-icon">
-                <img src="/assets/img/icons/idea-on-brain.png" alt="Reconhecimento" class="feature-img" />
+            <div
+              class="bg-white rounded-xl p-8 text-center shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            >
+              <div class="w-20 h-20 mx-auto mb-6 flex items-center justify-center rounded-full bg-blue-100">
+                <img src="/assets/img/icons/idea-on-brain.png" alt="Reconhecimento" class="w-3/5 h-auto" />
               </div>
-              <h3>Reconheça contribuições</h3>
-              <p>Sistema de recompensas para os colaboradores mais inovadores</p>
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">Reconheça contribuições</h3>
+              <p class="text-gray-600">Sistema de recompensas para os colaboradores mais inovadores</p>
+            </div>
+
+            <div
+              class="bg-white rounded-xl p-8 text-center shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            >
+              <div class="w-20 h-20 mx-auto mb-6 flex items-center justify-center rounded-full bg-blue-100">
+                <img src="/assets/img/icons/idea-on-brain.png" alt="Melhoria Contínua" class="w-3/5 h-auto" />
+              </div>
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">Melhore processos continuamente</h3>
+              <p class="text-gray-600">
+                Acompanhe ideias implementadas e mensure os resultados para promover a evolução constante do seu negócio
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="cta-section">
-        <div class="container">
-          <div class="cta-content">
-            <h2>Pronto para começar?</h2>
-            <p>Junte-se à comunidade Pense & Aja e comece a transformar ideias em realidade.</p>
-            <div class="cta-buttons">
-              <router-link to="/pense-aja">
-                <button class="text-button">Saiba mais</button>
-              </router-link>
-            </div>
+      <section class="py-20 bg-gradient-to-br from-red-700 to-red-400 text-white text-center">
+        <div class="max-w-3xl mx-auto px-4">
+          <h2 class="text-4xl font-bold mb-4">Pronto para começar?</h2>
+          <p class="text-lg opacity-90 mb-8">
+            Junte-se à comunidade Pense & Aja e comece a transformar ideias em realidade.
+          </p>
+          <div class="flex justify-center">
+            <button
+              @click="goToApp"
+              class="bg-white text-black px-6 py-3 rounded-full border-2 font-semibold text-lg transition hover:bg-white hover:text-blue-600"
+            >
+              Saiba mais
+            </button>
           </div>
         </div>
       </section>
@@ -53,169 +74,11 @@
 
 <script setup>
 import HomeHeader from "../components/HomeHeader.vue";
+import { useRouter } from "vue-router";
+const router = useRouter();
+const goToApp = () => {
+  router.push("/pense-aja").then(() => {
+    window.scrollTo(0, 0);
+  });
+};
 </script>
-
-<style scoped>
-.home-page {
-  /* fundo “normal” da página: branco puro */
-  background-color: #ffffff;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.home-main {
-  flex: 1;
-}
-
-.container {
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.features-section {
-  padding: 5rem 0;
-  background-color: #f8f9fa;
-}
-
-.section-title {
-  text-align: center;
-  font-size: 2.2rem;
-  margin-bottom: 3rem;
-  color: #333;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.feature-card {
-  background-color: white;
-  border-radius: 12px;
-  padding: 2rem;
-  text-align: center;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.feature-icon {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background-color: rgba(52, 152, 219, 0.1);
-}
-
-.feature-img {
-  width: 60%;
-  height: auto;
-}
-
-.feature-card h3 {
-  font-size: 1.3rem;
-  margin-bottom: 0.8rem;
-  color: #333;
-}
-
-.feature-card p {
-  font-size: 1rem;
-  color: #666;
-  line-height: 1.5;
-}
-
-.cta-section {
-  padding: 5rem 0;
-  background: linear-gradient(135deg, #3498db 0%, #8e44ad 100%);
-  color: white;
-  text-align: center;
-}
-
-.cta-content {
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.cta-content h2 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.cta-content p {
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
-}
-
-.cta-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.primary-button {
-  background-color: white;
-  color: #3498db;
-  padding: 0.8rem 2rem;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.primary-button:hover {
-  background-color: #f8f9fa;
-  transform: translateY(-2px);
-}
-
-.text-button {
-  background-color: transparent;
-  color: white;
-  padding: 0.8rem 2rem;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border: 2px solid white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.text-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.home-footer {
-  background-color: #333;
-  color: white;
-  padding: 1.5rem 0;
-  text-align: center;
-}
-
-@media (max-width: 768px) {
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .cta-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .cta-content h2 {
-    font-size: 2rem;
-  }
-}
-</style>

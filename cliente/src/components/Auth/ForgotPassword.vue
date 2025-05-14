@@ -130,7 +130,7 @@ const handleChangePass = async () => {
 
   let message;
   authApi
-    .post(`/auth/change-pass/${dassOffice}`, {
+    .post(`/auth/recuperar`, {
       newPass: password,
       repeatPassword: repeatPassword,
       barCode: barCode,

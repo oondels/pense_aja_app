@@ -1,17 +1,19 @@
 <template>
   <div
     id="notification"
-    :class="`notification ${notificationBg} ${
-      showNotification ? 'show' : 'hidden'
-    }`"
+    :class="[
+      'fixed top-0 left-1/2 transform -translate-x-1/2 -translate-y-full w-[90%] max-w-[400px] rounded-xl shadow-2xl z-[10000] opacity-0 pointer-events-none transition-transform duration-700 ease-in-out',
+      showNotification ? '!translate-y-8 opacity-100 pointer-events-auto' : '',
+      notificationBg
+    ]"
   >
-    <div class="notification-inner">
-      <div class="notification-icon">
+    <div class="flex items-center p-5">
+      <div class="text-[32px] mr-4 shrink-0">
         <i :class="notificationIcon"></i>
       </div>
-      <div class="notification-content">
-        <h3 class="notification-title">{{ notificationTitle }}</h3>
-        <p class="notification-message">{{ notificationMessage }}</p>
+      <div class="flex-1">
+        <h3 class="m-0 text-lg font-semibold">{{ notificationTitle }}</h3>
+        <p class="mt-1 text-sm leading-snug">{{ notificationMessage }}</p>
       </div>
     </div>
   </div>
@@ -38,26 +40,25 @@ const showPopup = (type, title, message, time) => {
   switch (type) {
     case "success":
       notificationIcon.value = "bi bi-check-circle-fill";
-      notificationBg.value = "bg-success-subtle text-success-emphasis";
+      notificationBg.value = "bg-green-100 text-green-800";
       break;
     case "warning":
       notificationIcon.value = "bi bi-exclamation-triangle-fill";
-      notificationBg.value = "bg-warning-subtle text-warning-emphasis";
+      notificationBg.value = "bg-yellow-100 text-yellow-800";
       break;
     case "error":
       notificationIcon.value = "bi bi-x-circle-fill";
-      notificationBg.value = "bg-danger-subtle text-danger-emphasis";
+      notificationBg.value = "bg-red-100 text-red-800";
       break;
     default:
       notificationIcon.value = "bi bi-info-circle-fill";
-      notificationBg.value = "bg-primary-subtle text-primary-emphasis";
+      notificationBg.value = "bg-blue-100 text-blue-800";
       break;
   }
 
   setTimeout(() => {
     showNotification.value = false;
   }, duration.value);
-  return;
 };
 
 defineExpose({
@@ -66,90 +67,9 @@ defineExpose({
 </script>
 
 <style scoped>
-.notification {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%) translateY(-100%);
-  width: 90%;
-  max-width: 400px;
-  color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
-  z-index: 10000;
-  opacity: 0;
-  pointer-events: none;
+/* Retido pois Tailwind não cobre essa transição complexa */
+#notification {
   transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1),
-    opacity 0.6s ease-in-out;
-}
-
-.notification.show {
-  transform: translateX(-50%) translateY(30px);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.notification.hidden {
-  transform: translateX(-50%) translateY(-100%);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.notification-inner {
-  display: flex;
-  align-items: center;
-  padding: 20px;
-}
-
-.notification-icon {
-  font-size: 32px;
-  margin-right: 16px;
-  flex-shrink: 0;
-}
-
-.notification-content {
-  flex: 1;
-}
-
-.notification-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.notification-message {
-  margin: 4px 0 0;
-  font-size: 15px;
-  line-height: 1.4;
-}
-
-/* Regras responsivas para dispositivos móveis */
-@media (max-width: 768px) {
-  .notification {
-    width: 95%;
-    max-width: 100%;
-    z-index: 10010 !important; /* Garantindo que está acima de outros elementos */
-  }
-
-  .notification.show {
-    transform: translateX(-50%) translateY(20px) !important;
-  }
-  
-  .notification-inner {
-    padding: 15px;
-  }
-  
-  .notification-icon {
-    font-size: 24px;
-    margin-right: 12px;
-  }
-  
-  .notification-title {
-    font-size: 16px;
-  }
-  
-  .notification-message {
-    font-size: 14px;
-  }
+              opacity 0.6s ease-in-out;
 }
 </style>

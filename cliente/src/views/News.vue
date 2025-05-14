@@ -1,26 +1,38 @@
 <template>
-  <div class="news-page">
-    <div class="container">
-      <header class="news-header">
-        <h1 class="main-title">Estamos de cara nova!</h1>
-        <p class="subtitle">Confira as novidades que preparamos para você:</p>
+  <div class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#fce3e4] to-[#f7c8c9] p-4 text-gray-800">
+    <div class="bg-white/90 px-6 sm:px-12 py-10 rounded-2xl shadow-lg max-w-3xl w-full text-center animate-fade-in">
+      <!-- Header -->
+      <header class="mb-10">
+        <h1 class="text-4xl sm:text-5xl font-bold text-[#d9534f] leading-tight mb-2">Estamos de cara nova!</h1>
+        <p class="text-lg text-gray-600">Confira as novidades que preparamos para você:</p>
       </header>
 
-      <section class="features-list">
-        <div class="feature-item" v-for="(feature, index) in features" :key="index">
-          <div class="feature-icon">
-            <span class="icon">{{ feature.icon }}</span>
+      <!-- Features List -->
+      <section class="grid gap-6 mb-10">
+        <div
+          class="flex flex-col sm:flex-row sm:items-start text-left bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+          v-for="(feature, index) in features"
+          :key="index"
+        >
+          <div class="text-4xl text-[#d9534f] mb-4 sm:mb-0 sm:mr-6 leading-none">
+            {{ feature.icon }}
           </div>
-          <div class="feature-content">
-            <h2 class="feature-title">{{ feature.title }}</h2>
-            <p class="feature-description">{{ feature.description }}</p>
+          <div class="flex-1">
+            <h2 class="text-xl font-semibold text-[#d9534f] mb-1">{{ feature.title }}</h2>
+            <p class="text-sm text-gray-700 leading-relaxed">{{ feature.description }}</p>
           </div>
         </div>
         <span id="some-id"></span>
       </section>
 
-      <footer class="news-footer">
-        <button class="cta-button" @click="goToHome">Explorar o Novo App</button>
+      <!-- Footer -->
+      <footer>
+        <button
+          class="bg-gradient-to-r from-[#e7716e] to-[#d9534f] text-white py-3 px-8 rounded-full text-lg font-semibold shadow-md hover:from-[#d9534f] hover:to-[#c9302c] hover:-translate-y-1 transition-all duration-300"
+          @click="goToHome"
+        >
+          Explorar o Novo App
+        </button>
       </footer>
     </div>
   </div>
@@ -50,8 +62,6 @@ onMounted(() => {
     localStorage.setItem("hasSeenNews", "true");
   }
 });
-
-// const { reward: balloonsReward, isAnimating: isBalloonsAnimating } = useReward("some-id", "balloons", config);
 
 const router = useRouter();
 
@@ -84,7 +94,7 @@ const features = ref([
     description: "Instale o app em seu tablet, PC ou celular para acesso rápido e prático.",
   },
   {
-    icon: "🤳",
+    icon: "🧳",
     title: "Adaptação para uso em celulares",
     description:
       "Agora o aplicativo é totalmente responsivo, permitindo que você o utilize no celular, mantendo todas as funcionalidades e sem perder nada.",
@@ -92,35 +102,14 @@ const features = ref([
 ]);
 
 const goToHome = () => {
-  router.push("/");
+  router.push("/pense-aja").then(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 };
 </script>
 
 <style scoped>
-.news-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #fce3e4 0%, #f7c8c9 100%);
-  padding: 2rem;
-  font-family: "Poppins", sans-serif;
-  color: #333;
-  box-sizing: border-box;
-}
-
-.container {
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 2.5rem 3rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  max-width: 800px;
-  width: 100%;
-  text-align: center;
-  animation: fadeIn 0.8s ease-out;
-}
-
+/* Mantém apenas a animação personalizada que não tem equivalente direto em Tailwind */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -132,165 +121,7 @@ const goToHome = () => {
   }
 }
 
-.news-header {
-  margin-bottom: 2.5rem;
-}
-
-.main-title {
-  font-size: 2.8rem;
-  font-weight: 700;
-  color: #d9534f; /* Vermelho suave mais escuro */
-  margin-bottom: 0.5rem;
-  line-height: 1.2;
-}
-
-.subtitle {
-  font-size: 1.2rem;
-  color: #555;
-  margin-bottom: 0;
-}
-
-.features-list {
-  display: grid;
-  gap: 2rem;
-  margin-bottom: 3rem;
-}
-
-.feature-item {
-  display: flex;
-  align-items: flex-start;
-  text-align: left;
-  background-color: #fff;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.feature-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(217, 83, 79, 0.15);
-}
-
-.feature-icon {
-  font-size: 2.5rem;
-  margin-right: 1.5rem;
-  color: #d9534f;
-  line-height: 1; /* Alinha melhor o emoji */
-}
-
-.feature-content {
-  flex: 1;
-}
-
-.feature-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #d9534f;
-  margin-bottom: 0.5rem;
-}
-
-.feature-description {
-  font-size: 0.95rem;
-  color: #444;
-  line-height: 1.6;
-}
-
-.news-footer {
-  margin-top: 1rem;
-}
-
-.cta-button {
-  background: linear-gradient(145deg, #e7716e, #d9534f);
-  color: white;
-  padding: 0.9rem 2.5rem;
-  border-radius: 50px; /* Botão mais arredondado */
-  font-size: 1.1rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(217, 83, 79, 0.3);
-}
-
-.cta-button:hover {
-  background: linear-gradient(145deg, #d9534f, #c9302c);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(217, 83, 79, 0.4);
-}
-
-.cta-button:active {
-  transform: translateY(-1px);
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  .container {
-    padding: 2rem 1.5rem;
-  }
-
-  .main-title {
-    font-size: 2.2rem;
-  }
-
-  .subtitle {
-    font-size: 1rem;
-  }
-
-  .feature-item {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .feature-icon {
-    margin-right: 0;
-    margin-bottom: 1rem;
-    font-size: 2.2rem;
-  }
-
-  .feature-title {
-    font-size: 1.15rem;
-  }
-
-  .feature-description {
-    font-size: 0.9rem;
-  }
-
-  .cta-button {
-    padding: 0.8rem 2rem;
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 1.5rem 1rem;
-    margin: 1rem; /* Adiciona margem para não colar nas bordas */
-  }
-
-  .news-page {
-    padding: 1rem 0.5rem; /* Reduz padding da página em telas muito pequenas */
-  }
-
-  .main-title {
-    font-size: 1.8rem;
-  }
-
-  .subtitle {
-    font-size: 0.9rem;
-  }
-
-  .feature-icon {
-    font-size: 2rem;
-  }
-
-  .feature-title {
-    font-size: 1.05rem;
-  }
-
-  .feature-description {
-    font-size: 0.85rem;
-  }
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out;
 }
 </style>

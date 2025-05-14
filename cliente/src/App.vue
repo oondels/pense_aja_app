@@ -22,10 +22,6 @@ onMounted(() => {
 </script>
 
 <style>
-body {
-  font-family: "Poppins", sans-serif;
-}
-
 .action-button {
   display: flex;
   flex-direction: column;

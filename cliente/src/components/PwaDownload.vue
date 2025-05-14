@@ -2,19 +2,15 @@
   <v-dialog max-width="520" transition="dialog-bottom-transition">
     <!-- Botão ativador -->
     <template v-slot:activator="{ props }">
-      <button  :class="{ 'pulse-btn': isInstallable }">
-        <v-icon color="#b0062b" ></v-icon>
-      </button>
-      <v-btn
+      <button
         v-bind="props"
-        variant="outlined"
         :class="{ 'pulse-btn': isInstallable }"
-        class="ml-2"
-        prepend-icon="mdi mdi-cellphone-arrow-down"
-        color="danger"
+        class="flex items-center gap-2 px-4 py-2 border-sm text-red-500 rounded-full hover:bg-red-500 hover:text-white transition"
+        
       >
+      <span class="mdi mdi-cellphone-arrow-down"></span>
         Baixar App
-      </v-btn>
+      </button>
     </template>
 
     <!-- Conteúdo do diálogo -->

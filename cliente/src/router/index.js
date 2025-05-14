@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
-import PenseAja from '../views/PenseAja.vue'
-import AiMicrofone from '../components/AiTools/AiMicrofone.vue'
-import UserPage from '../views/UserPage.vue'
-import ItemPenseAja from '../views/ItemPenseAja.vue'
-import News from '../views/News.vue'
-import Dashboard from '../views/Dashboard.vue'
+const Home = () => import('../views/Home.vue')
+const PenseAja = () => import('../views/PenseAja.vue')
+const AiMicrofone = () => import('../components/AiTools/AiMicrofone.vue')
+const UserPage = () => import('../views/UserPage.vue')
+const ItemPenseAja = () => import('../views/ItemPenseAja.vue')
+const News = () => import('../views/News.vue')
+const Dashboard = () => import('../views/Dashboard.vue')
 
 const routes = [
   { path: '/', name: 'Home', component: Home },

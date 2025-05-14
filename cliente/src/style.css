@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 *,
 *::before,
 *::after {
@@ -8,7 +12,7 @@
 
 @font-face {
   font-family: 'Poppins';
-  src: url('/assets/css/fonts.css') format('truetype');
+  src: url('/assets/fonts/Poppins-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
 }

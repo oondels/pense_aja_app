@@ -91,6 +91,7 @@ function submitMatricula() {
         message || "Matrícula validada com sucesso!",
         2500
       );
+     sessionStorage.setItem("matricula", matricula.value);
 
       show.value = false;
       setTimeout(() => {

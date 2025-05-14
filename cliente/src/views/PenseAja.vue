@@ -44,8 +44,13 @@
 <script setup>
 import { ref } from "vue";
 import { defineAsyncComponent } from 'vue'
-const ListaPenseAja = defineAsyncComponent(() =>
-  import("../components/ListaPenseAja.vue")
+import Loading from '@/components/Loading.vue'
+const ListaPenseAja = defineAsyncComponent({
+  loader: () => import('@/components/ListaPenseAja.vue'),
+  loadingComponent: Loading,
+  delay: 1,
+  timeout: 5000,
+}
 );
 // Estado para controlar a expansão do badge
 const isTabExpanded = ref(false);

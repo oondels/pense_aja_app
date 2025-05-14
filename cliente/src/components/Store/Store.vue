@@ -1,5 +1,5 @@
 <template>
-  <div class="store-container">
+  <div class="w-full">
     <v-dialog v-model="openStore" max-width="850">
       <template v-slot:activator="{ props: activatorProps }">
         <button
@@ -7,188 +7,169 @@
           @click="handleUserData($event, false)"
           v-bind="activatorProps"
           id="openLoja"
-          class="action-button"
+          class="flex items-center space-x-2 px-4 py-2 rounded-lg shadow transition bg-white text-gray-800 hover:bg-gray-100"
         >
-          <div class="button-icon-container">
-            <span class="mdi mdi-store fs-4"></span>
-          </div>
-          <span class="button-label">Loja</span>
+          <span class="mdi mdi-store text-xl"></span>
+          <span>Loja</span>
         </button>
-
         <button
           v-else
           @click="handleUserData($event, false)"
           v-bind="activatorProps"
-          class="mobile-action-button"
+          class="flex flex-col items-center p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-md transition"
         >
-          <i class="mdi mdi-store-outline icon"></i>
-          <span class="label">Loja</span>
+          <i class="mdi mdi-store-outline text-2xl"></i>
+          <span class="text-sm">Loja</span>
         </button>
       </template>
 
       <template v-slot:default="{ isActive }">
-        <div id="loja" class="loja store-container rounded-b-shaped">
-          <div class="store-wrapper rounded-b-shaped">
-            <div class="store-header red-theme rounded-b-shaped">
-              <div class="header-gradient-overlay"></div>
-              <div class="store-title-container">
-                <div class="store-logo">
-                  <img
-                    src="/assets/img/icons/dass-penseaja.png"
-                    alt="Dass Pense Aja Logo"
-                  />
+        <div id="loja" class="bg-white rounded-b-2xl shadow-lg max-h-screen overflow-y-auto">
+          <div class="max-w-6xl mx-auto p-6">
+            <!-- Header -->
+            <div
+              class="relative bg-gradient-to-br from-red-700 to-red-400 text-white rounded-t-2xl p-6 mb-6 shadow-lg overflow-hidden"
+            >
+              <div class="absolute inset-0 gradient-radial pointer-events-none"></div>
+              <div class="flex flex-wrap items-center justify-between">
+                <div class="flex items-center space-x-4">
+                  <div class="bg-white/90 rounded-full p-2 shadow-md border border-white/80">
+                    <img src="/assets/img/icons/dass-penseaja.png" alt="Logo" class="w-12 h-12 object-contain" />
+                  </div>
+                  <div>
+                    <h1 class="text-2xl font-bold">Loja de Recompensas</h1>
+                    <span class="text-sm opacity-90">Sistema Pense & Aja</span>
+                  </div>
                 </div>
 
-                <div class="store-title-content">
-                  <h1>Loja de Recompensas</h1>
-                  <span class="store-subtitle">Sistema Pense & Aja</span>
-                </div>
+                <button
+                  @click="isActive.value = false"
+                  class="absolute top-4 right-4 px-1 bg-red-100 hover:bg-red-200 rounded-full transition transform hover:rotate-90"
+                >
+                  <span class="bi bi-x-lg text-red-600"></span>
+                </button>
               </div>
-
-              <div class="store-notification">
-                <div class="notification-icon">
-                  <i class="bi bi-exclamation-circle-fill"></i>
-                </div>
-
-                <div class="notification-content">
-                  <span class="notification-title">Atenção</span>
-                  <span class="notification-text">
-                    Pontuação sujeita a avaliação do gerente
-                  </span>
-                </div>
-              </div>
-
-              <button
-                @click="isActive.value = false"
-                class="close-store-button position-absolute top-0 end-0 m-4"
-                id="closeLoja"
+              <div
+                class="mt-4 flex items-center space-x-4 bg-white/20 backdrop-blur-md rounded-lg p-4 border-l-4 border-pink-200"
               >
-                <span class="bi bi-x-lg text-white"></span>
-              </button>
+                <div class="text-pink-200 animate-pulse text-xl"><i class="bi bi-exclamation-circle-fill"></i></div>
+                <div>
+                  <p class="font-semibold">Atenção</p>
+                  <p class="text-sm opacity-90">Pontuação sujeita a avaliação do gerente</p>
+                </div>
+              </div>
             </div>
 
-            <!-- Barra de pesquisa e pontos -->
-            <div class="store-search-bar">
-              <div class="search-container" id="divLojaMatricula">
-                <i class="bi bi-person-badge search-icon"></i>
+            <!-- Search & Points -->
+            <div
+              class="flex flex-col sm:flex-row items-center justify-between mb-6 space-y-4 sm:space-y-0 sm:space-x-4"
+            >
+              <div id="divLojaMatricula" class="flex items-center bg-white rounded-lg shadow p-2 flex-1">
+                <i class="bi bi-person-badge text-gray-500 text-xl mr-2"></i>
                 <input
                   type="number"
                   placeholder="Digite sua matrícula"
                   id="lojaMatricula"
-                  class="search-input"
                   v-model="registrationInput"
                   @keyup.enter="handleUserData($event, false)"
+                  class="w-full bg-transparent outline-none"
                 />
-
                 <button
                   @click="handleUserData($event, true)"
-                  class="search-button"
                   id="pesqLoja"
+                  class="flex items-center space-x-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1 transition shadow"
                 >
-                  <i class="bi bi-search"></i>
-                  <span>Buscar</span>
-                  <span class="spinner" v-if="loading"></span>
+                  <i class="bi bi-search"></i><span>Buscar</span>
+                  <span v-if="loading" class="loader"></span>
                 </button>
               </div>
-              <div class="points-container">
-                <div class="points-badge">
+              <div class="flex items-center space-x-2">
+                <div
+                  class="flex items-center space-x-2 bg-gradient-to-br from-yellow-400 to-orange-500 text-white rounded-full px-4 py-2 shadow-md animate-pulse"
+                >
                   <i class="bi bi-star-fill"></i>
-                  <span id="pontosLoja" class="points-value">{{ pontos }}</span>
-                  <span class="points-label">pontos</span>
+                  <span id="pontosLoja" class="font-bold text-lg">{{ pontos }}</span>
+                  <span class="text-sm opacity-80">pontos</span>
                 </div>
               </div>
             </div>
 
-            <!-- Informações do usuário -->
-            <div v-if="user?.matricula || userData" class="user-details">
-              <div class="user-info-card">
-                <div class="user-avatar">
-                  <i class="bi bi-person-circle text-primary"></i>
-                </div>
-
-                <div class="user-data">
-                  <p id="nomeLoja" class="nomeLoja">
-                    Nome: {{ userData?.nome }}
-                  </p>
-                  <p id="setorLoja" class="setorLoja">
-                    Setor: {{ userData?.setor }}
-                  </p>
-                  <p id="gerenteLoja" class="gerenteLoja">
-                    Gerente: {{ userData?.gerente }}
-                  </p>
+            <!-- User Info -->
+            <div v-if="user?.matricula || userData" class="mb-6">
+              <div class="flex items-center bg-white rounded-lg shadow p-4 space-x-4">
+                <i class="bi bi-person-circle text-primary text-4xl"></i>
+                <div class="space-y-1">
+                  <p id="nomeLoja" class="text-sm text-gray-700">Nome: {{ userData?.nome }}</p>
+                  <p id="setorLoja" class="text-sm text-gray-700">Setor: {{ userData?.setor }}</p>
+                  <p id="gerenteLoja" class="text-sm text-gray-700">Gerente: {{ userData?.gerente }}</p>
                 </div>
               </div>
             </div>
 
-            <!-- Filtro de produtos -->
-            <div class="store-filter-bar">
+            <!-- Filter -->
+            <div class="flex flex-wrap justify-center gap-2 mb-6">
               <button
-                :class="['filter-btn', filterType === 'all' ? 'active' : '']"
                 @click="filterType = 'all'"
+                :class="filterType === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'"
+                class="flex items-center space-x-1 px-3 py-1 rounded-lg transition"
               >
-                <i class="bi bi-grid"></i> Todos
+                <i class="bi bi-grid"></i><span>Todos</span>
               </button>
               <button
-                :class="[
-                  'filter-btn',
-                  filterType === 'available' ? 'active' : '',
-                ]"
                 @click="filterType = 'available'"
+                :class="filterType === 'available' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'"
+                class="flex items-center space-x-1 px-3 py-1 rounded-lg transition"
               >
-                <i class="bi bi-bag-check-fill text-success"></i> Disponíveis
+                <i class="bi bi-bag-check-fill text-green-500"></i><span>Disponíveis</span>
               </button>
               <button
-                :class="[
-                  'filter-btn',
-                  filterType === 'unavailable' ? 'active' : '',
-                ]"
                 @click="filterType = 'unavailable'"
+                :class="filterType === 'unavailable' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'"
+                class="flex items-center space-x-1 px-3 py-1 rounded-lg transition"
               >
-                <i class="bi bi-emoji-frown-fill text-danger"></i> Não
-                disponíveis
+                <i class="bi bi-emoji-frown-fill text-red-500"></i><span>Não disponíveis</span>
               </button>
             </div>
 
-            <!-- Produtos -->
-            <div class="store-products">
-              <h2 class="products-heading">Produtos Disponíveis</h2>
-
-              <div v-if="filteredProducts" class="products-grid">
-                <div v-for="product in filteredProducts" :key="product.id">
+            <!-- Products -->
+            <div class="overflow-y-auto max-h-[calc(100vh-300px)]">
+              <h2
+                class="text-2xl font-bold text-center mb-4 relative inline-block before:content-[''] before:absolute before:left-1/2 before:-bottom-1 before:w-16 before:h-1 before:bg-gradient-to-r before:from-blue-500 before:to-blue-600 before:rounded"
+              ></h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div
+                  v-for="product in filteredProducts"
+                  :key="product.id"
+                  class="relative bg-white rounded-lg shadow p-4 hover:shadow-lg transition transform hover:-translate-y-1"
+                >
+                  <!-- Tag de pontos -->
                   <div
-                    class="product-card polaroid"
-                    :class="product.points > pontos ? 'disabled-buy' : ''"
+                    class="absolute top-4 right-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white text-sm font-semibold px-3 py-1 rounded-full shadow-sm"
                   >
-                    <div
-                      v-if="product.points > pontos"
-                      class="disabled-overlay"
-                    >
-                      <i class="bi bi-emoji-frown-fill unavailable-icon"></i>
-                      <span class="unavailable-text">Pontos Insuficientes</span>
-                      <span class="unavailable-hint">
-                        Junte mais pontos para resgatar!
-                      </span>
-                    </div>
-                    <div class="product-badge">{{ product.points }} pts</div>
-                    <div class="product-image-container">
-                      <img
-                        :src="product.image"
-                        :alt="product.name"
-                        class="product-image"
-                      />
-                    </div>
-                    <div v-if="userData" class="product-info">
-                      <h3 class="product-name">{{ product.name }}</h3>
+                    {{ product.points }} pts
+                  </div>
 
-                      <BuyItem
-                        @updatePoints="updatePoints"
-                        :colaboradorData="{
-                          ...userData,
-                          matricula: registrationInput,
-                        }"
-                        :PenseAjaProduct="product"
-                      />
-                    </div>
+                  <!-- Imagem sempre visível -->
+                  <div class="h-44 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden mb-4">
+                    <img :src="product.image" :alt="product.name" class="max-h-full object-contain" />
+                  </div>
+
+                  <!-- Se não tiver pontos suficientes, exibe aviso em vez do botão -->
+                  <div v-if="product.points > pontos" class="text-center space-y-1 text-gray-700">
+                    <i class="bi bi-emoji-frown-fill text-3xl text-gray-500"></i>
+                    <div class="text-lg font-semibold">{{ product.name }}</div>
+                    <div class="font-bold text-red-600">Pontos Insuficientes</div>
+                    <div class="text-sm text-gray-500">Junte mais pontos para resgatar!</div>
+                  </div>
+
+                  <!-- Se tiver pontos suficientes, exibe o botão -->
+                  <div v-else-if="userData" class="space-y-2">
+                    <h3 class="text-lg font-semibold">{{ product.name }}</h3>
+                    <BuyItem
+                      @updatePoints="updatePoints"
+                      :colaboradorData="{ ...userData, matricula: registrationInput }"
+                      :PenseAjaProduct="product"
+                    />
                   </div>
                 </div>
               </div>
@@ -197,9 +178,8 @@
         </div>
       </template>
     </v-dialog>
+    <Notification ref="notification" />
   </div>
-
-  <Notification ref="notification" />
 </template>
 
 <script setup>
@@ -211,13 +191,13 @@ import Notification from "../Notification.vue";
 // TODO: Passar dados para banco de dados
 import storeProducts from "@/utils/penseAjaProducts.json";
 
-const emit = defineEmits(["notify"])
+const emit = defineEmits(["notify"]);
 
 // Abre a loja pelo bottomNav
 const openStore = ref(false);
 const openStoreBottomNav = () => {
   openStore.value = !openStore.value;
-}
+};
 defineExpose({
   openStoreBottomNav,
 });
@@ -248,14 +228,10 @@ const filterType = ref("all");
 const filteredProducts = ref(null);
 const filterProduct = () => {
   if (filterType.value === "available") {
-    filteredProducts.value = storeProducts.filter(
-      (p) => p.points <= pontos.value
-    );
+    filteredProducts.value = storeProducts.filter((p) => p.points <= pontos.value);
     return;
   } else if (filterType.value === "unavailable") {
-    filteredProducts.value = storeProducts.filter(
-      (p) => p.points > pontos.value
-    );
+    filteredProducts.value = storeProducts.filter((p) => p.points > pontos.value);
     return;
   }
 
@@ -282,12 +258,7 @@ const handleUserData = async (e, click) => {
 
     // Espera input do usuário
     if ((e.key && e.key === "Enter") || click) {
-      await getUserData(
-        registrationInput.value,
-        userData,
-        loading,
-        emit
-      );
+      await getUserData(registrationInput.value, userData, loading, emit);
       pontos.value = userData.value.pontos - userData.value.pontos_resgatados;
     }
   } catch (error) {
@@ -305,770 +276,31 @@ const updatePoints = async (update) => {
 </script>
 
 <style scoped>
-.store-container {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
-  overflow-y: auto;
-  overflow-x: auto;
-  transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease;
-  border-radius: 20px;
-}
-
-.store-container.active {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.store-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 30px 20px;
-}
-
-/* Header da Loja */
-.store-header.red-theme {
-  background: linear-gradient(135deg, #c62828 0%, #fc5050 100%);
-  margin: -30px -20px 30px;
-  padding: 25px 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 15px rgba(183, 28, 28, 0.3);
-  position: relative;
-  overflow: hidden;
-  color: white;
-  border-radius: 12px 12px 0 0;
-}
-
-.header-gradient-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(
-    circle at top right,
-    rgba(255, 255, 255, 0.15) 0%,
-    rgba(255, 255, 255, 0) 60%
-  );
-  pointer-events: none;
-}
-
-.store-header.red-theme::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 200%;
-  height: 3px;
-  background: linear-gradient(90deg, #ffcdd2, #ffffff, #ffcdd2);
-  animation: gradient-shift 8s linear infinite;
-}
-
-.store-title-container {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 20px;
-  position: relative;
-}
-
-.store-logo {
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.8);
-}
-
-.store-logo img {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
-}
-
-.store-title-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.store-header.red-theme h1 {
-  font-size: 26px;
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: 0.5px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.store-subtitle {
-  font-size: 14px;
-  opacity: 0.9;
-  letter-spacing: 0.5px;
-  margin-top: 4px;
-}
-
-.store-header.red-theme .store-notification {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 12px 18px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(5px);
-  border-radius: 10px;
-  border-left: 4px solid #ffcdd2;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.notification-icon {
-  font-size: 18px;
-  color: #ffcdd2;
-  animation: pulse-glow 2s infinite;
-}
-
-.notification-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.notification-title {
-  font-weight: 600;
-  font-size: 15px;
-  margin-bottom: 2px;
-}
-
-.notification-text {
-  opacity: 0.85;
-}
-
 @keyframes gradient-shift {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
+  to {
     transform: translateX(50%);
   }
 }
 
-.disabled-buy {
-  opacity: 0.7;
-  pointer-events: none;
-  filter: grayscale(90%) blur(1px) brightness(1.1);
-  cursor: not-allowed !important;
-  position: relative;
-}
-
-.disabled-buy::after {
-  content: "Pontos Insuficientes";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(220, 53, 69, 0.92);
-  color: #fff;
-  font-size: 1.1rem;
-  font-weight: bold;
-  padding: 8px 18px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.15);
-  z-index: 10;
-  letter-spacing: 1px;
-  pointer-events: none;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.disabled-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: white;
-  border-radius: 12px;
-}
-
-.unavailable-icon {
-  font-size: 2rem;
-}
-
-.unavailable-text {
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.unavailable-hint {
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-.store-title {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 15px;
-}
-
-.store-icon {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.store-icon i {
-  font-size: 24px;
-  color: #3498db;
-}
-
-.store-title h1 {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0;
-  letter-spacing: 0.5px;
-}
-
-.store-notification {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 15px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.store-notification i {
-  color: #3498db;
-}
-
-/* Barra de pesquisa e pontos */
-.store-search-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 30px;
-  gap: 20px;
-}
-
-.search-container {
-  display: flex;
-  align-items: center;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-  padding: 8px 15px;
-  flex: 1;
-}
-
-.search-icon {
-  color: #7f8c8d;
-  font-size: 18px;
-  margin-right: 10px;
-}
-
-.search-input {
-  border: none;
-  outline: none;
-  font-size: 16px;
-  width: 100%;
-  background: transparent;
-}
-
-.search-button {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
-}
-
-.search-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
-}
-
-.search-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
-}
-
-.points-container {
-  display: flex;
-  align-items: center;
-}
-
-.points-badge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-  padding: 8px 20px;
-  border-radius: 50px;
-  color: white;
-  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.points-value {
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.points-label {
-  font-size: 14px;
-  opacity: 0.8;
-}
-
-.close-store-button {
-  background: rgba(231, 76, 60, 0.1);
-  border: none;
-  color: #e74c3c;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.close-store-button:hover {
-  background: rgba(231, 76, 60, 0.2);
-  transform: rotate(90deg);
-}
-
-/* Informações do usuário */
-.user-details {
-  margin-bottom: 30px;
-  transition: all 0.3s ease;
-}
-
-.user-info-card {
-  display: flex;
-  gap: 20px;
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-}
-
-.user-avatar {
-  font-size: 40px;
-  color: #7f8c8d;
-}
-
-.user-data {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.user-data p {
-  margin: 0;
-  font-size: 14px;
-  color: #34495e;
-}
-
-/* Filtro de produtos */
-.store-filter-bar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 18px;
-  justify-content: center;
-  flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
-}
-
-.filter-btn {
-  background: #f5f7fa;
-  border: 1px solid #d1d5db;
-  color: #333;
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.filter-btn.active,
-.filter-btn:hover {
-  background: #007aff;
-  color: #fff;
-  border-color: #007aff;
-}
-
-/* Produtos */
-.products-heading {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: #2c3e50;
-  text-align: center;
-  position: relative;
-  padding-bottom: 15px;
-}
-
-.products-heading::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
-  border-radius: 3px;
-}
-
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 25px;
-}
-
-.product-card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
-}
-
-/* Produtos desabilitados */
-.product-card.disabled,
-.product-card.disabled * {
-  opacity: 1 !important;
-  filter: grayscale(90%) blur(1px);
-  pointer-events: none !important;
-  cursor: not-allowed !important;
-  transition: opacity 0.5s, filter 0.5s;
-}
-
-.product-badge {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-  color: white;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  z-index: 2;
-  box-shadow: 0 3px 8px rgba(52, 152, 219, 0.3);
-  transform: scale(0.9);
-  transition: transform 0.2s ease;
-}
-
-.premium-badge {
-  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-  box-shadow: 0 3px 8px rgba(243, 156, 18, 0.3);
-}
-
-.product-card:hover .product-badge {
-  transform: scale(1);
-}
-
-.product-image-container {
-  height: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
-  overflow: hidden;
-}
-
-.product-image {
-  max-width: 100%;
-  max-height: 100%;
-  transition: transform 0.4s ease;
-}
-
-.product-card:hover .product-image {
-  transform: scale(1.1);
-}
-
-.product-info {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.product-name {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-/* Animações para entrada de produtos */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
+/* animação de gradiente */
+@keyframes gradient-shift {
   to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: translateX(50%);
   }
 }
 
-.product-card {
-  opacity: 0;
-  animation: fadeIn 0.5s forwards;
+/* loader spinner */
+.loader {
+  border: 2px solid transparent;
+  border-top-color: white;
+  border-radius: 50%;
+  width: 1rem;
+  height: 1rem;
+  animation: spin 1s linear infinite;
 }
-
-.product-card:nth-child(1) {
-  animation-delay: 0.1s;
-}
-.product-card:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.product-card:nth-child(3) {
-  animation-delay: 0.3s;
-}
-.product-card:nth-child(4) {
-  animation-delay: 0.4s;
-}
-.product-card:nth-child(5) {
-  animation-delay: 0.5s;
-}
-.product-card:nth-child(6) {
-  animation-delay: 0.6s;
-}
-.product-card:nth-child(7) {
-  animation-delay: 0.7s;
-}
-.product-card:nth-child(8) {
-  animation-delay: 0.8s;
-}
-
-/* Responsive adjustments for screens smaller than 640px */
-@media (max-width: 640px) {
-  .store-wrapper {
-    padding: 20px 10px;
-  }
-
-  .store-header.red-theme {
-    padding: 20px 15px;
-    margin: -20px -10px 20px;
-  }
-
-  .store-title-container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    text-align: center;
-    width: 100%;
-  }
-  
-  .store-logo {
-    width: 50px;
-    height: 50px;
-    align-self: center;
-  }
-
-  .store-header.red-theme h1 {
-    font-size: 20px;
-  }
-
-  .store-subtitle {
-    font-size: 12px;
-  }
-  
-  .store-title-content {
-    align-items: center;
-    width: 100%;
-  }
-
-  .store-header.red-theme .store-notification {
-    padding: 10px 12px;
-    font-size: 12px;
-    gap: 8px;
-  }
-  .notification-title {
-    font-size: 13px;
-  }
-
-  .close-store-button {
-    width: 35px;
-    height: 35px;
-    margin: 0.5rem !important; /* Ensure margin is applied */
-  }
-  .close-store-button span {
-    font-size: 1rem; /* Adjust icon size if needed */
-  }
-
-
-  .store-search-bar {
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 20px;
-  }
-
-  .search-container {
-    padding: 6px 10px;
-    width: 100%;
-  }
-
-  .search-input {
-    font-size: 14px;
-  }
-
-  .search-button {
-    padding: 8px 15px;
-    font-size: 14px;
-    gap: 5px;
-  }
-  .search-button i {
-    font-size: 1em;
-  }
-  .search-button span {
-    font-size: 0.9em;
-  }
-
-
-  .points-badge {
-    padding: 6px 15px;
-    gap: 8px;
-  }
-
-  .points-value {
-    font-size: 20px;
-  }
-
-  .points-label {
-    font-size: 12px;
-  }
-
-  .user-info-card {
-    padding: 15px;
-    gap: 15px;
-    flex-direction: column;
-    align-items: center;
-  }
-  .user-avatar {
-    font-size: 30px;
-  }
-  .user-data p {
-    font-size: 13px;
-    text-align: center;
-  }
-
-  .store-filter-bar {
-    gap: 8px;
-    margin-bottom: 15px;
-  }
-
-  .filter-btn {
-    padding: 6px 12px;
-    font-size: 13px;
-    gap: 5px;
-  }
-   .filter-btn i {
-    font-size: 1em;
-  }
-
-  .products-heading {
-    font-size: 18px;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-  }
-  .products-heading::after {
-    width: 50px;
-    height: 2px;
-  }
-
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-  }
-
-  .product-card {
-    border-radius: 10px;
-  }
-  
-  .disabled-buy::after {
-    font-size: 0.9rem;
-    padding: 6px 12px;
-  }
-
-  .disabled-overlay .unavailable-icon {
-    font-size: 1.5rem;
-  }
-  .disabled-overlay .unavailable-text {
-    font-size: 1rem;
-  }
-  .disabled-overlay .unavailable-hint {
-    font-size: 0.8rem;
-  }
-
-
-  .product-badge {
-    top: 10px;
-    right: 10px;
-    padding: 4px 10px;
-    font-size: 12px;
-  }
-
-  .product-image-container {
-    height: 120px; /* Reduced height for smaller screens */
-    padding: 15px;
-  }
-
-  .product-info {
-    padding: 15px;
-    gap: 10px;
-  }
-
-  .product-name {
-    font-size: 16px;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import VueRewards from "vue-rewards";
+import VueLazyload from 'vue-lazyload'
 
 import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
@@ -14,8 +15,6 @@ import VueVirtualScroller from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
 import './assets/fonts.css'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import "@mdi/font/css/materialdesignicons.css";
 import "material-design-icons-iconfont/dist/material-design-icons.css";
 import "material-icons/iconfont/filled.css";
@@ -37,6 +36,10 @@ appInstance.use(VueVirtualScroller)
 appInstance.use(vuetify);
 appInstance.use(router);
 appInstance.use(VueRewards);
+appInstance.use(VueLazyload, {
+  preLoad: 1.3,
+  attempt: 1
+});
 appInstance.mount('#app');
 
 useRegisterSW()
