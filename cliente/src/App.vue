@@ -15,7 +15,13 @@ import GetUserEmail from "./components/GetUserEmail.vue";
 import { onMounted } from "vue";
 import { useUserStore } from "@/stores/userStore.js";
 
+const unidade = localStorage.getItem("unidadeDass");
 onMounted(() => {
+  if (unidade) {
+    if (unidade === 'SEST') {
+      window.location.href = "http://10.100.1.43/pense&aja-sest/";
+    }
+  }
   const userStore = useUserStore();
   userStore.carregarUsuario();
 });
