@@ -72,13 +72,13 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
     const { pense_aja, userManager } = await PenseAjaService.createPenseAja(penseajaData, dassOffice);
 
     // Verifica se encontra gerente do usuário e se o gerente esta com notificações ativas
-    if (userManager) {
+    if (userManager) {     
       // const notificationEnabled = await NotificationService.isNotificationEnabled(userManager.matricula, dassOffice);
-      const notificationEnabled = await NotificationService.isNotificationEnabled(3020495, dassOffice);
+      const notificationEnabled = await NotificationService.isNotificationEnabled(userManager.matricula, dassOffice);
 
       if (notificationEnabled) {
         await NotificationService.sendNotification({
-          to: "hendrius.santana@grupodass.com.br",
+          to: userManager.matricula,
           subject: "Aplicativo Pense Aja",
           title: "Novo Pense Aja Cadastrado.",
           message: `Um novo registro de Pense Aja foi cadastrado pelo usuário ${formatUserName(pense_aja.nome)}. Projeto: ${pense_aja.nome_projeto}.`,
