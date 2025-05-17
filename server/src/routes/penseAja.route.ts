@@ -9,6 +9,7 @@ const ip = process.env.DEV_ENV === 'development' ? 'http://localhost:5173' : 'ht
 
 const router = Router();
 
+
 const formatUserName = (name: string) => {
   const splitedName = name.split(" ")
   return splitedName[0] + " " + splitedName[splitedName.length - 1]

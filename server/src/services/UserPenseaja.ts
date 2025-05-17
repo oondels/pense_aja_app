@@ -111,7 +111,6 @@ export const UserPenseaja = {
         INNER JOIN autenticacao.emails ue ON u.matricula = ue.matricula
         WHERE u.matricula = $1 AND u.unidade = $2 AND ue.authorized_notifications_apps @> '["pense_aja"]'::jsonb;
       `, [registration, dassOffice]);
-
       return query.rows[0];
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
