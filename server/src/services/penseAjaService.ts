@@ -2,6 +2,7 @@ import logger from "../utils/logger";
 import pool from "../config/db";
 import { CustomError } from "../types/CustomError";
 import { UserPenseaja } from "./UserPenseaja";
+import penseAjaProducts from "../utils/penseAjaProducts.json"
 
 const checkDassOffice = (dassOffice: string) => {
   const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF"];
@@ -14,11 +15,6 @@ const checkDassOffice = (dassOffice: string) => {
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString("pt-BR");
 };
-
-interface SelectFilter {
-  selectedMonth?: string;
-  selectedYear?: string;
-}
 
 interface PenseAjaData {
   nome: string;
@@ -61,87 +57,92 @@ const turnoMap: Record<string, string> = {
 };
 
 export const PenseAjaService = {
-  async getCurrentMonthData(dassOffice: string) {
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonthIndex = currentDate.getMonth();
-
-    let lastMonthIndex: number;
-    let lastMonthYear: number;
-    if (currentMonthIndex === 0) {
-      lastMonthIndex = 11;
-      lastMonthYear = currentYear - 1;
-    } else {
-      lastMonthIndex = currentMonthIndex - 1;
-      lastMonthYear = currentYear;
-    }
-
-    let penseAjaDay = 28;
-    let startDate = new Date(lastMonthYear, lastMonthIndex, penseAjaDay);
-    let endDate = new Date(currentYear, currentMonthIndex, penseAjaDay);
-
+  async fetchPenseAja(dassOffice: string, startDateParsed: Date, endDateParsed: Date, name: string, sector: string, manager: string, project: string, turno: string, status: string) {
     checkDassOffice(dassOffice);
+
     const client = await pool.connect();
     try {
-      let dbName =
-        dassOffice === "SEST" ? "pense_aja" : `pense_aja_${dassOffice}`;
-      const result = await client.query(
-        `
-        SELECT
-          id, data_realizada, fabrica, nome, setor, gerente,
-          nome_projeto, turno, situacao_anterior, situacao_atual,
-          gerente_aprovador, analista_avaliador, status_gerente,
-          status_analista, em_espera, createdat as criado
-        FROM pense_aja.${dbName}
-        WHERE excluido = ''
-        AND createdat >= $1
-        AND createdat < ($2::timestamp + INTERVAL '1 day')
-        ORDER BY createdat DESC
-      `,
-        [startDate, endDate]
-      );
+      let params = []
+      let filters = []
+      params.push(startDateParsed)
+      params.push(endDateParsed)
+      params.push(dassOffice)
 
-      const filterQuery = await client.query(
-        `
-        SELECT
-        (SELECT array_agg(DISTINCT gerente) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
-        AS gerentes,
-        (SELECT array_agg(DISTINCT nome) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
-        AS nomes,
-        (SELECT array_agg(DISTINCT setor) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
-        AS setores,
-        (SELECT array_agg(DISTINCT nome_projeto) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
-        AS projetos,
-        (SELECT array_agg(DISTINCT turno) FROM pense_aja.${dbName} WHERE excluido = '' AND createdat BETWEEN $1 AND $2)
-        AS turnos
-      `,
-        [startDate, endDate]
-      );
-
-      if (filterQuery.rows.length === 0 || result.rows.length === 0) {
-        return { dados: [], filters: {} };
+      if (name) {
+        filters.push(` nome = $${params.length + 1} `);
+        params.push(name);
+      }
+      if (sector) {
+        filters.push(` setor = $${params.length + 1} `);
+        params.push(sector);
+      }
+      if (manager) {
+        filters.push(` gerente = $${params.length + 1} `);
+        params.push(manager);
+      }
+      if (project) {
+        filters.push(` nome_projeto = $${params.length + 1} `);
+        params.push(project);
+      }
+      if (turno) {
+        let turnoValue;
+        if (turno === "1° Turno") {
+          turnoValue = "A";
+        } else if (turno === "2° Turno") {
+          turnoValue = "B";
+        } else {
+          turnoValue = "C";
+        }
+        filters.push(` turno = $${params.length + 1}`);
+        params.push(turnoValue);
+      }
+      if (status) {
+        filters.push(` status = $${params.length + 1}`);
+        params.push(status);
       }
 
-      const filtersData = filterQuery.rows[0];
-      filtersData.turnos = filtersData.turnos.map((filter: string) => {
-        return turnoMap[filter] || "Comercial";
-      });
+      let baseQuery = `
+        SELECT
+          id,
+          data_realizada,
+          fabrica,
+          nome,
+          setor,
+          gerente,
+          nome_projeto,
+          turno,
+          situacao_anterior,
+          situacao_atual,
+          gerente_aprovador,
+          analista_avaliador,
+          status_gerente,
+          status_analista,
+          em_espera,
+          createdat AS criado,
+          classificacao
+        FROM
+          pense_aja.pense_aja_dass
+       WHERE
+          excluido = false
+          AND createdat >= $1
+          AND createdat <  $2
+          AND unidade_dass = $3
+      `
 
-      const filters = {
-        "3": filtersData.nomes,
-        "4": filtersData.setores,
-        "5": filtersData.gerentes,
-        "6": filtersData.projetos,
-        "7": filtersData.turnos,
-      };
+      if (filters.length > 0) {
+        baseQuery = baseQuery.concat(` AND ${filters.join(" AND ")}`);
+      }
+      baseQuery = baseQuery.concat(` ORDER BY createdat DESC`);
+
+      const result = await client.query(baseQuery, params)
 
       const dados = result.rows;
-      result.rows.forEach((row) => {
+      dados.forEach((row) => {
         row.criado = formatDate(row.criado);
         row.turno = turnoMap[row.turno] || "Comercial";
       });
 
-      return { dados: dados, filters: filters };
+      return dados;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Erro desconhecido!";
@@ -153,100 +154,6 @@ export const PenseAjaService = {
       throw error;
     } finally {
       await client.release();
-    }
-  },
-
-  async getHistoryData(dassOffice: string, filter: SelectFilter) {
-    checkDassOffice(dassOffice);
-
-    const client = await pool.connect();
-    try {
-      const selectedYear = Number(filter.selectedYear);
-      const selectedMonth = Number(filter.selectedMonth);
-      let firstYear: number;
-      let firstMonth: number;
-
-      if (selectedMonth === 0) {
-        firstMonth = 11;
-        firstYear = selectedYear - 1;
-      } else {
-        firstMonth = selectedMonth - 1;
-        firstYear = selectedYear;
-      }
-
-      const firstDate = new Date(firstYear, firstMonth, 28);
-      const lastDate = new Date(selectedYear, selectedMonth, 28);
-
-      let dbName =
-        dassOffice === "SEST" ? "pense_aja" : `pense_aja_${dassOffice}`;
-
-      const historyQuery = await client.query(
-        `
-        SELECT
-          id, data_realizada, fabrica, nome, setor, gerente,
-          nome_projeto, turno, situacao_anterior, situacao_atual,
-          gerente_aprovador, analista_avaliador, status_gerente,
-          status_analista, em_espera, data_realizada as criado
-        FROM pense_aja.${dbName}
-        WHERE excluido = '' AND
-        data_realizada BETWEEN $1 AND $2
-        ORDER BY data_realizada DESC
-      `,
-        [firstDate, lastDate]
-      );
-
-      const filterQuery = await client.query(
-        `
-        SELECT
-          (SELECT array_agg(DISTINCT gerente) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
-          AS gerentes,
-          (SELECT array_agg(DISTINCT nome) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
-          AS nomes,
-          (SELECT array_agg(DISTINCT setor) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
-          AS setores,
-          (SELECT array_agg(DISTINCT nome_projeto) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
-          AS projetos,
-          (SELECT array_agg(DISTINCT turno) FROM pense_aja.${dbName} WHERE excluido = '' AND data_realizada BETWEEN $1 AND $2)
-          AS turnos
-      `,
-        [firstDate, lastDate]
-      );
-
-      if (filterQuery.rows.length === 0 || historyQuery.rows.length === 0) {
-        return { dados: [], filters: {} };
-      }
-
-      const filterData = filterQuery.rows[0] || {};
-      const history = historyQuery.rows || [];
-
-      // Atualizar referencia de turno
-      if (Object.keys(filterData).length > 0 && filterData.turnos) {
-        filterData.turnos = filterData.turnos.map((turno: string) => {
-          return turnoMap[turno] || "Comercial";
-        });
-      }
-
-      const result = {
-        dados: history,
-        filters: {
-          "3": filterData.nomes,
-          "4": filterData.setores,
-          "5": filterData.gerentes,
-          "6": filterData.projetos,
-          "7": filterData.turnos,
-        },
-      };
-
-      return result;
-    } catch (error) {
-      const messageError =
-        error instanceof Error ? error.message : "Erro desconhecido!";
-      logger.error(
-        "Pense-aja",
-        `Erro ao consultar registros da tabela de histórico: ${messageError}`
-      );
-
-      throw error;
     }
   },
 
@@ -272,7 +179,6 @@ export const PenseAjaService = {
       data.perdas = [];
     }
 
-    const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
     const perdasLean: Record<string, string> = {
       Superprodução: "super_producao",
       Transporte: "transporte",
@@ -311,18 +217,19 @@ export const PenseAjaService = {
         JSON.stringify(data.ganhos),
         data.ganhoDetalhes || "",
         data.areaMelhoria,
+        dassOffice,
       ];
 
       const newPenseAja = await client.query(
         `
-        INSERT INTO pense_aja.pense_aja${office} (
+        INSERT INTO pense_aja.pense_aja_dass (
           matricula, nome, turno, setor, gerente, nome_projeto, data_realizada,
           situacao_anterior, situacao_atual, super_producao, transporte, processamento, movimento,
           estoque, espera, talento, retrabalho,
-          a3_mae, ganhos, outros_ganhos, fabrica, createdat, updatedat, lider, excluido
+          a3_mae, ganhos, outros_ganhos, fabrica, unidade_dass, createdat, updatedat, lider
         ) VALUES
-         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, NOW(), NOW(), '', '')
-        RETURNING nome, nome_projeto, ganhos;`,
+         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW(), '')
+        RETURNING id, nome, nome_projeto, ganhos;`,
         params
       );
 
@@ -338,14 +245,18 @@ export const PenseAjaService = {
       const userManager = await UserPenseaja.getManagerByUser(data.registration, dassOffice);
 
       await client.query("COMMIT");
-      return {pense_aja: newPenseAja.rows[0], userManager: userManager};
+      return { pense_aja: newPenseAja.rows[0], userManager };
     } catch (error) {
       await client.query("ROLLBACK");
       const messageError =
         error instanceof Error ? error.message : "Erro desconhecido!";
       logger.error("Pense-aja", `Erro ao registrar pense aja: ${messageError}`);
 
-      throw new CustomError("Erro ao registrar pense aja.");
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        throw new CustomError("Erro ao registrar pense aja.");
+      }
     } finally {
       client.release();
     }
@@ -353,22 +264,20 @@ export const PenseAjaService = {
 
   async getPenseAjaById(id: string, dassOffice: string) {
     checkDassOffice(dassOffice);
-    const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
     const client = await pool.connect();
 
     try {
       const data = await client.query(
         `
         SELECT  
-          matricula, nome, setor, turno, gerente, data_realizada,
+          matricula, nome, setor, turno, gerente, data_realizada as criado,
           situacao_anterior, situacao_atual, nome_projeto, super_producao, transporte, 
           processamento, movimento, estoque, espera, talento, retrabalho, gerente_aprovador, 
-          data_aprogerente, analista_avaliador, classificacao, a3_mae, fabrica
-
+          data_aprogerente, analista_avaliador, classificacao, a3_mae, fabrica, ganhos, justificativa_analista, outros_ganhos
         FROM 
-          pense_aja.pense_aja${office}
-        WHERE id = $1`,
-        [id]
+          pense_aja.pense_aja_dass
+        WHERE id = $1 AND unidade_dass = $2`,
+        [id, dassOffice]
       );
 
       if (data.rows.length === 0) {
@@ -382,87 +291,199 @@ export const PenseAjaService = {
       return data.rows[0];
     } catch (error) {
       logger.error("Pense-aja", `Erro ao consultar pense aja por ID: ${error}`);
-      throw new CustomError("Erro ao consultar pense aja por ID.");
-    } finally {
-      await client.release();
-    }
-  },
-
-  async evaluatePenseAja(id: string, evaluationData: EvaluationData) {
-    checkDassOffice(evaluationData.dassOffice);
-    const office =
-      evaluationData.dassOffice !== "SEST"
-        ? "_" + evaluationData.dassOffice
-        : "";
-    const client = await pool.connect();
-
-    const checkUserRole = (role: string) => {
-      return role.includes("analista")
-        ? "status_analista = $1, analista_avaliador = $2, data_avaanalista = NOW(), justificativa_analista = $3, "
-        : "status_gerente = $1, gerente_avaliador = $2, data_aprogerente = NOW(), justificativa_gerente = $3, ";
-    };
-
-    try {
-      await client.query("BEGIN");
-      const statusAvaliacao = evaluationData.status;
-      const avaliador = evaluationData.usuario;
-      const userRole = evaluationData.funcao.toLowerCase();
-
-      let params: Array<string | boolean> = [];
-      let query = `UPDATE pense_aja.pense_aja${office} SET `;
-
-      query += checkUserRole(userRole);
-      params.push(statusAvaliacao);
-      params.push(avaliador);
-      params.push(evaluationData.justificativa ?? "Sem justificativa.");
-
-      if (statusAvaliacao === "EXCLUIR") {
-        if (userRole.includes("gerente")) {
-          query += `excluido = 'S', updatedat = NOW() `;
-        } else {
-          throw new CustomError(
-            "Somente Gerentes podem excluir um registro pense e aja!",
-            403,
-            "Somente Gerentes podem excluir um registro pense e aja!"
-          );
-        }
-      } else {
-        query += `classificacao = $4, a3_mae = $5, em_espera = $6, replicavel = $7, updatedat = NOW() `;
-        params.push(evaluationData.avaliacao);
-        params.push(evaluationData.a3Mae || "");
-        params.push(evaluationData.emEspera);
-        params.push(evaluationData.replicavel);
-      }
-      query += `
-      WHERE id = $${params.length + 1} 
-      RETURNING id, data_realizada, fabrica, nome, matricula, setor, gerente, nome_projeto,
-      turno, situacao_anterior, situacao_atual, gerente_aprovador, analista_avaliador,
-      status_gerente, status_analista, em_espera, createdat AS criado;`;
-      params.push(id);
-
-      const result = await client.query(query, params);
-      if (result.rows.length === 0) {
-        await client.query("ROLLBACK");
-        throw new CustomError(
-          "Pense Aja não encontrado.",
-          404,
-          "Pense Aja não encontrado."
-        );
-      }
-      await client.query("COMMIT");
-
-      return result.rows[0];
-    } catch (error) {
-      await client.query("ROLLBACK");
-      logger.error("Pense-aja", `Erro ao avaliar pense aja: ${error}`);
-
       if (error instanceof CustomError) {
         throw error;
       } else {
-        throw new CustomError("Erro ao avaliar pense aja.");
+        throw new CustomError("Erro ao consultar pense aja.");
       }
     } finally {
       await client.release();
     }
   },
+
+  async evaluatePenseAja(
+    id: string,
+    {
+      dassOffice,
+      status,
+      usuario: avaliador,
+      funcao,
+      justificativa = 'Sem justificativa.',
+      avaliacao,
+      a3Mae = '',
+      emEspera,
+      replicavel
+    }: EvaluationData
+  ) {
+    checkDassOffice(dassOffice);
+    const client = await pool.connect();
+
+    // Identifica o papel do usuário
+    const role = funcao.toLowerCase();
+    const isAnalista = role.includes('analista');
+    const isGerente = role.includes('gerente');
+
+    try {
+      await client.query('BEGIN');
+
+      // Validar permissão para exclusão
+      if (status === 'exclude' && !isGerente) {
+        throw new CustomError(
+          'Somente Gerentes podem excluir um registro pense e aja!',
+          403,
+          'Somente Gerentes podem excluir um registro pense e aja!'
+        );
+      }
+
+      // Monta cláusulas de atualização e parâmetros dinamicamente
+      const clauses: string[] = [];
+      const params: Array<string | boolean> = [];
+      let idx = 1;
+
+      // Campos comuns a analista ou gerente
+      if (isAnalista) {
+        clauses.push(
+          `status_analista = $${idx++}`,
+          `analista_avaliador = $${idx++}`,
+          `data_avaanalista  = NOW()`,
+          `justificativa_analista = $${idx++}`
+        );
+        params.push(status, avaliador, justificativa);
+      } else {
+        clauses.push(
+          `status_gerente = $${idx++}`,
+          `gerente_avaliador = $${idx++}`,
+          `data_aprogerente = NOW()`,
+          `justificativa_gerente = $${idx++}`
+        );
+        params.push(status, avaliador, justificativa);
+      }
+
+      // Campos adicionais conforme o status
+      if (status === 'exclude') {
+        clauses.push(`excluido = true`);
+      } else {
+        clauses.push(
+          `classificacao = $${idx++}`,
+          `a3_mae        = $${idx++}`,
+          `em_espera    = $${idx++}`,
+          `replicavel   = $${idx++}`
+        );
+        params.push(avaliacao, a3Mae, emEspera, replicavel);
+      }
+
+      clauses.push(`updatedat = NOW()`);
+
+      const whereClause = `id = $${idx++} AND unidade_dass = $${idx++} AND excluido = false`;
+      params.push(id, dassOffice);
+
+      const sql = `
+      UPDATE pense_aja.pense_aja_dass
+      SET ${clauses.join(', ')}
+      WHERE ${whereClause}
+      RETURNING
+        id,
+        data_realizada,
+        fabrica,
+        nome,
+        matricula,
+        setor,
+        gerente,
+        nome_projeto,
+        turno,
+        situacao_anterior,
+        situacao_atual,
+        gerente_aprovador,
+        analista_avaliador,
+        status_gerente,
+        status_analista,
+        em_espera,
+        createdat AS criado;`;
+
+      const result = await client.query(sql, params);
+      if (result.rowCount === 0) {
+        await client.query('ROLLBACK');
+        throw new CustomError('Pense Aja não encontrado.', 404, 'Pense Aja não encontrado.');
+      }
+
+      await client.query('COMMIT');
+      return result.rows[0];
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error('PenseAjaService', `Erro ao avaliar Pense Aja: ${error}`);
+      throw error instanceof CustomError ? error : new CustomError('Erro ao avaliar Pense Aja.');
+    } finally {
+      client.release();
+    }
+  },
+
+  async buyProduct(dassOffice: string, product: Record<string, any>, colaboradorData: Record<string, any>, analista: Record<string, any>, userPoints: Record<string, any>) {
+    checkDassOffice(dassOffice);
+
+    const pontosRestantes = userPoints.pontos - userPoints.pontos_resgatados;
+
+    const client = await pool.connect();
+    try {
+      const getProduct = penseAjaProducts.find((p) => Number(p.id) === product.id);
+      if (!getProduct) {
+        throw new CustomError(
+          "Produto não encontrado.",
+          404,
+          "Produto não encontrado."
+        );
+      }
+
+      if (pontosRestantes < getProduct.points) {
+        throw new CustomError(
+          "Pontos insuficientes para resgatar o prêmio.",
+          400,
+          "Pontos insuficientes para resgatar o prêmio."
+        );
+      }
+
+      await client.query("BEGIN");
+
+      const params = [
+        colaboradorData.matricula,
+        colaboradorData.nome,
+        getProduct.name,
+        getProduct.points,
+        analista.analistaUser,
+        analista.analistaName,
+        dassOffice,
+      ];
+
+      const query = await client.query(`
+        INSERT INTO 
+        pense_aja.pense_aja_premios
+          (matricula, nome, premio_solicitado, pontos_premio_solicitado, usuario_entregador, nome_entregador, 
+          data_solicitacao, data_entrega, createdat, updatedat, unidade_dass)  
+        VALUES 
+          ($1, $2, $3, $4, $5, $6, NOW(), NOW(), NOW(), NOW(), $7)
+        RETURNING id
+      `, params)
+
+      if (query.rows.length === 0) {
+        await client.query("ROLLBACK");
+        throw new CustomError(
+          "Erro ao registrar prêmio.",
+          400,
+          "Erro ao inserir no banco de dados."
+        );
+      }
+
+      await client.query("COMMIT");
+      return query?.rows[0]?.id
+    } catch (error) {
+      await client.query("ROLLBACK");
+      logger.error("Pense-aja", `Erro ao comprar produto: ${error}`);
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        throw new CustomError("Erro ao comprar produto.");
+      }
+    } finally {
+      await client.release();
+    }
+  }
 };

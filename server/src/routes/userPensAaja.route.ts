@@ -38,33 +38,57 @@ router.get("/unidade/:registration", async (req: Request, res: Response, next: N
   try {
     const { registration } = req.params;
 
-    if (typeof registration !== "string") {
-      res.status(400).json({ message: "Dados inválidos. Registro deve ser uma string!" });
-      return;
-    }
-
-    const dassOffice = {
-      "3": "SEST",
-      "2": "SEST",
-      "4": "VDC",
-      "5": "ITB",
-    } as const;
-
-    type DassOfficeKey = keyof typeof dassOffice;
-    const firstDigit = registration.charAt(0);
-    let officeName;
-
-    if (firstDigit in dassOffice) {
-      officeName = dassOffice[firstDigit as DassOfficeKey];
-    } else {
+    const { userOffice, location } = await UserPenseaja.getUserOffice(registration);
+    if (!userOffice) {
       res.status(400).json({ message: "Registro inválido. Matrícula desconhecida!" });
-      return;
+      return
     }
 
-    res.status(200).json({ dassOffice: officeName, message: `Matrícula validada, unidade: ${officeName}` });
+    res.status(200).json({ dassOffice: userOffice, message: `Matrícula validada, unidade: ${location ?? userOffice}` });
   } catch (error) {
     next(error);
   }
 });
+
+// Atualiza perfil do usuario (Notificações)
+router.put("/:registration", verifyToken, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { registration } = req.params;
+    const { formData, dassOffice } = req.body;
+
+    if (registration.length < 7) {
+      res.status(400).json({ message: "Matricula inválida. O tamanho mínimo deve ser 7." });
+      return;
+    }
+
+    let matricula = Number(registration);
+    if (!matricula) {
+      res.status(400).json({ message: "Dados inválidos. Matrícula deve ser um número válido!" });
+      return;
+    }
+
+    if (typeof formData?.email !== "string") {
+      res.status(400).json({ message: "Email Inválido!" });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData?.email)) {
+      res.status(400).json({ message: "Email inválido!" });
+      return;
+    }
+
+    if (!formData?.email.includes("@grupodass.com.br")) {
+      res.status(400).json({ message: "Insira um email do Grupo Dass!" });
+      return;
+    }
+
+    const updatedUser = await UserPenseaja.updateUserData(matricula, dassOffice, formData);
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    next(error)
+  }
+})
 
 export default router;

@@ -5,8 +5,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/penseAja.js",
-    "dev": "DEV_ENV=development nodemon --watch './**/*.ts' --exec ts-node ./penseAja.ts",
-    "dev-win": "set DEV_ENV=development && nodemon --watch './**/*.ts' --exec ts-node ./penseAja.ts"
+    "dev": "DEV_ENV=development nodemon --watch './**/*.ts' --exec ts-node ./src/penseAja.ts",
+    "dev-win": "set DEV_ENV=development && nodemon --watch './**/*.ts' --exec ts-node ./src/penseAja.ts"
   },
   "keywords": [],
   "author": "",

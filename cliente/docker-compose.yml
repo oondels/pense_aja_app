@@ -1,0 +1,10 @@
+services:
+  vue-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "5050:80"
+    restart: unless-stopped

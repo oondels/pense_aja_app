@@ -9,16 +9,14 @@ router.post("/improve-text", async (req: Request, res: Response, next: NextFunct
   try {
     const { situationBefore, situationNow, projectName } = req.body
 
-    // const params = { situationBefore, situationNow, projectName };
+    const hasInvalidParam = Object.entries(req.body).some(
+      ([key, value]) => typeof value !== 'string' || value.trim() === ''
+    );
 
-    // const hasInvalidParam = Object.entries(params).some(
-    //   ([key, value]) => typeof value !== 'string' || value.trim() === ''
-    // );
-
-    // if (hasInvalidParam) {
-    //   res.status(400).json({ message: "Parâmetros incorretos. Todos os campos devem ser strings e não podem estar vazios." });
-    //   return;
-    // }
+    if (hasInvalidParam) {
+      res.status(400).json({ message: "Parâmetros incorretos. Todos os campos devem ser textos e não podem estar vazios." });
+      return;
+    }
 
     const result = await AIService.improveText(situationBefore, situationNow, projectName)
 
