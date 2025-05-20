@@ -13,6 +13,7 @@ const checkDassOffice = (dassOffice: string) => {
 export const UserPenseaja = {
   async getUserData(registration: number, dassOffice: string) {
     checkDassOffice(dassOffice);
+    const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
 
     const client = await pool.connect();
     try {
@@ -29,7 +30,7 @@ export const UserPenseaja = {
           COALESCE(pa.classificacoes_json, '{}'::jsonb) AS classificacoes_pense_aja,
           ae.email,
           ae.authorized_notifications_apps
-        FROM colaborador.lista_funcionario lf
+        FROM colaborador.lista_funcionario${office} lf
         LEFT JOIN (
           SELECT matricula, SUM(valor) AS soma_pontos
           FROM pense_aja.pense_aja_pontos

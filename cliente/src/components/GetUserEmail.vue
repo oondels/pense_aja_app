@@ -31,7 +31,15 @@
               placeholder="Seu email"
               v-model="email"
               :disabled="loading"
-              @keyup.enter="submitEmail"
+            />
+            
+            <input
+              class="mt-2"
+              type="email"
+              id="email-input"
+              placeholder="Matrícula"
+              v-model="userMatricula"
+              :disabled="loading"
             />
             <div class="email-validation-message">{{ validationMessage }}</div>
           </div>
@@ -77,6 +85,7 @@ const email = ref("");
 const validationMessage = ref("");
 const loading = ref(false);
 const year = ref(new Date().getFullYear());
+const userMatricula = ref(null)
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -124,8 +133,7 @@ async function submitEmail() {
     return;
   }
 
-  const userMatricula = sessionStorage.getItem("matricula");
-  if (!userMatricula) {
+  if (!userMatricula.value) {
     validationMessage.value = "Erro ao buscar matrícula do usuário, contate equipe de automação!";
     animateShake();
     return;
@@ -134,8 +142,10 @@ async function submitEmail() {
   let message = "";
   let error = false;
   try {
-    const response = await authApi.put(`/user/email/${userMatricula}`, {
+    const dassOffice = localStorage.getItem("unidadeDass")
+    const response = await authApi.put(`/user/email/${userMatricula.value}`, {
       email: userEmail,
+      dassOffice: dassOffice
     });
 
     message = response.data.message;
