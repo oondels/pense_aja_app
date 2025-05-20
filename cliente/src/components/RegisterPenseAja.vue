@@ -103,6 +103,7 @@
                     class="mt-1 w-full"
                   />
                 </div>
+
                 <div>
                   <label for="penseaja-data" class="block text-sm font-medium text-gray-700"> Data </label>
                   <v-text-field
@@ -118,18 +119,33 @@
               </div>
 
               <!-- Setor -->
-              <div>
-                <label for="penseaja-projeto-area" class="block text-sm font-medium text-gray-700">
-                  Onde será implementado essa melhoria?
-                </label>
-                <v-combobox
-                  v-model="penseAjaData.setor"
-                  :items="setoresDass"
-                  label="Selecione o Setor"
-                  variant="outlined"
-                  color="red"
-                  class="mt-1 w-full"
-                />
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="penseaja-projeto-area" class="block text-sm font-medium text-gray-700">
+                    Onde será implementado essa melhoria?
+                  </label>
+                  <v-select
+                    v-model="penseAjaData.setor"
+                    :items="setoresDass"
+                    label="Selecione o Setor"
+                    variant="outlined"
+                    color="red"
+                    class="mt-1 w-full"
+                  />
+                </div>
+
+                <div>
+                  <label for="penseaja-projeto-area" class="block text-sm font-medium text-gray-700">
+                    Em qual fábrica?
+                  </label>
+                  <v-select
+                    variant="outlined"
+                    color="red"
+                    class="mt-1 w-full"
+                    label="Fábrica"
+                    :items="['Fábrica 1', 'Fábrica 2', 'Fábrica 3']"
+                  ></v-select>
+                </div>
               </div>
 
               <!-- Situações -->
@@ -157,10 +173,48 @@
                 <ConfettiExplosion v-if="showExplosion" :particleSize="12" :particleCount="200" :duration="3000" />
               </div>
 
+              <!-- Ganhos -->
+              <div>
+                <div class="flex items-center mb-2">
+                  <input v-model="ganhos" type="checkbox" id="ganho-penseaja" class="mr-2" />
+                  <label for="ganho-penseaja" class="text-sm font-medium text-gray-700">
+                    O que ganhei com essa melhoria?
+                  </label>
+                </div>
+                <div v-if="ganhos" class="space-y-4">
+                  <div>
+                    <v-select
+                      v-model="penseAjaData.ganhos.values"
+                      :items="['Dinheiro', 'Tempo', 'Processo', 'Qualidade', 'Espaço Físico (m²)']"
+                      label="Selecione os ganhos"
+                      multiple
+                      variant="outlined"
+                      color="red"
+                      class="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <textarea
+                      v-model="penseAjaData.ganhos.justificativa"
+                      id="ganhos-descricao"
+                      placeholder="Explique quais ganhos foram obtidos..."
+                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                    ></textarea>
+                    <p class="mt-1 text-xs text-gray-500 flex items-start gap-1">
+                      <i class="bi bi-lightbulb-fill text-yellow-400"></i>
+                      Mencione dados e resultados que demonstrem o impacto positivo.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <!-- IA Enhance -->
               <div class="relative">
                 <button
                   @click="handleImproveText"
+                  @mouseenter="showTooltip = true"
+                  @mouseleave="showTooltip = false"
                   type="button"
                   :disabled="loadingImprove"
                   :class="[
@@ -173,6 +227,7 @@
                   <span v-if="!loadingImprove">Melhorar texto com IA</span>
                   <span v-else class="spinner"></span>
                 </button>
+                
                 <div
                   v-if="showTooltip"
                   class="absolute -top-16 left-1/2 transform -translate-x-1/2 w-60 bg-white shadow-lg rounded-lg p-3 text-sm text-gray-700 border-l-4 border-red-500"
@@ -207,41 +262,6 @@
                   color="red"
                   class="w-full"
                 />
-              </div>
-
-              <!-- Ganhos -->
-              <div>
-                <div class="flex items-center mb-2">
-                  <input v-model="ganhos" type="checkbox" id="ganho-penseaja" class="mr-2" />
-                  <label for="ganho-penseaja" class="text-sm font-medium text-gray-700">
-                    O que ganhei com essa melhoria?
-                  </label>
-                </div>
-                <div v-if="ganhos" class="space-y-4">
-                  <div>
-                    <v-combobox
-                      v-model="penseAjaData.ganhos.values"
-                      :items="['Dinheiro', 'Tempo', 'Processo', 'Qualidade']"
-                      label="Selecione os ganhos"
-                      multiple
-                      variant="outlined"
-                      color="red"
-                      class="w-full"
-                    />
-                  </div>
-                  <div>
-                    <textarea
-                      v-model="penseAjaData.ganhos.justificativa"
-                      id="ganhos-descricao"
-                      placeholder="Explique quais ganhos foram obtidos..."
-                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500"
-                    ></textarea>
-                    <p class="mt-1 text-xs text-gray-500 flex items-start gap-1">
-                      <i class="bi bi-lightbulb-fill text-yellow-400"></i>
-                      Mencione dados e resultados que demonstrem o impacto positivo.
-                    </p>
-                  </div>
-                </div>
               </div>
 
               <!-- Submit -->
@@ -385,7 +405,19 @@ const handleRegister = async () => {
   registerPenseAja(penseAjaData.value, registrationEntry.value, emit, userData.value, showExplosion);
 };
 
-const setoresDass = ["Montagem", "Apoio", "Costura", "Manutenção"];
+const setoresDass = [
+  "Corte (Recorte, chanfração)",
+  "Serigrafia",
+  "Frequência",
+  "Fuse",
+  "Bordado",
+  "Pré Fabricado",
+  "Pré Costura",
+  "Montagem",
+  "Costura",
+  "Manutenção",
+  "Setor de Apoio",
+];
 </script>
 
 <style scoped>
