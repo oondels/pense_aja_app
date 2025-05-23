@@ -35,6 +35,7 @@ interface PenseAjaData {
   ganhos?: Array<string>;
   ganhoDetalhes?: string;
   areaMelhoria: string;
+  factory: string
 }
 
 interface EvaluationData {
@@ -170,7 +171,8 @@ export const PenseAjaService = {
       !data.gerente ||
       !data.setor ||
       !data.turno ||
-      !data.areaMelhoria
+      !data.areaMelhoria ||
+      !data.factory
     ) {
       throw new Error("Campos obrigatórios ausentes ou inválidos.");
     }
@@ -218,6 +220,7 @@ export const PenseAjaService = {
         data.ganhoDetalhes || "",
         data.areaMelhoria,
         dassOffice,
+        data.factory
       ];
 
       const newPenseAja = await client.query(
@@ -225,10 +228,10 @@ export const PenseAjaService = {
         INSERT INTO pense_aja.pense_aja_dass (
           matricula, nome, turno, setor, gerente, nome_projeto, data_realizada,
           situacao_anterior, situacao_atual, super_producao, transporte, processamento, movimento,
-          estoque, espera, talento, retrabalho,
-          a3_mae, ganhos, outros_ganhos, fabrica, unidade_dass, createdat, updatedat, lider
+          estoque, espera, talento, retrabalho, a3_mae, ganhos, outros_ganhos, setor_melhoria, unidade_dass, 
+          createdat, updatedat, lider, fabrica
         ) VALUES
-         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW(), '')
+         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW(), '', $23)
         RETURNING id, nome, nome_projeto, ganhos;`,
         params
       );
@@ -405,6 +408,25 @@ export const PenseAjaService = {
         await client.query('ROLLBACK');
         throw new CustomError('Pense Aja não encontrado.', 404, 'Pense Aja não encontrado.');
       }
+
+      let classificacao
+      switch (avaliacao.toString()) {
+        case '1':
+          classificacao = 'C'
+          break
+        case '2':
+          classificacao = 'B'
+          break
+        case '3':
+          classificacao = 'A'
+          break
+      }
+
+      await client.query(`
+        INSERT INTO pense_aja.pense_aja_pontos (id_pense_aja, matricula, nome, valor, gerente, classificacao, createdat, updatedat)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+        RETURNING id;
+      `, [result.rows[0].id, result.rows[0].matricula, result.rows[0].nome, avaliacao, result.rows[0].gerente, classificacao]);
 
       await client.query('COMMIT');
       return result.rows[0];

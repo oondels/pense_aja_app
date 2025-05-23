@@ -1020,8 +1020,17 @@ const handleEvaluationValue = async (action, penseAja, dialog) => {
     dassOffice: dassOffice,
   };
 
-  await evaluatePenseAja(evaluationData, notification, dialog);
-  await loadContent();
+  const avaliacao = await evaluatePenseAja(evaluationData, notification, dialog)
+  if (avaliacao) {
+    await loadContent();
+    evaluationValue.value = null;
+    emEspera.value = false;
+    replicavel.value = false;
+    a3PenseAja.value = null;
+    justification.value = null;
+    reprove.value = false;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 };
 
 const handleResizeThrottled = throttle(handleResize, 200);

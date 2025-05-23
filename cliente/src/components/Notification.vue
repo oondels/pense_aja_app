@@ -2,7 +2,7 @@
   <div
     id="notification"
     :class="[
-      'fixed top-0 left-1/2 transform -translate-x-1/2 -translate-y-full w-[90%] max-w-[400px] rounded-xl shadow-2xl z-[10000] opacity-0 pointer-events-none transition-transform duration-700 ease-in-out',
+      'fixed top-0 left-1/2 transform -translate-x-1/2 -translate-y-full w-[90%] max-w-[400px] rounded-xl shadow-2xl z-[100000] opacity-0 pointer-events-none transition-transform duration-700 ease-in-out',
       showNotification ? '!translate-y-8 opacity-100 pointer-events-auto' : '',
       notificationBg
     ]"
@@ -71,5 +71,7 @@ defineExpose({
 #notification {
   transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1),
               opacity 0.6s ease-in-out;
+  pointer-events: none;
+  user-select: none;
 }
 </style>

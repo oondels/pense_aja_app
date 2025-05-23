@@ -6,7 +6,7 @@ export const evaluatePenseAja = async (evaluationData, notification, dialog) => 
       "warning",
       "Atenção!",
       "Campos obrigatórios estão ausentes: Avaliação",
-      2000
+      3500
     );
     return;
   }
@@ -16,7 +16,7 @@ export const evaluatePenseAja = async (evaluationData, notification, dialog) => 
       "warning",
       "Atenção!",
       "Campos obrigatórios estão ausentes: Justificativa",
-      2000
+      3500
     );
     return;
   }
@@ -27,13 +27,14 @@ export const evaluatePenseAja = async (evaluationData, notification, dialog) => 
       evaluationData
     );
 
-    notification.value.showPopup("success", "Sucesso!", response.data.message, 2000);
+    notification.value.showPopup("success", "Sucesso!", response.data.message, 3500);
     dialog.value = false
+    return response.data;
   } catch (error) {
     if (error.status === 500) {
-      notification.value.showPopup("error", "Erro!", error?.response?.data?.message || "Erro ao avaliar pense aja, tente novamente!", 3000);
+      notification.value.showPopup("error", "Erro!", error?.response?.data?.message || "Erro ao avaliar pense aja, tente novamente!", 3500);
     } else {
-      notification.value.showPopup("warning", "Aviso!", error?.response?.data?.message || "Erro ao avaliar pense aja, tente novamente!", 3000);
+      notification.value.showPopup("warning", "Aviso!", error?.response?.data?.message || "Erro ao avaliar pense aja, tente novamente!", 3500);
     }
     console.error("Erro ao avaliar pense aja.", error);
   }

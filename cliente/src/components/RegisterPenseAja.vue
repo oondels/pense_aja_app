@@ -126,7 +126,7 @@
                   </label>
                   <v-select
                     v-model="penseAjaData.setor"
-                    :items="setoresDass"
+                    :items="setoresDass[unidadeDass]"
                     label="Selecione o Setor"
                     variant="outlined"
                     color="red"
@@ -144,6 +144,7 @@
                     class="mt-1 w-full"
                     label="Fábrica"
                     :items="['Fábrica 1', 'Fábrica 2', 'Fábrica 3']"
+                    v-model="penseAjaData.factory"
                   ></v-select>
                 </div>
               </div>
@@ -227,7 +228,7 @@
                   <span v-if="!loadingImprove">Melhorar texto com IA</span>
                   <span v-else class="spinner"></span>
                 </button>
-                
+
                 <div
                   v-if="showTooltip"
                   class="absolute -top-16 left-1/2 transform -translate-x-1/2 w-60 bg-white shadow-lg rounded-lg p-3 text-sm text-gray-700 border-l-4 border-red-500"
@@ -342,6 +343,50 @@ const serachUser = async (e) => {
   }
 };
 
+const unidadeDass = localStorage.getItem("unidadeDass");
+const setoresDass = {
+  SEST: [
+    "Corte (Recorte, chanfração)",
+    "Serigrafia",
+    "Frequência",
+    "Fuse",
+    "Bordado",
+    "Pré Fabricado",
+    "Pré Costura",
+    "Montagem",
+    "Costura",
+    "Manutenção",
+    "Setor de Apoio",
+  ],
+  VDC: [  
+    "Administração",
+    "Agrupamento Pré",
+    "Almoxarifado",
+    "Aprendizes",
+    "Assistência Médica",
+    "Automação de Processos",
+    "Bamburi/Cilindro",
+    "Caldeira",
+    "Cilindro",
+    "Cold Shot",
+    "Conformação Fábrica",
+    "Corte de EVA",
+    "Departamento Pessoal",
+    "Distribuição - Fabrica 1",
+    "EVA Injetado",
+    "EVA Pré-conformado",
+    "Expedição Fab 1",
+    "Fábrica de Protótipo",
+    "Kneader",
+    "Laboratório",
+    "Lavar EVA",
+    "Limpeza",
+    "Manutenção",
+    "Matrizaria",
+    "Melhoria Contínua",
+  ],
+};
+
 const today = ref(new Date().toISOString().split("T")[0]);
 const penseAjaData = ref({
   projectName: null,
@@ -351,6 +396,7 @@ const penseAjaData = ref({
   setor: null,
   perdas: [],
   ganhos: { values: [], justificativa: null },
+  factory: null
 });
 
 const replaceText = async (text, component) => {
@@ -402,22 +448,9 @@ const handleRegister = async () => {
     });
     return;
   }
+
   registerPenseAja(penseAjaData.value, registrationEntry.value, emit, userData.value, showExplosion);
 };
-
-const setoresDass = [
-  "Corte (Recorte, chanfração)",
-  "Serigrafia",
-  "Frequência",
-  "Fuse",
-  "Bordado",
-  "Pré Fabricado",
-  "Pré Costura",
-  "Montagem",
-  "Costura",
-  "Manutenção",
-  "Setor de Apoio",
-];
 </script>
 
 <style scoped>

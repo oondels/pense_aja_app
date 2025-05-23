@@ -12,7 +12,7 @@ export const registerPenseAja = async (penseAjaData, matricula, emit, userData, 
       type: "warning",
       title: "Aviso!",
       message: "Preencha todos os campos necessários.",
-      time: 3000
+      time: 3500
     });
     return;
   }
@@ -22,7 +22,7 @@ export const registerPenseAja = async (penseAjaData, matricula, emit, userData, 
       type: "warning",
       title: "Aviso!",
       message: "Dados do usuário não encontrados.",
-      time: 3000
+      time: 3500
     });
     return;
   }
@@ -57,6 +57,7 @@ export const registerPenseAja = async (penseAjaData, matricula, emit, userData, 
       ganhos: penseAjaData.ganhos?.values || [],
       ganhoDetalhes: penseAjaData.ganhos?.justificativa || "",
       areaMelhoria: penseAjaData.setor,
+      factory: penseAjaData.factory,
     });
 
     emit("notify", {
