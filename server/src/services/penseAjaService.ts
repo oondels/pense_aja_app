@@ -161,20 +161,23 @@ export const PenseAjaService = {
   async createPenseAja(data: PenseAjaData, dassOffice: string) {
     checkDassOffice(dassOffice);
 
-    if (
-      !data.nome ||
-      !data.createDate ||
-      !data.situationBefore ||
-      !data.situationNow ||
-      !data.registration ||
-      !data.userName ||
-      !data.gerente ||
-      !data.setor ||
-      !data.turno ||
-      !data.areaMelhoria ||
-      !data.factory
-    ) {
-      throw new Error("Campos obrigatórios ausentes ou inválidos.");
+    const requiredFields: Array<keyof PenseAjaData> = [
+      "nome",
+      "createDate",
+      "situationBefore",
+      "situationNow",
+      "registration",
+      "userName",
+      "gerente",
+      "setor",
+      "turno",
+      "areaMelhoria",
+      "factory"
+    ];
+
+    const missingFields = requiredFields.filter(field => !data[field]);
+    if (missingFields.length > 0) {
+      throw new Error(`Campos obrigatórios ausentes ou inválidos: ${missingFields.join(", ")}`);
     }
 
     if (!data.perdas) {
