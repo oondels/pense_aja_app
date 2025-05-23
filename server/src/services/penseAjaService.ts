@@ -355,7 +355,7 @@ export const PenseAjaService = {
       } else {
         clauses.push(
           `status_gerente = $${idx++}`,
-          `gerente_avaliador = $${idx++}`,
+          `gerente_aprovador = $${idx++}`,
           `data_aprogerente = NOW()`,
           `justificativa_gerente = $${idx++}`
         );
