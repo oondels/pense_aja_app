@@ -377,8 +377,9 @@ export const PenseAjaService = {
 
       clauses.push(`updatedat = NOW()`);
 
-      const whereClause = `id = $${idx++} AND unidade_dass = $${idx++} AND excluido = false`;
+      const whereClause = `id = $${idx++} AND unidade_dass = $${idx++} AND excluido = false`;      
       params.push(id, dassOffice);
+
 
       const sql = `
       UPDATE pense_aja.pense_aja_dass

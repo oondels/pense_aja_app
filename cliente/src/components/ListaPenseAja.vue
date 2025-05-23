@@ -779,8 +779,8 @@ const beforeAfter = ref(false);
 const penseAjaCount = ref(0);
 const penseAjas = ref([]);
 const loading = ref(false);
+const dassOffice = localStorage.getItem("unidadeDass");
 const loadContent = async () => {
-  const dassOffice = localStorage.getItem("unidadeDass");
   if (!dassOffice) {
     console.error("Unidade não encontrada no localStorage");
     notification.value.showPopup(
@@ -1008,7 +1008,6 @@ const handleEvaluationValue = async (action, penseAja, dialog) => {
     justificativa.value.focus();
   }
 
-  const dassOffice = "SEST";
   const evaluationData = {
     id: penseAja.id,
     status: action,
