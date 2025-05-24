@@ -73,7 +73,7 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
     const { pense_aja, userManager } = await PenseAjaService.createPenseAja(penseajaData, dassOffice);
 
     // Verifica se encontra gerente do usuário e se o gerente esta com notificações ativas
-    if (userManager) {     
+    if (userManager) {
       // const notificationEnabled = await NotificationService.isNotificationEnabled(userManager.matricula, dassOffice);
       const notificationEnabled = await NotificationService.isNotificationEnabled(userManager.matricula, dassOffice);
 
@@ -93,6 +93,7 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
 
     res.status(201).json({
       message: message,
+      id: pense_aja.id,
     });
   } catch (error) {
     next(error);
@@ -123,22 +124,30 @@ router.put("/avaliar/:id", verifyToken, roleVerificationAccess, async (req: Requ
       ...data,
     };
 
-    const newEvaluation = await PenseAjaService.evaluatePenseAja(
+    const { newEvaluation, role } = await PenseAjaService.evaluatePenseAja(
       id,
       evaluationData
     );
 
-    const userEmail = await UserPenseaja.getUserEmail(evaluationData.matricula, data.dassOffice)
-
-    let avaliadorNome
-    if (newEvaluation.analista_avaliador) {
+    // Coleta email do usuario que cadastrou o Pense Aja
+    const c = newEvaluation.matricula;
+    const userEmail = await UserPenseaja.getUserEmail(newEvaluation.matricula, data.dassOffice)
+    
+    let avaliadorNome;
+    if (role.includes("gerente")) {
+      avaliadorNome = newEvaluation.gerente_aprovador
+      
+        .split(".")
+        .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
+    } else {
       avaliadorNome = newEvaluation.analista_avaliador
         .split(".")
         .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
         .join(" ");
     }
 
-    const notificationEnabled = await NotificationService.isNotificationEnabled(evaluationData.matricula, data.dassOffice);
+    const notificationEnabled = await NotificationService.isNotificationEnabled(newEvaluation.matricula, data.dassOffice);
     if (userEmail && notificationEnabled) {
       await NotificationService.sendNotification({
         to: userEmail.email,

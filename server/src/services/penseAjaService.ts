@@ -114,6 +114,8 @@ export const PenseAjaService = {
           turno,
           situacao_anterior,
           situacao_atual,
+          ganhos,
+          outros_ganhos,
           gerente_aprovador,
           analista_avaliador,
           status_gerente,
@@ -307,6 +309,7 @@ export const PenseAjaService = {
     }
   },
 
+  //! FIX: Corrigir logica de avaliação, se um gerente reprovar um pense aja, verificar se o analista ja aprovou e retirar a pontuacao
   async evaluatePenseAja(
     id: string,
     {
@@ -328,16 +331,17 @@ export const PenseAjaService = {
     const role = funcao.toLowerCase();
     const isAnalista = role.includes('analista');
     const isGerente = role.includes('gerente');
+    const isAdmin = role.includes('automacao');
 
     try {
       await client.query('BEGIN');
 
       // Validar permissão para exclusão
-      if (status === 'exclude' && !isGerente) {
+      if (status === 'exclude' && (!isGerente && !isAdmin)) {
         throw new CustomError(
-          'Somente Gerentes podem excluir um registro pense e aja!',
+          'Somente Gerentes e Administradores podem excluir um registro pense e aja!',
           403,
-          'Somente Gerentes podem excluir um registro pense e aja!'
+          'Somente Gerentes e Administradores podem excluir um registro pense e aja!'
         );
       }
 
@@ -380,9 +384,8 @@ export const PenseAjaService = {
 
       clauses.push(`updatedat = NOW()`);
 
-      const whereClause = `id = $${idx++} AND unidade_dass = $${idx++} AND excluido = false`;      
+      const whereClause = `id = $${idx++} AND unidade_dass = $${idx++} AND excluido = false`;
       params.push(id, dassOffice);
-
 
       const sql = `
       UPDATE pense_aja.pense_aja_dass
@@ -414,26 +417,29 @@ export const PenseAjaService = {
       }
 
       let classificacao
-      switch (avaliacao.toString()) {
-        case '1':
-          classificacao = 'C'
-          break
-        case '2':
-          classificacao = 'B'
-          break
-        case '3':
-          classificacao = 'A'
-          break
+      /// TODO: Melhorar verificacao de status para não ficar hardcoded
+      if (status !== 'exclude') {
+        switch (avaliacao?.toString()) {
+          case '1':
+            classificacao = 'C'
+            break
+          case '2':
+            classificacao = 'B'
+            break
+          case '3':
+            classificacao = 'A'
+            break
+        }
       }
 
       await client.query(`
         INSERT INTO pense_aja.pense_aja_pontos (id_pense_aja, matricula, nome, valor, gerente, classificacao, createdat, updatedat)
         VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
         RETURNING id;
-      `, [result.rows[0].id, result.rows[0].matricula, result.rows[0].nome, avaliacao, result.rows[0].gerente, classificacao]);
+      `, [result.rows[0].id, result.rows[0].matricula, result.rows[0].nome, avaliacao ?? 0, result.rows[0].gerente, classificacao ?? 'C']);
 
       await client.query('COMMIT');
-      return result.rows[0];
+      return { newEvaluation: result.rows[0], role }
     } catch (error) {
       await client.query('ROLLBACK');
       logger.error('PenseAjaService', `Erro ao avaliar Pense Aja: ${error}`);
