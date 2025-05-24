@@ -325,19 +325,29 @@ export const PenseAjaService = {
     }: EvaluationData
   ) {
     checkDassOffice(dassOffice);
+
     const client = await pool.connect();
 
-    // Identifica o papel do usuário
+    // role detection
     const role = funcao.toLowerCase();
     const isAnalista = role.includes('analista');
     const isGerente = role.includes('gerente');
     const isAdmin = role.includes('automacao');
 
+    // constants for clarity
+    const EXCLUDE = 'exclude';
+    const REPROVE = 'reprove';
+    const CLASSIFICATION_MAP: Record<string, string> = {
+      '1': 'C',
+      '2': 'B',
+      '3': 'A'
+    };
+
     try {
       await client.query('BEGIN');
 
-      // Validar permissão para exclusão
-      if (status === 'exclude' && (!isGerente && !isAdmin)) {
+      // only managers and admins can delete
+      if (status === EXCLUDE && !(isGerente || isAdmin)) {
         throw new CustomError(
           'Somente Gerentes e Administradores podem excluir um registro pense e aja!',
           403,
@@ -345,109 +355,140 @@ export const PenseAjaService = {
         );
       }
 
-      // Monta cláusulas de atualização e parâmetros dinamicamente
+      // build SET clauses and parameters
       const clauses: string[] = [];
       const params: Array<string | boolean> = [];
       let idx = 1;
 
-      // Campos comuns a analista ou gerente
+      // role‐specific fields
       if (isAnalista) {
         clauses.push(
-          `status_analista = $${idx++}`,
-          `analista_avaliador = $${idx++}`,
-          `data_avaanalista  = NOW()`,
-          `justificativa_analista = $${idx++}`
+          `status_analista      = $${idx}`,
+          `analista_avaliador   = $${idx + 1}`,
+          `data_avaanalista     = NOW()`,
+          `justificativa_analista = $${idx + 2}`
         );
         params.push(status, avaliador, justificativa);
+        idx += 3;
       } else {
         clauses.push(
-          `status_gerente = $${idx++}`,
-          `gerente_aprovador = $${idx++}`,
-          `data_aprogerente = NOW()`,
-          `justificativa_gerente = $${idx++}`
+          `status_gerente       = $${idx}`,
+          `gerente_aprovador    = $${idx + 1}`,
+          `data_aprogerente     = NOW()`,
+          `justificativa_gerente = $${idx + 2}`
         );
         params.push(status, avaliador, justificativa);
+        idx += 3;
       }
 
-      // Campos adicionais conforme o status
-      if (status === 'exclude') {
+      // status‐dependent fields
+      if (status === EXCLUDE) {
         clauses.push(`excluido = true`);
       } else {
         clauses.push(
-          `classificacao = $${idx++}`,
-          `a3_mae        = $${idx++}`,
-          `em_espera    = $${idx++}`,
-          `replicavel   = $${idx++}`
+          `classificacao = $${idx}`,
+          `a3_mae        = $${idx + 1}`,
+          `em_espera     = $${idx + 2}`,
+          `replicavel    = $${idx + 3}`
         );
         params.push(avaliacao, a3Mae, emEspera, replicavel);
+        idx += 4;
       }
 
+
+
+      // always update timestamp
       clauses.push(`updatedat = NOW()`);
 
-      const whereClause = `id = $${idx++} AND unidade_dass = $${idx++} AND excluido = false`;
+      // WHERE clause
+      const whereSql = `id = $${idx} AND unidade_dass = $${idx + 1} AND excluido = false`;
       params.push(id, dassOffice);
 
       const sql = `
-      UPDATE pense_aja.pense_aja_dass
-      SET ${clauses.join(', ')}
-      WHERE ${whereClause}
-      RETURNING
-        id,
-        data_realizada,
-        fabrica,
-        nome,
-        matricula,
-        setor,
-        gerente,
-        nome_projeto,
-        turno,
-        situacao_anterior,
-        situacao_atual,
-        gerente_aprovador,
-        analista_avaliador,
-        status_gerente,
-        status_analista,
-        em_espera,
-        createdat AS criado;`;
+        UPDATE pense_aja.pense_aja_dass
+        SET ${clauses.join(', ')}
+        WHERE ${whereSql}
+        RETURNING
+          id,
+          data_realizada,
+          fabrica,
+          nome,
+          matricula,
+          setor,
+          gerente,
+          nome_projeto,
+          turno,
+          situacao_anterior,
+          situacao_atual,
+          gerente_aprovador,
+          analista_avaliador,
+          status_gerente,
+          status_analista,
+          em_espera,
+          createdat AS criado;
+    `;
+
 
       const result = await client.query(sql, params);
       if (result.rowCount === 0) {
-        await client.query('ROLLBACK');
         throw new CustomError('Pense Aja não encontrado.', 404, 'Pense Aja não encontrado.');
       }
 
-      let classificacao
-      /// TODO: Melhorar verificacao de status para não ficar hardcoded
-      if (status !== 'exclude') {
-        switch (avaliacao?.toString()) {
-          case '1':
-            classificacao = 'C'
-            break
-          case '2':
-            classificacao = 'B'
-            break
-          case '3':
-            classificacao = 'A'
-            break
-        }
+      // if manager reproved or excluded, remove old points
+      console.log("Status: ", status);
+      console.log("rep:", REPROVE);
+      console.log("ex:", EXCLUDE);
+      console.log("Is gerente: ", isGerente);
+      
+      
+      if ((status === EXCLUDE || status === REPROVE) && isGerente) {
+        await client.query(
+          `DELETE FROM pense_aja.pense_aja_pontos
+         WHERE id_pense_aja = $1 AND matricula = $2`,
+          [id, result.rows[0].matricula]
+        );
       }
 
-      await client.query(`
-        INSERT INTO pense_aja.pense_aja_pontos (id_pense_aja, matricula, nome, valor, gerente, classificacao, createdat, updatedat)
-        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-        RETURNING id;
-      `, [result.rows[0].id, result.rows[0].matricula, result.rows[0].nome, avaliacao ?? 0, result.rows[0].gerente, classificacao ?? 'C']);
+      // map numeric evaluation to letter grade
+      const classificacao =
+        status !== EXCLUDE
+          ? CLASSIFICATION_MAP[avaliacao?.toString() ?? ''] ?? 'C'
+          : CLASSIFICATION_MAP[avaliacao?.toString() ?? ''] ?? 'C';
+
+      if (status !== EXCLUDE && status !== REPROVE && classificacao && avaliacao) {
+        // insert new points record
+        await client.query(
+          `
+            INSERT INTO pense_aja.pense_aja_pontos
+              (id_pense_aja, matricula, nome, valor, gerente, classificacao, createdat, updatedat)
+            VALUES
+              ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+            RETURNING id;
+          `,
+          [
+            result.rows[0].id,
+            result.rows[0].matricula,
+            result.rows[0].nome,
+            avaliacao ?? 0,
+            result.rows[0].gerente,
+            classificacao
+          ]
+        );
+      }
 
       await client.query('COMMIT');
-      return { newEvaluation: result.rows[0], role }
+      return { newEvaluation: result.rows[0], role };
     } catch (error) {
       await client.query('ROLLBACK');
       logger.error('PenseAjaService', `Erro ao avaliar Pense Aja: ${error}`);
-      throw error instanceof CustomError ? error : new CustomError('Erro ao avaliar Pense Aja.');
+      throw error instanceof CustomError
+        ? error
+        : new CustomError('Erro ao avaliar Pense Aja.');
     } finally {
       client.release();
     }
   },
+
 
   async buyProduct(dassOffice: string, product: Record<string, any>, colaboradorData: Record<string, any>, analista: Record<string, any>, userPoints: Record<string, any>) {
     checkDassOffice(dassOffice);

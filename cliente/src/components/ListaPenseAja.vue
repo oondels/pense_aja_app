@@ -676,7 +676,7 @@
                         <button
                           @click="handleEvaluationValue('exclude', item, isActive)"
                           class="avaliar-btn avaliar-btn-excluir"
-                          :class="setButtonPermission(item)"
+                          :class="setButtonPermission(item, true)"
                         >
                           <i class="bi bi-trash"></i>
                           <span>Excluir</span>
@@ -1027,11 +1027,11 @@ const setEvaluationValue = (value) => {
   evaluationValue.value = value;
 };
 
-const setButtonPermission = (penseAja) => {
+const setButtonPermission = (penseAja, _ = false) => {
   if (penseAja.status_analista && user.funcao?.toLowerCase().includes("analista")) {
     return "disabled";
   }
-  if (penseAja.status_gerente && user.funcao?.toLowerCase().includes("gerente")) {
+  if (penseAja.status_gerente && user.funcao?.toLowerCase().includes("gerente") && !_) {
     return "disabled";
   }
   return "";

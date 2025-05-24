@@ -130,7 +130,6 @@ router.put("/avaliar/:id", verifyToken, roleVerificationAccess, async (req: Requ
     );
 
     // Coleta email do usuario que cadastrou o Pense Aja
-    const c = newEvaluation.matricula;
     const userEmail = await UserPenseaja.getUserEmail(newEvaluation.matricula, data.dassOffice)
     
     let avaliadorNome;
