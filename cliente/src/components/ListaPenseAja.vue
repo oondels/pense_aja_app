@@ -530,7 +530,7 @@
                           </div>
                         </div>
                       </div>
-                      
+
                       <div v-if="item.ganhos" class="avaliar-card-ganhos-perdas">
                         <div class="avaliar-card-header">
                           <i class="mdi mdi-chart-line"></i>
@@ -576,6 +576,64 @@
                           <h3>Classificação do Pense<span class="avaliar-highlight">&</span>Aja</h3>
                         </div>
 
+                        <div class="flex flex-col items-center justify-center py-4">
+                          <div
+                            class="flex items-center gap-3 px-5 py-3 rounded-xl shadow border border-gray-200"
+                          >
+                            <span
+                              v-if="evaluationValue"
+                              :class="[
+                                'text-3xl font-bold tracking-wide',
+                                evaluationValue === 3
+                                  ? 'text-green-500'
+                                  : evaluationValue === 2
+                                  ? 'text-blue-500'
+                                  : 'text-yellow-500',
+                              ]"
+                            >
+                              {{
+                                Object.keys(classifications).find(
+                                  (key) => classifications[key].value === evaluationValue
+                                )
+                              }}
+                            </span>
+                            <span class="text-lg font-medium text-gray-700">
+                              {{
+                                evaluationValue
+                                  ? classifications[
+                                      Object.keys(classifications).find(
+                                        (key) => classifications[key].value === evaluationValue
+                                      )
+                                    ].name
+                                  : "Não avaliado"
+                              }}
+                            </span>
+                            <span v-if="evaluationValue" class="ml-2">
+                              <svg
+                                v-if="evaluationValue === 3"
+                                class="w-6 h-6 text-green-500"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  d="M10 15l-5.878 3.09 1.122-6.545L.488 6.91l6.561-.955L10 0l2.951 5.955 6.561.955-4.756 4.635 1.122 6.545z"
+                                />
+                              </svg>
+                              <svg
+                                v-else-if="evaluationValue === 2"
+                                class="w-6 h-6 text-blue-500"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <circle cx="10" cy="10" r="8" />
+                              </svg>
+                              <svg v-else class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <rect x="4" y="4" width="12" height="12" rx="3" />
+                              </svg>
+                            </span>
+                          </div>
+                        </div>
+
                         <div class="avaliar-nivel-content">
                           <div class="avaliar-rating">
                             <label
@@ -586,9 +644,13 @@
                               <input
                                 type="radio"
                                 name="avaliacao-pense-aja"
+                                :checked="evaluationValue === classification.value"
                                 @click="setEvaluationValue(classification.value)"
                               />
-                              <div class="avaliar-rating-display">
+                              <div
+                                :class="evaluationValue === classification.value ? `evaluated-${key}` : ''"
+                                class="avaliar-rating-display"
+                              >
                                 <span class="avaliar-rating-value">
                                   {{ key }}
                                 </span>
@@ -1024,6 +1086,10 @@ const opcoesA3 = [
 ];
 const justification = ref("");
 const setEvaluationValue = (value) => {
+  if (evaluationValue.value) {
+    evaluationValue.value = null;
+    return;
+  }
   evaluationValue.value = value;
 };
 
@@ -1088,7 +1154,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style>
-
 .penseaja-detail-page {
   width: 100%;
   min-height: 100vh;
@@ -1099,7 +1164,7 @@ onBeforeUnmount(() => {
   align-items: flex-start;
 }
 
-.loading-container, 
+.loading-container,
 .error-container {
   width: 100%;
   min-height: 60vh;
@@ -1473,7 +1538,8 @@ onBeforeUnmount(() => {
   padding: 20px;
 }
 
-.ganhos-section, .perdas-section {
+.ganhos-section,
+.perdas-section {
   margin-bottom: 24px;
   animation: slide-up 0.5s ease-out;
 }
@@ -1489,7 +1555,8 @@ onBeforeUnmount(() => {
   }
 }
 
-.ganhos-header, .perdas-header {
+.ganhos-header,
+.perdas-header {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1498,7 +1565,8 @@ onBeforeUnmount(() => {
   border-bottom: 2px solid rgba(0, 0, 0, 0.05);
 }
 
-.ganhos-title, .perdas-title {
+.ganhos-title,
+.perdas-title {
   font-size: 18px;
   font-weight: 600;
   color: #444;
@@ -1517,13 +1585,15 @@ onBeforeUnmount(() => {
   filter: drop-shadow(0 2px 4px rgba(244, 67, 54, 0.2));
 }
 
-.ganhos-cards, .perdas-cards {
+.ganhos-cards,
+.perdas-cards {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
 }
 
-.ganho-card, .perda-card {
+.ganho-card,
+.perda-card {
   background: #fff;
   border-radius: 12px;
   padding: 16px;
@@ -1537,7 +1607,8 @@ onBeforeUnmount(() => {
   transition: all 0.3s ease;
 }
 
-.ganho-card:hover, .perda-card:hover {
+.ganho-card:hover,
+.perda-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
@@ -1568,11 +1639,13 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
 }
 
-.ganho-card-content, .perda-card-content {
+.ganho-card-content,
+.perda-card-content {
   flex: 1;
 }
 
-.ganho-card-content p, .perda-card-content p {
+.ganho-card-content p,
+.perda-card-content p {
   margin: 0;
   line-height: 1.5;
   color: #555;
@@ -1719,19 +1792,21 @@ onBeforeUnmount(() => {
 
 /* Responsivo para Ganhos e Perdas */
 @media (max-width: 768px) {
-  .ganhos-cards, .perdas-cards {
+  .ganhos-cards,
+  .perdas-cards {
     flex-direction: column;
   }
-  
-  .ganho-card, .perda-card {
+
+  .ganho-card,
+  .perda-card {
     width: 100%;
   }
-  
+
   .resumo-visual {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .resumo-item {
     width: 100%;
   }
@@ -1916,12 +1991,12 @@ onBeforeUnmount(() => {
     flex-grow: 1;
     justify-content: center;
   }
-  
+
   .avaliar-projeto {
     max-width: 100%;
     margin-top: 20px;
   }
-  
+
   .avaliar-title {
     justify-content: center;
     text-align: center;
@@ -1948,7 +2023,7 @@ onBeforeUnmount(() => {
   .avaliar-nivel-content {
     padding: 12px;
   }
-  
+
   .avaliar-tabs {
     flex-direction: column;
     gap: 8px;

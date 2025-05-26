@@ -355,6 +355,15 @@ export const PenseAjaService = {
         );
       }
 
+      // Evitar inconsistências de status
+       else if (status === REPROVE && avaliacao) {
+        throw new CustomError(
+          'Não é possível reprovar um Pense Aja com uma avaliação (A, B ou C).',
+          400,
+          'Não é possível reprovar um Pense Aja com uma avaliação (A, B ou C).'
+        );
+       }
+
       // build SET clauses and parameters
       const clauses: string[] = [];
       const params: Array<string | boolean> = [];
@@ -395,8 +404,6 @@ export const PenseAjaService = {
         idx += 4;
       }
 
-
-
       // always update timestamp
       clauses.push(`updatedat = NOW()`);
 
@@ -432,14 +439,7 @@ export const PenseAjaService = {
       const result = await client.query(sql, params);
       if (result.rowCount === 0) {
         throw new CustomError('Pense Aja não encontrado.', 404, 'Pense Aja não encontrado.');
-      }
-
-      // if manager reproved or excluded, remove old points
-      console.log("Status: ", status);
-      console.log("rep:", REPROVE);
-      console.log("ex:", EXCLUDE);
-      console.log("Is gerente: ", isGerente);
-      
+      }      
       
       if ((status === EXCLUDE || status === REPROVE) && isGerente) {
         await client.query(

@@ -455,12 +455,27 @@
   border: 2px solid transparent;
 }
 
-.avaliar-rating-option input:checked + .avaliar-rating-display {
+.avaliar-rating-display.evaluated-A{
   background: rgba(244, 67, 54, 0.1);
   border-color: #f44336;
   transform: translateY(-4px);
   box-shadow: 0 4px 10px rgba(244, 67, 54, 0.2);
 }
+
+.avaliar-rating-display.evaluated-B{
+  background: rgba(244, 67, 54, 0.1);
+  border-color: #f44336;
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px rgba(244, 67, 54, 0.2);
+}
+
+.avaliar-rating-display.evaluated-C{
+  background: rgba(244, 67, 54, 0.1);
+  border-color: #f44336;
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px rgba(244, 67, 54, 0.2);
+}
+
 
 .avaliar-rating-value {
   font-size: 22px;
