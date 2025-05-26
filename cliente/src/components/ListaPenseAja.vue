@@ -282,6 +282,50 @@
       </v-expansion-panel>
     </v-expansion-panels>
 
+    <div class="info-data">
+      <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <h5 class="text-md font-medium text-gray-700 mb-3 border-b pb-2">Legenda: Status dos Projetos</h5>
+        <div class="flex flex-wrap gap-2">
+          <div
+            class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-md transition-all duration-200 hover:-translate-y-1"
+          >
+            <span class="w-3 h-3 rounded-full bg-purple-400 border-l-4 border-purple-600"></span>
+            <span class="text-xs text-gray-600">Sem Análise</span>
+          </div>
+          <div
+            class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-md transition-all duration-200 hover:-translate-y-1"
+          >
+            <span class="w-3 h-3 rounded-full bg-orange-200 border-l-4 border-orange-500"></span>
+            <span class="text-xs text-gray-600">Visto pelo Analista</span>
+          </div>
+          <div
+            class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-md transition-all duration-200 hover:-translate-y-1"
+          >
+            <span class="w-3 h-3 rounded-full bg-blue-200 border-l-4 border-blue-400"></span>
+            <span class="text-xs text-gray-600">Visto pelo Gerente</span>
+          </div>
+          <div
+            class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-md transition-all duration-200 hover:-translate-y-1"
+          >
+            <span class="w-3 h-3 rounded-full bg-red-200 border-l-4 border-red-500"></span>
+            <span class="text-xs text-gray-600">Reprovado</span>
+          </div>
+          <div
+            class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-md transition-all duration-200 hover:-translate-y-1"
+          >
+            <span class="w-3 h-3 rounded-full bg-green-100 border-l-4 border-green-500"></span>
+            <span class="text-xs text-gray-600">Avaliado</span>
+          </div>
+          <div
+            class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-md transition-all duration-200 hover:-translate-y-1"
+          >
+            <span class="w-3 h-3 rounded-full bg-yellow-100 border-l-4 border-yellow-400"></span>
+            <span class="text-xs text-gray-600">Em Espera</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div v-if="penseAjas.length > 0 && !loading">
       <RecycleScroller :items="filteredList" :item-size="!smallPhone ? 105 : 80" key-field="id" class="virtual-list">
         <template #default="{ item }">
@@ -407,7 +451,7 @@
                               </span>
 
                               <span v-if="getUserPermission() && item.gerente_aprovador">
-                                Classificação: {{ item.classificacao }}
+                                Classificação: {{ item.classificacao || "Reprovado" }}
                               </span>
                             </div>
                           </div>
@@ -422,7 +466,8 @@
                               </span>
 
                               <span v-if="getUserPermission() && item.analista_avaliador">
-                                Classificação: {{ item.classificacao }}
+                                Classificação:
+                                {{ item.classificacao || "Reprovado" }}
                               </span>
                             </div>
                           </div>
@@ -577,9 +622,7 @@
                         </div>
 
                         <div class="flex flex-col items-center justify-center py-4">
-                          <div
-                            class="flex items-center gap-3 px-5 py-3 rounded-xl shadow border border-gray-200"
-                          >
+                          <div class="flex items-center gap-3 px-5 py-3 rounded-xl shadow border border-gray-200">
                             <span
                               v-if="evaluationValue"
                               :class="[
@@ -1029,7 +1072,7 @@ watch(filteredList, (newValue) => {
 function computeStatusData(penseAja) {
   let status;
 
-  if (penseAja.status_gerente === "reprove") {
+  if (penseAja.status_gerente === "reprove" || penseAja.status_analista === "reprove") {
     status = "REPROVADO";
   } else if (penseAja.em_espera === "1") {
     status = "EM ESPERA";
