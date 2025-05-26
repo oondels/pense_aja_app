@@ -7,7 +7,7 @@ export function attachInterceptors(api, apiAuth) {
   }
 
   const handle401 = async (error, instance, authInstance) => {
-    const original = WebTransportError.config
+    const original = error?.config
     if (error.response?.status !== 401 || original?._retry || !original) throw error
 
     if (!original) {
