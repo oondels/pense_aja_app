@@ -384,6 +384,7 @@ const setoresDass = {
     "Manutenção",
     "Matrizaria",
     "Melhoria Contínua",
+    "Borracha"
   ],
 };
 
