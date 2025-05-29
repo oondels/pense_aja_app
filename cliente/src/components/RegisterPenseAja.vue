@@ -143,7 +143,7 @@
                     color="red"
                     class="mt-1 w-full"
                     label="Fábrica"
-                    :items="['Fábrica 1', 'Fábrica 2', 'Fábrica 3']"
+                    :items="['Fábrica 1', 'Fábrica 2', 'Fábrica 3', 'Manutenção']"
                     v-model="penseAjaData.factory"
                   ></v-select>
                 </div>
@@ -186,7 +186,7 @@
                   <div>
                     <v-select
                       v-model="penseAjaData.ganhos.values"
-                      :items="['Dinheiro', 'Tempo', 'Processo', 'Qualidade', 'Espaço Físico (m²)']"
+                      :items="['Dinheiro', 'Tempo', 'Processo', 'Qualidade', 'Espaço Físico (m²)', 'Segurança']"
                       label="Selecione os ganhos"
                       multiple
                       variant="outlined"
@@ -358,33 +358,53 @@ const setoresDass = {
     "Manutenção",
     "Setor de Apoio",
   ],
-  VDC: [  
+  VDC: [
     "Administração",
     "Agrupamento Pré",
     "Almoxarifado",
     "Aprendizes",
     "Assistência Médica",
     "Automação de Processos",
-    "Bamburi/Cilindro",
+    "Banbury EVA",
+    "Benefícios",
     "Caldeira",
     "Cilindro",
+    "Banbury",
     "Cold Shot",
-    "Conformação Fábrica",
+    "Conformação",
     "Corte de EVA",
+    "Degreasing",
     "Departamento Pessoal",
-    "Distribuição - Fabrica 1",
+    "Distribuição",
     "EVA Injetado",
-    "EVA Pré-conformado",
-    "Expedição Fab 1",
+    "EVA Pré-Conformado",
+    "Expedição",
     "Fábrica de Protótipo",
+    "FEFO",
     "Kneader",
     "Laboratório",
     "Lavar EVA",
     "Limpeza",
     "Manutenção",
+    "Maternidade",
     "Matrizaria",
     "Melhoria Contínua",
-    "Borracha"
+    "Obras/Projetos",
+    "PCP Controles",
+    "Pré-Fabricado",
+    "Pré-moldado",
+    "Prensagem EVA Lam",
+    "QC 01 Reciclado",
+    "Qualidade",
+    "Recursos Humanos",
+    "Refilagem Borr.",
+    "Segurança do Trabalho",
+    "Sistemas",
+    "Tempos e Métodos",
+    "Tintas",
+    "Transporte",
+    "Treinamento de Produção",
+    "Borracha",
   ],
 };
 
@@ -397,7 +417,7 @@ const penseAjaData = ref({
   setor: null,
   perdas: [],
   ganhos: { values: [], justificativa: null },
-  factory: null
+  factory: null,
 });
 
 const replaceText = async (text, component) => {

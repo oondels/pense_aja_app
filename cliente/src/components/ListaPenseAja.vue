@@ -865,7 +865,7 @@ const filterDate = ref({
 const currentDate = new Date();
 const currentYear = currentDate.getFullYear();
 const currentMonthIndex = currentDate.getMonth();
-const penseAjaDay = 28;
+const penseAjaDay = 29;
 
 /*
   Define o filtro de data baseado no ano e mes selecionado

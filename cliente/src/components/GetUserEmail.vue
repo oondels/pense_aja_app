@@ -155,7 +155,7 @@ async function submitEmail() {
     email.value = "";
   } catch (err) {
     message = err.response ? err.response.data.message : "Erro desconhecido";
-    notification.value?.showPopup("error", "Erro!", message, 3000);
+    notification.value?.showPopup("warning", "Aviso!", message, 3000);
     error = true;
   } finally {
     loading.value = false;

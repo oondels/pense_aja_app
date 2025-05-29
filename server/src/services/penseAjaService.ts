@@ -65,10 +65,11 @@ export const PenseAjaService = {
     try {
       let params = []
       let filters = []
+      
       params.push(startDateParsed)
       params.push(endDateParsed)
       params.push(dassOffice)
-
+      
       if (name) {
         filters.push(` nome = $${params.length + 1} `);
         params.push(name);
@@ -105,7 +106,7 @@ export const PenseAjaService = {
       let baseQuery = `
         SELECT
           id,
-          data_realizada,
+          data_realizada AS criado,
           fabrica,
           nome,
           setor,
@@ -121,14 +122,14 @@ export const PenseAjaService = {
           status_gerente,
           status_analista,
           em_espera,
-          createdat AS criado,
+          createdat,
           classificacao
         FROM
           pense_aja.pense_aja_dass
        WHERE
           excluido = false
           AND createdat >= $1
-          AND createdat <  $2
+          AND createdat < ($2::timestamptz + interval '1 day')
           AND unidade_dass = $3
       `
 
