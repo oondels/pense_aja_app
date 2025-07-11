@@ -976,6 +976,10 @@ function setupWatchers() {
 const user = useUserStore();
 
 const checkRoleAndEvaluation = (penseAja) => {
+  if (penseAja.em_espera === "1"){
+    return true;
+  }
+  
   if (setUserRole(user) === "analista" && penseAja.analista_avaliador) {
     return false;
   }
@@ -1137,6 +1141,10 @@ const setEvaluationValue = (value) => {
 };
 
 const setButtonPermission = (penseAja, _ = false) => {
+  if (penseAja.em_espera === "1"){
+    return "";
+  }
+
   if (penseAja.status_analista && user.funcao?.toLowerCase().includes("analista")) {
     return "disabled";
   }
