@@ -461,9 +461,9 @@ export const PenseAjaService = {
         await client.query(
           `
             INSERT INTO pense_aja.pense_aja_pontos
-              (id_pense_aja, matricula, nome, valor, gerente, classificacao, createdat, updatedat)
+              (id_pense_aja, matricula, nome, valor, gerente, classificacao, createdat, updatedat, unidade_dass)
             VALUES
-              ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+              ($1, $2, $3, $4, $5, $6, NOW(), NOW(), dassoffice)
             RETURNING id;
           `,
           [
