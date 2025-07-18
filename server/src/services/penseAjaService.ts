@@ -463,7 +463,7 @@ export const PenseAjaService = {
             INSERT INTO pense_aja.pense_aja_pontos
               (id_pense_aja, matricula, nome, valor, gerente, classificacao, createdat, updatedat, unidade_dass)
             VALUES
-              ($1, $2, $3, $4, $5, $6, NOW(), NOW(), dassoffice)
+              ($1, $2, $3, $4, $5, $6, NOW(), NOW(), $7)
             RETURNING id;
           `,
           [
@@ -472,7 +472,8 @@ export const PenseAjaService = {
             result.rows[0].nome,
             avaliacao ?? 0,
             result.rows[0].gerente,
-            classificacao
+            classificacao,
+            dassOffice
           ]
         );
       }
