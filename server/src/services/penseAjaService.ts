@@ -5,7 +5,7 @@ import { UserPenseaja } from "./UserPenseaja";
 import penseAjaProducts from "../utils/penseAjaProducts.json"
 
 const checkDassOffice = (dassOffice: string) => {
-  const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF"];
+  const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
   if (!allowedOffices.includes(dassOffice)) {
     logger.error("Pense-aja", `Unidade inválida: ${dassOffice}`);
     throw new Error(`Unidade dass Inválida: ${dassOffice}`);
