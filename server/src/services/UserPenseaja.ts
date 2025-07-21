@@ -3,7 +3,7 @@ import pool from "../config/db";
 import { CustomError } from "../types/CustomError";
 
 const checkDassOffice = (dassOffice: string) => {
-  const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF"];
+  const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
   if (!allowedOffices.includes(dassOffice)) {
     logger.error("Pense-aja", `Unidade inválida: ${dassOffice}`);
     throw new Error(`Unidade dass Inválida: ${dassOffice}`);
