@@ -15,7 +15,7 @@
     <main class="main-content">
       <div class="dashboard-grid">
         <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.1s">
-          <DashboardSummary />
+          <DashboardSummary :startDate="startDate" :endDate="endDate" />
         </div>
 
         <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.2s">
