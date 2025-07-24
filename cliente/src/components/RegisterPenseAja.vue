@@ -406,6 +406,19 @@ const setoresDass = {
     "Treinamento de Produção",
     "Borracha",
   ],
+  STJ: [
+    "Corte (Recorte, chanfração)",
+    "Serigrafia",
+    "Frequência",
+    "Fuse",
+    "Bordado",
+    "Pré Fabricado",
+    "Pré Costura",
+    "Montagem",
+    "Costura",
+    "Manutenção",
+    "Setor de Apoio",
+  ]
 };
 
 const today = ref(new Date().toISOString().split("T")[0]);
