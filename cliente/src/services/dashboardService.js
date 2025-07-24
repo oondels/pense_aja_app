@@ -77,5 +77,25 @@ export const dashboardService = {
 
     const response = await commonApi.get(`/dashboard/dimensional/${dassOffice}`, { params });
     return response.data.dados
+  },
+
+  /**
+   * Busca ideias em destaque
+   * @param {string} dassOffice - Unidade Dass
+   * @returns {Promise<Array>} Ideias em destaque
+   */
+  async getIdeaHighlights(dassOffice) {
+    try {
+      const response = await commonApi.get(`/dashboard/idea-highlights/${dassOffice}`);
+
+      if (response.data.erro) {
+        throw new Error(response.data.mensagem || 'Erro ao buscar ideias em destaque');
+      }
+
+      return response.data.dados;
+    } catch (error) {
+      console.error('Erro no serviço de ideias em destaque:', error);
+      throw error;
+    }
   }
 };

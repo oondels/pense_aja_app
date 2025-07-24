@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useIdeasData } from '../../composables/useIdeasData';
 
-const { topIdeas, isLoading } = useIdeasData();
+const { topIdeas, isLoading, error } = useIdeasData();
 
 // Format date to readable string
 const formatDate = (dateString: string) => {
@@ -21,6 +21,15 @@ const formatDate = (dateString: string) => {
     
     <div class="highlights-container">
       <div v-if="isLoading" class="loading-indicator">Carregando ideias em destaque...</div>
+      
+      <div v-else-if="error" class="error-indicator">
+        <p>{{ error }}</p>
+        <p class="retry-text">Dados de exemplo serão exibidos.</p>
+      </div>
+      
+      <div v-else-if="topIdeas.length === 0" class="empty-indicator">
+        Nenhuma ideia encontrada para esta unidade.
+      </div>
       
       <div v-else class="idea-cards">
         <div v-for="idea in topIdeas" :key="idea.id" class="idea-card">
@@ -92,6 +101,31 @@ const formatDate = (dateString: string) => {
   justify-content: center;
   height: 200px;
   color: var(--color-text-secondary);
+}
+
+.error-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--color-error);
+  text-align: center;
+}
+
+.error-indicator .retry-text {
+  margin-top: 0.5rem;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.empty-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--color-text-secondary);
+  text-align: center;
 }
 
 .idea-cards {

@@ -24,6 +24,21 @@ interface DimensionalData {
   factory: Array<{ label: string; count: number }>;
 }
 
+interface IdeaHighlight {
+  id: number;
+  title: string;
+  description: string;
+  author: string;
+  avatarColor: string;
+  date: string;
+  status: string;
+  category: string;
+  sector: string;
+  factory: string;
+  likes: number;
+  comments: number;
+}
+
 interface PeriodFilter {
   start?: Date;
   end?: Date;
@@ -289,6 +304,108 @@ export class DashboardService {
       }
       console.error("Erro ao buscar dados dimensionais:", error);
       throw new CustomError("Erro interno do servidor ao buscar dados dimensionais");
+    } finally {
+      client.release();
+    }
+  }
+
+  static async getIdeaHighlights(dassOffice: string): Promise<IdeaHighlight[]> {
+    const client = await pool.connect();
+    
+    try {
+      // Verificar se a unidade dass é válida
+      const validOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
+      if (!validOffices.includes(dassOffice)) {
+        throw new CustomError("Unidade Dass inválida", 400);
+      }
+
+      // Buscar as ideias mais relevantes baseadas em valor amortizado e status
+      const query = `
+        SELECT 
+          id,
+          nome_projeto as title,
+          situacao_atual as description,
+          nome as author,
+          setor,
+          fabrica,
+          createdat,
+          status_gerente,
+          status_analista,
+          valor_amortizado,
+          CASE 
+            WHEN status_gerente = 'APROVADO' AND status_analista = 'APROVADO' THEN 'Aprovada'
+            WHEN status_gerente = 'REPROVADO' OR status_analista = 'REPROVADO' THEN 'Rejeitada'
+            ELSE 'Pendente'
+          END as status
+        FROM pense_aja.pense_aja_dass
+        WHERE unidade_dass = $1 
+          AND excluido = false
+          AND nome_projeto IS NOT NULL
+          AND situacao_atual IS NOT NULL
+        ORDER BY 
+          CASE 
+            WHEN status_gerente = 'APROVADO' AND status_analista = 'APROVADO' THEN valor_amortizado
+            ELSE 0
+          END DESC,
+          createdat DESC
+        LIMIT 6
+      `;
+
+      const result = await client.query(query, [dassOffice]);
+      
+      // Gerar cores de avatar baseadas no nome
+      const getAvatarColor = (name: string): string => {
+        const colors = ['#3B82F6', '#10B981', '#F97316', '#8B5CF6', '#EF4444', '#06B6D4'];
+        const index = name.charCodeAt(0) % colors.length;
+        return colors[index];
+      };
+
+      // Determinar categoria baseada no setor
+      const getCategory = (sector: string): string => {
+        const sectorLower = sector?.toLowerCase() || '';
+        if (sectorLower.includes('prod') || sectorLower.includes('fab')) return 'Produção';
+        if (sectorLower.includes('manu') || sectorLower.includes('mant')) return 'Manutenção';
+        if (sectorLower.includes('quali')) return 'Qualidade';
+        if (sectorLower.includes('log')) return 'Logística';
+        if (sectorLower.includes('eng')) return 'Engenharia';
+        if (sectorLower.includes('rh') || sectorLower.includes('pessoas')) return 'Desenvolvimento';
+        return 'Outros';
+      };
+
+      // Simular likes e comments baseados no valor e status
+      const getLikesAndComments = (value: number, status: string) => {
+        const baseValue = Math.max(value || 0, 1000);
+        const statusMultiplier = status === 'Aprovada' ? 1.5 : status === 'Pendente' ? 1.0 : 0.7;
+        
+        const likes = Math.floor((baseValue / 1000) * statusMultiplier * (Math.random() * 10 + 15));
+        const comments = Math.floor(likes * 0.15 * (Math.random() + 0.5));
+        
+        return { likes: Math.min(likes, 99), comments: Math.min(comments, 25) };
+      };
+
+      const highlights: IdeaHighlight[] = result.rows.map((row, index) => {
+        const { likes, comments } = getLikesAndComments(row.valor_amortizado, row.status);
+        
+        return {
+          id: row.id,
+          title: row.title || 'Projeto sem título',
+          description: row.description?.substring(0, 150) + (row.description?.length > 150 ? '...' : '') || 'Sem descrição disponível',
+          author: row.author || 'Autor desconhecido',
+          avatarColor: getAvatarColor(row.author || 'A'),
+          date: new Date(row.createdat).toISOString().split('T')[0],
+          status: row.status,
+          category: getCategory(row.setor),
+          sector: row.setor || 'Não informado',
+          factory: row.fabrica || 'Não informado',
+          likes,
+          comments
+        };
+      });
+
+      return highlights;
+    } catch (error) {
+      console.error("Erro ao buscar ideias em destaque:", error);
+      throw new CustomError("Erro interno do servidor ao buscar ideias em destaque");
     } finally {
       client.release();
     }

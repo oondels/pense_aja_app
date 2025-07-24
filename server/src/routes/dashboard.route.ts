@@ -156,4 +156,28 @@ router.get("/dimensional/:dassOffice", async (req: Request, res: Response, next:
   }
 });
 
+// Rota para obter ideias em destaque
+router.get("/idea-highlights/:dassOffice", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { dassOffice } = req.params;
+
+    if (!dassOffice) {
+      res.status(400).json({
+        erro: true,
+        mensagem: "O campo 'dassOffice' é obrigatório.",
+      });
+      return;
+    }
+
+    const result = await DashboardService.getIdeaHighlights(dassOffice);
+
+    res.status(200).json({
+      erro: false,
+      dados: result
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
