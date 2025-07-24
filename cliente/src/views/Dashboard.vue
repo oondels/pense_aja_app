@@ -23,7 +23,7 @@
         </div>
 
         <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.3s">
-          <DimensionalAnalysis />
+          <DimensionalAnalysis :startDate="startDate" :endDate="endDate" />
         </div>
 
         <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.4s">

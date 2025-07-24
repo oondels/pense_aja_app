@@ -11,21 +11,21 @@ export const dashboardService = {
   async getSummaryData(dassOffice, startDate = null, endDate = null) {
     try {
       const params = {};
-      
+
       if (startDate) {
         params.startDate = startDate instanceof Date ? startDate.toISOString() : startDate;
       }
-      
+
       if (endDate) {
         params.endDate = endDate instanceof Date ? endDate.toISOString() : endDate;
       }
 
       const response = await commonApi.get(`/dashboard/summary/${dassOffice}`, { params });
-      
+
       if (response.data.erro) {
         throw new Error(response.data.mensagem || 'Erro ao buscar dados do dashboard');
       }
-      
+
       return response.data.dados;
     } catch (error) {
       console.error('Erro no serviço do dashboard:', error);
@@ -43,25 +43,39 @@ export const dashboardService = {
   async getMonthlyData(dassOffice, startDate = null, endDate = null) {
     try {
       const params = {};
-      
+
       // if (startDate) {
       //   params.startDate = startDate instanceof Date ? startDate.toISOString() : startDate;
       // }
-      
+
       // if (endDate) {
       //   params.endDate = endDate instanceof Date ? endDate.toISOString() : endDate;
       // }
 
       const response = await commonApi.get(`/dashboard/monthly/${dassOffice}`, { params });
-      
+
       if (response.data.erro) {
         throw new Error(response.data.mensagem || 'Erro ao buscar dados mensais');
       }
-      
+
       return response.data.dados;
     } catch (error) {
       console.error('Erro no serviço de dados mensais:', error);
       throw error;
     }
+  },
+
+  async getDimensionalData(dassOffice, startDate = null, endDate = null) {
+    const params = {};
+    if (startDate) {
+      params.startDate = startDate instanceof Date ? startDate.toISOString() : startDate;
+    }
+
+    if (endDate) {
+      params.endDate = endDate instanceof Date ? endDate.toISOString() : endDate;
+    }
+
+    const response = await commonApi.get(`/dashboard/dimensional/${dassOffice}`, { params });
+    return response.data.dados
   }
 };

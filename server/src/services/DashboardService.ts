@@ -18,6 +18,12 @@ interface MonthlyData {
   value: number;
 }
 
+interface DimensionalData {
+  manager: Array<{ label: string; count: number }>;
+  sector: Array<{ label: string; count: number }>;
+  factory: Array<{ label: string; count: number }>;
+}
+
 interface PeriodFilter {
   start?: Date;
   end?: Date;
@@ -177,6 +183,112 @@ export class DashboardService {
       }
       console.error("Erro ao buscar dados mensais:", error);
       throw new CustomError("Erro interno do servidor ao buscar dados mensais");
+    } finally {
+      client.release();
+    }
+  }
+
+  static async getDimensionalData(dassOffice: string, startDate?: Date, endDate?: Date): Promise<DimensionalData> {
+    const client = await pool.connect();
+    
+    try {
+      // Verificar se a unidade dass é válida
+      const validOffices = ['SEST', 'SENAT', 'IEL'];
+      if (!validOffices.includes(dassOffice)) {
+        throw new CustomError("Unidade Dass inválida", 400);
+      }
+
+      // Construir filtros de data
+      let dateFilter = '';
+      const params: any[] = [dassOffice];
+      
+      if (startDate && endDate) {
+        dateFilter = ' AND createdat BETWEEN $2 AND $3';
+        params.push(startDate.toISOString(), endDate.toISOString());
+      } else if (startDate) {
+        dateFilter = ' AND createdat >= $2';
+        params.push(startDate.toISOString());
+      } else if (endDate) {
+        dateFilter = ' AND createdat <= $2';
+        params.push(endDate.toISOString());
+      }
+
+      // Query para dados por gerente
+      const managerQuery = `
+        SELECT 
+          gerente as label,
+          COUNT(*) as count
+        FROM pense_aja.pense_aja_dass
+        WHERE unidade_dass = $1 
+          AND excluido = false
+          AND gerente IS NOT NULL
+          AND gerente != ''
+          ${dateFilter}
+        GROUP BY gerente
+        ORDER BY count DESC
+        LIMIT 10
+      `;
+
+      // Query para dados por setor
+      const sectorQuery = `
+        SELECT 
+          setor as label,
+          COUNT(*) as count
+        FROM pense_aja.pense_aja_dass
+        WHERE unidade_dass = $1 
+          AND excluido = false
+          AND setor IS NOT NULL
+          AND setor != ''
+          ${dateFilter}
+        GROUP BY setor
+        ORDER BY count DESC
+        LIMIT 10
+      `;
+
+      // Query para dados por fábrica
+      const factoryQuery = `
+        SELECT 
+          fabrica as label,
+          COUNT(*) as count
+        FROM pense_aja.pense_aja_dass
+        WHERE unidade_dass = $1 
+          AND excluido = false
+          AND fabrica IS NOT NULL
+          AND fabrica != ''
+          ${dateFilter}
+        GROUP BY fabrica
+        ORDER BY count DESC
+        LIMIT 10
+      `;
+
+      // Executar todas as queries em paralelo
+      const [managerResult, sectorResult, factoryResult] = await Promise.all([
+        client.query(managerQuery, params),
+        client.query(sectorQuery, params),
+        client.query(factoryQuery, params)
+      ]);
+
+      return {
+        manager: managerResult.rows.map(row => ({
+          label: row.label || 'Não informado',
+          count: parseInt(row.count) || 0
+        })),
+        sector: sectorResult.rows.map(row => ({
+          label: row.label || 'Não informado',
+          count: parseInt(row.count) || 0
+        })),
+        factory: factoryResult.rows.map(row => ({
+          label: row.label || 'Não informado',
+          count: parseInt(row.count) || 0
+        }))
+      };
+
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      console.error("Erro ao buscar dados dimensionais:", error);
+      throw new CustomError("Erro interno do servidor ao buscar dados dimensionais");
     } finally {
       client.release();
     }

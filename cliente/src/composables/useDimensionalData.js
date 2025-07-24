@@ -1,6 +1,8 @@
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { dashboardService } from '../services/dashboardService.js';
+import { useUserStore } from '../stores/userStore.js';
 
-export function useDimensionalData() {
+export function useDimensionalData(startDate = null, endDate = null) {
   const dimensionalData = ref({
     manager: [],
     sector: [],
@@ -8,38 +10,43 @@ export function useDimensionalData() {
   });
 
   const isLoading = ref(true);
+  const error = ref(null);
+  const userStore = useUserStore();
 
-  const fetchDimensionalData = () => {
-    isLoading.value = true;
-
-    // Simulate API call with mock data
-    setTimeout(() => {
+  const fetchDimensionalData = async () => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+      
+      // Usar SEST como padrão, ou pegar da store do usuário se disponível
+      const dassOffice = userStore.userData?.unidade || 'SEST';
+      
+      const data = await dashboardService.getDimensionalData(dassOffice, startDate, endDate);
+      
       dimensionalData.value = {
-        manager: [
-          { label: 'Carlos Silva', count: 87 },
-          { label: 'Ana Oliveira', count: 65 },
-          { label: 'Roberto Pereira', count: 58 },
-          { label: 'Camila Santos', count: 42 },
-          { label: 'Fernando Costa', count: 39 }
-        ],
-        sector: [
-          { label: 'Produção', count: 156 },
-          { label: 'Qualidade', count: 98 },
-          { label: 'Engenharia', count: 87 },
-          { label: 'Logística', count: 63 },
-          { label: 'Administrativo', count: 33 }
-        ],
-        factory: [
-          { label: 'Unidade SP', count: 178 },
-          { label: 'Unidade MG', count: 124 },
-          { label: 'Unidade RS', count: 85 },
-          { label: 'Unidade PR', count: 50 }
-        ]
+        manager: data.manager || [],
+        sector: data.sector || [],
+        factory: data.factory || []
       };
-
+    } catch (err) {
+      console.error('Erro ao buscar dados dimensionais:', err);
+      error.value = err.message || 'Erro ao carregar dados dimensionais';
+      
+      // Fallback para dados de exemplo em caso de erro
+      dimensionalData.value = {
+        manager: [],
+        sector: [],
+        factory: []
+      };
+    } finally {
       isLoading.value = false;
-    }, 1200);
+    }
   };
+
+  // Observar mudanças nas datas para recarregar os dados
+  watch([() => startDate, () => endDate], () => {
+    fetchDimensionalData();
+  });
 
   onMounted(() => {
     fetchDimensionalData();
@@ -47,6 +54,8 @@ export function useDimensionalData() {
 
   return {
     dimensionalData,
-    isLoading
+    isLoading,
+    error,
+    refetch: fetchDimensionalData
   };
 }
