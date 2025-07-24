@@ -97,5 +97,37 @@ export const dashboardService = {
       console.error('Erro no serviço de ideias em destaque:', error);
       throw error;
     }
+  },
+
+  /**
+   * Busca dados de engajamento dos colaboradores
+   * @param {string} dassOffice - Unidade Dass (SEST, SENAT, IEL)
+   * @param {string|Date} startDate - Data de início (opcional)
+   * @param {string|Date} endDate - Data de fim (opcional)
+   * @returns {Promise<Array>} Dados de engajamento dos colaboradores
+   */
+  async getEngagementData(dassOffice, startDate = null, endDate = null) {
+    try {
+      const params = {};
+
+      if (startDate) {
+        params.startDate = startDate instanceof Date ? startDate.toISOString() : startDate;
+      }
+
+      if (endDate) {
+        params.endDate = endDate instanceof Date ? endDate.toISOString() : endDate;
+      }
+
+      const response = await commonApi.get(`/dashboard/engagement/${dassOffice}`, { params });
+
+      if (response.data.erro) {
+        throw new Error(response.data.mensagem || 'Erro ao buscar dados de engajamento');
+      }
+
+      return response.data.dados;
+    } catch (error) {
+      console.error('Erro no serviço de dados de engajamento:', error);
+      throw error;
+    }
   }
 };

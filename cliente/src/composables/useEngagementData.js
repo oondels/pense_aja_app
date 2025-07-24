@@ -1,14 +1,29 @@
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { dashboardService } from '../services/dashboardService.js';
+import { useUserStore } from '../stores/userStore.js';
 
-export function useEngagementData() {
+export function useEngagementData(startDate = null, endDate = null) {
   const topContributors = ref([]);
   const isLoading = ref(true);
+  const error = ref(null);
+  const userStore = useUserStore();
 
-  const fetchEngagementData = () => {
-    isLoading.value = true;
-
-    // Simulate API call with mock data
-    setTimeout(() => {
+  const fetchEngagementData = async () => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+      
+      // Usar SEST como padrão, ou pegar da store do usuário se disponível
+      const dassOffice = userStore.userData?.unidade || 'SEST';
+      
+      const data = await dashboardService.getEngagementData(dassOffice, startDate, endDate);
+      
+      topContributors.value = data || [];
+    } catch (err) {
+      console.error('Erro ao buscar dados de engajamento:', err);
+      error.value = err.message || 'Erro ao carregar dados de engajamento';
+      
+      // Fallback para dados mock em caso de erro
       topContributors.value = [
         {
           id: 1,
@@ -36,39 +51,15 @@ export function useEngagementData() {
           ideas: 19,
           implemented: 10,
           avatarColor: '#F97316'
-        },
-        {
-          id: 4,
-          name: 'Carla Mendes',
-          role: 'Analista de Logística',
-          department: 'Logística',
-          ideas: 16,
-          implemented: 8,
-          avatarColor: '#EF4444'
-        },
-        {
-          id: 5,
-          name: 'Bruno Costa',
-          role: 'Engenheiro de Segurança',
-          department: 'Segurança',
-          ideas: 14,
-          implemented: 7,
-          avatarColor: '#8B5CF6'
-        },
-        {
-          id: 6,
-          name: 'Fernanda Lima',
-          role: 'Analista de RH',
-          department: 'Recursos Humanos',
-          ideas: 13,
-          implemented: 6,
-          avatarColor: '#EC4899'
         }
       ];
-
+    } finally {
       isLoading.value = false;
-    }, 1300);
+    }
   };
+
+  // Reagir a mudanças nas datas
+  watch([() => startDate, () => endDate], fetchEngagementData, { deep: true });
 
   onMounted(() => {
     fetchEngagementData();
@@ -76,6 +67,8 @@ export function useEngagementData() {
 
   return {
     topContributors,
-    isLoading
+    isLoading,
+    error,
+    refetch: fetchEngagementData
   };
 }

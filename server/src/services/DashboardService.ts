@@ -39,6 +39,16 @@ interface IdeaHighlight {
   comments: number;
 }
 
+interface EngagementContributor {
+  id: number;
+  name: string;
+  role: string;
+  department: string;
+  ideas: number;
+  implemented: number;
+  avatarColor: string;
+}
+
 interface PeriodFilter {
   start?: Date;
   end?: Date;
@@ -406,6 +416,109 @@ export class DashboardService {
     } catch (error) {
       console.error("Erro ao buscar ideias em destaque:", error);
       throw new CustomError("Erro interno do servidor ao buscar ideias em destaque");
+    } finally {
+      client.release();
+    }
+  }
+
+  static async getEngagementData(dassOffice: string, startDate?: Date, endDate?: Date): Promise<EngagementContributor[]> {
+    const client = await pool.connect();
+    
+    try {
+      let dateFilter = '';
+      const queryParams: any[] = [dassOffice];
+      
+      if (startDate && endDate) {
+        dateFilter = 'AND data_realizada BETWEEN $2 AND $3';
+        queryParams.push(startDate, endDate);
+      } else if (startDate) {
+        dateFilter = 'AND data_realizada >= $2';
+        queryParams.push(startDate);
+      } else if (endDate) {
+        dateFilter = 'AND data_realizada <= $2';
+        queryParams.push(endDate);
+      }
+
+      
+      const query = `
+        SELECT 
+          nome,
+          setor,
+          COUNT(*) as total_ideas,
+          COUNT(CASE WHEN status_gerente = 'APROVAR' THEN 1 END) as implemented_ideas
+        FROM pense_aja.pense_aja_dass 
+        WHERE unidade_dass = $1 
+          AND excluido = false 
+          ${dateFilter}
+        GROUP BY nome, setor
+        HAVING COUNT(*) > 0
+        ORDER BY COUNT(*) DESC, COUNT(CASE WHEN status_gerente = 'APROVAR' THEN 1 END) DESC
+        LIMIT 10
+      `;
+
+      const result = await client.query(query, queryParams);
+      
+      // Gerar cores de avatar baseadas no nome
+      const getAvatarColor = (name: string): string => {
+        const colors = ['#3B82F6', '#10B981', '#F97316', '#8B5CF6', '#EF4444', '#06B6D4', '#EC4899', '#F59E0B'];
+        const index = name.charCodeAt(0) % colors.length;
+        return colors[index];
+      };
+
+      // Mapear setores para departamentos mais legíveis
+      const getDepartment = (sector: string): string => {
+        const sectorLower = sector?.toLowerCase() || '';
+        if (sectorLower.includes('prod') || sectorLower.includes('fab')) return 'Produção';
+        if (sectorLower.includes('manu') || sectorLower.includes('mant')) return 'Manutenção';
+        if (sectorLower.includes('quali')) return 'Qualidade';
+        if (sectorLower.includes('log')) return 'Logística';
+        if (sectorLower.includes('eng')) return 'Engenharia';
+        if (sectorLower.includes('rh') || sectorLower.includes('pessoas')) return 'Recursos Humanos';
+        if (sectorLower.includes('admin')) return 'Administrativo';
+        if (sectorLower.includes('seg')) return 'Segurança';
+        return sector || 'Outros';
+      };
+
+      // Gerar cargos fictícios baseados no setor e número de ideias
+      const getRole = (sector: string, totalIdeas: number): string => {
+        const department = getDepartment(sector);
+        const roles: { [key: string]: string[] } = {
+          'Produção': ['Operador de Produção', 'Supervisor de Produção', 'Técnico de Produção', 'Coordenador de Produção'],
+          'Manutenção': ['Técnico de Manutenção', 'Mecânico Industrial', 'Eletricista Industrial', 'Supervisor de Manutenção'],
+          'Qualidade': ['Técnico de Qualidade', 'Analista de Qualidade', 'Inspetor de Qualidade', 'Coordenador de Qualidade'],
+          'Logística': ['Analista de Logística', 'Operador de Empilhadeira', 'Conferente', 'Supervisor de Logística'],
+          'Engenharia': ['Engenheiro de Processos', 'Técnico em Automação', 'Analista de Processos', 'Engenheiro de Produção'],
+          'Recursos Humanos': ['Analista de RH', 'Assistente de RH', 'Coordenador de RH', 'Especialista em Treinamento'],
+          'Administrativo': ['Assistente Administrativo', 'Analista Administrativo', 'Coordenador Administrativo', 'Auxiliar Administrativo'],
+          'Segurança': ['Técnico de Segurança', 'Engenheiro de Segurança', 'Inspetor de Segurança', 'Coordenador de Segurança']
+        };
+
+        const departmentRoles = roles[department] || ['Colaborador', 'Técnico', 'Analista', 'Coordenador'];
+        
+        // Escolher cargo baseado no número de ideias (mais ideias = cargo mais senior)
+        let roleIndex;
+        if (totalIdeas >= 15) roleIndex = 3; // Coordenador/Senior
+        else if (totalIdeas >= 10) roleIndex = 2; // Analista/Técnico Senior
+        else if (totalIdeas >= 5) roleIndex = 1; // Técnico/Analista
+        else roleIndex = 0; // Operador/Assistente
+        
+        return departmentRoles[Math.min(roleIndex, departmentRoles.length - 1)];
+      };
+
+      const contributors: EngagementContributor[] = result.rows.map((row, index) => ({
+        id: index + 1,
+        name: row.nome,
+        role: getRole(row.setor, parseInt(row.total_ideas)),
+        department: getDepartment(row.setor),
+        ideas: parseInt(row.total_ideas),
+        implemented: parseInt(row.implemented_ideas),
+        avatarColor: getAvatarColor(row.nome)
+      }));
+
+      return contributors;
+    } catch (error) {
+      console.error("Erro ao buscar dados de engajamento:", error);
+      throw new CustomError("Erro interno do servidor ao buscar dados de engajamento");
     } finally {
       client.release();
     }

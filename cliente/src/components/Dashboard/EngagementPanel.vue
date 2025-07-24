@@ -2,7 +2,13 @@
 import { computed } from 'vue';
 import { useEngagementData } from '../../composables/useEngagementData.js';
 
-const { topContributors, isLoading } = useEngagementData();
+// Props para filtros de data
+const props = defineProps<{
+  startDate?: string;
+  endDate?: string;
+}>();
+
+const { topContributors, isLoading, error } = useEngagementData(props.startDate, props.endDate);
 
 // Calculate rank percentages and styles
 const getContributorStyle = (index: number) => {
