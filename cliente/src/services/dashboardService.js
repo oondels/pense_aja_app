@@ -31,5 +31,37 @@ export const dashboardService = {
       console.error('Erro no serviço do dashboard:', error);
       throw error;
     }
+  },
+
+  /**
+   * Busca dados mensais do dashboard
+   * @param {string} dassOffice - Unidade Dass
+   * @param {string|Date} startDate - Data de início (opcional)
+   * @param {string|Date} endDate - Data de fim (opcional)
+   * @returns {Promise<Array>} Dados mensais
+   */
+  async getMonthlyData(dassOffice, startDate = null, endDate = null) {
+    try {
+      const params = {};
+      
+      // if (startDate) {
+      //   params.startDate = startDate instanceof Date ? startDate.toISOString() : startDate;
+      // }
+      
+      // if (endDate) {
+      //   params.endDate = endDate instanceof Date ? endDate.toISOString() : endDate;
+      // }
+
+      const response = await commonApi.get(`/dashboard/monthly/${dassOffice}`, { params });
+      
+      if (response.data.erro) {
+        throw new Error(response.data.mensagem || 'Erro ao buscar dados mensais');
+      }
+      
+      return response.data.dados;
+    } catch (error) {
+      console.error('Erro no serviço de dados mensais:', error);
+      throw error;
+    }
   }
 };

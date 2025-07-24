@@ -19,7 +19,7 @@
         </div>
 
         <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.2s">
-          <MonthlyTrendsChart />
+          <MonthlyTrendsChart :startDate="startDate" :endDate="endDate" />
         </div>
 
         <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.3s">
