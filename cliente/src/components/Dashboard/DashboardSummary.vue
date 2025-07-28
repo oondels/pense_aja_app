@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue';
+import { computed, inject, watch } from 'vue';
 import { useSummaryData } from '../../composables/useSummaryData';
 
 // Receber os filtros de data do componente pai (Dashboard.vue)
@@ -8,7 +8,12 @@ const props = defineProps<{
   endDate?: string;
 }>();
 
-const { summaryData, isLoading, error } = useSummaryData(props.startDate, props.endDate);
+const { summaryData, isLoading, error, refetch } = useSummaryData(props.startDate, props.endDate);
+
+// Observar mudanças nas datas para recarregar os dados
+watch([() => props.startDate, () => props.endDate], ([newStartDate, newEndDate]) => {
+  refetch(newStartDate, newEndDate);
+}, { immediate: false });
 
 const totalIdeas = computed(() => summaryData.value.totalIdeas);
 const implementedIdeas = computed(() => summaryData.value.implementedIdeas);

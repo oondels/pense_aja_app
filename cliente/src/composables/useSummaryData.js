@@ -1,4 +1,4 @@
-import { ref, onMounted, watch } from 'vue';
+import { ref } from 'vue';
 import { dashboardService } from '../services/dashboardService.js';
 import { useUserStore } from '../stores/userStore.js';
 
@@ -18,7 +18,7 @@ export function useSummaryData(startDate = null, endDate = null) {
   const error = ref(null);
   const userStore = useUserStore();
   
-  const fetchSummaryData = async () => {
+  const fetchSummaryData = async (start = startDate, end = endDate) => {
     try {
       isLoading.value = true;
       error.value = null;
@@ -26,7 +26,7 @@ export function useSummaryData(startDate = null, endDate = null) {
       // Usar SEST como padrão, ou pegar da store do usuário se disponível
       const dassOffice = userStore.userData?.unidade || 'SEST';
       
-      const data = await dashboardService.getSummaryData(dassOffice, startDate, endDate);
+      const data = await dashboardService.getSummaryData(dassOffice, start, end);
       
       summaryData.value = {
         totalIdeas: data.totalIdeas || 0,
@@ -58,14 +58,8 @@ export function useSummaryData(startDate = null, endDate = null) {
     }
   };
   
-  // Observar mudanças nas datas para recarregar os dados
-  watch([() => startDate, () => endDate], () => {
-    fetchSummaryData();
-  });
-  
-  onMounted(() => {
-    fetchSummaryData();
-  });
+  // Fetch initial data
+  fetchSummaryData();
   
   return {
     summaryData,

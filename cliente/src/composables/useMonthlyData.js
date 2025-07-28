@@ -1,4 +1,4 @@
-import { ref, onMounted, watch } from 'vue';
+import { ref } from 'vue';
 import { dashboardService } from '../services/dashboardService.js';
 import { useUserStore } from '../stores/userStore.js';
 
@@ -8,7 +8,7 @@ export function useMonthlyData(startDate = null, endDate = null) {
   const error = ref(null);
   const userStore = useUserStore();
 
-  const fetchMonthlyData = async () => {
+  const fetchMonthlyData = async (start = startDate, end = endDate) => {
     try {
       isLoading.value = true;
       error.value = null;
@@ -16,7 +16,7 @@ export function useMonthlyData(startDate = null, endDate = null) {
       // Usar SEST como padrão, ou pegar da store do usuário se disponível
       const dassOffice = userStore.userData?.unidade || 'SEST';
       
-      const data = await dashboardService.getMonthlyData(dassOffice, startDate, endDate);
+      const data = await dashboardService.getMonthlyData(dassOffice, start, end);
       
       monthlyData.value = data;
       
@@ -44,14 +44,8 @@ export function useMonthlyData(startDate = null, endDate = null) {
     }
   };
 
-  // Observar mudanças nas datas para recarregar os dados
-  watch([() => startDate, () => endDate], () => {
-    fetchMonthlyData();
-  });
-
-  onMounted(() => {
-    fetchMonthlyData();
-  });
+  // Fetch initial data
+  fetchMonthlyData();
 
   return {
     monthlyData,
