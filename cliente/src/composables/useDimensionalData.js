@@ -1,4 +1,4 @@
-import { ref, onMounted, watch } from 'vue';
+import { ref, watch, toRefs } from 'vue';
 import { dashboardService } from '../services/dashboardService.js';
 import { useUserStore } from '../stores/userStore.js';
 
@@ -13,15 +13,13 @@ export function useDimensionalData(startDate = null, endDate = null) {
   const error = ref(null);
   const userStore = useUserStore();
 
-  const fetchDimensionalData = async () => {
+  const fetchDimensionalData = async (start = startDate, end = endDate) => {
     try {
       isLoading.value = true;
       error.value = null;
       
-      // Usar SEST como padrão, ou pegar da store do usuário se disponível
       const dassOffice = userStore.userData?.unidade || 'SEST';
-      
-      const data = await dashboardService.getDimensionalData(dassOffice, startDate, endDate);
+      const data = await dashboardService.getDimensionalData(dassOffice, start, end);
       
       dimensionalData.value = {
         manager: data.manager || [],
@@ -43,14 +41,8 @@ export function useDimensionalData(startDate = null, endDate = null) {
     }
   };
 
-  // Observar mudanças nas datas para recarregar os dados
-  watch([() => startDate, () => endDate], () => {
-    fetchDimensionalData();
-  });
-
-  onMounted(() => {
-    fetchDimensionalData();
-  });
+  // Fetch initial data
+  fetchDimensionalData();
 
   return {
     dimensionalData,

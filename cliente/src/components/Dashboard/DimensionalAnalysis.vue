@@ -1,4 +1,3 @@
-
 <template>
   <section class="dimensional-section">
     <h2 class="section-title">Análise Dimensional</h2>
@@ -22,19 +21,19 @@
           <div class="loading-spinner"></div>
           <p>Carregando dados dimensionais...</p>
         </div>
-        
+
         <!-- Error state -->
         <div v-else-if="error" class="error-state">
           <div class="error-icon">⚠️</div>
           <p>Erro ao carregar dados...</p>
         </div>
-        
+
         <!-- Empty state -->
         <div v-else-if="!chartData.labels.length" class="empty-state">
           <div class="empty-icon">📊</div>
           <p>Nenhum dado encontrado para o período selecionado</p>
         </div>
-        
+
         <!-- Chart -->
         <Pie v-else ref="chartRef" :data="chartData" :options="chartOptions" class="chart" />
       </div>
@@ -42,12 +41,11 @@
   </section>
 </template>
 
-
 <script setup lang="ts">
-import { computed, ref, onMounted } from "vue";
-import { Pie } from 'vue-chartjs';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { useDimensionalData } from '../../composables/useDimensionalData';
+import { computed, ref, onMounted, watch } from "vue";
+import { Pie } from "vue-chartjs";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { useDimensionalData } from "../../composables/useDimensionalData";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -57,7 +55,13 @@ const props = defineProps<{
   endDate?: string;
 }>();
 
-const { dimensionalData, isLoading, error } = useDimensionalData(props.startDate, props.endDate);
+// Usar o composable para buscar dados dimensionais
+const { dimensionalData, isLoading, error, refetch } = useDimensionalData(props.startDate, props.endDate);
+
+// Observar mudanças nas datas para recarregar os dados
+watch([() => props.startDate, () => props.endDate], ([newStartDate, newEndDate]) => {
+  refetch(newStartDate, newEndDate);
+}, { immediate: false });
 
 const activeTab = ref("manager");
 const tabs = [
@@ -138,7 +142,7 @@ const setActiveTab = (tabId: string) => {
 
 const chartRef = ref<any>(null);
 
-// Update chart when theme changes
+//Atualziar o grafico quando o tema mudar
 onMounted(() => {
   const observer = new MutationObserver(() => {
     if (chartRef.value?.chart) {
@@ -213,7 +217,9 @@ onMounted(() => {
   width: 100%;
 }
 
-.loading-state, .error-state, .empty-state {
+.loading-state,
+.error-state,
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -233,8 +239,12 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-state .error-icon,
