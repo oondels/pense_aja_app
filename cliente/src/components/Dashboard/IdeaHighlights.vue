@@ -1,8 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useIdeasData } from '../../composables/useIdeasData';
 
-const { topIdeas, isLoading, error } = useIdeasData();
+// Props para filtros de data
+const props = defineProps<{
+  startDate?: string;
+  endDate?: string;
+}>();
+
+const { topIdeas, isLoading, error, refetch } = useIdeasData(props.startDate, props.endDate);
+
+// Observar mudanças nas datas para recarregar os dados
+watch([() => props.startDate, () => props.endDate], ([newStartDate, newEndDate]) => {
+  console.log("Updating idea highlights data with new dates:", { startDate: newStartDate, endDate: newEndDate });
+  refetch(newStartDate, newEndDate);
+}, { immediate: false });
 
 // Format date to readable string
 const formatDate = (dateString: string) => {

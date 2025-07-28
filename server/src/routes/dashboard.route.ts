@@ -3,7 +3,7 @@ import { DashboardService } from "../services/DashboardService";
 
 const router = Router();
 
-// Rota para obter dados do resumo do dashboard
+// resumo de dados
 router.get("/summary/:dassOffice", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { dassOffice } = req.params;
@@ -17,7 +17,6 @@ router.get("/summary/:dassOffice", async (req: Request, res: Response, next: Nex
       return;
     }
 
-    // Validação das datas se fornecidas
     let startDateParsed: Date | undefined;
     let endDateParsed: Date | undefined;
 

@@ -310,7 +310,6 @@ export const PenseAjaService = {
     }
   },
 
-  //! FIX: Corrigir logica de avaliação, se um gerente reprovar um pense aja, verificar se o analista ja aprovou e retirar a pontuacao
   async evaluatePenseAja(
     id: string,
     {

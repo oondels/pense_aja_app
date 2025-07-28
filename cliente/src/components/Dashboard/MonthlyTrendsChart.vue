@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { Line } from 'vue-chartjs';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { useMonthlyData } from '../../composables/useMonthlyData';
@@ -60,7 +60,13 @@ const props = defineProps<{
   endDate?: string;
 }>();
 
-const { monthlyData, isLoading, error } = useMonthlyData(props.startDate, props.endDate);
+const { monthlyData, isLoading, error, refetch } = useMonthlyData(props.startDate, props.endDate);
+
+// Observar mudanças nas datas para recarregar os dados
+watch([() => props.startDate, () => props.endDate], ([newStartDate, newEndDate]) => {
+  console.log("Updating monthly data with new dates:", { startDate: newStartDate, endDate: newEndDate });
+  refetch(newStartDate, newEndDate);
+}, { immediate: false });
 
 let maxY_Value = 0
 const chartData = computed(() => {

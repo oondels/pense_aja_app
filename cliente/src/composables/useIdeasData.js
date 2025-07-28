@@ -1,20 +1,22 @@
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { dashboardService } from '../services/dashboardService.js';
+import { useUserStore } from '../stores/userStore.js';
 
-export function useIdeasData() {
+export function useIdeasData(startDate = null, endDate = null) {
   const topIdeas = ref([]);
   const isLoading = ref(true);
   const error = ref(null);
+  const userStore = useUserStore();
 
-  const fetchIdeasData = async () => {
+  const fetchIdeasData = async (start = startDate, end = endDate) => {
     isLoading.value = true;
     error.value = null;
 
     try {
-      // Buscar unidade do usuário a partir do localStorage
-      const dassOffice = localStorage.getItem("unidadeDass") || 'SEST';
+      // Usar SEST como padrão, ou pegar da store do usuário se disponível
+      const dassOffice = userStore.userData?.unidade || localStorage.getItem("unidadeDass") || 'SEST';
       
-      const data = await dashboardService.getIdeaHighlights(dassOffice);
+      const data = await dashboardService.getIdeaHighlights(dassOffice, start, end);
       topIdeas.value = data || [];
     } catch (err) {
       console.error('Erro ao buscar ideias em destaque:', err);
@@ -42,14 +44,13 @@ export function useIdeasData() {
     }
   };
 
-  onMounted(() => {
-    fetchIdeasData();
-  });
+  // Fetch initial data
+  fetchIdeasData();
 
   return {
     topIdeas,
     isLoading,
     error,
-    fetchIdeasData
+    refetch: fetchIdeasData
   };
 }
