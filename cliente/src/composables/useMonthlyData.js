@@ -18,16 +18,7 @@ export function useMonthlyData(startDate = null, endDate = null) {
       
       const data = await dashboardService.getMonthlyData(dassOffice, startDate, endDate);
       
-      // Se não há dados para o período filtrado, mostrar dados do último ano
-      if (data.length === 0 && (startDate || endDate)) {
-        // Buscar dados do último ano como fallback
-        const lastYear = new Date();
-        lastYear.setFullYear(lastYear.getFullYear() - 1);
-        const fallbackData = await dashboardService.getMonthlyData(dassOffice, lastYear, new Date());
-        monthlyData.value = fallbackData;
-      } else {
-        monthlyData.value = data;
-      }
+      monthlyData.value = data;
       
     } catch (err) {
       console.error('Erro ao buscar dados mensais:', err);

@@ -1,3 +1,51 @@
+<template>
+  <section class="chart-section">
+    <div class="section-header">
+      <h2 class="section-title">Tendências Mensais</h2>
+      <div v-if="monthlyData.length > 0" class="chart-summary">
+        <span class="summary-item">
+          <strong>{{ monthlyData.reduce((sum, item) => sum + item.count, 0) }}</strong> ideias no período
+        </span>
+        <span class="summary-divider">•</span>
+        <span class="summary-item">
+          <strong>{{ monthlyData.reduce((sum, item) => sum + (item.value || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 }) }}</strong> ideias aprovadas no período
+        </span>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <!-- Loading state -->
+      <div v-if="isLoading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Carregando dados mensais...</p>
+      </div>
+      
+      <!-- Error state -->
+      <div v-else-if="error" class="error-state">
+        <div class="error-icon">📊</div>
+        <p>{{ error }}</p>
+        <small>Exibindo dados de exemplo</small>
+      </div>
+      
+      <!-- Empty state -->
+      <div v-else-if="monthlyData.length === 0" class="empty-state">
+        <div class="empty-icon">📈</div>
+        <p>Nenhum dado encontrado para o período selecionado</p>
+        <small>Tente ajustar o filtro de datas</small>
+      </div>
+      
+      <!-- Chart -->
+      <Line 
+        v-else
+        ref="chartRef"
+        :data="chartData" 
+        :options="chartOptions" 
+        class="chart"
+      />
+    </div>
+  </section>
+</template>
+
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
 import { Line } from 'vue-chartjs';
@@ -14,7 +62,12 @@ const props = defineProps<{
 
 const { monthlyData, isLoading, error } = useMonthlyData(props.startDate, props.endDate);
 
+let maxY_Value = 0
 const chartData = computed(() => {
+  maxY_Value = monthlyData.value.reduce((max, item) => {
+  return item.count > max.count ? item : max;
+});
+
   return {
     labels: monthlyData.value.map(item => item.month),
     datasets: [
@@ -33,7 +86,7 @@ const chartData = computed(() => {
         fill: true
       },
       {
-        label: 'Valor Total (R$)',
+        label: 'Ideias Aprovadas',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         borderColor: 'rgba(16, 185, 129, 1)',
         borderWidth: 3,
@@ -44,7 +97,7 @@ const chartData = computed(() => {
         pointHoverRadius: 7,
         tension: 0.4,
         data: monthlyData.value.map(item => item.value || 0),
-        fill: false,
+        fill: true,
         yAxisID: 'y1'
       }
     ]
@@ -96,7 +149,7 @@ const chartOptions = computed(() => {
         callbacks: {
           label: function(context: any) {
             if (context.datasetIndex === 1) {
-              return `Valor Total: R$ ${context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+              return `Aprovadas: ${context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`;
             }
             return `${context.dataset.label}: ${context.parsed.y}`;
           }
@@ -122,6 +175,7 @@ const chartOptions = computed(() => {
         display: true,
         position: 'left',
         beginAtZero: true,
+        max: maxY_Value.count + 30,
         grid: {
           color: gridColor,
           drawBorder: false,
@@ -148,6 +202,7 @@ const chartOptions = computed(() => {
         display: true,
         position: 'right',
         beginAtZero: true,
+        max: maxY_Value.count + 30,
         grid: {
           drawOnChartArea: false,
         },
@@ -157,13 +212,11 @@ const chartOptions = computed(() => {
             family: "'Inter', sans-serif",
             size: 11
           },
-          callback: function(value: any) {
-            return 'R$ ' + value.toLocaleString('pt-BR');
-          }
+         
         },
         title: {
           display: true,
-          text: 'Valor (R$)',
+          text: 'Aprovadas',
           color: textColor,
           font: {
             family: "'Inter', sans-serif",
@@ -190,54 +243,6 @@ onMounted(() => {
   });
 });
 </script>
-
-<template>
-  <section class="chart-section">
-    <div class="section-header">
-      <h2 class="section-title">Tendências Mensais</h2>
-      <div v-if="monthlyData.length > 0" class="chart-summary">
-        <span class="summary-item">
-          <strong>{{ monthlyData.reduce((sum, item) => sum + item.count, 0) }}</strong> ideias no período
-        </span>
-        <span class="summary-divider">•</span>
-        <span class="summary-item">
-          <strong>R$ {{ monthlyData.reduce((sum, item) => sum + (item.value || 0), 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) }}</strong> em valor total
-        </span>
-      </div>
-    </div>
-    
-    <div class="chart-container">
-      <!-- Loading state -->
-      <div v-if="isLoading" class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Carregando dados mensais...</p>
-      </div>
-      
-      <!-- Error state -->
-      <div v-else-if="error" class="error-state">
-        <div class="error-icon">📊</div>
-        <p>{{ error }}</p>
-        <small>Exibindo dados de exemplo</small>
-      </div>
-      
-      <!-- Empty state -->
-      <div v-else-if="monthlyData.length === 0" class="empty-state">
-        <div class="empty-icon">📈</div>
-        <p>Nenhum dado encontrado para o período selecionado</p>
-        <small>Tente ajustar o filtro de datas</small>
-      </div>
-      
-      <!-- Chart -->
-      <Line 
-        v-else
-        ref="chartRef"
-        :data="chartData" 
-        :options="chartOptions" 
-        class="chart"
-      />
-    </div>
-  </section>
-</template>
 
 <style scoped>
 .chart-section {

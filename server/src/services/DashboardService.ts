@@ -57,9 +57,8 @@ interface PeriodFilter {
 export class DashboardService {
   static async getSummaryData(dassOffice: string, startDate?: Date, endDate?: Date): Promise<SummaryData> {
     const client = await pool.connect();
-    
+
     try {
-      // Verificar se a unidade dass é válida
       const validOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
       if (!validOffices.includes(dassOffice)) {
         throw new CustomError("Unidade Dass inválida", 400);
@@ -68,7 +67,7 @@ export class DashboardService {
       // Construir filtros de data
       let dateFilter = '';
       const params: any[] = [dassOffice];
-      
+
       if (startDate && endDate) {
         dateFilter = ' AND createdat BETWEEN $2 AND $3';
         params.push(startDate.toISOString(), endDate.toISOString());
@@ -83,11 +82,11 @@ export class DashboardService {
       const query = `
         SELECT 
           COUNT(*) as total_ideas,
-          COUNT(CASE WHEN status_analista = 'APROVADO' THEN 1 END) as implemented_ideas,
+          COUNT(CASE WHEN status_gerente = 'approve' or status_analista = 'approve' THEN 1 END) as implemented_ideas,
           COUNT(CASE WHEN status_gerente IS NULL OR status_analista IS NULL THEN 1 END) as pending_ideas,
-          COUNT(CASE WHEN status_gerente = 'REPROVADO' OR status_analista = 'REPROVADO' THEN 1 END) as rejected_ideas,
-          COUNT(CASE WHEN status_gerente = 'APROVADO' THEN 1 END) as approved_by_manager,
-          COUNT(CASE WHEN status_gerente = 'APROVADO' AND status_analista IS NULL THEN 1 END) as in_analysis,
+          COUNT(CASE WHEN status_gerente = 'reprove' OR status_analista = 'reprove' THEN 1 END) as rejected_ideas,
+          COUNT(CASE WHEN status_gerente = 'approve' THEN 1 END) as approved_by_manager,
+          COUNT(CASE WHEN em_espera = '1' THEN 1 END) as in_analysis,
           COALESCE(SUM(valor_amortizado), 0) as total_value,
           COALESCE(AVG(valor_amortizado), 0) as avg_value
         FROM pense_aja.pense_aja_dass
@@ -97,7 +96,7 @@ export class DashboardService {
       `;
 
       const result = await client.query(query, params);
-      
+
       if (result.rows.length === 0) {
         return {
           totalIdeas: 0,
@@ -112,7 +111,7 @@ export class DashboardService {
       }
 
       const data = result.rows[0];
-      
+
       return {
         totalIdeas: parseInt(data.total_ideas) || 0,
         implementedIdeas: parseInt(data.implemented_ideas) || 0,
@@ -137,7 +136,7 @@ export class DashboardService {
 
   static async getMonthlyData(dassOffice: string, startDate?: Date, endDate?: Date): Promise<MonthlyData[]> {
     const client = await pool.connect();
-    
+
     try {
       // Verificar se a unidade dass é válida
       const validOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
@@ -148,39 +147,37 @@ export class DashboardService {
       // Construir filtros de data
       let dateFilter = '';
       const params: any[] = [dassOffice];
-      
-      // if (startDate && endDate) {
-      //   dateFilter = ' AND createdat BETWEEN $2 AND $3';
-      //   params.push(startDate.toISOString(), endDate.toISOString());
-      // } else if (startDate) {
-      //   dateFilter = ' AND createdat >= $2';
-      //   params.push(startDate.toISOString());
-      // } else if (endDate) {
-      //   dateFilter = ' AND createdat <= $2';
-      //   params.push(endDate.toISOString());
-      // }
+
+      if (startDate && endDate) {
+        dateFilter = ' AND createdat BETWEEN $2 AND $3';
+        params.push(startDate.toISOString(), endDate.toISOString());
+      } else if (startDate) {
+        dateFilter = ' AND createdat >= $2';
+        params.push(startDate.toISOString());
+      } else if (endDate) {
+        dateFilter = ' AND createdat <= $2';
+        params.push(endDate.toISOString());
+      }
+
       const query = `
         SELECT 
           TO_CHAR(createdat, 'YYYY-MM') as month_year,
           TO_CHAR(createdat, 'Mon') as month_name,
           COUNT(*) as count,
-          COALESCE(SUM(valor_amortizado), 0) as total_value
+          COUNT(*) FILTER (WHERE status_gerente = 'approve' or status_analista = 'approve') AS total_aprovados
         FROM pense_aja.pense_aja_dass
         WHERE unidade_dass = $1 
           AND excluido = false
-          AND createdat >= DATE_TRUNC('year', CURRENT_DATE)
-          AND createdat <= CURRENT_DATE
+          ${dateFilter}
         GROUP BY TO_CHAR(createdat, 'YYYY-MM'), TO_CHAR(createdat, 'Mon'), EXTRACT(MONTH FROM createdat)
         ORDER BY TO_CHAR(createdat, 'YYYY-MM')
       `;
-
       const result = await client.query(query, params);
-      
+
       if (result.rows.length === 0) {
         return [];
       }
 
-      // Mapear os nomes dos meses para português
       const monthsMap: { [key: string]: string } = {
         'Jan': 'Jan',
         'Feb': 'Fev',
@@ -199,7 +196,7 @@ export class DashboardService {
       return result.rows.map(row => ({
         month: monthsMap[row.month_name] || row.month_name,
         count: parseInt(row.count) || 0,
-        value: parseFloat(row.total_value) || 0
+        value: parseFloat(row.total_aprovados) || 0
       }));
 
     } catch (error) {
@@ -215,10 +212,10 @@ export class DashboardService {
 
   static async getDimensionalData(dassOffice: string, startDate?: Date, endDate?: Date): Promise<DimensionalData> {
     const client = await pool.connect();
-    
+
     try {
       // Verificar se a unidade dass é válida
-      const validOffices = ['SEST', 'SENAT', 'IEL'];
+      const validOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
       if (!validOffices.includes(dassOffice)) {
         throw new CustomError("Unidade Dass inválida", 400);
       }
@@ -226,7 +223,7 @@ export class DashboardService {
       // Construir filtros de data
       let dateFilter = '';
       const params: any[] = [dassOffice];
-      
+
       if (startDate && endDate) {
         dateFilter = ' AND createdat BETWEEN $2 AND $3';
         params.push(startDate.toISOString(), endDate.toISOString());
@@ -321,7 +318,7 @@ export class DashboardService {
 
   static async getIdeaHighlights(dassOffice: string): Promise<IdeaHighlight[]> {
     const client = await pool.connect();
-    
+
     try {
       // Verificar se a unidade dass é válida
       const validOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
@@ -343,8 +340,8 @@ export class DashboardService {
           status_analista,
           valor_amortizado,
           CASE 
-            WHEN status_gerente = 'APROVADO' AND status_analista = 'APROVADO' THEN 'Aprovada'
-            WHEN status_gerente = 'REPROVADO' OR status_analista = 'REPROVADO' THEN 'Rejeitada'
+            WHEN status_gerente = 'approve' AND status_analista = 'approve' THEN 'Aprovada'
+            WHEN status_gerente = 'reprove' OR status_analista = 'reprove' THEN 'Rejeitada'
             ELSE 'Pendente'
           END as status
         FROM pense_aja.pense_aja_dass
@@ -354,7 +351,7 @@ export class DashboardService {
           AND situacao_atual IS NOT NULL
         ORDER BY 
           CASE 
-            WHEN status_gerente = 'APROVADO' AND status_analista = 'APROVADO' THEN valor_amortizado
+            WHEN status_gerente = 'approve' AND status_analista = 'approve' THEN valor_amortizado
             ELSE 0
           END DESC,
           createdat DESC
@@ -362,7 +359,7 @@ export class DashboardService {
       `;
 
       const result = await client.query(query, [dassOffice]);
-      
+
       // Gerar cores de avatar baseadas no nome
       const getAvatarColor = (name: string): string => {
         const colors = ['#3B82F6', '#10B981', '#F97316', '#8B5CF6', '#EF4444', '#06B6D4'];
@@ -386,16 +383,16 @@ export class DashboardService {
       const getLikesAndComments = (value: number, status: string) => {
         const baseValue = Math.max(value || 0, 1000);
         const statusMultiplier = status === 'Aprovada' ? 1.5 : status === 'Pendente' ? 1.0 : 0.7;
-        
+
         const likes = Math.floor((baseValue / 1000) * statusMultiplier * (Math.random() * 10 + 15));
         const comments = Math.floor(likes * 0.15 * (Math.random() + 0.5));
-        
+
         return { likes: Math.min(likes, 99), comments: Math.min(comments, 25) };
       };
 
       const highlights: IdeaHighlight[] = result.rows.map((row, index) => {
         const { likes, comments } = getLikesAndComments(row.valor_amortizado, row.status);
-        
+
         return {
           id: row.id,
           title: row.title || 'Projeto sem título',
@@ -423,11 +420,11 @@ export class DashboardService {
 
   static async getEngagementData(dassOffice: string, startDate?: Date, endDate?: Date): Promise<EngagementContributor[]> {
     const client = await pool.connect();
-    
+
     try {
       let dateFilter = '';
       const queryParams: any[] = [dassOffice];
-      
+
       if (startDate && endDate) {
         dateFilter = 'AND data_realizada BETWEEN $2 AND $3';
         queryParams.push(startDate, endDate);
@@ -439,25 +436,25 @@ export class DashboardService {
         queryParams.push(endDate);
       }
 
-      
+
       const query = `
         SELECT 
           nome,
           setor,
           COUNT(*) as total_ideas,
-          COUNT(CASE WHEN status_gerente = 'APROVAR' THEN 1 END) as implemented_ideas
+          COUNT(CASE WHEN status_gerente = 'approve' THEN 1 END) as implemented_ideas
         FROM pense_aja.pense_aja_dass 
         WHERE unidade_dass = $1 
           AND excluido = false 
           ${dateFilter}
         GROUP BY nome, setor
         HAVING COUNT(*) > 0
-        ORDER BY COUNT(*) DESC, COUNT(CASE WHEN status_gerente = 'APROVAR' THEN 1 END) DESC
+        ORDER BY COUNT(*) DESC, COUNT(CASE WHEN status_gerente = 'approve' THEN 1 END) DESC
         LIMIT 10
       `;
 
       const result = await client.query(query, queryParams);
-      
+
       // Gerar cores de avatar baseadas no nome
       const getAvatarColor = (name: string): string => {
         const colors = ['#3B82F6', '#10B981', '#F97316', '#8B5CF6', '#EF4444', '#06B6D4', '#EC4899', '#F59E0B'];
@@ -494,14 +491,14 @@ export class DashboardService {
         };
 
         const departmentRoles = roles[department] || ['Colaborador', 'Técnico', 'Analista', 'Coordenador'];
-        
+
         // Escolher cargo baseado no número de ideias (mais ideias = cargo mais senior)
         let roleIndex;
         if (totalIdeas >= 15) roleIndex = 3; // Coordenador/Senior
         else if (totalIdeas >= 10) roleIndex = 2; // Analista/Técnico Senior
         else if (totalIdeas >= 5) roleIndex = 1; // Técnico/Analista
         else roleIndex = 0; // Operador/Assistente
-        
+
         return departmentRoles[Math.min(roleIndex, departmentRoles.length - 1)];
       };
 
