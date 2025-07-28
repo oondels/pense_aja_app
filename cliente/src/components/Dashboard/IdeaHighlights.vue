@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
-import { useIdeasData } from '../../composables/useIdeasData';
+import { computed, watch } from "vue";
+import { useIdeasData } from "../../composables/useIdeasData";
 
 // Props para filtros de data
 const props = defineProps<{
@@ -11,18 +11,22 @@ const props = defineProps<{
 const { topIdeas, isLoading, error, refetch } = useIdeasData(props.startDate, props.endDate);
 
 // Observar mudanças nas datas para recarregar os dados
-watch([() => props.startDate, () => props.endDate], ([newStartDate, newEndDate]) => {
-  console.log("Updating idea highlights data with new dates:", { startDate: newStartDate, endDate: newEndDate });
-  refetch(newStartDate, newEndDate);
-}, { immediate: false });
+watch(
+  [() => props.startDate, () => props.endDate],
+  ([newStartDate, newEndDate]) => {
+    console.log("Updating idea highlights data with new dates:", { startDate: newStartDate, endDate: newEndDate });
+    refetch(newStartDate, newEndDate);
+  },
+  { immediate: false }
+);
 
 // Format date to readable string
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   });
 };
 </script>
@@ -30,19 +34,17 @@ const formatDate = (dateString: string) => {
 <template>
   <section class="highlights-section">
     <h2 class="section-title">Ideias em Destaque</h2>
-    
+
     <div class="highlights-container">
       <div v-if="isLoading" class="loading-indicator">Carregando ideias em destaque...</div>
-      
+
       <div v-else-if="error" class="error-indicator">
         <p>{{ error }}</p>
         <p class="retry-text">Dados de exemplo serão exibidos.</p>
       </div>
-      
-      <div v-else-if="topIdeas.length === 0" class="empty-indicator">
-        Nenhuma ideia encontrada para esta unidade.
-      </div>
-      
+
+      <div v-else-if="topIdeas.length === 0" class="empty-indicator">Nenhuma ideia encontrada para esta unidade.</div>
+
       <div v-else class="idea-cards">
         <div v-for="idea in topIdeas" :key="idea.id" class="idea-card">
           <div class="idea-header">
@@ -56,31 +58,18 @@ const formatDate = (dateString: string) => {
                 <span class="idea-date">{{ formatDate(idea.date) }}</span>
               </div>
             </div>
-            <div class="idea-status" :class="idea.status.toLowerCase()">
-              {{ idea.status }}
-            </div>
           </div>
-          
+
           <p class="idea-description">{{ idea.description }}</p>
-          
+
           <div class="idea-footer">
             <div class="idea-category">{{ idea.category }}</div>
             <div class="idea-factory">{{ idea.factory }}</div>
             <div class="idea-sector">{{ idea.sector }}</div>
-            
+
             <div class="idea-metrics">
-              <div class="idea-metric likes">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                </svg>
-                <span>{{ idea.likes }}</span>
-              </div>
-              
               <div class="idea-metric comments">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-                <span>{{ idea.comments }}</span>
+                <span class="idea-status" :class="idea.status.toLowerCase()">{{ idea.status }}</span>
               </div>
             </div>
           </div>
@@ -142,18 +131,19 @@ const formatDate = (dateString: string) => {
 
 .idea-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
 }
 
 .idea-card {
   background-color: var(--color-bg-elevated);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-height: 280px;
 }
 
 .idea-card:hover {
@@ -163,54 +153,60 @@ const formatDate = (dateString: string) => {
 
 .idea-header {
   display: flex;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   position: relative;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   color: white;
-  margin-right: 0.75rem;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
 }
 
 .idea-meta {
   flex: 1;
+  min-width: 0;
 }
 
 .idea-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   margin: 0 0 0.25rem;
   color: var(--color-text-primary);
+  word-wrap: break-word;
+  line-height: 1.3;
 }
 
 .idea-author {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
 }
 
 .idea-date {
-  margin-left: 0.5rem;
   padding-left: 0.5rem;
   border-left: 1px solid var(--color-border);
+  white-space: nowrap;
 }
 
 .idea-status {
-  position: absolute;
-  top: 0;
-  right: 0;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  padding: 0.25rem 0.5rem;
+  padding: 0.2rem 0.4rem;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
 .idea-status.aprovada {
@@ -229,42 +225,49 @@ const formatDate = (dateString: string) => {
 }
 
 .idea-description {
-  margin: 0 0 1.5rem;
+  margin: 0 0 1rem;
   color: var(--color-text-primary);
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 0.9rem;
+  line-height: 1.4;
   flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .idea-footer {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.4rem;
   margin-top: auto;
+  align-items: flex-end;
 }
 
 .idea-category,
 .idea-factory,
 .idea-sector {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   background-color: var(--color-bg-hover);
   color: var(--color-text-secondary);
-  padding: 0.25rem 0.5rem;
+  padding: 0.2rem 0.4rem;
   border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .idea-metrics {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-left: auto;
+  flex-shrink: 0;
 }
 
 .idea-metric {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.85rem;
+  gap: 0.2rem;
+  font-size: 0.8rem;
   color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
 .idea-metric.likes {
@@ -275,9 +278,130 @@ const formatDate = (dateString: string) => {
   color: var(--color-text-secondary);
 }
 
+@media (max-width: 1200px) {
+  .idea-cards {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
 @media (max-width: 768px) {
+  .highlights-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
   .idea-cards {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .idea-card {
+    padding: 0.875rem;
+    min-height: auto;
+  }
+
+  .idea-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .idea-status {
+    position: static;
+    align-self: flex-start;
+    margin-top: 0.25rem;
+  }
+
+  .idea-meta {
+    width: 100%;
+  }
+
+  .idea-title {
+    font-size: 0.95rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .idea-author {
+    font-size: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.125rem;
+  }
+
+  .idea-date {
+    border-left: none;
+    padding-left: 0;
+  }
+
+  .idea-description {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+  }
+
+  .idea-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .idea-metrics {
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+
+  .idea-category,
+  .idea-factory,
+  .idea-sector {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.35rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .highlights-container {
+    padding: 0 0.5rem;
+  }
+
+  .idea-card {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  .idea-title {
+    font-size: 0.9rem;
+  }
+
+  .idea-description {
+    font-size: 0.8rem;
+  }
+
+  .loading-indicator,
+  .error-indicator,
+  .empty-indicator {
+    height: 150px;
+    font-size: 0.9rem;
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 1400px) {
+  .idea-cards {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .idea-card {
+    padding: 1.25rem;
   }
 }
 </style>

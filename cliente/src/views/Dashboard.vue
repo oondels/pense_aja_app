@@ -174,10 +174,9 @@ const downloadReport = async () => {
           : item.turno === "C"
           ? "3° Turno"
           : "Comercial",
-      "Data de Criação": formatDate(item.criado || item.createdat),
+      "Data de Criação": formatDate(item.createdat),
       "Situação Anterior": item.situacao_anterior,
       "Situação Atual": item.situacao_atual,
-      "Status Final": formatStatus(item),
       "Gerente Aprovador": item.gerente_aprovador || "Não avaliado",
       "Analista Avaliador": item.analista_avaliador || "Não avaliado",
       "Em Espera": item.em_espera === "1" ? "Sim" : "Não",
@@ -201,8 +200,10 @@ const downloadReport = async () => {
       "Total de Ideias": dados.total,
       "Ideias Aprovadas": dados.aprovados,
       "Ideias Reprovadas": dados.reprovados,
-      "Ideias Pendentes": dados.pendentes,
       "Ideias em Espera": dados.emEspera,
+      "Visto Pelo Analista": dados.visto_analista || 0,
+      "Visto Pelo Gerente": dados.visto_gerente || 0,
+      "Ideias Pendentes": dados.pendentes,
       "Taxa de Aprovação (%)": dados.total > 0 ? ((dados.aprovados / dados.total) * 100).toFixed(2) : "0.00",
     }));
 
@@ -214,6 +215,8 @@ const downloadReport = async () => {
       "Ideias Reprovadas": dados.reprovados,
       "Ideias Pendentes": dados.pendentes,
       "Ideias em Espera": dados.emEspera,
+      "Visto Pelo Analista": dados.visto_analista || 0,
+      "Visto Pelo Gerente": dados.visto_gerente || 0,
       "Taxa de Aprovação (%)": dados.total > 0 ? ((dados.aprovados / dados.total) * 100).toFixed(2) : "0.00",
     }));
 
@@ -225,41 +228,43 @@ const downloadReport = async () => {
       "Ideias Reprovadas": dados.reprovados,
       "Ideias Pendentes": dados.pendentes,
       "Ideias em Espera": dados.emEspera,
+      "Visto Pelo Analista": dados.visto_analista || 0,
+      "Visto Pelo Gerente": dados.visto_gerente || 0,
       "Taxa de Aprovação (%)": dados.total > 0 ? ((dados.aprovados / dados.total) * 100).toFixed(2) : "0.00",
     }));
 
-    // Aba 7: Engajamento por Colaborador
-    const engajamentoData = engagementData.map((item) => ({
-      "Nome do Colaborador": item.nome,
-      Setor: item.setor,
-      "Total de Ideias": item.total_ideas,
-      "Ideias Implementadas": item.implemented_ideas,
-      "Taxa de Implementação (%)":
-        item.total_ideas > 0 ? ((item.implemented_ideas / item.total_ideas) * 100).toFixed(2) : "0.00",
-    }));
+    // // Aba 7: Engajamento por Colaborador
+    // const engajamentoData = engagementData.map((item) => ({
+    //   "Nome do Colaborador": item.nome,
+    //   Setor: item.setor,
+    //   "Total de Ideias": item.total_ideas,
+    //   "Ideias Implementadas": item.implemented_ideas,
+    //   "Taxa de Implementação (%)":
+    //     item.total_ideas > 0 ? ((item.implemented_ideas / item.total_ideas) * 100).toFixed(2) : "0.00",
+    // }));
 
-    // Aba 8: Ideias em Destaque
-    const destaquesData = ideaHighlights.map((item) => ({
-      "Nome do Projeto": item.nome_projeto,
-      "Nome do Colaborador": item.nome,
-      Setor: item.setor,
-      Gerente: item.gerente,
-      "Data de Criação": formatDate(item.criado),
-      "Situação Anterior": item.situacao_anterior,
-      "Situação Atual": item.situacao_atual,
-      Classificação: item.classificacao || "Não classificado",
-      "Valor Estimado": item.valor_estimado
-        ? `R$ ${item.valor_estimado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-        : "Não informado",
-    }));
+    // // Aba 8: Ideias em Destaque
+    // const destaquesData = ideaHighlights.map((item) => ({
+    //   "Nome do Projeto": item.nome_projeto,
+    //   "Nome do Colaborador": item.nome,
+    //   Setor: item.setor,
+    //   Gerente: item.gerente,
+    //   "Data de Criação": formatDate(item.criado),
+    //   "Situação Anterior": item.situacao_anterior,
+    //   "Situação Atual": item.situacao_atual,
+    //   Classificação: item.classificacao || "Não classificado",
+    //   "Valor Estimado": item.valor_estimado
+    //     ? `R$ ${item.valor_estimado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+    //     : "Não informado",
+    // }));
 
     // Aba 9: Dados Mensais
-    const mensalData = monthlyData.map((item) => ({
-      "Mês/Ano": `${item.month}/${item.year}`,
-      "Total de Ideias": item.total_ideas,
-      "Ideias Aprovadas": item.approved_ideas,
-      "Valor Estimado": `R$ ${(item.estimated_value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
-    }));
+    // const mensalData = monthlyData.map((item) => ({
+    //   "Mês/Ano": `${item.month}/${item.year}`,
+    //   "Total de Ideias": item.total_ideas,
+    //   "Ideias Aprovadas": item.approved_ideas,
+    //   "Valor Estimado": `R$ ${(item.estimated_value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+    // }));
 
     const workBook = XLSX.utils.book_new();
     if (resumoData.length > 0) {
@@ -292,20 +297,20 @@ const downloadReport = async () => {
       XLSX.utils.book_append_sheet(workBook, turnoSheet, "Análise por Turno");
     }
 
-    if (engajamentoData.length > 0) {
-      const engajamentoSheet = XLSX.utils.json_to_sheet(engajamentoData);
-      XLSX.utils.book_append_sheet(workBook, engajamentoSheet, "Engajamento");
-    }
+    // if (engajamentoData.length > 0) {
+    //   const engajamentoSheet = XLSX.utils.json_to_sheet(engajamentoData);
+    //   XLSX.utils.book_append_sheet(workBook, engajamentoSheet, "Engajamento");
+    // }
 
-    if (destaquesData.length > 0) {
-      const destaquesSheet = XLSX.utils.json_to_sheet(destaquesData);
-      XLSX.utils.book_append_sheet(workBook, destaquesSheet, "Ideias em Destaque");
-    }
+    // if (destaquesData.length > 0) {
+    //   const destaquesSheet = XLSX.utils.json_to_sheet(destaquesData);
+    //   XLSX.utils.book_append_sheet(workBook, destaquesSheet, "Ideias em Destaque");
+    // }
 
-    if (mensalData.length > 0) {
-      const mensalSheet = XLSX.utils.json_to_sheet(mensalData);
-      XLSX.utils.book_append_sheet(workBook, mensalSheet, "Dados Mensais");
-    }
+    // if (mensalData.length > 0) {
+    //   const mensalSheet = XLSX.utils.json_to_sheet(mensalData);
+    //   XLSX.utils.book_append_sheet(workBook, mensalSheet, "Dados Mensais");
+    // }
 
     // Gerar arquivo
     const xlsxBuffer = XLSX.write(workBook, {

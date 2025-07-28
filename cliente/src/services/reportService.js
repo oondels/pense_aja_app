@@ -52,7 +52,9 @@ export const reportService = {
           aprovados: 0,
           reprovados: 0,
           pendentes: 0,
-          emEspera: 0
+          emEspera: 0,
+          visto_analista: 0,
+          visto_gerente: 0
         }
       };
 
@@ -75,17 +77,21 @@ export const reportService = {
           }
           aggregations[aggKey][key].total++;
 
-          if (status === 'APROVADO') aggregations[aggKey][key].aprovados++;
+          if (status === 'AVALIADO') aggregations[aggKey][key].aprovados++;
           else if (status === 'REPROVADO') aggregations[aggKey][key].reprovados++;
           else if (status === 'EM ESPERA') aggregations[aggKey][key].emEspera++;
+          else if (status === 'VISTO PELO ANALISTA') aggregations[aggKey][key].visto_analista++;
+          else if (status === 'VISTO PELO GERENTE') aggregations[aggKey][key].visto_gerente++;
           else aggregations[aggKey][key].pendentes++;
         });
 
         // Métricas totais
         aggregations.totalMetrics.total++;
-        if (status === 'APROVADO') aggregations.totalMetrics.aprovados++;
+        if (status === 'AVALIADO') aggregations.totalMetrics.aprovados++;
         else if (status === 'REPROVADO') aggregations.totalMetrics.reprovados++;
         else if (status === 'EM ESPERA') aggregations.totalMetrics.emEspera++;
+        else if (status === 'VISTO PELO ANALISTA') aggregations.totalMetrics.visto_analista++;
+        else if (status === 'VISTO PELO GERENTE') aggregations.totalMetrics.visto_gerente++;
         else aggregations.totalMetrics.pendentes++;
       });
 
