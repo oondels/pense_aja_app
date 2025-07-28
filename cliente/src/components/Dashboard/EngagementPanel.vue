@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useEngagementData } from '../../composables/useEngagementData.js';
 
 // Props para filtros de data
@@ -8,7 +8,12 @@ const props = defineProps<{
   endDate?: string;
 }>();
 
-const { topContributors, isLoading, error } = useEngagementData(props.startDate, props.endDate);
+const { topContributors, isLoading, error, refetch } = useEngagementData(props.startDate, props.endDate);
+
+// Observar mudanças nas datas para recarregar os dados
+watch([() => props.startDate, () => props.endDate], ([newStartDate, newEndDate]) => {
+  refetch(newStartDate, newEndDate);
+}, { immediate: false });
 
 // Calculate rank percentages and styles
 const getContributorStyle = (index: number) => {

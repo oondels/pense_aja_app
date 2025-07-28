@@ -1,4 +1,4 @@
-import { ref, onMounted, watch } from 'vue';
+import { ref } from 'vue';
 import { dashboardService } from '../services/dashboardService.js';
 import { useUserStore } from '../stores/userStore.js';
 
@@ -8,7 +8,7 @@ export function useEngagementData(startDate = null, endDate = null) {
   const error = ref(null);
   const userStore = useUserStore();
 
-  const fetchEngagementData = async () => {
+  const fetchEngagementData = async (start = startDate, end = endDate) => {
     try {
       isLoading.value = true;
       error.value = null;
@@ -16,7 +16,7 @@ export function useEngagementData(startDate = null, endDate = null) {
       // Usar SEST como padrão, ou pegar da store do usuário se disponível
       const dassOffice = userStore.userData?.unidade || 'SEST';
       
-      const data = await dashboardService.getEngagementData(dassOffice, startDate, endDate);
+      const data = await dashboardService.getEngagementData(dassOffice, start, end);
       
       topContributors.value = data || [];
     } catch (err) {
@@ -58,12 +58,8 @@ export function useEngagementData(startDate = null, endDate = null) {
     }
   };
 
-  // Reagir a mudanças nas datas
-  watch([() => startDate, () => endDate], fetchEngagementData, { deep: true });
-
-  onMounted(() => {
-    fetchEngagementData();
-  });
+  // Fetch initial data
+  fetchEngagementData();
 
   return {
     topContributors,
