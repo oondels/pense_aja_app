@@ -27,3 +27,13 @@ export const purchaseItem = async (colaboradorData, product, analistaName, anali
     loadingPass.value = false;
   }
 }
+
+export const createProduct = async (productData) => {
+  // const response = await api.post("/pense-aja/product/SEST", productData);
+  // console.log("Product added successfully:", response.data);
+  // return response.data;
+}
+
+export const editProduct = async (id, data) => {
+  console.log();
+}

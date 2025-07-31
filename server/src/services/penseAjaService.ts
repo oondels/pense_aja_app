@@ -51,6 +51,12 @@ interface EvaluationData {
   a3Mae?: string;
 }
 
+interface NewProduct {
+  name: string;
+  value: number;
+  image: string;
+}
+
 const turnoMap: Record<string, string> = {
   A: "1° Turno",
   B: "2° Turno",
@@ -65,11 +71,11 @@ export const PenseAjaService = {
     try {
       let params = []
       let filters = []
-      
+
       params.push(startDateParsed)
       params.push(endDateParsed)
       params.push(dassOffice)
-      
+
       if (name) {
         filters.push(` nome = $${params.length + 1} `);
         params.push(name);
@@ -357,13 +363,13 @@ export const PenseAjaService = {
       }
 
       // Evitar inconsistências de status
-       else if (status === REPROVE && avaliacao) {
+      else if (status === REPROVE && avaliacao) {
         throw new CustomError(
           'Não é possível reprovar um Pense Aja com uma avaliação (A, B ou C).',
           400,
           'Não é possível reprovar um Pense Aja com uma avaliação (A, B ou C).'
         );
-       }
+      }
 
       // build SET clauses and parameters
       const clauses: string[] = [];
@@ -440,8 +446,8 @@ export const PenseAjaService = {
       const result = await client.query(sql, params);
       if (result.rowCount === 0) {
         throw new CustomError('Pense Aja não encontrado.', 404, 'Pense Aja não encontrado.');
-      }      
-      
+      }
+
       if ((status === EXCLUDE || status === REPROVE) && isGerente) {
         await client.query(
           `DELETE FROM pense_aja.pense_aja_pontos
@@ -558,7 +564,44 @@ export const PenseAjaService = {
         throw new CustomError("Erro ao comprar produto.");
       }
     } finally {
-      await client.release();
+      client.release();
+    }
+  },
+
+  async createProduct(dassOffice: string, productData: NewProduct, userRegistration: string) {
+    checkDassOffice(dassOffice);
+
+    const client = await pool.connect()
+    try {
+      await client.query("BEGIN")
+
+      const product = await client.query(`
+        INSERT INTO pense_aja.pense_aja_loja (nome, imagem, valor, unidade_dass, user_create)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING nome
+      `, [productData.name, productData.image, productData.value, dassOffice, userRegistration])
+
+      if (product.rows.length === 0) {
+        await client.query("ROLLBACK");
+        throw new CustomError(
+          "Erro ao cadastrar novo produto.",
+          400,
+          "Erro ao inserir no banco de dados."
+        );
+      }
+
+      return product.rows[0].nome;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      logger.error("Store", `Erro ao cadastrar novo produto: ${error}`);
+
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        throw new CustomError("Erro ao cadastrar novo produto.");
+      }
+    } finally {
+      client.release()
     }
   }
 };
