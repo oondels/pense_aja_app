@@ -24,7 +24,7 @@
       </template>
 
       <template v-slot:default="{ isActive }">
-        <div id="loja" class="bg-white rounded-b-2xl shadow-lg max-h-screen overflow-y-auto">
+        <div id="loja" class="bg-white rounded-b-2xl shadow-lg max-h-screen overflow-y-auto position-relative">
           <div class="max-w-6xl mx-auto p-6">
             <!-- Header -->
             <div
@@ -176,6 +176,276 @@
             </div>
           </div>
         </div>
+
+        <!-- Edit Store -->
+        <div class="edit-store position-absolute bottom-5 right-5">
+          <v-dialog max-width="1200" persistent>
+            <template v-slot:activator="{ props: activatorProps }">
+              <v-fab
+                v-bind="activatorProps"
+                color="light-green-lighten-1"
+                size="large"
+                icon="mdi mdi-storefront-edit-outline"
+                class="shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:pulse-glow"
+              />
+            </template>
+
+            <template v-slot:default="{ isActive }">
+              <v-card class="rounded-xl">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-6">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                      <div class="bg-white/20 backdrop-blur-sm rounded-full p-3">
+                        <i class="mdi mdi-storefront-edit text-2xl" />
+                      </div>
+
+                      <div>
+                        <h2 class="text-2xl font-bold">Gerenciar Loja</h2>
+                        <p class="text-white/80">Edite produtos e gerencie sua loja de recompensas</p>
+                      </div>
+                    </div>
+
+                    <v-btn
+                      @click="() => (isActive.value = false)"
+                      icon="mdi-close"
+                      variant="text"
+                      color="white"
+                      class="hover:bg-white/20 rounded-full"
+                    />
+                  </div>
+                </div>
+
+                <!-- Content -->
+                <div class="p-6 bg-gray-50 min-h-[600px]">
+                  <!-- Action Bar -->
+                  <div class="flex flex-col sm:flex-row items-center justify-between mb-6 space-y-4 sm:space-y-0">
+                    <div class="flex items-center space-x-4">
+                      <v-btn
+                        @click="openAddProductDialog"
+                        color="primary"
+                        prepend-icon="mdi-plus"
+                        class="rounded-lg shadow-md hover:shadow-lg transition-all"
+                        size="large"
+                      >
+                        Adicionar Produto
+                      </v-btn>
+
+                      <div class="flex items-center bg-white rounded-lg px-4 py-2 shadow-sm">
+                        <i class="mdi mdi-package-variant text-gray-500 mr-2"></i>
+                        <span class="text-sm text-gray-600">{{ editableProducts.length }} produtos</span>
+                      </div>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="flex items-center bg-white rounded-lg shadow-sm overflow-hidden min-w-[300px]">
+                      <i class="mdi mdi-magnify text-gray-400 ml-4"></i>
+                      <input
+                        v-model="searchQuery"
+                        type="text"
+                        placeholder="Buscar produtos..."
+                        class="w-full px-4 py-3 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Products Grid -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 custom-scrollbar">
+                    <div
+                      v-for="product in filteredEditableProducts"
+                      :key="product.id"
+                      class="product-card bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100"
+                    >
+                      <!-- Product Image -->
+                      <div
+                        class="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+                      >
+                        <img
+                          :src="product.image"
+                          :alt="product.name"
+                          class="max-h-32 max-w-32 object-contain drop-shadow-md"
+                        />
+                        <div
+                          class="absolute top-3 right-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md"
+                        >
+                          {{ product.points }} pts
+                        </div>
+                      </div>
+
+                      <!-- Product Details -->
+                      <div class="p-5">
+                        <div class="space-y-4">
+                          <!-- Product Name -->
+                          <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Produto</label>
+                            <input
+                              v-model="product.name"
+                              type="text"
+                              class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                              placeholder="Nome do produto"
+                            />
+                          </div>
+
+                          <!-- Points -->
+                          <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Pontos Necessários</label>
+                            <div class="relative">
+                              <input
+                                v-model.number="product.points"
+                                type="number"
+                                min="1"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all pl-8"
+                                placeholder="0"
+                              />
+                              <i
+                                class="mdi mdi-star absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-500"
+                              ></i>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+                          <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-gray-500">ID: {{ product.id }}</span>
+                          </div>
+                          <v-btn
+                            color="error"
+                            variant="outlined"
+                            size="small"
+                            class="rounded-lg"
+                            prepend-icon="mdi-delete-outline"
+                          >
+                            Remover
+                          </v-btn>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div
+                      v-if="filteredEditableProducts.length === 0"
+                      class="col-span-full flex flex-col items-center justify-center py-16 text-gray-500"
+                    >
+                      <i class="mdi mdi-package-variant-closed text-6xl mb-4"></i>
+                      <h3 class="text-xl font-semibold mb-2">Nenhum produto encontrado</h3>
+                      <p class="text-gray-400">
+                        {{ searchQuery ? "Tente uma busca diferente" : "Adicione produtos para começar" }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Save Actions -->
+                  <div class="flex items-center justify-center mt-8 pt-6 border-t border-gray-200">
+                    <div class="flex items-center space-x-3 mb-5">
+                      <v-btn @click="closeEditDialog" variant="outlined" color="gray" class="rounded-lg">
+                        Cancelar
+                      </v-btn>
+                      <v-btn
+                        @click="saveProducts"
+                        color="primary"
+                        class="rounded-lg shadow-md"
+                        prepend-icon="mdi-content-save"
+                      >
+                        Salvar Alterações
+                      </v-btn>
+                    </div>
+                  </div>
+                </div>
+              </v-card>
+            </template>
+          </v-dialog>
+
+          <!-- Add Product Dialog -->
+          <v-dialog v-model="addProductDialog" max-width="600" persistent>
+            <v-card class="rounded-xl overflow-hidden">
+              <!-- Header -->
+              <div class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-3">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-full p-2">
+                      <i class="mdi mdi-plus text-xl"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-xl font-bold">Adicionar Novo Produto</h3>
+                      <p class="text-white/80">Crie um novo item para a loja</p>
+                    </div>
+                  </div>
+                  <v-btn
+                    @click="closeAddProductDialog"
+                    icon="mdi-close"
+                    variant="text"
+                    color="white"
+                    class="hover:bg-white/20 rounded-full"
+                  />
+                </div>
+              </div>
+
+              <!-- Form -->
+              <div class="p-6 space-y-6">
+                <!-- Product Name -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Produto</label>
+                  <input
+                    v-model="newProduct.name"
+                    type="text"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                    placeholder="Digite o nome do produto"
+                  />
+                </div>
+
+                <!-- Points -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Pontos Necessários</label>
+                  <div class="relative">
+                    <input
+                      v-model.number="newProduct.points"
+                      type="number"
+                      min="1"
+                      class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all pl-12"
+                      placeholder="Quantos pontos são necessários?"
+                    />
+                    <i class="mdi mdi-star absolute left-4 top-1/2 transform -translate-y-1/2 text-yellow-500"></i>
+                  </div>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="image-upload">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Imagem do Item</label>
+                  <v-file-upload
+                    v-model="selectedFiles"
+                    @update:model-value="handleFileUpload"
+                    accept="image/*"
+                    clearable
+                    density="compact"
+                    title="Arraste e Solte a Imagem"
+                    variant="outlined"
+                    class="border-2 border-dashed border-gray-300 rounded-lg hover:border-emerald-400 transition-colors"
+                    prepend-icon="mdi-camera-plus"
+                  >
+                  </v-file-upload>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center justify-end space-x-3 p-6 border-t border-gray-100 bg-gray-50">
+                <v-btn @click="closeAddProductDialog" variant="outlined" color="gray" class="rounded-lg">
+                  Cancelar
+                </v-btn>
+                <v-btn
+                  @click="addProduct"
+                  color="primary"
+                  class="rounded-lg shadow-md"
+                  prepend-icon="mdi-plus"
+                  :disabled="!newProduct.name || !newProduct.points || !shouldShowPreview"
+                >
+                  Adicionar Produto
+                </v-btn>
+              </div>
+            </v-card>
+          </v-dialog>
+        </div>
       </template>
     </v-dialog>
     <Notification ref="notification" />
@@ -183,13 +453,15 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount, defineExpose } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount, defineExpose, computed, nextTick } from "vue";
 import { getUserData } from "@/services/userService";
 import { useUserStore } from "@/stores/userStore";
 import BuyItem from "@/components/Store/BuyItem.vue";
 import Notification from "../Notification.vue";
 // TODO: Passar dados para banco de dados
 import storeProducts from "@/utils/penseAjaProducts.json";
+import { VFileUpload } from "vuetify/labs/VFileUpload";
+import { createProduct } from "@/services/storeService.js";
 
 const emit = defineEmits(["notify"]);
 
@@ -205,10 +477,48 @@ defineExpose({
 const loading = ref(false);
 const notification = ref(null);
 
+// Edit Store Dialog
+const editStoreDialog = ref(false);
+const addProductDialog = ref(false);
+const searchQuery = ref("");
+const editableProducts = ref([...storeProducts]);
+
+// New Product Form
+const newProduct = ref({
+  name: "",
+  points: 3,
+  image: "",
+});
+
+// File upload handling
+const selectedFiles = ref([]);
+const imagePreview = ref(null);
+
+// Computed property for filtered products in edit mode
+const filteredEditableProducts = computed(() => {
+  if (!searchQuery.value) return editableProducts.value;
+
+  return editableProducts.value.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
+// Computed property for showing preview
+const shouldShowPreview = computed(() => {
+  return newProduct.value.image || imagePreview.value;
+});
+
+const previewImageSrc = computed(() => {
+  return imagePreview.value || newProduct.value.image;
+});
+
 const isMobile = ref(false);
 function handleResize() {
   isMobile.value = window.innerWidth <= 1024;
 }
+
+const fetchProducts = () => {};
+
 onMounted(() => {
   filterProduct();
   handleResize();
@@ -273,6 +583,97 @@ const updatePoints = async (update) => {
     pontos.value = userData.value.pontos - userData.value.pontos_resgatados;
   }
 };
+
+// Edit Store Methods
+const openAddProductDialog = async () => {
+  addProductDialog.value = true;
+  newProduct.value = {
+    name: "",
+    points: 1,
+    image: "",
+  };
+  selectedFiles.value = [];
+  imagePreview.value = null;
+};
+
+const closeAddProductDialog = () => {
+  addProductDialog.value = false;
+  newProduct.value = {
+    name: "",
+    points: 1,
+    image: "",
+  };
+  selectedFiles.value = [];
+  imagePreview.value = null;
+};
+
+// File upload handling
+const handleFileUpload = (files) => {
+  if (files && files.length > 0) {
+    const file = files[0];
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      if (notification.value) {
+        notification.value.showNotification('Por favor, selecione apenas arquivos de imagem.', 'error');
+      }
+      return;
+    }
+    
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      if (notification.value) {
+        notification.value.showNotification('A imagem deve ter no máximo 5MB.', 'error');
+      }
+      return;
+    }
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imagePreview.value = e.target.result;
+      newProduct.value.image = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+// Handle image loading errors
+const handleImageError = () => {
+  if (notification.value) {
+    notification.value.showNotification('Erro ao carregar a imagem. Verifique a URL.', 'error');
+  }
+};
+
+// Clear image
+const clearImage = () => {
+  newProduct.value.image = '';
+  imagePreview.value = null;
+  selectedFiles.value = [];
+};
+
+const closeEditDialog = () => {
+  editStoreDialog.value = false;
+  searchQuery.value = "";
+};
+
+const addProduct = () => {
+  createProduct(newProduct.value)
+
+  // Show success notification
+};
+
+const saveProducts = () => {
+  console.log("Saving products:", editableProducts.value);
+
+  // Show success notification
+  if (notification) {
+    notification.showNotification("Produtos salvos com sucesso!", "success");
+  }
+
+  closeEditDialog();
+};
 </script>
 
 <style scoped>
@@ -298,9 +699,116 @@ const updatePoints = async (update) => {
   height: 1rem;
   animation: spin 1s linear infinite;
 }
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Custom edit store animations */
+.edit-store .v-fab {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.edit-store .v-fab:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* File upload styling */
+.v-file-upload {
+  transition: all 0.3s ease;
+}
+
+.v-file-upload:hover {
+  border-color: #10b981 !important;
+  background-color: #f0fdf4;
+}
+
+.image-upload .v-file-upload.v-file-upload--drag-active {
+  border-color: #10b981 !important;
+  background-color: #ecfdf5;
+  transform: scale(1.02);
+}
+
+/* Product card hover effects */
+.product-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Input focus effects */
+input:focus {
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+/* Glassmorphism effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #5a6fd8, #6a4190);
+}
+
+/* Pulse animation for active states */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(99, 102, 241, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.8), 0 0 30px rgba(99, 102, 241, 0.6);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Floating animation for FAB */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.edit-store .v-fab {
+  animation: float 3s ease-in-out infinite;
 }
 </style>
