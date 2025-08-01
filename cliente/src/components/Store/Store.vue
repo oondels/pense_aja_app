@@ -136,7 +136,7 @@
               <h2
                 class="text-2xl font-bold text-center mb-4 relative inline-block before:content-[''] before:absolute before:left-1/2 before:-bottom-1 before:w-16 before:h-1 before:bg-gradient-to-r before:from-blue-500 before:to-blue-600 before:rounded"
               ></h2>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div v-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div
                   v-for="product in filteredProducts"
                   :key="product.id"
@@ -173,6 +173,10 @@
                   </div>
                 </div>
               </div>
+
+              <div v-else class="text-center text-gray-500">
+                <p>Nenhum produto encontrado.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -192,6 +196,8 @@
 
             <template v-slot:default="{ isActive }">
               <v-card class="rounded-xl">
+                <Notification ref="notificationEditStore" />
+
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-6">
                   <div class="flex items-center justify-between">
@@ -231,7 +237,7 @@
                         Adicionar Produto
                       </v-btn>
 
-                      <div class="flex items-center bg-white rounded-lg px-4 py-2 shadow-sm">
+                      <div @click="teste" class="flex items-center bg-white rounded-lg px-4 py-2 shadow-sm">
                         <i class="mdi mdi-package-variant text-gray-500 mr-2"></i>
                         <span class="text-sm text-gray-600">{{ editableProducts.length }} produtos</span>
                       </div>
@@ -359,6 +365,8 @@
 
           <!-- Add Product Dialog -->
           <v-dialog v-model="addProductDialog" max-width="600" persistent>
+            <Notification ref="notificationEditStore" />
+
             <v-card class="rounded-xl overflow-hidden">
               <!-- Header -->
               <div class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6">
@@ -414,7 +422,7 @@
                 <div class="image-upload">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Imagem do Item</label>
                   <v-file-upload
-                    v-model="selectedFiles"
+                    max-files="1"
                     @update:model-value="handleFileUpload"
                     accept="image/*"
                     clearable
@@ -434,13 +442,13 @@
                   Cancelar
                 </v-btn>
                 <v-btn
-                  @click="addProduct"
+                  @click="createNewProduct"
                   color="primary"
                   class="rounded-lg shadow-md"
                   prepend-icon="mdi-plus"
-                  :disabled="!newProduct.name || !newProduct.points || !shouldShowPreview"
+                  :disabled="!newProduct.name || !newProduct.points"
                 >
-                  Adicionar Produto
+                  Cadastrar Produto
                 </v-btn>
               </div>
             </v-card>
@@ -448,6 +456,7 @@
         </div>
       </template>
     </v-dialog>
+
     <Notification ref="notification" />
   </div>
 </template>
@@ -459,13 +468,12 @@ import { useUserStore } from "@/stores/userStore";
 import BuyItem from "@/components/Store/BuyItem.vue";
 import Notification from "../Notification.vue";
 // TODO: Passar dados para banco de dados
-import storeProducts from "@/utils/penseAjaProducts.json";
+// import storeProducts from "@/utils/penseAjaProducts.json";
 import { VFileUpload } from "vuetify/labs/VFileUpload";
 import { createProduct } from "@/services/storeService.js";
 
 const emit = defineEmits(["notify"]);
 
-// Abre a loja pelo bottomNav
 const openStore = ref(false);
 const openStoreBottomNav = () => {
   openStore.value = !openStore.value;
@@ -477,46 +485,12 @@ defineExpose({
 const loading = ref(false);
 const notification = ref(null);
 
-// Edit Store Dialog
-const editStoreDialog = ref(false);
-const addProductDialog = ref(false);
-const searchQuery = ref("");
-const editableProducts = ref([...storeProducts]);
-
-// New Product Form
-const newProduct = ref({
-  name: "",
-  points: 3,
-  image: "",
-});
-
-// File upload handling
-const selectedFiles = ref([]);
-const imagePreview = ref(null);
-
-// Computed property for filtered products in edit mode
-const filteredEditableProducts = computed(() => {
-  if (!searchQuery.value) return editableProducts.value;
-
-  return editableProducts.value.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-});
-
-// Computed property for showing preview
-const shouldShowPreview = computed(() => {
-  return newProduct.value.image || imagePreview.value;
-});
-
-const previewImageSrc = computed(() => {
-  return imagePreview.value || newProduct.value.image;
-});
-
 const isMobile = ref(false);
 function handleResize() {
   isMobile.value = window.innerWidth <= 1024;
 }
 
+const storeProducts = ref([]);
 const fetchProducts = () => {};
 
 onMounted(() => {
@@ -537,20 +511,25 @@ const filterType = ref("all");
 
 const filteredProducts = ref(null);
 const filterProduct = () => {
-  if (filterType.value === "available") {
-    filteredProducts.value = storeProducts.filter((p) => p.points <= pontos.value);
-    return;
-  } else if (filterType.value === "unavailable") {
-    filteredProducts.value = storeProducts.filter((p) => p.points > pontos.value);
+  if (!storeProducts.value || storeProducts.value.length === 0) {
+    filteredProducts.value = [];
     return;
   }
 
-  filteredProducts.value = storeProducts;
+  if (filterType.value === "available") {
+    filteredProducts.value = storeProducts.value.filter((p) => p.points <= pontos.value);
+    return;
+  } else if (filterType.value === "unavailable") {
+    filteredProducts.value = storeProducts.value.filter((p) => p.points > pontos.value);
+    return;
+  }
+
+  filteredProducts.value = storeProducts.value || [];
 };
 
 watch(filterType, (newValue) => {
   if (newValue === "all") {
-    filteredProducts.value = storeProducts;
+    filteredProducts.value = storeProducts.value;
   } else {
     filterProduct();
   }
@@ -585,6 +564,40 @@ const updatePoints = async (update) => {
 };
 
 // Edit Store Methods
+const addProductDialog = ref(false);
+const searchQuery = ref("");
+const editableProducts = ref([]);
+watch(
+  storeProducts,
+  (newProducts) => {
+    editableProducts.value = [...(newProducts || [])];
+  },
+  { immediate: true, deep: true }
+);
+
+const newProduct = ref({
+  name: "",
+  points: 1,
+  image: "",
+});
+
+// File upload handling
+const selectedFiles = ref([]);
+
+// Computed property for filtered products in edit mode
+const filteredEditableProducts = computed(() => {
+  if (!editableProducts.value || editableProducts.value.length === 0) {
+    return [];
+  }
+
+  if (!searchQuery.value) return editableProducts.value;
+
+  return editableProducts.value.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
+const notificationEditStore = ref(null);
 const openAddProductDialog = async () => {
   addProductDialog.value = true;
   newProduct.value = {
@@ -593,7 +606,6 @@ const openAddProductDialog = async () => {
     image: "",
   };
   selectedFiles.value = [];
-  imagePreview.value = null;
 };
 
 const closeAddProductDialog = () => {
@@ -604,53 +616,22 @@ const closeAddProductDialog = () => {
     image: "",
   };
   selectedFiles.value = [];
-  imagePreview.value = null;
 };
 
-// File upload handling
-const handleFileUpload = (files) => {
-  if (files && files.length > 0) {
-    const file = files[0];
-    
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      if (notification.value) {
-        notification.value.showNotification('Por favor, selecione apenas arquivos de imagem.', 'error');
-      }
-      return;
-    }
-    
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-    if (file.size > maxSize) {
-      if (notification.value) {
-        notification.value.showNotification('A imagem deve ter no máximo 5MB.', 'error');
-      }
-      return;
-    }
-    
-    // Create preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      imagePreview.value = e.target.result;
-      newProduct.value.image = e.target.result;
-    };
-    reader.readAsDataURL(file);
+const handleFileUpload = (file) => {
+  notificationEditStore.value.showPopup("success", "Sucesso", "Funcionando!");
+  if (!file.type.startsWith("image/")) {
+    notificationEditStore.value.showPopup("warning", "Aviso!", "Por favor, selecione apenas arquivos de imagem.");
+    return;
   }
-};
 
-// Handle image loading errors
-const handleImageError = () => {
-  if (notification.value) {
-    notification.value.showNotification('Erro ao carregar a imagem. Verifique a URL.', 'error');
+  // Validate file size (5MB max)
+  const maxSize = 5 * 1024 * 1024;
+  if (file.size > maxSize) {
+    notificationEditStore.value.showPopup("warning", "Aviso!", "A imagem deve ter no máximo 5MB.");
+    return;
   }
-};
-
-// Clear image
-const clearImage = () => {
-  newProduct.value.image = '';
-  imagePreview.value = null;
-  selectedFiles.value = [];
+  selectedFiles.value = [file];
 };
 
 const closeEditDialog = () => {
@@ -658,19 +639,38 @@ const closeEditDialog = () => {
   searchQuery.value = "";
 };
 
-const addProduct = () => {
-  createProduct(newProduct.value)
+const createNewProduct = async () => {
+  try {
+    if (!user.usuario) {
+      console.error("User not logged in");
+      notificationEditStore.value.showPopup("error", "Erro!", "Você precisa estar logado para adicionar produtos.");
+      return;
+    }
 
-  // Show success notification
+    newProduct.value.user = user.usuario;
+    const dassOffice = localStorage.getItem("unidadeDass");
+
+    await createProduct(newProduct.value, selectedFiles.value, dassOffice);
+    notificationEditStore.value.showPopup("success", "Sucesso!", "Produto enfileirado para processamento.");
+
+    closeAddProductDialog();
+    await fetchProducts();
+  } catch (error) {
+    console.error(error);
+    notificationEditStore.value.showPopup(
+      "error",
+      "Erro!",
+      "Não foi possível criar o produto. Acione a equipe de automação."
+    );
+  }
 };
 
 const saveProducts = () => {
   console.log("Saving products:", editableProducts.value);
 
+  storeProducts.value = [...editableProducts.value];
   // Show success notification
-  if (notification) {
-    notification.showNotification("Produtos salvos com sucesso!", "success");
-  }
+  notificationEditStore.value.showPopup("Produtos salvos com sucesso!", "success");
 
   closeEditDialog();
 };

@@ -1,4 +1,5 @@
 import { api } from "./httpClient"
+import axios from "axios";
 
 export const purchaseItem = async (colaboradorData, product, analistaName, analistaUser, dassOffice, notification, loadingPass, dialog, emit) => {
   try {
@@ -28,10 +29,38 @@ export const purchaseItem = async (colaboradorData, product, analistaName, anali
   }
 }
 
-export const createProduct = async (productData) => {
-  // const response = await api.post("/pense-aja/product/SEST", productData);
-  // console.log("Product added successfully:", response.data);
-  // return response.data;
+export const createProduct = async (data, files, dassOffice) => {
+  try {
+    data.processType = "product"
+    const form = new FormData();
+    form.append("data", JSON.stringify(data));
+    files.forEach(file => {
+      if (file instanceof File) {
+        form.append("files", file);
+      } else {
+        console.warn("Item não é um arquivo válido:", file);
+        return;
+      }
+    })
+
+    const response = await axios.post("http://localhost:3020/", form, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "x-service": "pense_aja",
+        "x-subfolder": dassOffice,
+        "x-dass-office": dassOffice
+      }
+    })
+
+    console.log(response.data);
+    
+
+    return response.data;
+  } catch (error) {
+    console.log(error);
+
+    throw new Error("Erro ao criar produto: " + error.response.data.message);
+  }
 }
 
 export const editProduct = async (id, data) => {
