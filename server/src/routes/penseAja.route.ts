@@ -197,35 +197,4 @@ router.put("/purchase/:registration", verifyToken, roleVerificationAccess, async
   }
 })
 
-router.post("/product/:dassOffice", verifyToken, roleVerificationAccess, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { dassOffice } = req.params;
-    const productData = req.body;
-    const userRegistration = req.user?.matricula;
-
-    if (!dassOffice) {
-      res.status(400).json({
-        erro: true,
-        mensagem: "O campo 'dassOffice' é obrigatório.",
-        dados: "Não há registros!",
-      });
-      return
-    }
-
-    await PenseAjaService.createProduct(dassOffice, productData, userRegistration as string);
-    res.status(201).json({
-      message: `Produto ${productData.name} cadastrado com sucesso!`,
-    });
-  } catch (error) {
-    console.error("Erro ao cadastrar produto:", error);
-    res.status(500).json({
-      error: true,
-      message: "Erro ao cadastrar produto.",
-      details: error instanceof Error ? error.message : "Erro desconhecido.",
-    });
-    
-    // next(error);
-  }
-});
-
 export default router;
