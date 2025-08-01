@@ -53,7 +53,7 @@ interface EvaluationData {
 
 interface NewProduct {
   name: string;
-  value: number;
+  points: number;
   image: string;
 }
 
@@ -579,7 +579,7 @@ export const PenseAjaService = {
         INSERT INTO pense_aja.pense_aja_loja (nome, imagem, valor, unidade_dass, user_create)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING nome;
-      `, [productData.name, image, productData.value, dassOffice, userRegistration])
+      `, [productData.name, image, productData.points, dassOffice, userRegistration])
 
       if (product.rows.length === 0) {
         await client.query("ROLLBACK");

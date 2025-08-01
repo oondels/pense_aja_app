@@ -92,7 +92,7 @@ export async function startUploadListener() {
       logger.info("Upload Service", `Processing new upload.`);
       try {
         if (payload) {
-          if (!payload.usuario) {
+          if (!payload.user) {
             logger.error("Upload Service", "Payload must contain a 'usuario' field");
             channel.publish(
               'pense_aja.dlx',
@@ -107,7 +107,7 @@ export async function startUploadListener() {
           // Check process type and call the appropriate service method
           // TODO: Implement additional process types as needed and ensure they are handled correctly
           if (payload.processType === 'product') {
-            const newProduct = await PenseAjaService.createProduct(dassOffice, payload, files, payload.usuario);
+            const newProduct = await PenseAjaService.createProduct(dassOffice, payload, files, payload.user);
             
             if (newProduct) {
               logger.info("Upload Service", `Product created successfully: ${newProduct}`);
