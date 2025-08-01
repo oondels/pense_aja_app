@@ -107,15 +107,24 @@ export async function startUploadListener() {
           // Check process type and call the appropriate service method
           // TODO: Implement additional process types as needed and ensure they are handled correctly
           if (payload.processType === 'product') {
-            logger.info("Upload Service", `Product created successfully`);
             const newProduct = await PenseAjaService.createProduct(dassOffice, payload, files, payload.usuario);
+            
             if (newProduct) {
-              logger.info("Upload Service", `Product created successfully: ${newProduct.id}`);
+              logger.info("Upload Service", `Product created successfully: ${newProduct}`);
               channel.ack(msg); // Acknowledge the message after successful processing
             } else {
               logger.error("Upload Service", "Failed to create product");
-              channel.nack(msg, false, true); // Requeue the message for retry
+              channel.nack(msg, false, false); // Requeue the message for retry
             }
+          } else {
+            logger.error("Upload Service", `Unknown process type: ${payload.processType}`);
+            channel.publish(
+              'pense_aja.dlx',
+              'routing-key-dlq',
+              msg.content,
+              { persistent: true }
+            );
+            return channel.ack(msg);
           }
         }
       } catch (error: any) {
