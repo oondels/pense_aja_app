@@ -497,7 +497,6 @@ export const PenseAjaService = {
     }
   },
 
-
   async buyProduct(dassOffice: string, product: Record<string, any>, colaboradorData: Record<string, any>, analista: Record<string, any>, userPoints: Record<string, any>) {
     checkDassOffice(dassOffice);
 
@@ -568,18 +567,19 @@ export const PenseAjaService = {
     }
   },
 
-  async createProduct(dassOffice: string, productData: NewProduct, userRegistration: string) {
+  async createProduct(dassOffice: string, productData: NewProduct, files: Record<any, any>[], userRegistration: string) {
     checkDassOffice(dassOffice);
 
     const client = await pool.connect()
     try {
       await client.query("BEGIN")
+      const image = files[0].fileName
 
       const product = await client.query(`
         INSERT INTO pense_aja.pense_aja_loja (nome, imagem, valor, unidade_dass, user_create)
         VALUES ($1, $2, $3, $4, $5)
-        RETURNING nome
-      `, [productData.name, productData.image, productData.value, dassOffice, userRegistration])
+        RETURNING nome;
+      `, [productData.name, image, productData.value, dassOffice, userRegistration])
 
       if (product.rows.length === 0) {
         await client.query("ROLLBACK");
@@ -590,6 +590,7 @@ export const PenseAjaService = {
         );
       }
 
+      await client.query("COMMIT");
       return product.rows[0].nome;
     } catch (error) {
       await client.query("ROLLBACK");
