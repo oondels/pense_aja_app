@@ -146,25 +146,25 @@
                   <div
                     class="absolute top-4 right-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white text-sm font-semibold px-3 py-1 rounded-full shadow-sm"
                   >
-                    {{ product.points }} pts
+                    {{ product.valor }} pts
                   </div>
 
                   <!-- Imagem sempre visível -->
                   <div class="h-44 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden mb-4">
-                    <img :src="product.image" :alt="product.name" class="max-h-full object-contain" />
+                    <img :src="product.imagem" :alt="product.nome" class="max-h-full object-contain" />
                   </div>
-
+                  
                   <!-- Se não tiver pontos suficientes, exibe aviso em vez do botão -->
-                  <div v-if="product.points > pontos" class="text-center space-y-1 text-gray-700">
+                  <div v-if="product.valor > pontos" class="text-center space-y-1 text-gray-700">
                     <i class="bi bi-emoji-frown-fill text-3xl text-gray-500"></i>
-                    <div class="text-lg font-semibold">{{ product.name }}</div>
+                    <div class="text-lg font-semibold">{{ product.nome }}</div>
                     <div class="font-bold text-red-600">Pontos Insuficientes</div>
                     <div class="text-sm text-gray-500">Junte mais pontos para resgatar!</div>
                   </div>
 
                   <!-- Se tiver pontos suficientes, exibe o botão -->
                   <div v-else-if="userData" class="space-y-2">
-                    <h3 class="text-lg font-semibold">{{ product.name }}</h3>
+                    <h3 class="text-lg font-semibold">{{ product.nome }}</h3>
                     <BuyItem
                       @updatePoints="updatePoints"
                       :colaboradorData="{ ...userData, matricula: registrationInput }"
@@ -237,6 +237,10 @@
                         Adicionar Produto
                       </v-btn>
 
+                      <v-btn @click="fetchProducts" color="secondary" class="rounded-lg shadow-md">
+                        Buscar 
+                      </v-btn>
+
                       <div @click="teste" class="flex items-center bg-white rounded-lg px-4 py-2 shadow-sm">
                         <i class="mdi mdi-package-variant text-gray-500 mr-2"></i>
                         <span class="text-sm text-gray-600">{{ editableProducts.length }} produtos</span>
@@ -267,14 +271,14 @@
                         class="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
                       >
                         <img
-                          :src="product.image"
-                          :alt="product.name"
+                          :src="product.imagem"
+                          :alt="product.nome"
                           class="max-h-32 max-w-32 object-contain drop-shadow-md"
                         />
                         <div
                           class="absolute top-3 right-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md"
                         >
-                          {{ product.points }} pts
+                          {{ product.valor }} pts
                         </div>
                       </div>
 
@@ -285,7 +289,7 @@
                           <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Produto</label>
                             <input
-                              v-model="product.name"
+                              v-model="product.nome"
                               type="text"
                               class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                               placeholder="Nome do produto"
@@ -297,7 +301,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Pontos Necessários</label>
                             <div class="relative">
                               <input
-                                v-model.number="product.points"
+                                v-model.number="product.valor"
                                 type="number"
                                 min="1"
                                 class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all pl-8"
@@ -470,7 +474,7 @@ import Notification from "../Notification.vue";
 // TODO: Passar dados para banco de dados
 // import storeProducts from "@/utils/penseAjaProducts.json";
 import { VFileUpload } from "vuetify/labs/VFileUpload";
-import { createProduct } from "@/services/storeService.js";
+import { createProduct, fetchStoreProducts } from "@/services/storeService.js";
 
 const emit = defineEmits(["notify"]);
 
@@ -491,9 +495,23 @@ function handleResize() {
 }
 
 const storeProducts = ref([]);
-const fetchProducts = () => {};
+const fetchProducts = () => {
+  const dassOffice = localStorage.getItem("unidadeDass");
+  fetchStoreProducts(dassOffice)
+    .then((products) => {
+      console.log(products);
+      
+      storeProducts.value = products;
+      filterProduct();
+    })
+    .catch((error) => {
+      console.error("Error fetching products:", error);
+      notification.value.showPopup("error", "Erro!", "Não foi possível carregar os produtos da loja.");
+    });
+};
 
 onMounted(() => {
+  fetchProducts();
   filterProduct();
   handleResize();
   window.addEventListener("resize", handleResize);
@@ -619,7 +637,6 @@ const closeAddProductDialog = () => {
 };
 
 const handleFileUpload = (file) => {
-  notificationEditStore.value.showPopup("success", "Sucesso", "Funcionando!");
   if (!file.type.startsWith("image/")) {
     notificationEditStore.value.showPopup("warning", "Aviso!", "Por favor, selecione apenas arquivos de imagem.");
     return;
@@ -651,10 +668,12 @@ const createNewProduct = async () => {
     const dassOffice = localStorage.getItem("unidadeDass");
 
     await createProduct(newProduct.value, selectedFiles.value, dassOffice);
-    notificationEditStore.value.showPopup("success", "Sucesso!", "Produto enfileirado para processamento.");
+    notificationEditStore.value.showPopup("success", "Sucesso!", "Produto enfileirado para processamento!");
 
-    closeAddProductDialog();
-    await fetchProducts();
+    setTimeout(async () => {
+      closeAddProductDialog();
+      await fetchProducts();
+    }, 2000);
   } catch (error) {
     console.error(error);
     notificationEditStore.value.showPopup(

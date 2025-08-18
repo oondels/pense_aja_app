@@ -53,8 +53,6 @@ export const createProduct = async (data, files, dassOffice) => {
     })
 
     console.log(response.data);
-    
-
     return response.data;
   } catch (error) {
     console.log(error);
@@ -65,4 +63,14 @@ export const createProduct = async (data, files, dassOffice) => {
 
 export const editProduct = async (id, data) => {
   console.log();
+}
+
+export const fetchStoreProducts = async (dassOffice) => {
+  try {
+    const response = await api.get(`/pense-aja/products/${dassOffice}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw new Error("Erro ao buscar produtos: " + (error.response?.data?.message || error.message));
+  }
 }
