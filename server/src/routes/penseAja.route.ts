@@ -15,6 +15,55 @@ const formatUserName = (name: string) => {
   return splitedName[0] + " " + splitedName[splitedName.length - 1]
 }
 
+// Products
+router.get("/products/:dassOffice", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { dassOffice } = req.params;
+
+    if (!dassOffice) {
+      res.status(400).json({
+        erro: true,
+        mensagem: "O campo 'dassOffice' é obrigatório.",
+        dados: "Não há registros!",
+      });
+      return
+    }
+    const products = await PenseAjaService.fetchProducts(dassOffice);
+
+    res.status(200).json(products);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put("/purchase/:registration", verifyToken, roleVerificationAccess, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { registration } = req.params;
+    const { product, colaboradorData, analista, dassOffice } = req.body;
+
+    if (Number.isNaN(Number(registration))) {
+      res.status(400).json({ message: "Matrícula Inválida." });
+      return
+    }
+
+    const user = await UserPenseaja.getUserData(Number(registration), dassOffice);
+    if (!user) {
+      res.status(400).json({ message: "Erro ao resgatar produto! Usuário não encontrado." });
+      return
+    }
+    const userPoints = { pontos: user.pontos, pontos_resgatados: user.pontos_resgatados }
+    const result = await PenseAjaService.buyProduct(dassOffice, product, colaboradorData, analista, userPoints);
+
+    res.status(200).json({
+      message: "Produto Resgatado com sucesso!",
+      data: result,
+    });
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Pense e aja
 router.get("/:dassOffice", async (req: Request, res: Response) => {
   try {
     const { dassOffice } = req.params;
@@ -169,32 +218,5 @@ router.put("/avaliar/:id", verifyToken, roleVerificationAccess, async (req: Requ
   }
 }
 );
-
-router.put("/purchase/:registration", verifyToken, roleVerificationAccess, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { registration } = req.params;
-    const { product, colaboradorData, analista, dassOffice } = req.body;
-
-    if (Number.isNaN(Number(registration))) {
-      res.status(400).json({ message: "Matrícula Inválida." });
-      return
-    }
-
-    const user = await UserPenseaja.getUserData(Number(registration), dassOffice);
-    if (!user) {
-      res.status(400).json({ message: "Erro ao resgatar produto! Usuário não encontrado." });
-      return
-    }
-    const userPoints = { pontos: user.pontos, pontos_resgatados: user.pontos_resgatados }
-    const result = await PenseAjaService.buyProduct(dassOffice, product, colaboradorData, analista, userPoints);
-
-    res.status(200).json({
-      message: "Produto Resgatado com sucesso!",
-      data: result,
-    });
-  } catch (error) {
-    next(error)
-  }
-})
 
 export default router;

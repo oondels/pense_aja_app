@@ -573,7 +573,7 @@ export const PenseAjaService = {
     const client = await pool.connect()
     try {
       await client.query("BEGIN")
-      const image = files[0].fileName
+      const image = files[0].filePath
 
       const product = await client.query(`
         INSERT INTO pense_aja.pense_aja_loja (nome, imagem, valor, unidade_dass, user_create)
@@ -603,6 +603,29 @@ export const PenseAjaService = {
       }
     } finally {
       client.release()
+    }
+  },
+
+  async fetchProducts(dassOffice: string) {
+    checkDassOffice(dassOffice);
+
+    const client = await pool.connect();
+    try {
+      const products = await client.query(`
+        SELECT 
+          id, nome, imagem, valor, user_create, created_at 
+        FROM 
+          pense_aja.pense_aja_loja 
+        WHERE 
+          unidade_dass = $1
+      `, [dassOffice]);
+
+      return products.rows;
+    } catch (error) {
+      logger.error("Pense-aja", `Erro ao buscar produtos: ${error}`);
+      throw new CustomError("Erro ao buscar produtos.");
+    } finally {
+      client.release();
     }
   }
 };
