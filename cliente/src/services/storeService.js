@@ -61,8 +61,14 @@ export const createProduct = async (data, files, dassOffice) => {
   }
 }
 
-export const editProduct = async (id, data) => {
-  console.log();
+export const editProducts = async (dassOffice, data) => {
+  try {
+    const response = await api.put(`/pense-aja/products/${dassOffice}`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error editing product:", error);
+    throw new Error("Erro ao editar produto: " + (error.response?.data?.message || error.message));
+  }
 }
 
 export const fetchStoreProducts = async (dassOffice) => {

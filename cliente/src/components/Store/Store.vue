@@ -153,7 +153,7 @@
                   <div class="h-44 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden mb-4">
                     <img :src="product.imagem" :alt="product.nome" class="max-h-full object-contain" />
                   </div>
-                  
+
                   <!-- Se não tiver pontos suficientes, exibe aviso em vez do botão -->
                   <div v-if="product.valor > pontos" class="text-center space-y-1 text-gray-700">
                     <i class="bi bi-emoji-frown-fill text-3xl text-gray-500"></i>
@@ -237,10 +237,6 @@
                         Adicionar Produto
                       </v-btn>
 
-                      <v-btn @click="fetchProducts" color="secondary" class="rounded-lg shadow-md">
-                        Buscar 
-                      </v-btn>
-
                       <div @click="teste" class="flex items-center bg-white rounded-lg px-4 py-2 shadow-sm">
                         <i class="mdi mdi-package-variant text-gray-500 mr-2"></i>
                         <span class="text-sm text-gray-600">{{ editableProducts.length }} produtos</span>
@@ -315,7 +311,7 @@
                         </div>
 
                         <!-- Actions -->
-                        <div class="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+                        <!-- <div class="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
                           <div class="flex items-center space-x-2">
                             <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
                             <span class="text-sm text-gray-500">ID: {{ product.id }}</span>
@@ -329,7 +325,7 @@
                           >
                             Remover
                           </v-btn>
-                        </div>
+                        </div> -->
                       </div>
                     </div>
 
@@ -474,7 +470,9 @@ import Notification from "../Notification.vue";
 // TODO: Passar dados para banco de dados
 // import storeProducts from "@/utils/penseAjaProducts.json";
 import { VFileUpload } from "vuetify/labs/VFileUpload";
-import { createProduct, fetchStoreProducts } from "@/services/storeService.js";
+import { createProduct, fetchStoreProducts, editProducts } from "@/services/storeService.js";
+
+const dassOffice = localStorage.getItem("unidadeDass");
 
 const emit = defineEmits(["notify"]);
 
@@ -499,8 +497,6 @@ const fetchProducts = () => {
   const dassOffice = localStorage.getItem("unidadeDass");
   fetchStoreProducts(dassOffice)
     .then((products) => {
-      console.log(products);
-      
       storeProducts.value = products;
       filterProduct();
     })
@@ -584,11 +580,15 @@ const updatePoints = async (update) => {
 // Edit Store Methods
 const addProductDialog = ref(false);
 const searchQuery = ref("");
+const originalProducts = ref([]);
 const editableProducts = ref([]);
 watch(
   storeProducts,
   (newProducts) => {
-    editableProducts.value = [...(newProducts || [])];
+    const src = newProducts || [];
+
+    editableProducts.value = JSON.parse(JSON.stringify(src));
+    originalProducts.value = JSON.parse(JSON.stringify(src));
   },
   { immediate: true, deep: true }
 );
@@ -601,8 +601,6 @@ const newProduct = ref({
 
 // File upload handling
 const selectedFiles = ref([]);
-
-// Computed property for filtered products in edit mode
 const filteredEditableProducts = computed(() => {
   if (!editableProducts.value || editableProducts.value.length === 0) {
     return [];
@@ -684,14 +682,75 @@ const createNewProduct = async () => {
   }
 };
 
-const saveProducts = () => {
-  console.log("Saving products:", editableProducts.value);
+const saveProducts = async () => {
+  /**
+   * Salva as alterações dos produtos editados na loja
+   *
+   * Esta função:
+   * 1. Filtra apenas os produtos que foram realmente modificados comparando com os dados originais
+   * 2. Verifica se houve mudanças nos campos 'nome' ou 'valor'
+   * 3. Envia apenas os produtos alterados para o servidor via API
+   * 4. Atualiza localmente apenas os produtos que foram editados
+   * 5. Exibe notificações de sucesso/erro e fecha o diálogo após 2 segundos em caso de sucesso
+   *
+   * @async
+   * @function saveEditedProducts
+   * @returns {Promise<void>} Promise que resolve quando a operação de salvamento é concluída
+   *
+   * @throws {Error} Quando ocorre erro na comunicação com a API
+   *
+   * @example
+   * // Chama a função para salvar produtos editados
+   * await saveEditedProducts();
+   *
+   * @description
+   * - Se nenhuma alteração for detectada, exibe notificação informativa
+   * - Em caso de sucesso, atualiza o array storeProducts e exibe mensagem de confirmação
+   * - Em caso de erro, exibe notificação de erro e mantém os dados inalterados
+   */
+  // Filtrar apenas produtos que foram editados (comparando com produtos originais)
+  const editedProducts = editableProducts.value.filter((editedProduct) => {
+    const originalProduct = originalProducts.value.find((p) => p.id === editedProduct.id);
+    if (!originalProduct) return false;
 
-  storeProducts.value = [...editableProducts.value];
-  // Show success notification
-  notificationEditStore.value.showPopup("Produtos salvos com sucesso!", "success");
+    // Verificar se nome ou valor foram alterados
+    return originalProduct.nome !== editedProduct.nome || originalProduct.valor !== editedProduct.valor;
+  });
 
-  closeEditDialog();
+  if (editedProducts.length === 0) {
+    notificationEditStore.value.showPopup("info", "Info!", "Nenhuma alteração de produtos foi detectada.");
+    return;
+  }
+
+  try {
+    await editProducts(dassOffice, editedProducts);
+
+    // Atualizar apenas os produtos editados no storeProducts
+    editedProducts.forEach((editedProduct) => {
+
+      const index = storeProducts.value.findIndex((p) => p.id === editedProduct.id);
+      if (index !== -1) {
+        storeProducts.value[index] = JSON.parse(JSON.stringify(editedProduct));
+      }
+    });
+
+    const src = JSON.parse(JSON.stringify(storeProducts.value));
+    originalProducts.value = src
+    editableProducts.value = src
+
+    notificationEditStore.value.showPopup(
+      "success",
+      "Sucesso!",
+      `${editedProducts.length} produto(s) editado(s) com sucesso!`
+    );
+
+    setTimeout(() => {
+      closeEditDialog();
+    }, 2000);
+  } catch (error) {
+    console.error("Erro ao salvar produtos:", error);
+    notificationEditStore.value.showPopup("error", "Erro!", "Não foi possível salvar as alterações.");
+  }
 };
 </script>
 

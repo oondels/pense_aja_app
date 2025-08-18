@@ -63,6 +63,32 @@ router.put("/purchase/:registration", verifyToken, roleVerificationAccess, async
   }
 })
 
+router.put("/products/:dassOffice", verifyToken, roleVerificationAccess, async (req: Request, res: Response, next: NextFunction) => {   
+  try {
+    const { dassOffice } = req.params;
+    const productData = req.body;
+    const user = req.user;
+
+    if (!dassOffice) {
+      res.status(400).json({
+        erro: true,
+        mensagem: "O campo 'dassOffice' é obrigatório.",
+        dados: "Não há registros!",
+      });
+      return
+    }
+
+    const result = await PenseAjaService.updateProduct(productData, dassOffice, user?.usuario as string);
+
+    res.status(200).json({
+      message: "Produto atualizado com sucesso!",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Pense e aja
 router.get("/:dassOffice", async (req: Request, res: Response) => {
   try {
