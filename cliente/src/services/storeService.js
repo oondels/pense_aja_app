@@ -43,7 +43,7 @@ export const createProduct = async (data, files, dassOffice) => {
       }
     })
 
-    const response = await axios.post("http://localhost:3020/", form, {
+    const response = await axios.post("http://10.100.1.43:3020/", form, {
       headers: {
         "Content-Type": "multipart/form-data",
         "x-service": "pense_aja",
