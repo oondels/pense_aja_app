@@ -183,7 +183,7 @@
 
         <!-- Edit Store -->
         <div class="edit-store position-absolute bottom-5 right-5">
-          <v-dialog max-width="1200" persistent>
+          <v-dialog v-if="checkRoleAndEvaluation()" max-width="1200" persistent>
             <template v-slot:activator="{ props: activatorProps }">
               <v-fab
                 v-bind="activatorProps"
@@ -463,7 +463,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, defineExpose, computed, nextTick } from "vue";
-import { getUserData } from "@/services/userService";
+import { getUserData, setUserRole } from "@/services/userService";
 import { useUserStore } from "@/stores/userStore";
 import BuyItem from "@/components/Store/BuyItem.vue";
 import Notification from "../Notification.vue";
@@ -518,6 +518,14 @@ onBeforeUnmount(() => {
 });
 
 const user = useUserStore();
+
+const checkRoleAndEvaluation = () => {
+  if (setUserRole(user) === "analista" || setUserRole(user) === "automacao") {
+    return true;
+  }
+
+  return false;
+};
 
 const userData = ref(null);
 let pontos = ref(0);
@@ -727,7 +735,6 @@ const saveProducts = async () => {
 
     // Atualizar apenas os produtos editados no storeProducts
     editedProducts.forEach((editedProduct) => {
-
       const index = storeProducts.value.findIndex((p) => p.id === editedProduct.id);
       if (index !== -1) {
         storeProducts.value[index] = JSON.parse(JSON.stringify(editedProduct));
@@ -735,8 +742,8 @@ const saveProducts = async () => {
     });
 
     const src = JSON.parse(JSON.stringify(storeProducts.value));
-    originalProducts.value = src
-    editableProducts.value = src
+    originalProducts.value = src;
+    editableProducts.value = src;
 
     notificationEditStore.value.showPopup(
       "success",
