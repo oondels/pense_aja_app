@@ -68,9 +68,6 @@
         <v-btn @click="goHome"><i class="mdi mdi-home-lightbulb-outline text-xl"></i> PA's</v-btn>
         <v-btn
           @click="handleStoreClick"
-          :disabled="!user.usuario || user.usuario === 'HENDRIUS.SANTANA'"
-          
-          v-tooltip="'Em manutenção'"
           ><i class="mdi mdi-store text-xl"></i> Loja</v-btn
         >
         <v-btn @click="handleRegisterClick"><i class="mdi mdi-lightbulb-on-outline text-xl"></i> Registrar</v-btn>

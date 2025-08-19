@@ -8,9 +8,6 @@
           v-bind="activatorProps"
           id="openLoja"
           class="flex items-center space-x-2 px-4 py-2 rounded-lg shadow transition bg-white text-gray-800 hover:bg-gray-100"
-          :disabled="!user.usuario || user.usuario === 'HENDRIUS.SANTANA'"
-          :class="{'opacity-50 cursor-not-allowed': !user.usuario || user.usuario === 'HENDRIUS.SANTANA'}"
-          v-tooltip="'Em manutenção'"
         >
           <span class="mdi mdi-store text-xl"></span>
           <span>Loja</span>
@@ -145,6 +142,7 @@
                   </div>
 
                   <!-- Imagem sempre visível -->
+                  {{ product }}
                   <div class="h-44 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden mb-4">
                     <img :src="product.imagem" :alt="product.nome" class="max-h-full object-contain" />
                   </div>
