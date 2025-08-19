@@ -44,16 +44,16 @@
           </div>
           <div class="buy-item-info">
             <div class="buy-item-image-illustration">
-              <img :src="PenseAjaProduct.image" :alt="PenseAjaProduct.name" />
+              <img :src="PenseAjaProduct.imagem" :alt="PenseAjaProduct.nome" />
             </div>
             <div class="buy-item-details">
-              <h3 class="item-name">{{ PenseAjaProduct.name }}</h3>
+              <h3 class="item-name">{{ PenseAjaProduct.nome }}</h3>
               <p class="item-desc">
                 Leve para casa um brinde especial e mostre sua conquista!
               </p>
               <div class="item-points">
                 <i class="bi bi-star-fill"></i>
-                <span>Resgate por <b>{{PenseAjaProduct.points}} pontos</b></span>
+                <span>Resgate por <b>{{PenseAjaProduct.valor}} pontos</b></span>
               </div>
             </div>
           </div>
