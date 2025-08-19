@@ -8,19 +8,14 @@
           v-bind="activatorProps"
           id="openLoja"
           class="flex items-center space-x-2 px-4 py-2 rounded-lg shadow transition bg-white text-gray-800 hover:bg-gray-100"
+          :disabled="!user.usuario || user.usuario === 'HENDRIUS.SANTANA'"
+          :class="{'opacity-50 cursor-not-allowed': !user.usuario || user.usuario === 'HENDRIUS.SANTANA'}"
+          v-tooltip="'Em manutenção'"
         >
           <span class="mdi mdi-store text-xl"></span>
           <span>Loja</span>
         </button>
-        <button
-          v-else
-          @click="handleUserData($event, false)"
-          v-bind="activatorProps"
-          class="flex flex-col items-center p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-md transition"
-        >
-          <i class="mdi mdi-store-outline text-2xl"></i>
-          <span class="text-sm">Loja</span>
-        </button>
+
       </template>
 
       <template v-slot:default="{ isActive }">
@@ -456,9 +451,10 @@
         </div>
       </template>
     </v-dialog>
-
+    
     <Notification ref="notification" />
   </div>
+
 </template>
 
 <script setup>
