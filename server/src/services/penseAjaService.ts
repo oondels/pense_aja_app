@@ -573,7 +573,7 @@ export const PenseAjaService = {
     const client = await pool.connect()
     try {
       await client.query("BEGIN")
-      const image = files[0].filePath
+      const image = files[0].fileUrl
 
       const product = await client.query(`
         INSERT INTO pense_aja.pense_aja_loja (nome, imagem, valor, unidade_dass, user_create)
