@@ -142,7 +142,6 @@
                   </div>
 
                   <!-- Imagem sempre visível -->
-                  {{ product }}
                   <div class="h-44 flex items-center justify-center bg-gray-100 rounded-lg overflow-hidden mb-4">
                     <img :src="product.imagem" :alt="product.nome" class="max-h-full object-contain" />
                   </div>
