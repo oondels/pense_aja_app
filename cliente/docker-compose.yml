@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     environment:
       - NODE_ENV=development
+    volumes:
+      - /var/www/dasssest.com/uploads/:/app/uploads:rw,z
     ports:
       - "5050:80"
     restart: unless-stopped

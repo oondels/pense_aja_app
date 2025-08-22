@@ -51,6 +51,12 @@ interface EvaluationData {
   a3Mae?: string;
 }
 
+interface NewProduct {
+  name: string;
+  points: number;
+  image: string;
+}
+
 const turnoMap: Record<string, string> = {
   A: "1° Turno",
   B: "2° Turno",
@@ -65,11 +71,11 @@ export const PenseAjaService = {
     try {
       let params = []
       let filters = []
-      
+
       params.push(startDateParsed)
       params.push(endDateParsed)
       params.push(dassOffice)
-      
+
       if (name) {
         filters.push(` nome = $${params.length + 1} `);
         params.push(name);
@@ -356,13 +362,13 @@ export const PenseAjaService = {
       }
 
       // Evitar inconsistências de status
-       else if (status === REPROVE && avaliacao) {
+      else if (status === REPROVE && avaliacao) {
         throw new CustomError(
           'Não é possível reprovar um Pense Aja com uma avaliação (A, B ou C).',
           400,
           'Não é possível reprovar um Pense Aja com uma avaliação (A, B ou C).'
         );
-       }
+      }
 
       // build SET clauses and parameters
       const clauses: string[] = [];
@@ -439,8 +445,8 @@ export const PenseAjaService = {
       const result = await client.query(sql, params);
       if (result.rowCount === 0) {
         throw new CustomError('Pense Aja não encontrado.', 404, 'Pense Aja não encontrado.');
-      }      
-      
+      }
+
       if ((status === EXCLUDE || status === REPROVE) && isGerente) {
         await client.query(
           `DELETE FROM pense_aja.pense_aja_pontos
@@ -489,7 +495,6 @@ export const PenseAjaService = {
       client.release();
     }
   },
-
 
   async buyProduct(dassOffice: string, product: Record<string, any>, colaboradorData: Record<string, any>, analista: Record<string, any>, userPoints: Record<string, any>) {
     checkDassOffice(dassOffice);
@@ -557,7 +562,152 @@ export const PenseAjaService = {
         throw new CustomError("Erro ao comprar produto.");
       }
     } finally {
-      await client.release();
+      client.release();
+    }
+  },
+
+  async createProduct(dassOffice: string, productData: NewProduct, files: Record<any, any>[], userRegistration: string) {
+    checkDassOffice(dassOffice);
+
+    const client = await pool.connect()
+    try {
+      await client.query("BEGIN")
+      const image = files[0].fileUrl
+
+      const product = await client.query(`
+        INSERT INTO pense_aja.pense_aja_loja (nome, imagem, valor, unidade_dass, user_create)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING nome;
+      `, [productData.name, image, productData.points, dassOffice, userRegistration])
+
+      if (product.rows.length === 0) {
+        await client.query("ROLLBACK");
+        throw new CustomError(
+          "Erro ao cadastrar novo produto.",
+          400,
+          "Erro ao inserir no banco de dados."
+        );
+      }
+
+      await client.query("COMMIT");
+      return product.rows[0].nome;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      logger.error("Store", `Erro ao cadastrar novo produto: ${error}`);
+
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        throw new CustomError("Erro ao cadastrar novo produto.");
+      }
+    } finally {
+      client.release()
+    }
+  },
+
+  async fetchProducts(dassOffice: string) {
+    checkDassOffice(dassOffice);
+
+    const client = await pool.connect();
+    try {
+      const products = await client.query(`
+        SELECT 
+          id, nome, imagem, valor, user_create, created_at 
+        FROM 
+          pense_aja.pense_aja_loja 
+        WHERE 
+          unidade_dass = $1
+      `, [dassOffice]);
+
+      return products.rows;
+    } catch (error) {
+      logger.error("Pense-aja", `Erro ao buscar produtos: ${error}`);
+      throw new CustomError("Erro ao buscar produtos.");
+    } finally {
+      client.release();
+    }
+  },
+
+  async updateProduct(productData: Array<{id: number, nome: string, valor: number}>, dassOffice: string, usuario: string) {
+    checkDassOffice(dassOffice);
+
+    if (!Array.isArray(productData) || productData.length === 0) {
+      throw new CustomError("Dados inválidos.", 400, "É necessário fornecer pelo menos um produto para atualização.");
+    }
+
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      const updatedProducts = [];
+      const failedProducts = [];
+
+      // Processar cada produto individualmente
+      for (const product of productData) {
+        if (!product.id || !product.nome || product.valor === undefined) {
+          failedProducts.push({ id: product.id, error: "Dados incompletos" });
+          continue;
+        }
+
+        // Verificar se o produto existe e pertence a unidade correta
+        const verifyProduct = await client.query(
+          `SELECT id FROM pense_aja.pense_aja_loja 
+           WHERE id = $1 AND unidade_dass = $2`,
+          [product.id, dassOffice]
+        );
+
+        if (verifyProduct.rowCount === 0) {
+          failedProducts.push({ id: product.id, error: "Produto não encontrado ou não pertence à unidade informada" });
+          continue;
+        }
+
+        // Atualizar o produto
+        const result = await client.query(
+          `UPDATE pense_aja.pense_aja_loja 
+           SET nome = $1, valor = $2, updated_at = NOW(), updated_by = $3
+           WHERE id = $4 AND unidade_dass = $5
+           RETURNING id, nome, imagem, valor`,
+          [product.nome, product.valor, usuario, product.id, dassOffice]
+        );
+
+        if (result.rows && result.rows.length > 0) {
+          updatedProducts.push(result.rows[0]);
+        } else {
+          failedProducts.push({ id: product.id, error: "Falha ao atualizar" });
+        }
+      }
+
+      // Se nenhum produto foi atualizado com sucesso, reverter a transação
+      if (updatedProducts.length === 0) {
+        await client.query("ROLLBACK");
+        throw new CustomError(
+          "Nenhum produto foi atualizado.",
+          400,
+          failedProducts.length > 0 
+            ? `Erros: ${JSON.stringify(failedProducts)}` 
+            : "Verifique os dados enviados."
+        );
+      }
+
+      await client.query("COMMIT");
+      logger.info("Store", `${updatedProducts.length} produtos atualizados com sucesso para a unidade ${dassOffice}`);
+      
+      return updatedProducts;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      logger.error("Store", `Erro ao atualizar produtos: ${error}`);
+      
+      if (error instanceof CustomError) {
+        throw error;
+      } else {
+        throw new CustomError(
+          "Erro ao atualizar produtos.",
+          500,
+          error instanceof Error ? error.message : "Erro desconhecido"
+        );
+      }
+    } finally {
+      client.release();
     }
   }
 };

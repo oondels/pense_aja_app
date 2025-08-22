@@ -40,9 +40,7 @@
       </div>
 
       <!-- Banner Info -->
-      <div
-        class="flex flex-wrap items-center justify-center gap-4 bg-white rounded-xl shadow px-6 py-2 min-w-[260px]"
-      >
+      <div class="flex flex-wrap items-center justify-center gap-4 bg-white rounded-xl shadow px-6 py-2 min-w-[260px]">
         <div class="flex items-center gap-2 text-sm">
           <i class="mdi mdi-calendar-month text-red-500 text-lg"></i>
           <span class="text-red-700">Mês atual:</span>
@@ -68,7 +66,10 @@
     <v-layout class="z-10 overflow-visible" v-if="isMobile" style="height: 56px">
       <v-bottom-navigation grow class="bg-red-100" elevation="7">
         <v-btn @click="goHome"><i class="mdi mdi-home-lightbulb-outline text-xl"></i> PA's</v-btn>
-        <v-btn @click="handleStoreClick"><i class="mdi mdi-store text-xl"></i> Loja</v-btn>
+        <v-btn
+          @click="handleStoreClick"
+          ><i class="mdi mdi-store text-xl"></i> Loja</v-btn
+        >
         <v-btn @click="handleRegisterClick"><i class="mdi mdi-lightbulb-on-outline text-xl"></i> Registrar</v-btn>
         <v-btn @click="handleLoginClick">
           <i :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'" class="text-xl"></i>
