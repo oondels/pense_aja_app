@@ -86,3 +86,22 @@ export const registerPenseAja = async (penseAjaData, matricula, emit, userData, 
   }
 
 };
+
+export const setPenseAjaStatus = (penseAja) => {
+  let status = "NÃO AVALIADO"
+  if (penseAja.status_gerente === "reprove" || penseAja.status_analista === "reprove") {
+    status = "REPROVADO";
+  } else if (penseAja.em_espera === "1") {
+    status = "EM ESPERA";
+  } else if (!penseAja.gerente_aprovador && !penseAja.analista_avaliador) {
+    status = "SEM ANÁLISE";
+  } else if (!penseAja.gerente_aprovador) {
+    status = "VISTO PELO ANALISTA";
+  } else if (!penseAja.analista_avaliador) {
+    status = "VISTO PELO GERENTE";
+  } else if (penseAja.gerente_aprovador && penseAja.analista_avaliador) {
+    status = "AVALIADO";
+  }
+
+  return status;
+}

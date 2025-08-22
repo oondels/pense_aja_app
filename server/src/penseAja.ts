@@ -5,9 +5,11 @@ import dotenv from "./config/dotenv";
 import { CustomError } from "./types/CustomError";
 import PenseAjaRoutes from "./routes/penseAja.route";
 import UserPenseajaRoute from "./routes/userPensAaja.route";
-import AiTools from "./routes/aiTools.route"
 import { startUploadListener } from "./workers/uploadListener";
 startUploadListener()
+import AiTools from "./routes/aiTools.route";
+import DashboardRoutes from "./routes/dashboard.route";
+
 
 const app = express();
 const port = 2512;
@@ -17,7 +19,8 @@ app.use(cookieParser());
 app.use(express.json());
 app.use("/pense-aja/", PenseAjaRoutes);
 app.use("/user/", UserPenseajaRoute);
-app.use("/ai/", AiTools)
+app.use("/ai/", AiTools);
+app.use("/dashboard/", DashboardRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Pense Aja API");

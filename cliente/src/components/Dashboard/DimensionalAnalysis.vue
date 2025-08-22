@@ -1,12 +1,67 @@
+<template>
+  <section class="dimensional-section">
+    <h2 class="section-title">Análise Dimensional</h2>
+
+    <div class="chart-container">
+      <div class="chart-tabs">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          @click="setActiveTab(tab.id)"
+          class="tab-button"
+          :class="{ active: activeTab === tab.id }"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+
+      <div class="chart-content">
+        <!-- Loading state -->
+        <div v-if="isLoading" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Carregando dados dimensionais...</p>
+        </div>
+
+        <!-- Error state -->
+        <div v-else-if="error" class="error-state">
+          <div class="error-icon">⚠️</div>
+          <p>Erro ao carregar dados...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div v-else-if="!chartData.labels.length" class="empty-state">
+          <div class="empty-icon">📊</div>
+          <p>Nenhum dado encontrado para o período selecionado</p>
+        </div>
+
+        <!-- Chart -->
+        <Pie v-else ref="chartRef" :data="chartData" :options="chartOptions" class="chart" />
+      </div>
+    </div>
+  </section>
+</template>
+
 <script setup lang="ts">
-import { computed, ref, onMounted } from "vue";
-import { Pie } from 'vue-chartjs';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { useDimensionalData } from '../../composables/useDimensionalData';
+import { computed, ref, onMounted, watch } from "vue";
+import { Pie } from "vue-chartjs";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { useDimensionalData } from "../../composables/useDimensionalData";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const { dimensionalData, isLoading } = useDimensionalData();
+// Receber os filtros de data do componente pai (Dashboard.vue)
+const props = defineProps<{
+  startDate?: string;
+  endDate?: string;
+}>();
+
+// Usar o composable para buscar dados dimensionais
+const { dimensionalData, isLoading, error, refetch } = useDimensionalData(props.startDate, props.endDate);
+
+// Observar mudanças nas datas para recarregar os dados
+watch([() => props.startDate, () => props.endDate], ([newStartDate, newEndDate]) => {
+  refetch(newStartDate, newEndDate);
+}, { immediate: false });
 
 const activeTab = ref("manager");
 const tabs = [
@@ -87,7 +142,7 @@ const setActiveTab = (tabId: string) => {
 
 const chartRef = ref<any>(null);
 
-// Update chart when theme changes
+//Atualziar o grafico quando o tema mudar
 onMounted(() => {
   const observer = new MutationObserver(() => {
     if (chartRef.value?.chart) {
@@ -101,31 +156,6 @@ onMounted(() => {
   });
 });
 </script>
-
-<template>
-  <section class="dimensional-section">
-    <h2 class="section-title">Análise Dimensional</h2>
-
-    <div class="chart-container">
-      <div class="chart-tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          @click="setActiveTab(tab.id)"
-          class="tab-button"
-          :class="{ active: activeTab === tab.id }"
-        >
-          {{ tab.label }}
-        </button>
-      </div>
-
-      <div class="chart-content">
-        <div v-if="isLoading" class="loading-indicator">Carregando dados...</div>
-        <Pie v-else ref="chartRef" :data="chartData" :options="chartOptions" class="chart" />
-      </div>
-    </div>
-  </section>
-</template>
 
 <style scoped>
 .dimensional-section {
@@ -185,6 +215,42 @@ onMounted(() => {
 .chart {
   height: 100%;
   width: 100%;
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-secondary);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-bg-hover);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.error-state .error-icon,
+.empty-state .empty-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
 }
 
 .loading-indicator {

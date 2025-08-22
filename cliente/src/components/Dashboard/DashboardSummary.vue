@@ -1,24 +1,59 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject, watch } from 'vue';
 import { useSummaryData } from '../../composables/useSummaryData';
 
-const { summaryData, isLoading } = useSummaryData();
+// Receber os filtros de data do componente pai (Dashboard.vue)
+const props = defineProps<{
+  startDate?: string;
+  endDate?: string;
+}>();
+
+const { summaryData, isLoading, error, refetch } = useSummaryData(props.startDate, props.endDate);
+
+// Observar mudanças nas datas para recarregar os dados
+watch([() => props.startDate, () => props.endDate], ([newStartDate, newEndDate]) => {
+  refetch(newStartDate, newEndDate);
+}, { immediate: false });
 
 const totalIdeas = computed(() => summaryData.value.totalIdeas);
 const implementedIdeas = computed(() => summaryData.value.implementedIdeas);
 const pendingIdeas = computed(() => summaryData.value.pendingIdeas);
 const rejectedIdeas = computed(() => summaryData.value.rejectedIdeas);
+const approvedByManager = computed(() => summaryData.value.approvedByManager);
+const inAnalysis = computed(() => summaryData.value.inAnalysis);
+const totalValue = computed(() => summaryData.value.totalValue);
+const avgValue = computed(() => summaryData.value.avgValue);
 
 const implementationRate = computed(() => {
   return Math.round((implementedIdeas.value / totalIdeas.value) * 100) || 0;
 });
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(value);
+};
 </script>
 
 <template>
   <section class="summary-section">
     <h2 class="section-title">Resumo Geral</h2>
     
-    <div class="summary-cards">
+    <!-- Loading state -->
+    <div v-if="isLoading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Carregando dados...</p>
+    </div>
+    
+    <!-- Error state -->
+    <div v-else-if="error" class="error-state">
+      <div class="error-icon">⚠️</div>
+      <p>{{ error }}</p>
+    </div>
+    
+    <!-- Content -->
+    <div v-else class="summary-cards">
       <div class="summary-card total">
         <div class="card-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -80,6 +115,34 @@ const implementationRate = computed(() => {
           <p class="card-value">{{ rejectedIdeas }}</p>
         </div>
       </div>
+
+      <!-- Cards adicionais para métricas financeiras -->
+      <div class="summary-card value">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title">Valor Total</h3>
+          <p class="card-value">{{ formatCurrency(totalValue) }}</p>
+        </div>
+      </div>
+
+      <div class="summary-card average">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="20" x2="12" y2="10"></line>
+            <line x1="18" y1="20" x2="18" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="16"></line>
+          </svg>
+        </div>
+        <div class="card-content">
+          <h3 class="card-title">Valor Médio</h3>
+          <p class="card-value">{{ formatCurrency(avgValue) }}</p>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -94,6 +157,37 @@ const implementationRate = computed(() => {
   font-weight: 600;
   margin-bottom: 1.5rem;
   color: var(--color-text-primary);
+}
+
+.loading-state, .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background-color: var(--color-bg-elevated);
+  border-radius: 12px;
+  margin: 1rem 0;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-bg-hover);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-state .error-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
 }
 
 .summary-cards {
@@ -144,6 +238,16 @@ const implementationRate = computed(() => {
 .rejected .card-icon {
   background-color: rgba(239, 68, 68, 0.1);
   color: var(--color-error);
+}
+
+.value .card-icon {
+  background-color: rgba(139, 69, 197, 0.1);
+  color: #8b45c5;
+}
+
+.average .card-icon {
+  background-color: rgba(14, 165, 233, 0.1);
+  color: #0ea5e9;
 }
 
 .card-content {
