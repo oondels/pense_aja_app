@@ -503,7 +503,11 @@ export const PenseAjaService = {
 
     const client = await pool.connect();
     try {
-      const getProduct = penseAjaProducts.find((p) => Number(p.id) === product.id);
+      const products = await client.query(`
+        SELECT * FROM pense_aja.pense_aja_loja
+      `)
+
+      const getProduct = products.rows.find((p) => Number(p.id) === product.id);
       if (!getProduct) {
         throw new CustomError(
           "Produto não encontrado.",
@@ -512,7 +516,7 @@ export const PenseAjaService = {
         );
       }
 
-      if (pontosRestantes < getProduct.points) {
+      if (pontosRestantes < getProduct.valor) {
         throw new CustomError(
           "Pontos insuficientes para resgatar o prêmio.",
           400,
@@ -526,7 +530,7 @@ export const PenseAjaService = {
         colaboradorData.matricula,
         colaboradorData.nome,
         getProduct.name,
-        getProduct.points,
+        getProduct.valor,
         analista.analistaUser,
         analista.analistaName,
         dassOffice,
