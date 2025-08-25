@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN npm install --only=production
 
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/.env.prod ./
+COPY --from=builder /app/.env.production ./
 
 EXPOSE 2512
 CMD ["node", "dist/penseAja.js"]
