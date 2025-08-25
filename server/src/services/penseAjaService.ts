@@ -507,7 +507,7 @@ export const PenseAjaService = {
         SELECT * FROM pense_aja.pense_aja_loja
       `)
 
-      const getProduct = products.rows.find((p) => Number(p.id) === product.id);
+      const getProduct = products.rows.find((p) => p.id === product.id);
       if (!getProduct) {
         throw new CustomError(
           "Produto não encontrado.",
@@ -529,7 +529,7 @@ export const PenseAjaService = {
       const params = [
         colaboradorData.matricula,
         colaboradorData.nome,
-        getProduct.name,
+        getProduct.nome,
         getProduct.valor,
         analista.analistaUser,
         analista.analistaName,
