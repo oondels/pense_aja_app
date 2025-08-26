@@ -513,7 +513,7 @@ onBeforeUnmount(() => {
 const user = useUserStore();
 
 const checkRoleAndEvaluation = () => {
-  if (setUserRole(user) === "analista" || setUserRole(user) === "automacao") {
+  if (setUserRole(user) === "analista" || setUserRole(user) === "automacao" || setUserRole(user) === "gerente") {
     return true;
   }
 
