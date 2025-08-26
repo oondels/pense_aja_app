@@ -51,7 +51,7 @@
         </div>
       </div>
     </main>
-    <Notification ref="notification"/>
+    <Notification ref="notification" />
   </div>
 </template>
 
@@ -74,7 +74,7 @@ document.title = "Pense&Aja | Dashboard de Ideias";
 const isLoaded = ref(false);
 const userStore = useUserStore();
 
-const notification = ref(null)
+const notification = ref(null);
 
 const today = new Date();
 const getFirstMonth = () => {
@@ -177,10 +177,13 @@ const downloadReport = async () => {
       "Data de Criação": formatDate(item.createdat),
       "Situação Anterior": item.situacao_anterior,
       "Situação Atual": item.situacao_atual,
-      "Gerente Aprovador": item.gerente_aprovador || "Não avaliado",
+      "Gerente Avaliador": item.gerente_aprovador || "Não avaliado",
       "Analista Avaliador": item.analista_avaliador || "Não avaliado",
       "Em Espera": item.em_espera === "1" ? "Sim" : "Não",
-      Classificação: item.classificacao || "Não classificado",
+      "Nota avaliada":
+        item.status_gerente === "reprove" || item.status_analista === "reprove"
+          ? "Reprovado"
+          : item.classificacao || "Não classificado",
     }));
 
     // Aba 3: Análise por Setor (usando agregações)
@@ -328,12 +331,7 @@ const downloadReport = async () => {
       fileName
     );
 
-    notification.value.showPopup(
-      "success",
-      "Sucesso.",
-      "Relatório gerado com sucesso!",
-      3000
-    );
+    notification.value.showPopup("success", "Sucesso.", "Relatório gerado com sucesso!", 3000);
   } catch (error) {
     console.error("Erro ao gerar relatório:", error);
 
@@ -346,12 +344,7 @@ const downloadReport = async () => {
       errorMessage = "Erro interno do servidor. Tente novamente mais tarde.";
     }
 
-    notification.value.showPopup(
-      "error",
-      "Erro ao Gerar Relatório.",
-      errorMessage,
-      4000
-    );
+    notification.value.showPopup("error", "Erro ao Gerar Relatório.", errorMessage, 4000);
   } finally {
     isGeneratingReport.value = false;
   }
