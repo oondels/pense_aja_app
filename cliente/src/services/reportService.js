@@ -80,7 +80,7 @@ export const reportService = {
           if (status === 'AVALIADO') aggregations[aggKey][key].aprovados++;
           else if (status === 'REPROVADO') aggregations[aggKey][key].reprovados++;
           else if (status === 'EM ESPERA') aggregations[aggKey][key].emEspera++;
-          else if (status === 'VISTO PELO ANALISTA') aggregations[aggKey][key].visto_analista++;
+          else if (status === 'VISTO PELA MELHORIA CONTINUA') aggregations[aggKey][key].visto_analista++;
           else if (status === 'VISTO PELO GERENTE') aggregations[aggKey][key].visto_gerente++;
           else aggregations[aggKey][key].pendentes++;
         });
@@ -90,7 +90,7 @@ export const reportService = {
         if (status === 'AVALIADO') aggregations.totalMetrics.aprovados++;
         else if (status === 'REPROVADO') aggregations.totalMetrics.reprovados++;
         else if (status === 'EM ESPERA') aggregations.totalMetrics.emEspera++;
-        else if (status === 'VISTO PELO ANALISTA') aggregations.totalMetrics.visto_analista++;
+        else if (status === 'VISTO PELA MELHORIA CONTINUA') aggregations.totalMetrics.visto_analista++;
         else if (status === 'VISTO PELO GERENTE') aggregations.totalMetrics.visto_gerente++;
         else aggregations.totalMetrics.pendentes++;
       });

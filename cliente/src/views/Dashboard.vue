@@ -201,7 +201,7 @@ const downloadReport = async () => {
       "Ideias Aprovadas": dados.aprovados,
       "Ideias Reprovadas": dados.reprovados,
       "Ideias em Espera": dados.emEspera,
-      "Visto Pelo Analista": dados.visto_analista || 0,
+      "Visto Pela Melhoria Continua": dados.visto_analista || 0,
       "Visto Pelo Gerente": dados.visto_gerente || 0,
       "Ideias Pendentes": dados.pendentes,
       "Taxa de Aprovação (%)": dados.total > 0 ? ((dados.aprovados / dados.total) * 100).toFixed(2) : "0.00",
@@ -215,7 +215,7 @@ const downloadReport = async () => {
       "Ideias Reprovadas": dados.reprovados,
       "Ideias Pendentes": dados.pendentes,
       "Ideias em Espera": dados.emEspera,
-      "Visto Pelo Analista": dados.visto_analista || 0,
+      "Visto Pela Melhoria Continua": dados.visto_analista || 0,
       "Visto Pelo Gerente": dados.visto_gerente || 0,
       "Taxa de Aprovação (%)": dados.total > 0 ? ((dados.aprovados / dados.total) * 100).toFixed(2) : "0.00",
     }));
@@ -228,7 +228,7 @@ const downloadReport = async () => {
       "Ideias Reprovadas": dados.reprovados,
       "Ideias Pendentes": dados.pendentes,
       "Ideias em Espera": dados.emEspera,
-      "Visto Pelo Analista": dados.visto_analista || 0,
+      "Visto Pela Melhoria Continua": dados.visto_analista || 0,
       "Visto Pelo Gerente": dados.visto_gerente || 0,
       "Taxa de Aprovação (%)": dados.total > 0 ? ((dados.aprovados / dados.total) * 100).toFixed(2) : "0.00",
     }));

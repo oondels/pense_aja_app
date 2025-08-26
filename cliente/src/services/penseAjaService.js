@@ -96,7 +96,7 @@ export const setPenseAjaStatus = (penseAja) => {
   } else if (!penseAja.gerente_aprovador && !penseAja.analista_avaliador) {
     status = "SEM ANÁLISE";
   } else if (!penseAja.gerente_aprovador) {
-    status = "VISTO PELO ANALISTA";
+    status = "VISTO PELA MELHORIA CONTINUA";
   } else if (!penseAja.analista_avaliador) {
     status = "VISTO PELO GERENTE";
   } else if (penseAja.gerente_aprovador && penseAja.analista_avaliador) {

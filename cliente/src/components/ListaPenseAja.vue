@@ -296,7 +296,7 @@
             class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-md transition-all duration-200 hover:-translate-y-1"
           >
             <span class="w-3 h-3 rounded-full bg-orange-200 border-l-4 border-orange-500"></span>
-            <span class="text-xs text-gray-600">Visto pelo Analista</span>
+            <span class="text-xs text-gray-600">Visto pela Melhoria Contínua</span>
           </div>
           <div
             class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-md transition-all duration-200 hover:-translate-y-1"
@@ -417,7 +417,7 @@
                           <template v-else-if="computeStatusData(item).status === 'Sem Análise'">
                             <i class="bi bi-eye-slash"></i>
                           </template>
-                          <template v-else-if="computeStatusData(item).status === 'Visto pelo Analista'">
+                          <template v-else-if="computeStatusData(item).status === 'Visto Pela Melhoria Continua'">
                             <i class="bi bi-person-badge"></i>
                           </template>
                           <template v-else-if="computeStatusData(item).status === 'Visto pelo Gerente'">
@@ -1083,7 +1083,7 @@ function computeStatusData(penseAja) {
   } else if (!penseAja.gerente_aprovador && !penseAja.analista_avaliador) {
     status = "SEM ANÁLISE";
   } else if (!penseAja.gerente_aprovador) {
-    status = "VISTO PELO ANALISTA";
+    status = "VISTO PELA MELHORIA CONTINUA";
   } else if (!penseAja.analista_avaliador) {
     status = "VISTO PELO GERENTE";
   } else if (penseAja.gerente_aprovador && penseAja.analista_avaliador) {
@@ -1097,7 +1097,7 @@ function computeStatusData(penseAja) {
     REPROVADO: "reprovado",
     "EM ESPERA": "em-espera",
     "SEM ANÁLISE": "sem-ambos",
-    "VISTO PELO ANALISTA": "sem-gerente",
+    "VISTO PELA MELHORIA CONTINUA": "sem-gerente",
     "VISTO PELO GERENTE": "sem-analista",
     AVALIADO: "avaliado",
     "NÃO AVALIADO": "nao-avaliado",

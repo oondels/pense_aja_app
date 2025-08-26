@@ -68,7 +68,7 @@
               <template v-else-if="statusData.status === 'Sem Análise'">
                 <i class="bi bi-eye-slash"></i>
               </template>
-              <template v-else-if="statusData.status === 'Visto pelo Analista'">
+              <template v-else-if="statusData.status === 'Visto Pela Melhoria Continua'">
                 <i class="bi bi-person-badge"></i>
               </template>
               <template v-else-if="statusData.status === 'Visto pelo Gerente'">
@@ -414,7 +414,7 @@ const statusData = computed(() => {
   } else if (!penseAja.value.gerente_aprovador && !penseAja.value.analista_avaliador) {
     status = "Sem Análise";
   } else if (!penseAja.value.gerente_aprovador) {
-    status = "Visto pelo Analista";
+    status = "Visto Pela Melhoria Continua";
   } else if (!penseAja.value.analista_avaliador) {
     status = "Visto pelo Gerente";
   } else if (penseAja.value.gerente_aprovador && penseAja.value.analista_avaliador) {
@@ -428,7 +428,7 @@ const statusData = computed(() => {
     Reprovado: "reprovado",
     "Em Espera": "em-espera",
     "Sem Análise": "sem-ambos",
-    "Visto pelo Analista": "sem-gerente",
+    "Visto Pela Melhoria Continua": "sem-gerente",
     "Visto pelo Gerente": "sem-analista",
     Avaliado: "avaliado",
     "Não Avaliado": "nao-avaliado",
