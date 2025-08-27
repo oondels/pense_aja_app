@@ -269,9 +269,21 @@
               <button
                 @click="handleRegister"
                 type="button"
-                class="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition"
+                :disabled="submitting"
+                :aria-busy="submitting"
+                :class="[
+                  'w-full px-4 py-3 rounded-lg font-semibold transition flex items-center justify-center',
+                  submitting ? 'bg-gray-300 cursor-not-allowed text-white' : 'bg-red-500 hover:bg-red-600 text-white'
+                ]"
               >
-                Salvar <i class="mdi mdi-content-save-check-outline ml-2"></i>
+                <template v-if="!submitting">
+                  <span>Registrar</span>
+                  <i class="mdi mdi-content-save-check-outline ml-2"></i>
+                </template>
+                <template v-else>
+                  <span class="spinner mr-2"></span>
+                  <span>Registrando...</span>
+                </template>
               </button>
             </form>
           </div>
@@ -312,6 +324,7 @@ onBeforeUnmount(() => {
 
 const loading = ref(false);
 const loadingImprove = ref(false);
+const submitting = ref(false);
 const userData = ref(null);
 const ganhos = ref(false);
 const showTooltip = ref(false);
@@ -473,6 +486,7 @@ const handleImproveText = async () => {
 };
 
 const handleRegister = async () => {
+  if (submitting.value) return;
   if (!registrationEntry.value || !userData.value) {
     emit("notify", {
       type: "warning",
@@ -482,8 +496,18 @@ const handleRegister = async () => {
     });
     return;
   }
-
-  registerPenseAja(penseAjaData.value, registrationEntry.value, emit, userData.value, showExplosion);
+  try {
+    submitting.value = true;
+    await registerPenseAja(
+      penseAjaData.value,
+      registrationEntry.value,
+      emit,
+      userData.value,
+      showExplosion
+    );
+  } finally {
+    submitting.value = false;
+  }
 };
 </script>
 
