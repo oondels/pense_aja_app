@@ -1,4 +1,4 @@
-import { api } from "./httpClient"
+import { api, commonApi } from "./httpClient"
 import axios from "axios";
 
 export const purchaseItem = async (colaboradorData, product, analistaName, analistaUser, dassOffice, notification, loadingPass, dialog, emit) => {
@@ -73,8 +73,6 @@ export const editProducts = async (dassOffice, data) => {
 
 export const fetchStoreProducts = async (dassOffice) => {
   try {
-    console.log('buscando produtos para', dassOffice);
-    
     const response = await commonApi.get(`/pense-aja/products/${dassOffice}`);
     return response.data;
   } catch (error) {
