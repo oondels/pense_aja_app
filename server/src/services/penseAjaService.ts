@@ -208,6 +208,41 @@ export const PenseAjaService = {
     try {
       await client.query("BEGIN");
 
+      // Idempotency lock per (matricula, nome_projeto, data_realizada, unidade_dass)
+      // Prevents concurrent duplicate inserts when user double-clicks with slow network
+      await client.query(
+        `SELECT pg_advisory_xact_lock(hashtext($1 || $2), hashtext($3 || $4))`,
+        [
+          String(data.registration ?? ''),
+          String(data.nome ?? ''),
+          String(data.createDate ?? ''),
+          String(dassOffice ?? ''),
+        ]
+      );
+
+      // Quick duplicate check within a short window
+      const dupCheck = await client.query(
+        `SELECT id, nome, nome_projeto, ganhos
+           FROM pense_aja.pense_aja_dass
+          WHERE matricula = $1
+            AND nome_projeto = $2
+            AND data_realizada = $3
+            AND unidade_dass = $4
+            AND excluido = false
+          ORDER BY id DESC
+          LIMIT 1`,
+        [
+          data.registration,
+          data.nome,
+          data.createDate,
+          dassOffice,
+        ]
+      );
+      if (dupCheck.rows.length > 0) {
+        await client.query("COMMIT");
+        return { pense_aja: dupCheck.rows[0], userManager: null, duplicated: true } as any;
+      }
+
       const perdasSelecionads = new Set(data.perdas);
       const colunasPerdas = Object.keys(perdasLean);
       // Atualiza dados de seleção
@@ -260,7 +295,7 @@ export const PenseAjaService = {
       const userManager = await UserPenseaja.getManagerByUser(data.registration, dassOffice);
 
       await client.query("COMMIT");
-      return { pense_aja: newPenseAja.rows[0], userManager };
+      return { pense_aja: newPenseAja.rows[0], userManager, duplicated: false } as any;
     } catch (error) {
       await client.query("ROLLBACK");
       const messageError =

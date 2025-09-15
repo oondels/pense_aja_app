@@ -14,7 +14,7 @@ import DashboardRoutes from "./routes/dashboard.route";
 const app = express();
 const port = 2512;
 
-app.use(cors({ origin: ["http://10.100.1.43:5050" ,"http://127.0.0.1:5173", "http://localhost:5173", "http://localhost:5175", "http://localhost:3000", "http://localhost:5050"], credentials: true }));
+app.use(cors({ origin: ["http://10.100.1.43:5050" ,"http://127.0.0.1:5173", "http://localhost:5173", "http://localhost:5175", "http://localhost:3000", "http://localhost:5050", "http://localhost:5174"], credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use("/pense-aja/", PenseAjaRoutes);

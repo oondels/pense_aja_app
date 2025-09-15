@@ -145,7 +145,15 @@ router.post("/:dassOffice", async (req: Request, res: Response, next: NextFuncti
     const { dassOffice } = req.params;
     const penseajaData = req.body;
 
-    const { pense_aja, userManager } = await PenseAjaService.createPenseAja(penseajaData, dassOffice);
+    const { pense_aja, userManager, duplicated } = await PenseAjaService.createPenseAja(penseajaData, dassOffice);
+
+    if (duplicated) {
+       res.status(200).json({
+        message: "Registro já existente. Ignorando duplicidade.",
+        id: pense_aja.id,
+      });
+      return
+    }
 
     // Verifica se encontra gerente do usuário e se o gerente esta com notificações ativas
     if (userManager) {
