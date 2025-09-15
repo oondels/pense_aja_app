@@ -526,6 +526,8 @@ const filterType = ref("all");
 const filteredProducts = ref(null);
 const filterProduct = () => {
   if (!storeProducts.value || storeProducts.value.length === 0) {
+    console.log("store products vazio");
+    
     filteredProducts.value = [];
     return;
   }

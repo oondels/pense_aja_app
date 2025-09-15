@@ -73,7 +73,9 @@ export const editProducts = async (dassOffice, data) => {
 
 export const fetchStoreProducts = async (dassOffice) => {
   try {
-    const response = await api.get(`/pense-aja/products/${dassOffice}`);
+    console.log('buscando produtos para', dassOffice);
+    
+    const response = await commonApi.get(`/pense-aja/products/${dassOffice}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching products:", error);
