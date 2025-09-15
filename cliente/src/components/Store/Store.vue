@@ -12,7 +12,6 @@
           <span class="mdi mdi-store text-xl"></span>
           <span>Loja</span>
         </button>
-
       </template>
 
       <template v-slot:default="{ isActive }">
