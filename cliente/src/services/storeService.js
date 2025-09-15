@@ -63,7 +63,7 @@ export const createProduct = async (data, files, dassOffice) => {
 
 export const editProducts = async (dassOffice, data) => {
   try {
-    const response = await api.put(`/pense-aja/products/${dassOffice}`, data);
+    const response = await commonApi.put(`/pense-aja/products/${dassOffice}`, data);
     return response.data;
   } catch (error) {
     console.error("Error editing product:", error);
