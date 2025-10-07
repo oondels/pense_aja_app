@@ -976,10 +976,10 @@ function setupWatchers() {
 const user = useUserStore();
 
 const checkRoleAndEvaluation = (penseAja) => {
-  if (penseAja.em_espera === "1"){
+  if (penseAja.em_espera === "1") {
     return true;
   }
-  
+
   if (setUserRole(user) === "analista" && penseAja.analista_avaliador) {
     return false;
   }
@@ -1141,7 +1141,7 @@ const setEvaluationValue = (value) => {
 };
 
 const setButtonPermission = (penseAja, _ = false) => {
-  if (penseAja.em_espera === "1"){
+  if (penseAja.em_espera === "1") {
     return "";
   }
 
@@ -1156,12 +1156,27 @@ const setButtonPermission = (penseAja, _ = false) => {
 
 const justificativa = ref(null);
 const reprove = ref(false);
+
+// Verifica se o penseaja ja foi avaliado e retorna true ou false
+const verificaAvaliacaoPenseAja = (penseAja) => {
+  if (penseAja.analista_avaliador || penseAja.gerente_aprovador) {
+    return true;
+  }
+  return false;
+};
+
 // TODO: Exibir avaliação do analista para o gerente
 const handleEvaluationValue = async (action, penseAja, dialog) => {
   if (action === "reprove") {
     reprove.value = true;
     await nextTick();
     justificativa.value.focus();
+  }
+
+  // Variavel para informar o servidor que este penseAja ja foi avaliado
+  let avaliadoAnteriormente = false;
+  if (verificaAvaliacaoPenseAja(penseAja)) {
+    avaliadoAnteriormente = true;
   }
 
   const evaluationData = {
@@ -1173,6 +1188,7 @@ const handleEvaluationValue = async (action, penseAja, dialog) => {
     avaliacao: evaluationValue?.value,
     justificativa: justification.value,
     dassOffice: dassOffice,
+    avaliadoAnteriormente: avaliadoAnteriormente,
   };
 
   const avaliacao = await evaluatePenseAja(evaluationData, notification, dialog);
