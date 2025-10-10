@@ -1,9 +1,15 @@
 <template>
-  <Navbar />
+  <div v-if="!maintenanceMode">
+    <Navbar />
 
-  <GetUserEmail />
-  <GetUserOffice />
-  <router-view />
+    <GetUserEmail />
+    <GetUserOffice />
+    <router-view />
+  </div>
+
+  <div v-else>
+    <Maintenance />
+  </div>
   <Footer />
 </template>
 
@@ -12,9 +18,11 @@ import Navbar from "./components/Navbar.vue";
 import Footer from "./components/Footer.vue";
 import GetUserOffice from "./components/GetUserOffice.vue";
 import GetUserEmail from "./components/GetUserEmail.vue";
+import Maintenance from "./components/Maintenance.vue";
 import { onMounted } from "vue";
 import { useUserStore } from "@/stores/userStore.js";
 
+const maintenanceMode = false;
 const unidade = localStorage.getItem("unidadeDass");
 onMounted(() => {
   const userStore = useUserStore();
@@ -55,11 +63,7 @@ onMounted(() => {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(176, 6, 43, 0),
-    rgba(255, 179, 195, 0.5)
-  );
+  background: linear-gradient(135deg, rgba(176, 6, 43, 0), rgba(255, 179, 195, 0.5));
   top: 0;
   left: -100%;
   transition: 0.5s;
@@ -138,7 +142,7 @@ onMounted(() => {
 
 .mobile-action-button:hover {
   background-color: #f33e3e;
-  color: white
+  color: white;
 }
 
 .mobile-action-button:active {

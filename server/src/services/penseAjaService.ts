@@ -44,6 +44,7 @@ interface EvaluationData {
   replicavel: boolean;
   justificativa: string;
   usuario: string;
+  avaliadoAnteriormente: boolean;
   nome: string;
   funcao: string;
   dassOffice: string;
@@ -362,7 +363,8 @@ export const PenseAjaService = {
       avaliacao,
       a3Mae = '',
       emEspera,
-      replicavel
+      replicavel,
+      avaliadoAnteriormente = false
     }: EvaluationData
   ) {
     checkDassOffice(dassOffice);
@@ -482,6 +484,7 @@ export const PenseAjaService = {
         throw new CustomError('Pense Aja não encontrado.', 404, 'Pense Aja não encontrado.');
       }
 
+      // Delete points if excluded or reproved by manager
       if ((status === EXCLUDE || status === REPROVE) && isGerente) {
         await client.query(
           `DELETE FROM pense_aja.pense_aja_pontos
@@ -497,25 +500,37 @@ export const PenseAjaService = {
           : CLASSIFICATION_MAP[avaliacao?.toString() ?? ''] ?? 'C';
 
       if (status !== EXCLUDE && status !== REPROVE && classificacao && avaliacao) {
-        // insert new points record
-        await client.query(
-          `
-            INSERT INTO pense_aja.pense_aja_pontos
-              (id_pense_aja, matricula, nome, valor, gerente, classificacao, createdat, updatedat, unidade_dass)
-            VALUES
-              ($1, $2, $3, $4, $5, $6, NOW(), NOW(), $7)
-            RETURNING id;
-          `,
-          [
-            result.rows[0].id,
-            result.rows[0].matricula,
-            result.rows[0].nome,
-            avaliacao ?? 0,
-            result.rows[0].gerente,
-            classificacao,
-            dassOffice
-          ]
-        );
+        // Verifica se já existe pontuação para este Pense Aja
+        // Se existir, substitui
+        if (avaliadoAnteriormente) {
+          await client.query(`
+           UPDATE pense_aja.pense_aja_pontos
+           SET valor = $1, classificacao = $2
+           WHERE id_pense_aja = $3
+          `, [avaliacao, classificacao, result.rows[0].id])
+
+          console.log('Pense aja ja avaliado, atualizado valor e classificação');
+        } else {
+          // insert new points record
+          await client.query(
+            `
+              INSERT INTO pense_aja.pense_aja_pontos
+                (id_pense_aja, matricula, nome, valor, gerente, classificacao, createdat, updatedat, unidade_dass)
+              VALUES
+                ($1, $2, $3, $4, $5, $6, NOW(), NOW(), $7)
+              RETURNING id;
+            `,
+            [
+              result.rows[0].id,
+              result.rows[0].matricula,
+              result.rows[0].nome,
+              avaliacao ?? 0,
+              result.rows[0].gerente,
+              classificacao,
+              dassOffice
+            ]
+          );
+        }
       }
 
       await client.query('COMMIT');
@@ -667,7 +682,7 @@ export const PenseAjaService = {
     }
   },
 
-  async updateProduct(productData: Array<{id: number, nome: string, valor: number}>, dassOffice: string, usuario: string) {
+  async updateProduct(productData: Array<{ id: number, nome: string, valor: number }>, dassOffice: string, usuario: string) {
     checkDassOffice(dassOffice);
 
     if (!Array.isArray(productData) || productData.length === 0) {
@@ -722,20 +737,20 @@ export const PenseAjaService = {
         throw new CustomError(
           "Nenhum produto foi atualizado.",
           400,
-          failedProducts.length > 0 
-            ? `Erros: ${JSON.stringify(failedProducts)}` 
+          failedProducts.length > 0
+            ? `Erros: ${JSON.stringify(failedProducts)}`
             : "Verifique os dados enviados."
         );
       }
 
       await client.query("COMMIT");
       logger.info("Store", `${updatedProducts.length} produtos atualizados com sucesso para a unidade ${dassOffice}`);
-      
+
       return updatedProducts;
     } catch (error) {
       await client.query("ROLLBACK");
       logger.error("Store", `Erro ao atualizar produtos: ${error}`);
-      
+
       if (error instanceof CustomError) {
         throw error;
       } else {
