@@ -484,6 +484,7 @@ export const PenseAjaService = {
         throw new CustomError('Pense Aja não encontrado.', 404, 'Pense Aja não encontrado.');
       }
 
+      // Delete points if excluded or reproved by manager
       if ((status === EXCLUDE || status === REPROVE) && isGerente) {
         await client.query(
           `DELETE FROM pense_aja.pense_aja_pontos
