@@ -51,6 +51,20 @@
               </div>
             </div>
 
+            <!-- Global Notice: Instability and points correction -->
+            <div v-if="dassOffice === 'VDC' || dassOffice === 'VDC-CONF' || dassOffice === 'VDC_CONF'" class="mb-6">
+              <div
+                class="flex items-start space-x-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded"
+              >
+                <i class="bi bi-info-circle-fill mt-0.5 text-yellow-500"></i>
+                <p class="text-sm">
+                  Informamos que o aplicativo esteve temporariamente instável. Um ajuste foi realizado no sistema para
+                  corrigir um erro de duplicação de pontos. Caso sua pontuação esteja inferior à anterior, isso se deve
+                  à correção automática. Agradecemos a compreensão
+                </p>
+              </div>
+            </div>
+
             <!-- Search & Points -->
             <div
               class="flex flex-col sm:flex-row items-center justify-between mb-6 space-y-4 sm:space-y-0 sm:space-x-4"
