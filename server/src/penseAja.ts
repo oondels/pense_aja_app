@@ -14,7 +14,7 @@ import DashboardRoutes from "./routes/dashboard.route";
 const app = express();
 const port = 2512;
 
-app.use(cors({ origin: ["http://10.100.1.43:5050" ,"http://127.0.0.1:5173", "http://localhost:5173", "http://localhost:5175", "http://localhost:3000", "http://localhost:5050", "http://localhost:5174"], credentials: true }));
+app.use(cors({ origin: ["http://10.100.1.43:5050", "http://127.0.0.1:5173", "http://localhost:5173", "http://localhost:5175", "http://localhost:3000", "http://localhost:5050", "http://localhost:5174"], credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use("/pense-aja/", PenseAjaRoutes);
@@ -32,9 +32,7 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   const message = error.message || "Erro interno no servidor.";
   const details = error.details || null;
 
-  console.error(
-    `Erro no método ${req.method} em ${req.originalUrl} - ${message}  `
-  );
+  console.error(`Erro no método ${req.method} em ${req.originalUrl} - ${message}`);
   if (details) {
     console.error("Detalhes do erro: ", details);
   }
