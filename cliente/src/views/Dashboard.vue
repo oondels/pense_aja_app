@@ -179,11 +179,7 @@ const downloadReport = async () => {
       "Situação Atual": item.situacao_atual,
       "Gerente Avaliador": item.gerente_aprovador || "Não avaliado",
       "Analista Avaliador": item.analista_avaliador || "Não avaliado",
-      "Em Espera": item.em_espera === "1" ? "Sim" : "Não",
-      "Nota avaliada":
-        item.status_gerente === "reprove" || item.status_analista === "reprove"
-          ? "Reprovado"
-          : item.classificacao || "Não classificado",
+      "Em Espera": item.em_espera === "1" ? "Sim" : "Não"
     }));
 
     // Aba 3: Análise por Setor (usando agregações)
