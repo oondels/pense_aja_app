@@ -217,7 +217,7 @@
                   @mouseenter="showTooltip = true"
                   @mouseleave="showTooltip = false"
                   type="button"
-                  :disabled="loadingImprove"
+                  disabled
                   :class="[
                     'flex items-center justify-center space-x-2 px-4 py-2 rounded-lg transition',
                     disableIaButton ? 'bg-gray-300 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600 text-white',
