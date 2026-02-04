@@ -234,9 +234,9 @@
                   class="absolute -top-16 left-1/2 transform -translate-x-1/2 w-60 bg-white shadow-lg rounded-lg p-3 text-sm text-gray-700 border-l-4 border-red-500"
                 >
                   <strong class="flex items-center gap-1 text-red-500">
-                    <i class="bi bi-lightbulb"></i>Dica inteligente!
+                    <i class="bi bi-lightbulb"></i>Dica!
                   </strong>
-                  Revise seu texto com inteligência artificial para facilitar a avaliação!
+                  Funcionalidade desabilitada temporariamente!
                 </div>
               </div>
 
@@ -328,7 +328,7 @@ const submitting = ref(false);
 const userData = ref(null);
 const ganhos = ref(false);
 const showTooltip = ref(false);
-const disableIaButton = ref(false);
+const disableIaButton = ref(true);
 const showExplosion = ref(false);
 
 const user = useUserStore();
