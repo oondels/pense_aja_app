@@ -139,7 +139,8 @@ export const reportService = {
           'Situação Atual': item.situacao_atual,
           'Status': this.getStatus(item),
           'Gerente Aprovador': item.gerente_aprovador || 'Não avaliado',
-          'Analista Avaliador': item.analista_avaliador || 'Não avaliado'
+          'Analista Avaliador': item.analista_avaliador || 'Não avaliado',
+          'Pontuação': item.pontuacao ?? ''
         })),
         'Resumo por Setor': Object.entries(data.aggregations.bySetor).map(([setor, dados]) => ({
           'Setor': setor,

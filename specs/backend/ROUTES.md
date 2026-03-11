@@ -61,6 +61,9 @@ Consulta registros de ideias por unidade e filtros.
   - intervalo final inclui o dia inteiro via `+ interval '1 day'`
   - `turno` é traduzido para `A`, `B` ou `C`
 - Ordenação: `createdat DESC`
+- Saída atual também inclui:
+  - `matricula`
+  - `pontuacao` quando existir linha correspondente em `pense_aja.pense_aja_pontos`
 
 ## `POST /pense-aja/:dassOffice`
 
@@ -198,6 +201,7 @@ Entrega série mensal agregada.
   - total de aprovados por mês
 - Observação:
   - o campo `value` retornado hoje representa quantidade de aprovados, não valor financeiro
+  - a API respeita o período informado na query
 
 ## `GET /dashboard/dimensional/:dassOffice`
 
@@ -215,6 +219,7 @@ Entrega ranking por dimensões organizacionais.
 Entrega ideias de destaque para cards visuais.
 
 - Auth: não exige.
+- Query params aceitos: `startDate`, `endDate`
 - Critério:
   - prioriza aprovadas por valor amortizado
   - desempata por data

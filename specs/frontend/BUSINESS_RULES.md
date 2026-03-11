@@ -76,9 +76,11 @@ Isso é relevante porque o frontend usa essas labels para:
 ## Dashboard
 
 - a tela usa período padrão do ano atual até o dia presente
-- `dashboardService.getMonthlyData` hoje ignora o período recebido e força análise do ano corrente
+- `dashboardService.getMonthlyData` deve respeitar o período recebido pelos filtros
+- `dashboardService.getIdeaHighlights` deve respeitar o período recebido pelos filtros
 - os composables de dashboard retornam dados fallback em caso de erro
 - o relatório XLSX é montado no cliente a partir de dados brutos e agregados
+- a aba `Detalhes Pense&Aja` exporta a coluna `Pontuação` quando a ideia possuir registro em `pense_aja_pontos`
 
 ## Perfil e notificações
 

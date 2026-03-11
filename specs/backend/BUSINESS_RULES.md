@@ -86,13 +86,15 @@ Essa validação é centralizada em `checkDassOffice`.
 ### Summary
 
 - considera apenas `excluido = false`
-- usa aprovações e reprovações baseadas nos status de gerente e analista
+- usa reprovação quando gerente ou analista marcar `reprove`
+- considera implementada apenas a ideia com `status_gerente = 'approve'` e `status_analista = 'approve'`
 - usa `valor_amortizado` para total e média
 
 ### Monthly
 
 - agrega por `createdat`
 - o retorno `value` representa aprovados, apesar do nome sugerir valor monetário
+- segue a mesma noção de aprovação completa usada no summary
 
 ### Dimensional
 
@@ -102,13 +104,14 @@ Essa validação é centralizada em `checkDassOffice`.
 ### Idea highlights
 
 - prioriza ideias aprovadas com maior `valor_amortizado`
+- aceita filtro opcional por período
 - categoria é inferida por palavras do setor
 - likes e comments são fabricados em memória para enriquecer a UI
 
 ### Engagement
 
 - ranqueia colaboradores por volume de ideias
-- considera implementação apenas por `status_gerente = 'approve'`
+- considera implementação apenas quando gerente e analista aprovaram
 - cargo e departamento são estimados via heurística, não vêm do banco
 
 ## IA

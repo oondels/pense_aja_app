@@ -113,7 +113,14 @@ export const DashboardController = {
       const dassOffice = validateDassOffice(req, res);
       if (!dassOffice) return;
 
-      const result = await DashboardService.getIdeaHighlights(dassOffice);
+      const range = parseDateRange(req, res);
+      if (!range) return;
+
+      const result = await DashboardService.getIdeaHighlights(
+        dassOffice,
+        range.startDate,
+        range.endDate
+      );
       res.status(200).json({ erro: false, dados: result });
     } catch (error) {
       next(error);

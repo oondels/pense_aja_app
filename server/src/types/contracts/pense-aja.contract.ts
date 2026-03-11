@@ -37,6 +37,7 @@ export interface PenseAjaFilters {
 export interface PenseAjaListItem {
   id: number;
   criado: string;
+  matricula: number;
   fabrica: string | null;
   nome: string;
   setor: string;
@@ -54,6 +55,7 @@ export interface PenseAjaListItem {
   em_espera: string | boolean | null;
   createdat: string | Date;
   classificacao: string | null;
+  pontuacao: number | null;
 }
 
 export interface PenseAjaDetails {

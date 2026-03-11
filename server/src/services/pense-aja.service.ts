@@ -80,6 +80,7 @@ const releaseQueryRunner = async (queryRunner: QueryRunner) => {
 const mapListItem = (row: Record<string, unknown>): PenseAjaListItem => ({
   id: Number(row.id),
   criado: formatDate(row.criado as string | Date),
+  matricula: Number(row.matricula),
   fabrica: (row.fabrica as string | null) ?? null,
   nome: String(row.nome ?? ""),
   setor: String(row.setor ?? ""),
@@ -100,6 +101,10 @@ const mapListItem = (row: Record<string, unknown>): PenseAjaListItem => ({
       : (row.em_espera as string | boolean),
   createdat: row.createdat as string | Date,
   classificacao: (row.classificacao as string | null) ?? null,
+  pontuacao:
+    row.pontuacao === null || row.pontuacao === undefined
+      ? null
+      : Number(row.pontuacao),
 });
 
 const mapEvaluationRow = (
@@ -145,6 +150,7 @@ export const PenseAjaService = {
         .createQueryBuilder("idea")
         .select("idea.id", "id")
         .addSelect("idea.data_realizada", "criado")
+        .addSelect("idea.matricula", "matricula")
         .addSelect("idea.fabrica", "fabrica")
         .addSelect("idea.nome", "nome")
         .addSelect("idea.setor", "setor")
@@ -162,6 +168,20 @@ export const PenseAjaService = {
         .addSelect("idea.em_espera", "em_espera")
         .addSelect("idea.createdat", "createdat")
         .addSelect("idea.classificacao", "classificacao")
+        .addSelect("points.valor", "pontuacao")
+        .leftJoin(
+          (subQuery) =>
+            subQuery
+              .select("pontos.id_pense_aja", "id_pense_aja")
+              .addSelect("MAX(pontos.valor)", "valor")
+              .from("pense_aja.pense_aja_pontos", "pontos")
+              .where("pontos.unidade_dass = :dassOffice", {
+                dassOffice: validDassOffice,
+              })
+              .groupBy("pontos.id_pense_aja"),
+          "points",
+          "points.id_pense_aja = CAST(idea.id AS bigint)"
+        )
         .where("idea.excluido = false")
         .andWhere("idea.createdat >= :startDate", {
           startDate: startDateParsed,

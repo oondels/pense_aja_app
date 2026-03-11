@@ -46,6 +46,12 @@ const applyDateFilter = (
   }
 };
 
+const approvedExpression =
+  "idea.status_gerente = 'approve' AND idea.status_analista = 'approve'";
+const rejectedExpression =
+  "idea.status_gerente = 'reprove' OR idea.status_analista = 'reprove'";
+const pendingExpression = `NOT (${approvedExpression}) AND NOT (${rejectedExpression})`;
+
 export class DashboardService {
   static async getSummaryData(
     dassOffice: string,
@@ -61,15 +67,15 @@ export class DashboardService {
         .createQueryBuilder("idea")
         .select("COUNT(*)", "total_ideas")
         .addSelect(
-          "COUNT(CASE WHEN idea.status_gerente = 'approve' OR idea.status_analista = 'approve' THEN 1 END)",
+          `COUNT(CASE WHEN ${approvedExpression} THEN 1 END)`,
           "implemented_ideas"
         )
         .addSelect(
-          "COUNT(CASE WHEN idea.status_gerente IS NULL OR idea.status_analista IS NULL THEN 1 END)",
+          `COUNT(CASE WHEN ${pendingExpression} THEN 1 END)`,
           "pending_ideas"
         )
         .addSelect(
-          "COUNT(CASE WHEN idea.status_gerente = 'reprove' OR idea.status_analista = 'reprove' THEN 1 END)",
+          `COUNT(CASE WHEN ${rejectedExpression} THEN 1 END)`,
           "rejected_ideas"
         )
         .addSelect(
@@ -133,7 +139,7 @@ export class DashboardService {
         .addSelect("TO_CHAR(idea.createdat, 'Mon')", "month_name")
         .addSelect("COUNT(*)", "count")
         .addSelect(
-          "COUNT(*) FILTER (WHERE idea.status_gerente = 'approve' OR idea.status_analista = 'approve')",
+          `COUNT(*) FILTER (WHERE ${approvedExpression})`,
           "total_aprovados"
         )
         .where("idea.unidade_dass = :dassOffice", { dassOffice })
@@ -240,7 +246,11 @@ export class DashboardService {
     }
   }
 
-  static async getIdeaHighlights(dassOffice: string): Promise<DashboardIdeaHighlight[]> {
+  static async getIdeaHighlights(
+    dassOffice: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<DashboardIdeaHighlight[]> {
     try {
       validateDassOffice(dassOffice);
 
@@ -259,8 +269,8 @@ export class DashboardService {
         .addSelect(
           `
             CASE
-              WHEN idea.status_gerente = 'approve' AND idea.status_analista = 'approve' THEN 'Aprovada'
-              WHEN idea.status_gerente = 'reprove' OR idea.status_analista = 'reprove' THEN 'Rejeitada'
+              WHEN ${approvedExpression} THEN 'Aprovada'
+              WHEN ${rejectedExpression} THEN 'Rejeitada'
               ELSE 'Pendente'
             END
           `,
@@ -269,11 +279,15 @@ export class DashboardService {
         .where("idea.unidade_dass = :dassOffice", { dassOffice })
         .andWhere("idea.excluido = false")
         .andWhere("idea.nome_projeto IS NOT NULL")
-        .andWhere("idea.situacao_atual IS NOT NULL")
+        .andWhere("idea.situacao_atual IS NOT NULL");
+
+      applyDateFilter(rows, "idea", "createdat", startDate, endDate);
+
+      const rawRows = await rows
         .orderBy(
           `
             CASE
-              WHEN idea.status_gerente = 'approve' AND idea.status_analista = 'approve' THEN idea.valor_amortizado
+              WHEN ${approvedExpression} THEN idea.valor_amortizado
               ELSE 0
             END
           `,
@@ -326,7 +340,7 @@ export class DashboardService {
         };
       };
 
-      return rows.map((row) => {
+      return rawRows.map((row) => {
         const { likes, comments } = getLikesAndComments(
           Number(row.valor_amortizado) || 0,
           row.status
@@ -372,7 +386,7 @@ export class DashboardService {
         .addSelect("idea.setor", "setor")
         .addSelect("COUNT(*)", "total_ideas")
         .addSelect(
-          "COUNT(CASE WHEN idea.status_gerente = 'approve' THEN 1 END)",
+          `COUNT(CASE WHEN ${approvedExpression} THEN 1 END)`,
           "implemented_ideas"
         )
         .where("idea.unidade_dass = :dassOffice", { dassOffice })
@@ -385,10 +399,7 @@ export class DashboardService {
         .addGroupBy("idea.setor")
         .having("COUNT(*) > 0")
         .orderBy("COUNT(*)", "DESC")
-        .addOrderBy(
-          "COUNT(CASE WHEN idea.status_gerente = 'approve' THEN 1 END)",
-          "DESC"
-        )
+        .addOrderBy(`COUNT(CASE WHEN ${approvedExpression} THEN 1 END)`, "DESC")
         .limit(10)
         .getRawMany<{
           nome: string;

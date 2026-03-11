@@ -135,7 +135,7 @@ const downloadReport = async () => {
     const [summaryData, monthlyData, ideaHighlights, engagementData] = await Promise.all([
       dashboardService.getSummaryData(dassOffice, startDate.value, endDate.value).catch(() => ({})),
       dashboardService.getMonthlyData(dassOffice, startDate.value, endDate.value).catch(() => []),
-      dashboardService.getIdeaHighlights(dassOffice).catch(() => []),
+      dashboardService.getIdeaHighlights(dassOffice, startDate.value, endDate.value).catch(() => []),
       dashboardService.getEngagementData(dassOffice, startDate.value, endDate.value).catch(() => []),
     ]);
 
@@ -179,6 +179,7 @@ const downloadReport = async () => {
       "Situação Atual": item.situacao_atual,
       "Gerente Avaliador": item.gerente_aprovador || "Não avaliado",
       "Analista Avaliador": item.analista_avaliador || "Não avaliado",
+      "Pontuação": item.pontuacao ?? "",
       "Em Espera": item.em_espera === "1" ? "Sim" : "Não"
     }));
 

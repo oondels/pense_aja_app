@@ -43,14 +43,13 @@ export const dashboardService = {
   async getMonthlyData(dassOffice, startDate = null, endDate = null) {
     try {
       const params = {};
+      if (startDate) {
+        params.startDate = startDate instanceof Date ? startDate.toISOString() : startDate;
+      }
 
-      const today = new Date()
-      const currentYear = today.getFullYear();
-      const startYear = `${currentYear}-01-01`
-
-      // Deixa fixo a análise de informações do ano todo até o presente dia
-      params.startDate = startYear
-      params.endDate = today.toISOString().split("T")[0]
+      if (endDate) {
+        params.endDate = endDate instanceof Date ? endDate.toISOString() : endDate;
+      }
 
       const response = await commonApi.get(`/dashboard/monthly/${dassOffice}`, { params });
 
@@ -84,9 +83,18 @@ export const dashboardService = {
    * @param {string} dassOffice - Unidade Dass
    * @returns {Promise<Array>} Ideias em destaque
    */
-  async getIdeaHighlights(dassOffice) {
+  async getIdeaHighlights(dassOffice, startDate = null, endDate = null) {
     try {
-      const response = await commonApi.get(`/dashboard/idea-highlights/${dassOffice}`);
+      const params = {};
+      if (startDate) {
+        params.startDate = startDate instanceof Date ? startDate.toISOString() : startDate;
+      }
+
+      if (endDate) {
+        params.endDate = endDate instanceof Date ? endDate.toISOString() : endDate;
+      }
+
+      const response = await commonApi.get(`/dashboard/idea-highlights/${dassOffice}`, { params });
 
       if (response.data.erro) {
         throw new Error(response.data.mensagem || 'Erro ao buscar ideias em destaque');
