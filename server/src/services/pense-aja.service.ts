@@ -1,8 +1,8 @@
 import logger from "../utils/logger";
 import pool from "../config/db";
 import { CustomError } from "../types/CustomError";
-import { UserPenseaja } from "./UserPenseaja";
-import penseAjaProducts from "../utils/penseAjaProducts.json"
+import { UserPenseaja } from "./user-penseaja.service";
+import { NotificationService } from "./notification.service";
 
 const checkDassOffice = (dassOffice: string) => {
   const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
@@ -52,6 +52,13 @@ interface EvaluationData {
   a3Mae?: string;
 }
 
+interface PurchaseProductPayload {
+  product: Record<string, any>;
+  colaboradorData: Record<string, any>;
+  analista: Record<string, any>;
+  dassOffice: string;
+}
+
 interface NewProduct {
   name: string;
   points: number;
@@ -62,6 +69,16 @@ const turnoMap: Record<string, string> = {
   A: "1° Turno",
   B: "2° Turno",
   C: "3° Turno",
+};
+
+const appBaseUrl =
+  process.env.DEV_ENV === "development"
+    ? "http://localhost:5173"
+    : "http://10.100.1.43:5050";
+
+const formatUserName = (name: string) => {
+  const splitedName = name.split(" ");
+  return `${splitedName[0]} ${splitedName[splitedName.length - 1]}`;
 };
 
 export const PenseAjaService = {
@@ -313,6 +330,52 @@ export const PenseAjaService = {
     }
   },
 
+  async submitPenseAja(data: PenseAjaData, dassOffice: string) {
+    const { pense_aja, userManager, duplicated } = await this.createPenseAja(data, dassOffice);
+
+    if (duplicated) {
+      return {
+        statusCode: 200,
+        body: {
+          message: "Registro já existente. Ignorando duplicidade.",
+          id: pense_aja.id,
+        },
+      };
+    }
+
+    if (userManager) {
+      const notificationEnabled = await NotificationService.isNotificationEnabled(
+        userManager.matricula,
+        dassOffice
+      );
+
+      if (notificationEnabled) {
+        await NotificationService.sendNotification({
+          to: userManager.matricula,
+          subject: "Aplicativo Pense Aja",
+          title: "Novo Pense Aja Cadastrado.",
+          message: `Um novo registro de Pense Aja foi cadastrado pelo usuário ${formatUserName(
+            pense_aja.nome
+          )}. Projeto: ${pense_aja.nome_projeto}.`,
+          application: "Pense e Aja",
+          link: `${appBaseUrl}/pense-aja/${pense_aja.id}`,
+        });
+      }
+    }
+
+    const message = userManager
+      ? "Pense aja cadastrado com sucesso!"
+      : "Pense aja cadastrado com sucesso! Solicite seu gerente para ativar as notificações para vizualizar mais rápido.";
+
+    return {
+      statusCode: 201,
+      body: {
+        message,
+        id: pense_aja.id,
+      },
+    };
+  },
+
   async getPenseAjaById(id: string, dassOffice: string) {
     checkDassOffice(dassOffice);
     const client = await pool.connect();
@@ -546,6 +609,52 @@ export const PenseAjaService = {
     }
   },
 
+  async evaluatePenseAjaWithNotification(id: string, data: EvaluationData & Record<string, any>) {
+    const evaluationData = {
+      ...data,
+    };
+
+    const { newEvaluation, role } = await this.evaluatePenseAja(id, evaluationData);
+    const userEmail = await UserPenseaja.getUserEmail(newEvaluation.matricula, data.dassOffice);
+
+    let avaliadorNome;
+    if (role.includes("gerente")) {
+      avaliadorNome = newEvaluation.gerente_aprovador
+        .split(".")
+        .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
+    } else {
+      avaliadorNome = newEvaluation.analista_avaliador
+        .split(".")
+        .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
+    }
+
+    const notificationEnabled = await NotificationService.isNotificationEnabled(
+      newEvaluation.matricula,
+      data.dassOffice
+    );
+
+    if (userEmail && notificationEnabled) {
+      await NotificationService.sendNotification({
+        to: userEmail.email,
+        subject: "Aplicativo Pense Aja",
+        title: "Pense Aja Avaliado.",
+        message: `Seu registro de Pense Aja foi avaliado${
+          avaliadorNome ? ` pelo usuário ${avaliadorNome}` : "!"
+        }. 
+        Abra o aplicativo e veja sua pontuação e feedbacks!`,
+        application: "Pense e Aja",
+        link: `${appBaseUrl}/pense-aja/${id}`,
+      });
+    }
+
+    return {
+      message: "Pense Aja avaliado com sucesso!",
+      data: newEvaluation,
+    };
+  },
+
   async buyProduct(dassOffice: string, product: Record<string, any>, colaboradorData: Record<string, any>, analista: Record<string, any>, userPoints: Record<string, any>) {
     checkDassOffice(dassOffice);
 
@@ -618,6 +727,33 @@ export const PenseAjaService = {
     } finally {
       client.release();
     }
+  },
+
+  async purchaseProductByRegistration(
+    registration: number,
+    { product, colaboradorData, analista, dassOffice }: PurchaseProductPayload
+  ) {
+    const user = await UserPenseaja.getUserData(registration, dassOffice);
+    if (!user) {
+      throw new CustomError("Erro ao resgatar produto! Usuário não encontrado.", 400);
+    }
+
+    const userPoints = {
+      pontos: user.pontos,
+      pontos_resgatados: user.pontos_resgatados,
+    };
+    const result = await this.buyProduct(
+      dassOffice,
+      product,
+      colaboradorData,
+      analista,
+      userPoints
+    );
+
+    return {
+      message: "Produto Resgatado com sucesso!",
+      data: result,
+    };
   },
 
   async createProduct(dassOffice: string, productData: NewProduct, files: Record<any, any>[], userRegistration: string) {

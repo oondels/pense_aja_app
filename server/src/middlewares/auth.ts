@@ -3,7 +3,7 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import dotenv from "../config/dotenv";
-import { isTokenBlackListed } from "../services/tokenBlackList";
+import { isTokenBlackListed } from "../services/token-blacklist.service";
 
 const PRIVATE_KEY = dotenv.JWT_SECRET;
 

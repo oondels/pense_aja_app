@@ -1,6 +1,6 @@
 import amqp from 'amqplib';
 import logger from '../utils/logger';
-import { PenseAjaService } from '../services/penseAjaService';
+import { PenseAjaService } from '../services/pense-aja.service';
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://localhost';
 const QUEUE_NAME = 'pense_aja';

@@ -5,7 +5,7 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 ## Backend Overview
 - Keywords: backend, api, express, typescript, pense aja, arquitetura, visão geral
 - File: `specs/backend/ROUTES.md`, `specs/backend/BUSINESS_RULES.md`, `specs/backend/INTEGRATIONS.md`
-- Related: bootstrap, módulos HTTP, serviços, infraestrutura
+- Related: bootstrap, módulos HTTP, rotas, controllers, services, infraestrutura
 
 ## Application Entry Point
 - Keywords: bootstrap, app, express, cors, cookies, error handler, startup
@@ -14,32 +14,32 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 
 ## Idea Management API
 - Keywords: pense aja, ideias, cadastro, listagem, detalhe, avaliação, loja, produtos, compra
-- File: `specs/backend/ROUTES.md` e `server/src/routes/penseAja.route.ts`
-- Related: pontuação, notificações, unidade dass, duplicidade, store
+- File: `specs/backend/ROUTES.md`, `server/src/routes/penseAja.route.ts`, `server/src/controllers/pense-aja.controller.ts`
+- Related: pontuação, notificações, unidade dass, duplicidade, store, service layer
 
 ## Idea Business Rules
 - Keywords: regras de negócio, avaliação, classificação, pontos, duplicidade, exclusão, reprovação
-- File: `specs/backend/BUSINESS_RULES.md` e `server/src/services/penseAjaService.ts`
+- File: `specs/backend/BUSINESS_RULES.md` e `server/src/services/pense-aja.service.ts`
 - Related: gerente, analista, admin, loja, status, a3, replicável
 
 ## User Profile API
 - Keywords: user, usuário, perfil, matrícula, unidade, email, notificações, preferências
-- File: `specs/backend/ROUTES.md` e `server/src/routes/userPensAaja.route.ts`
+- File: `specs/backend/ROUTES.md`, `server/src/routes/userPensAaja.route.ts`, `server/src/controllers/user-penseaja.controller.ts`
 - Related: colaborador, autenticacao.emails, core.unidades_dass
 
 ## User Data Service
 - Keywords: user service, pontos, classificações, gerente, email, office lookup
-- File: `server/src/services/UserPenseaja.ts`
+- File: `server/src/services/user-penseaja.service.ts`
 - Related: perfil, notificações, pontuação, unidade dass
 
 ## Dashboard and Analytics
 - Keywords: dashboard, analytics, métricas, resumo, mensal, dimensional, destaques, engajamento
-- File: `specs/backend/ROUTES.md`, `specs/backend/BUSINESS_RULES.md` e `server/src/services/DashboardService.ts`
+- File: `specs/backend/ROUTES.md`, `server/src/controllers/dashboard.controller.ts` e `server/src/services/dashboard.service.ts`
 - Related: relatórios, agregações, ranking, highlights, engagement
 
 ## AI Tools
 - Keywords: ia, ai, gemini, improve text, resumo, prompt, texto
-- File: `server/src/routes/aiTools.route.ts` e `server/src/services/AIService.ts`
+- File: `server/src/routes/aiTools.route.ts`, `server/src/controllers/ai-tools.controller.ts` e `server/src/services/ai.service.ts`
 - Related: cadastro de ideia, sanitização, limite de tokens
 
 ## Authentication
@@ -54,7 +54,7 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 
 ## Notifications
 - Keywords: notification, email, aviso, envio, api key, opt-in
-- File: `server/src/services/NotificationService.ts`
+- File: `server/src/services/notification.service.ts`
 - Related: cadastro de ideia, avaliação, authorized_notifications_apps
 
 ## Database Access
@@ -64,7 +64,7 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 
 ## Redis Token Blacklist
 - Keywords: redis, blacklist, token blacklist, sessão, segurança
-- File: `server/src/config/redisClient.ts` e `server/src/services/tokenBlackList.ts`
+- File: `server/src/config/redisClient.ts` e `server/src/services/token-blacklist.service.ts`
 - Related: auth middleware, revoke token, cookies
 
 ## Async Upload Worker

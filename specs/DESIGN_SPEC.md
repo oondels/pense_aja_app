@@ -70,6 +70,12 @@ The frontend is a client-side SPA defined in `cliente/src/main.js` and `cliente/
 
 The backend entry point is `server/src/penseAja.ts`. It exposes four HTTP modules. This section is a summary only; the source of truth for backend behavior is [specs/backend/README.md](/home/oendel/code/dass/pense_aja_app/specs/backend/README.md).
 
+The HTTP layer follows a three-part organization:
+
+- `routes/*.route.ts`: registers endpoints and middleware.
+- `controllers/*.controller.ts`: validates request input and maps HTTP responses.
+- `services/*.service.ts`: encapsulates business logic, persistence, and side effects.
+
 - `/pense-aja/`: ideas, evaluations, products, and purchases.
 - `/user/`: user profile lookup, unit detection, and notification settings.
 - `/dashboard/`: summary, monthly, dimensional, highlight, and engagement data.
