@@ -53,11 +53,13 @@ export const UserPenseaja = {
         LEFT JOIN (
           SELECT matricula, SUM(valor) AS soma_pontos
           FROM pense_aja.pense_aja_pontos
+          WHERE unidade_dass = $2
           GROUP BY matricula
         ) p ON lf.matricula = p.matricula
         LEFT JOIN (
           SELECT matricula, SUM(pontos_premio_solicitado) AS soma_premios
           FROM pense_aja.pense_aja_premios
+          WHERE unidade_dass = $2
           GROUP BY matricula
         ) pm ON lf.matricula = pm.matricula
         LEFT JOIN (
@@ -69,12 +71,14 @@ export const UserPenseaja = {
             SELECT classificacao, COUNT(*) AS total
             FROM pense_aja.pense_aja_dass
             WHERE matricula = lf.matricula
+              AND unidade_dass = $2
+              AND excluido = false
             GROUP BY classificacao
           ) sub
         ) pa ON true
         WHERE lf.matricula = $1;
         `,
-        [registration]
+        [registration, validDassOffice]
       );
 
       if (query.length === 0) {
