@@ -9,7 +9,27 @@ The repository is split into:
 - `cliente/`: Vue 3 + Vite SPA with Pinia, Vue Router, Vuetify, Tailwind utilities, Axios, Chart.js, and PWA support.
 - `server/`: Express + TypeScript API backed by PostgreSQL, Redis, RabbitMQ, and Gemini AI.
 
-## 2. Product Goals
+## 2. Spec Navigation
+
+Use this file as the high-level system map. For implementation details, prefer the dedicated specs:
+
+- Frontend specs: [specs/frontend/README.md](/home/oendel/code/dass/pense_aja_app/specs/frontend/README.md)
+- Backend specs: [specs/backend/README.md](/home/oendel/code/dass/pense_aja_app/specs/backend/README.md)
+
+Detailed frontend documentation lives under:
+
+- [specs/frontend/ARCHITECTURE.md](/home/oendel/code/dass/pense_aja_app/specs/frontend/ARCHITECTURE.md)
+- [specs/frontend/ROUTES.md](/home/oendel/code/dass/pense_aja_app/specs/frontend/ROUTES.md)
+- [specs/frontend/BUSINESS_RULES.md](/home/oendel/code/dass/pense_aja_app/specs/frontend/BUSINESS_RULES.md)
+- [specs/frontend/INTEGRATIONS.md](/home/oendel/code/dass/pense_aja_app/specs/frontend/INTEGRATIONS.md)
+
+Detailed backend documentation lives under:
+
+- [specs/backend/ROUTES.md](/home/oendel/code/dass/pense_aja_app/specs/backend/ROUTES.md)
+- [specs/backend/BUSINESS_RULES.md](/home/oendel/code/dass/pense_aja_app/specs/backend/BUSINESS_RULES.md)
+- [specs/backend/INTEGRATIONS.md](/home/oendel/code/dass/pense_aja_app/specs/backend/INTEGRATIONS.md)
+
+## 3. Product Goals
 
 The current implementation supports four primary business goals:
 
@@ -18,9 +38,9 @@ The current implementation supports four primary business goals:
 3. Reward participation through points and product redemption.
 4. Provide operational visibility through dashboard metrics and downloadable reports.
 
-## 3. Frontend Architecture
+## 4. Frontend Architecture
 
-The frontend is a client-side SPA defined in `cliente/src/main.js` and `cliente/src/router/index.js`.
+The frontend is a client-side SPA defined in `cliente/src/main.js` and `cliente/src/router/index.js`. This section is a summary only; the source of truth for frontend behavior is [specs/frontend/README.md](/home/oendel/code/dass/pense_aja_app/specs/frontend/README.md).
 
 ### Main routes
 
@@ -46,9 +66,9 @@ The frontend is a client-side SPA defined in `cliente/src/main.js` and `cliente/
 - Dashboard data is aggregated server-side and rendered via dedicated composables and dashboard components.
 - Report generation happens in the browser using `xlsx` and `file-saver`.
 
-## 4. Backend Architecture
+## 5. Backend Architecture
 
-The backend entry point is `server/src/penseAja.ts`. It exposes four HTTP modules:
+The backend entry point is `server/src/penseAja.ts`. It exposes four HTTP modules. This section is a summary only; the source of truth for backend behavior is [specs/backend/README.md](/home/oendel/code/dass/pense_aja_app/specs/backend/README.md).
 
 - `/pense-aja/`: ideas, evaluations, products, and purchases.
 - `/user/`: user profile lookup, unit detection, and notification settings.
@@ -64,7 +84,7 @@ The backend entry point is `server/src/penseAja.ts`. It exposes four HTTP module
 - Consume RabbitMQ messages for asynchronous product-upload processing.
 - Check Redis blacklist entries before accepting authenticated requests.
 
-## 5. Data and External Dependencies
+## 6. Data and External Dependencies
 
 ### PostgreSQL
 
@@ -92,7 +112,7 @@ The worker `uploadListener.ts` consumes queue `pense_aja`, applies retry/DLQ beh
 - Notification API configured by environment variables.
 - Gemini API for AI-assisted text improvement and summarization.
 
-## 6. Primary User Flows
+## 7. Primary User Flows
 
 ### Idea registration
 
@@ -110,14 +130,14 @@ The profile page loads score, classification counts, email, and enabled notifica
 
 Dashboard endpoints aggregate ideas by period and dimension. The frontend composes summary cards, trends, engagement panels, and exports a multi-sheet XLSX report.
 
-## 7. Deployment Model
+## 8. Deployment Model
 
 - Frontend: built with Vite and served by Nginx, exposed on port `5050`.
 - Backend: built to `dist/` and exposed on port `2512`.
 - Frontend resolves API hosts from `VITE_API_URL`.
 - Backend uses `.env` or `.env.production` depending on `DEV_ENV`.
 
-## 8. Design Constraints and Current Risks
+## 9. Design Constraints and Current Risks
 
 - There is no automated test suite configured in either package.
 - Auth depends on a separate service not versioned in this repository.
@@ -127,7 +147,7 @@ Dashboard endpoints aggregate ideas by period and dimension. The frontend compos
 - Product/store functionality exists in both frontend and backend, but it is not surfaced as a primary route in the current router.
 - Validation and status naming are not fully normalized across all modules (`approve`/`APROVADO`, `reprove`/`REPROVADO`).
 
-## 9. Recommended Evolution
+## 10. Recommended Evolution
 
 1. Add automated tests for route validation, service queries, and token-refresh behavior.
 2. Extract shared domain enums for status, unit, role, and classification values.
