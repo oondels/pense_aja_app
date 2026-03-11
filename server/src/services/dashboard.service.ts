@@ -1,4 +1,6 @@
-import pool from "../config/db";
+import { SelectQueryBuilder } from "typeorm";
+import { initializeDatabase } from "../config/database";
+import PenseAjaDassEntity from "../models/PenseAjaDass";
 import { CustomError } from "../types/CustomError";
 import {
   DashboardDimensionalData,
@@ -6,8 +8,43 @@ import {
   DashboardIdeaHighlight,
   DashboardMonthlyData,
   DashboardSummaryData,
-  QueryValue,
 } from "../types/contracts";
+
+const validOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
+
+const validateDassOffice = (dassOffice: string) => {
+  if (!validOffices.includes(dassOffice)) {
+    throw new CustomError("Unidade Dass inválida", 400);
+  }
+};
+
+const applyDateFilter = (
+  qb: SelectQueryBuilder<object>,
+  alias: string,
+  column: string,
+  startDate?: Date,
+  endDate?: Date
+) => {
+  if (startDate && endDate) {
+    qb.andWhere(`${alias}.${column} BETWEEN :startDate AND :endDate`, {
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    });
+    return;
+  }
+
+  if (startDate) {
+    qb.andWhere(`${alias}.${column} >= :startDate`, {
+      startDate: startDate.toISOString(),
+    });
+  }
+
+  if (endDate) {
+    qb.andWhere(`${alias}.${column} <= :endDate`, {
+      endDate: endDate.toISOString(),
+    });
+  }
+};
 
 export class DashboardService {
   static async getSummaryData(
@@ -15,81 +52,68 @@ export class DashboardService {
     startDate?: Date,
     endDate?: Date
   ): Promise<DashboardSummaryData> {
-    const client = await pool.connect();
-
     try {
-      const validOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
-      if (!validOffices.includes(dassOffice)) {
-        throw new CustomError("Unidade Dass inválida", 400);
-      }
+      validateDassOffice(dassOffice);
 
-      // Construir filtros de data
-      let dateFilter = '';
-      const params: QueryValue[] = [dassOffice];
+      const dataSource = await initializeDatabase();
+      const result = await dataSource
+        .getRepository(PenseAjaDassEntity)
+        .createQueryBuilder("idea")
+        .select("COUNT(*)", "total_ideas")
+        .addSelect(
+          "COUNT(CASE WHEN idea.status_gerente = 'approve' OR idea.status_analista = 'approve' THEN 1 END)",
+          "implemented_ideas"
+        )
+        .addSelect(
+          "COUNT(CASE WHEN idea.status_gerente IS NULL OR idea.status_analista IS NULL THEN 1 END)",
+          "pending_ideas"
+        )
+        .addSelect(
+          "COUNT(CASE WHEN idea.status_gerente = 'reprove' OR idea.status_analista = 'reprove' THEN 1 END)",
+          "rejected_ideas"
+        )
+        .addSelect(
+          "COUNT(CASE WHEN idea.status_gerente = 'approve' THEN 1 END)",
+          "approved_by_manager"
+        )
+        .addSelect(
+          "COUNT(CASE WHEN idea.em_espera = '1' THEN 1 END)",
+          "in_analysis"
+        )
+        .addSelect("COALESCE(SUM(idea.valor_amortizado), 0)", "total_value")
+        .addSelect("COALESCE(AVG(idea.valor_amortizado), 0)", "avg_value")
+        .where("idea.unidade_dass = :dassOffice", { dassOffice })
+        .andWhere("idea.excluido = false");
 
-      if (startDate && endDate) {
-        dateFilter = ' AND createdat BETWEEN $2 AND $3';
-        params.push(startDate.toISOString(), endDate.toISOString());
-      } else if (startDate) {
-        dateFilter = ' AND createdat >= $2';
-        params.push(startDate.toISOString());
-      } else if (endDate) {
-        dateFilter = ' AND createdat <= $2';
-        params.push(endDate.toISOString());
-      }
+      applyDateFilter(result, "idea", "createdat", startDate, endDate);
 
-      const query = `
-        SELECT 
-          COUNT(*) as total_ideas,
-          COUNT(CASE WHEN status_gerente = 'approve' or status_analista = 'approve' THEN 1 END) as implemented_ideas,
-          COUNT(CASE WHEN status_gerente IS NULL OR status_analista IS NULL THEN 1 END) as pending_ideas,
-          COUNT(CASE WHEN status_gerente = 'reprove' OR status_analista = 'reprove' THEN 1 END) as rejected_ideas,
-          COUNT(CASE WHEN status_gerente = 'approve' THEN 1 END) as approved_by_manager,
-          COUNT(CASE WHEN em_espera = '1' THEN 1 END) as in_analysis,
-          COALESCE(SUM(valor_amortizado), 0) as total_value,
-          COALESCE(AVG(valor_amortizado), 0) as avg_value
-        FROM pense_aja.pense_aja_dass
-        WHERE unidade_dass = $1 
-          AND excluido = false
-          ${dateFilter}
-      `;
-
-      const result = await client.query(query, params);
-
-      if (result.rows.length === 0) {
-        return {
-          totalIdeas: 0,
-          implementedIdeas: 0,
-          pendingIdeas: 0,
-          rejectedIdeas: 0,
-          approvedByManager: 0,
-          inAnalysis: 0,
-          totalValue: 0,
-          avgValue: 0
-        };
-      }
-
-      const data = result.rows[0];
+      const data = await result.getRawOne<{
+        total_ideas?: string;
+        implemented_ideas?: string;
+        pending_ideas?: string;
+        rejected_ideas?: string;
+        approved_by_manager?: string;
+        in_analysis?: string;
+        total_value?: string;
+        avg_value?: string;
+      }>();
 
       return {
-        totalIdeas: parseInt(data.total_ideas) || 0,
-        implementedIdeas: parseInt(data.implemented_ideas) || 0,
-        pendingIdeas: parseInt(data.pending_ideas) || 0,
-        rejectedIdeas: parseInt(data.rejected_ideas) || 0,
-        approvedByManager: parseInt(data.approved_by_manager) || 0,
-        inAnalysis: parseInt(data.in_analysis) || 0,
-        totalValue: parseFloat(data.total_value) || 0,
-        avgValue: parseFloat(data.avg_value) || 0
+        totalIdeas: Number(data?.total_ideas) || 0,
+        implementedIdeas: Number(data?.implemented_ideas) || 0,
+        pendingIdeas: Number(data?.pending_ideas) || 0,
+        rejectedIdeas: Number(data?.rejected_ideas) || 0,
+        approvedByManager: Number(data?.approved_by_manager) || 0,
+        inAnalysis: Number(data?.in_analysis) || 0,
+        totalValue: Number(data?.total_value) || 0,
+        avgValue: Number(data?.avg_value) || 0,
       };
-
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
       }
       console.error("Erro ao buscar dados do dashboard:", error);
       throw new CustomError("Erro interno do servidor ao buscar dados do dashboard");
-    } finally {
-      client.release();
     }
   }
 
@@ -98,78 +122,62 @@ export class DashboardService {
     startDate?: Date,
     endDate?: Date
   ): Promise<DashboardMonthlyData[]> {
-    const client = await pool.connect();
-
     try {
-      // Verificar se a unidade dass é válida
-      const validOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
-      if (!validOffices.includes(dassOffice)) {
-        throw new CustomError("Unidade Dass inválida", 400);
-      }
+      validateDassOffice(dassOffice);
 
-      // Construir filtros de data
-      let dateFilter = '';
-      const params: QueryValue[] = [dassOffice];
+      const dataSource = await initializeDatabase();
+      const result = dataSource
+        .getRepository(PenseAjaDassEntity)
+        .createQueryBuilder("idea")
+        .select("TO_CHAR(idea.createdat, 'YYYY-MM')", "month_year")
+        .addSelect("TO_CHAR(idea.createdat, 'Mon')", "month_name")
+        .addSelect("COUNT(*)", "count")
+        .addSelect(
+          "COUNT(*) FILTER (WHERE idea.status_gerente = 'approve' OR idea.status_analista = 'approve')",
+          "total_aprovados"
+        )
+        .where("idea.unidade_dass = :dassOffice", { dassOffice })
+        .andWhere("idea.excluido = false");
 
-      if (startDate && endDate) {
-        dateFilter = ' AND createdat BETWEEN $2 AND $3';
-        params.push(startDate.toISOString(), endDate.toISOString());
-      } else if (startDate) {
-        dateFilter = ' AND createdat >= $2';
-        params.push(startDate.toISOString());
-      } else if (endDate) {
-        dateFilter = ' AND createdat <= $2';
-        params.push(endDate.toISOString());
-      }
+      applyDateFilter(result, "idea", "createdat", startDate, endDate);
 
-      const query = `
-        SELECT 
-          TO_CHAR(createdat, 'YYYY-MM') as month_year,
-          TO_CHAR(createdat, 'Mon') as month_name,
-          COUNT(*) as count,
-          COUNT(*) FILTER (WHERE status_gerente = 'approve' or status_analista = 'approve') AS total_aprovados
-        FROM pense_aja.pense_aja_dass
-        WHERE unidade_dass = $1 
-          AND excluido = false
-          ${dateFilter}
-        GROUP BY TO_CHAR(createdat, 'YYYY-MM'), TO_CHAR(createdat, 'Mon'), EXTRACT(MONTH FROM createdat)
-        ORDER BY TO_CHAR(createdat, 'YYYY-MM')
-      `;
-      const result = await client.query(query, params);
+      const rows = await result
+        .groupBy("TO_CHAR(idea.createdat, 'YYYY-MM')")
+        .addGroupBy("TO_CHAR(idea.createdat, 'Mon')")
+        .addGroupBy("EXTRACT(MONTH FROM idea.createdat)")
+        .orderBy("TO_CHAR(idea.createdat, 'YYYY-MM')")
+        .getRawMany<{
+          month_name: string;
+          count: string;
+          total_aprovados: string;
+        }>();
 
-      if (result.rows.length === 0) {
-        return [];
-      }
-
-      const monthsMap: { [key: string]: string } = {
-        'Jan': 'Jan',
-        'Feb': 'Fev',
-        'Mar': 'Mar',
-        'Apr': 'Abr',
-        'May': 'Mai',
-        'Jun': 'Jun',
-        'Jul': 'Jul',
-        'Aug': 'Ago',
-        'Sep': 'Set',
-        'Oct': 'Out',
-        'Nov': 'Nov',
-        'Dec': 'Dez'
+      const monthsMap: Record<string, string> = {
+        Jan: "Jan",
+        Feb: "Fev",
+        Mar: "Mar",
+        Apr: "Abr",
+        May: "Mai",
+        Jun: "Jun",
+        Jul: "Jul",
+        Aug: "Ago",
+        Sep: "Set",
+        Oct: "Out",
+        Nov: "Nov",
+        Dec: "Dez",
       };
 
-      return result.rows.map(row => ({
+      return rows.map((row) => ({
         month: monthsMap[row.month_name] || row.month_name,
-        count: parseInt(row.count) || 0,
-        value: parseFloat(row.total_aprovados) || 0
+        count: Number(row.count) || 0,
+        value: Number(row.total_aprovados) || 0,
       }));
-
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
       }
       console.error("Erro ao buscar dados mensais:", error);
       throw new CustomError("Erro interno do servidor ao buscar dados mensais");
-    } finally {
-      client.release();
     }
   }
 
@@ -178,210 +186,173 @@ export class DashboardService {
     startDate?: Date,
     endDate?: Date
   ): Promise<DashboardDimensionalData> {
-    const client = await pool.connect();
-
     try {
-      // Verificar se a unidade dass é válida
-      const validOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
-      if (!validOffices.includes(dassOffice)) {
-        throw new CustomError("Unidade Dass inválida", 400);
-      }
+      validateDassOffice(dassOffice);
 
-      // Construir filtros de data
-      let dateFilter = '';
-      const params: QueryValue[] = [dassOffice];
+      const dataSource = await initializeDatabase();
+      const repository = dataSource.getRepository(PenseAjaDassEntity);
 
-      if (startDate && endDate) {
-        dateFilter = ' AND createdat BETWEEN $2 AND $3';
-        params.push(startDate.toISOString(), endDate.toISOString());
-      } else if (startDate) {
-        dateFilter = ' AND createdat >= $2';
-        params.push(startDate.toISOString());
-      } else if (endDate) {
-        dateFilter = ' AND createdat <= $2';
-        params.push(endDate.toISOString());
-      }
+      const buildDimensionQuery = (column: "gerente" | "setor" | "fabrica") => {
+        const query = repository
+          .createQueryBuilder("idea")
+          .select(`idea.${column}`, "label")
+          .addSelect("COUNT(*)", "count")
+          .where("idea.unidade_dass = :dassOffice", { dassOffice })
+          .andWhere("idea.excluido = false")
+          .andWhere(`idea.${column} IS NOT NULL`)
+          .andWhere(`idea.${column} != ''`);
 
-      // Query para dados por gerente
-      const managerQuery = `
-        SELECT 
-          gerente as label,
-          COUNT(*) as count
-        FROM pense_aja.pense_aja_dass
-        WHERE unidade_dass = $1 
-          AND excluido = false
-          AND gerente IS NOT NULL
-          AND gerente != ''
-          ${dateFilter}
-        GROUP BY gerente
-        ORDER BY count DESC
-        LIMIT 10
-      `;
+        applyDateFilter(query, "idea", "createdat", startDate, endDate);
 
-      // Query para dados por setor
-      const sectorQuery = `
-        SELECT 
-          setor as label,
-          COUNT(*) as count
-        FROM pense_aja.pense_aja_dass
-        WHERE unidade_dass = $1 
-          AND excluido = false
-          AND setor IS NOT NULL
-          AND setor != ''
-          ${dateFilter}
-        GROUP BY setor
-        ORDER BY count DESC
-        LIMIT 10
-      `;
+        return query
+          .groupBy(`idea.${column}`)
+          .orderBy("count", "DESC")
+          .limit(10)
+          .getRawMany<{ label: string | null; count: string }>();
+      };
 
-      // Query para dados por fábrica
-      const factoryQuery = `
-        SELECT 
-          fabrica as label,
-          COUNT(*) as count
-        FROM pense_aja.pense_aja_dass
-        WHERE unidade_dass = $1 
-          AND excluido = false
-          AND fabrica IS NOT NULL
-          AND fabrica != ''
-          ${dateFilter}
-        GROUP BY fabrica
-        ORDER BY count DESC
-        LIMIT 10
-      `;
-
-      // Executar todas as queries em paralelo
-      const [managerResult, sectorResult, factoryResult] = await Promise.all([
-        client.query(managerQuery, params),
-        client.query(sectorQuery, params),
-        client.query(factoryQuery, params)
+      const [managerRows, sectorRows, factoryRows] = await Promise.all([
+        buildDimensionQuery("gerente"),
+        buildDimensionQuery("setor"),
+        buildDimensionQuery("fabrica"),
       ]);
 
       return {
-        manager: managerResult.rows.map(row => ({
-          label: row.label || 'Não informado',
-          count: parseInt(row.count) || 0
+        manager: managerRows.map((row) => ({
+          label: row.label || "Não informado",
+          count: Number(row.count) || 0,
         })),
-        sector: sectorResult.rows.map(row => ({
-          label: row.label || 'Não informado',
-          count: parseInt(row.count) || 0
+        sector: sectorRows.map((row) => ({
+          label: row.label || "Não informado",
+          count: Number(row.count) || 0,
         })),
-        factory: factoryResult.rows.map(row => ({
-          label: row.label || 'Não informado',
-          count: parseInt(row.count) || 0
-        }))
+        factory: factoryRows.map((row) => ({
+          label: row.label || "Não informado",
+          count: Number(row.count) || 0,
+        })),
       };
-
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
       }
       console.error("Erro ao buscar dados dimensionais:", error);
       throw new CustomError("Erro interno do servidor ao buscar dados dimensionais");
-    } finally {
-      client.release();
     }
   }
 
   static async getIdeaHighlights(dassOffice: string): Promise<DashboardIdeaHighlight[]> {
-    const client = await pool.connect();
-
     try {
-      // Verificar se a unidade dass é válida
-      const validOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
-      if (!validOffices.includes(dassOffice)) {
-        throw new CustomError("Unidade Dass inválida", 400);
-      }
+      validateDassOffice(dassOffice);
 
-      // Buscar as ideias mais relevantes baseadas em valor amortizado e status
-      const query = `
-        SELECT 
-          id,
-          nome_projeto as title,
-          situacao_atual as description,
-          nome as author,
-          setor,
-          fabrica,
-          createdat,
-          status_gerente,
-          status_analista,
-          valor_amortizado,
-          CASE 
-            WHEN status_gerente = 'approve' AND status_analista = 'approve' THEN 'Aprovada'
-            WHEN status_gerente = 'reprove' OR status_analista = 'reprove' THEN 'Rejeitada'
-            ELSE 'Pendente'
-          END as status
-        FROM pense_aja.pense_aja_dass
-        WHERE unidade_dass = $1 
-          AND excluido = false
-          AND nome_projeto IS NOT NULL
-          AND situacao_atual IS NOT NULL
-        ORDER BY 
-          CASE 
-            WHEN status_gerente = 'approve' AND status_analista = 'approve' THEN valor_amortizado
-            ELSE 0
-          END DESC,
-          createdat DESC
-        LIMIT 6
-      `;
+      const dataSource = await initializeDatabase();
+      const rows = await dataSource
+        .getRepository(PenseAjaDassEntity)
+        .createQueryBuilder("idea")
+        .select("idea.id", "id")
+        .addSelect("idea.nome_projeto", "title")
+        .addSelect("idea.situacao_atual", "description")
+        .addSelect("idea.nome", "author")
+        .addSelect("idea.setor", "setor")
+        .addSelect("idea.fabrica", "fabrica")
+        .addSelect("idea.createdat", "createdat")
+        .addSelect("idea.valor_amortizado", "valor_amortizado")
+        .addSelect(
+          `
+            CASE
+              WHEN idea.status_gerente = 'approve' AND idea.status_analista = 'approve' THEN 'Aprovada'
+              WHEN idea.status_gerente = 'reprove' OR idea.status_analista = 'reprove' THEN 'Rejeitada'
+              ELSE 'Pendente'
+            END
+          `,
+          "status"
+        )
+        .where("idea.unidade_dass = :dassOffice", { dassOffice })
+        .andWhere("idea.excluido = false")
+        .andWhere("idea.nome_projeto IS NOT NULL")
+        .andWhere("idea.situacao_atual IS NOT NULL")
+        .orderBy(
+          `
+            CASE
+              WHEN idea.status_gerente = 'approve' AND idea.status_analista = 'approve' THEN idea.valor_amortizado
+              ELSE 0
+            END
+          `,
+          "DESC"
+        )
+        .addOrderBy("idea.createdat", "DESC")
+        .limit(6)
+        .getRawMany<{
+          id: string;
+          title: string | null;
+          description: string | null;
+          author: string | null;
+          setor: string | null;
+          fabrica: string | null;
+          createdat: Date;
+          valor_amortizado: string | null;
+          status: string;
+        }>();
 
-      const result = await client.query(query, [dassOffice]);
-
-      // Gerar cores de avatar baseadas no nome
       const getAvatarColor = (name: string): string => {
-        const colors = ['#3B82F6', '#10B981', '#F97316', '#8B5CF6', '#EF4444', '#06B6D4'];
+        const colors = ["#3B82F6", "#10B981", "#F97316", "#8B5CF6", "#EF4444", "#06B6D4"];
         const index = name.charCodeAt(0) % colors.length;
         return colors[index];
       };
 
-      // Determinar categoria baseada no setor
       const getCategory = (sector: string): string => {
-        const sectorLower = sector?.toLowerCase() || '';
-        if (sectorLower.includes('prod') || sectorLower.includes('fab')) return 'Produção';
-        if (sectorLower.includes('manu') || sectorLower.includes('mant')) return 'Manutenção';
-        if (sectorLower.includes('quali')) return 'Qualidade';
-        if (sectorLower.includes('log')) return 'Logística';
-        if (sectorLower.includes('eng')) return 'Engenharia';
-        if (sectorLower.includes('rh') || sectorLower.includes('pessoas')) return 'Desenvolvimento';
-        return 'Outros';
+        const sectorLower = sector.toLowerCase();
+        if (sectorLower.includes("prod") || sectorLower.includes("fab")) return "Produção";
+        if (sectorLower.includes("manu") || sectorLower.includes("mant")) return "Manutenção";
+        if (sectorLower.includes("quali")) return "Qualidade";
+        if (sectorLower.includes("log")) return "Logística";
+        if (sectorLower.includes("eng")) return "Engenharia";
+        if (sectorLower.includes("rh") || sectorLower.includes("pessoas")) return "Desenvolvimento";
+        return "Outros";
       };
 
-      // Simular likes e comments baseados no valor e status
       const getLikesAndComments = (value: number, status: string) => {
         const baseValue = Math.max(value || 0, 1000);
-        const statusMultiplier = status === 'Aprovada' ? 1.5 : status === 'Pendente' ? 1.0 : 0.7;
+        const statusMultiplier =
+          status === "Aprovada" ? 1.5 : status === "Pendente" ? 1 : 0.7;
 
-        const likes = Math.floor((baseValue / 1000) * statusMultiplier * (Math.random() * 10 + 15));
+        const likes = Math.floor(
+          (baseValue / 1000) * statusMultiplier * (Math.random() * 10 + 15)
+        );
         const comments = Math.floor(likes * 0.15 * (Math.random() + 0.5));
 
-        return { likes: Math.min(likes, 99), comments: Math.min(comments, 25) };
+        return {
+          likes: Math.min(likes, 99),
+          comments: Math.min(comments, 25),
+        };
       };
 
-      const highlights: DashboardIdeaHighlight[] = result.rows.map((row) => {
-        const { likes, comments } = getLikesAndComments(row.valor_amortizado, row.status);
+      return rows.map((row) => {
+        const { likes, comments } = getLikesAndComments(
+          Number(row.valor_amortizado) || 0,
+          row.status
+        );
+        const description = row.description || "Sem descrição disponível";
 
         return {
-          id: row.id,
-          title: row.title || 'Projeto sem título',
-          description: row.description?.substring(0, 150) + (row.description?.length > 150 ? '...' : '') || 'Sem descrição disponível',
-          author: row.author || 'Autor desconhecido',
-          avatarColor: getAvatarColor(row.author || 'A'),
-          date: new Date(row.createdat).toISOString().split('T')[0],
+          id: Number(row.id),
+          title: row.title || "Projeto sem título",
+          description:
+            description.substring(0, 150) +
+            (description.length > 150 ? "..." : ""),
+          author: row.author || "Autor desconhecido",
+          avatarColor: getAvatarColor(row.author || "A"),
+          date: new Date(row.createdat).toISOString().split("T")[0],
           status: row.status,
-          category: getCategory(row.setor),
-          sector: row.setor || 'Não informado',
-          factory: row.fabrica || 'Não informado',
+          category: getCategory(row.setor || ""),
+          sector: row.setor || "Não informado",
+          factory: row.fabrica || "Não informado",
           likes,
-          comments
+          comments,
         };
       });
-
-      return highlights;
     } catch (error) {
       console.error("Erro ao buscar ideias em destaque:", error);
       throw new CustomError("Erro interno do servidor ao buscar ideias em destaque");
-    } finally {
-      client.release();
     }
   }
 
@@ -390,105 +361,148 @@ export class DashboardService {
     startDate?: Date,
     endDate?: Date
   ): Promise<DashboardEngagementContributor[]> {
-    const client = await pool.connect();
-
     try {
-      let dateFilter = '';
-      const queryParams: QueryValue[] = [dassOffice];
+      validateDassOffice(dassOffice);
 
-      if (startDate && endDate) {
-        dateFilter = 'AND data_realizada BETWEEN $2 AND $3';
-        queryParams.push(startDate, endDate);
-      } else if (startDate) {
-        dateFilter = 'AND data_realizada >= $2';
-        queryParams.push(startDate);
-      } else if (endDate) {
-        dateFilter = 'AND data_realizada <= $2';
-        queryParams.push(endDate);
-      }
+      const dataSource = await initializeDatabase();
+      const query = dataSource
+        .getRepository(PenseAjaDassEntity)
+        .createQueryBuilder("idea")
+        .select("idea.nome", "nome")
+        .addSelect("idea.setor", "setor")
+        .addSelect("COUNT(*)", "total_ideas")
+        .addSelect(
+          "COUNT(CASE WHEN idea.status_gerente = 'approve' THEN 1 END)",
+          "implemented_ideas"
+        )
+        .where("idea.unidade_dass = :dassOffice", { dassOffice })
+        .andWhere("idea.excluido = false");
 
+      applyDateFilter(query, "idea", "data_realizada", startDate, endDate);
 
-      const query = `
-        SELECT 
-          nome,
-          setor,
-          COUNT(*) as total_ideas,
-          COUNT(CASE WHEN status_gerente = 'approve' THEN 1 END) as implemented_ideas
-        FROM pense_aja.pense_aja_dass 
-        WHERE unidade_dass = $1 
-          AND excluido = false 
-          ${dateFilter}
-        GROUP BY nome, setor
-        HAVING COUNT(*) > 0
-        ORDER BY COUNT(*) DESC, COUNT(CASE WHEN status_gerente = 'approve' THEN 1 END) DESC
-        LIMIT 10
-      `;
+      const rows = await query
+        .groupBy("idea.nome")
+        .addGroupBy("idea.setor")
+        .having("COUNT(*) > 0")
+        .orderBy("COUNT(*)", "DESC")
+        .addOrderBy(
+          "COUNT(CASE WHEN idea.status_gerente = 'approve' THEN 1 END)",
+          "DESC"
+        )
+        .limit(10)
+        .getRawMany<{
+          nome: string;
+          setor: string;
+          total_ideas: string;
+          implemented_ideas: string;
+        }>();
 
-      const result = await client.query(query, queryParams);
-
-      // Gerar cores de avatar baseadas no nome
       const getAvatarColor = (name: string): string => {
-        const colors = ['#3B82F6', '#10B981', '#F97316', '#8B5CF6', '#EF4444', '#06B6D4', '#EC4899', '#F59E0B'];
+        const colors = [
+          "#3B82F6",
+          "#10B981",
+          "#F97316",
+          "#8B5CF6",
+          "#EF4444",
+          "#06B6D4",
+          "#EC4899",
+          "#F59E0B",
+        ];
         const index = name.charCodeAt(0) % colors.length;
         return colors[index];
       };
 
-      // Mapear setores para departamentos mais legíveis
       const getDepartment = (sector: string): string => {
-        const sectorLower = sector?.toLowerCase() || '';
-        if (sectorLower.includes('prod') || sectorLower.includes('fab')) return 'Produção';
-        if (sectorLower.includes('manu') || sectorLower.includes('mant')) return 'Manutenção';
-        if (sectorLower.includes('quali')) return 'Qualidade';
-        if (sectorLower.includes('log')) return 'Logística';
-        if (sectorLower.includes('eng')) return 'Engenharia';
-        if (sectorLower.includes('rh') || sectorLower.includes('pessoas')) return 'Recursos Humanos';
-        if (sectorLower.includes('admin')) return 'Administrativo';
-        if (sectorLower.includes('seg')) return 'Segurança';
-        return sector || 'Outros';
+        const sectorLower = sector.toLowerCase();
+        if (sectorLower.includes("prod") || sectorLower.includes("fab")) return "Produção";
+        if (sectorLower.includes("manu") || sectorLower.includes("mant")) return "Manutenção";
+        if (sectorLower.includes("quali")) return "Qualidade";
+        if (sectorLower.includes("log")) return "Logística";
+        if (sectorLower.includes("eng")) return "Engenharia";
+        if (sectorLower.includes("rh") || sectorLower.includes("pessoas")) return "Recursos Humanos";
+        if (sectorLower.includes("admin")) return "Administrativo";
+        if (sectorLower.includes("seg")) return "Segurança";
+        return sector || "Outros";
       };
 
-      // Gerar cargos fictícios baseados no setor e número de ideias
       const getRole = (sector: string, totalIdeas: number): string => {
         const department = getDepartment(sector);
-        const roles: { [key: string]: string[] } = {
-          'Produção': ['Operador de Produção', 'Supervisor de Produção', 'Técnico de Produção', 'Coordenador de Produção'],
-          'Manutenção': ['Técnico de Manutenção', 'Mecânico Industrial', 'Eletricista Industrial', 'Supervisor de Manutenção'],
-          'Qualidade': ['Técnico de Qualidade', 'Analista de Qualidade', 'Inspetor de Qualidade', 'Coordenador de Qualidade'],
-          'Logística': ['Analista de Logística', 'Operador de Empilhadeira', 'Conferente', 'Supervisor de Logística'],
-          'Engenharia': ['Engenheiro de Processos', 'Técnico em Automação', 'Analista de Processos', 'Engenheiro de Produção'],
-          'Recursos Humanos': ['Analista de RH', 'Assistente de RH', 'Coordenador de RH', 'Especialista em Treinamento'],
-          'Administrativo': ['Assistente Administrativo', 'Analista Administrativo', 'Coordenador Administrativo', 'Auxiliar Administrativo'],
-          'Segurança': ['Técnico de Segurança', 'Engenheiro de Segurança', 'Inspetor de Segurança', 'Coordenador de Segurança']
+        const roles: Record<string, string[]> = {
+          "Produção": [
+            "Operador de Produção",
+            "Supervisor de Produção",
+            "Técnico de Produção",
+            "Coordenador de Produção",
+          ],
+          "Manutenção": [
+            "Técnico de Manutenção",
+            "Mecânico Industrial",
+            "Eletricista Industrial",
+            "Supervisor de Manutenção",
+          ],
+          "Qualidade": [
+            "Técnico de Qualidade",
+            "Analista de Qualidade",
+            "Inspetor de Qualidade",
+            "Coordenador de Qualidade",
+          ],
+          "Logística": [
+            "Analista de Logística",
+            "Operador de Empilhadeira",
+            "Conferente",
+            "Supervisor de Logística",
+          ],
+          "Engenharia": [
+            "Engenheiro de Processos",
+            "Técnico em Automação",
+            "Analista de Processos",
+            "Engenheiro de Produção",
+          ],
+          "Recursos Humanos": [
+            "Analista de RH",
+            "Assistente de RH",
+            "Coordenador de RH",
+            "Especialista em Treinamento",
+          ],
+          "Administrativo": [
+            "Assistente Administrativo",
+            "Analista Administrativo",
+            "Coordenador Administrativo",
+            "Auxiliar Administrativo",
+          ],
+          "Segurança": [
+            "Técnico de Segurança",
+            "Engenheiro de Segurança",
+            "Inspetor de Segurança",
+            "Coordenador de Segurança",
+          ],
         };
 
-        const departmentRoles = roles[department] || ['Colaborador', 'Técnico', 'Analista', 'Coordenador'];
+        const departmentRoles = roles[department] || [
+          "Colaborador",
+          "Técnico",
+          "Analista",
+          "Coordenador",
+        ];
 
-        // Escolher cargo baseado no número de ideias (mais ideias = cargo mais senior)
-        let roleIndex;
-        if (totalIdeas >= 15) roleIndex = 3; // Coordenador/Senior
-        else if (totalIdeas >= 10) roleIndex = 2; // Analista/Técnico Senior
-        else if (totalIdeas >= 5) roleIndex = 1; // Técnico/Analista
-        else roleIndex = 0; // Operador/Assistente
-
-        return departmentRoles[Math.min(roleIndex, departmentRoles.length - 1)];
+        if (totalIdeas >= 15) return departmentRoles[3];
+        if (totalIdeas >= 10) return departmentRoles[2];
+        if (totalIdeas >= 5) return departmentRoles[1];
+        return departmentRoles[0];
       };
 
-      const contributors: DashboardEngagementContributor[] = result.rows.map((row, index) => ({
+      return rows.map((row, index) => ({
         id: index + 1,
         name: row.nome,
-        role: getRole(row.setor, parseInt(row.total_ideas)),
+        role: getRole(row.setor, Number(row.total_ideas)),
         department: getDepartment(row.setor),
-        ideas: parseInt(row.total_ideas),
-        implemented: parseInt(row.implemented_ideas),
-        avatarColor: getAvatarColor(row.nome)
+        ideas: Number(row.total_ideas),
+        implemented: Number(row.implemented_ideas),
+        avatarColor: getAvatarColor(row.nome),
       }));
-
-      return contributors;
     } catch (error) {
       console.error("Erro ao buscar dados de engajamento:", error);
       throw new CustomError("Erro interno do servidor ao buscar dados de engajamento");
-    } finally {
-      client.release();
     }
   }
 }

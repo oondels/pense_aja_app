@@ -64,8 +64,8 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 
 ## Database Access
 - Keywords: postgres, pool, query, banco, persistência, schemas, database
-- File: `server/src/config/db.ts` e `specs/backend/INTEGRATIONS.md`
-- Related: pense_aja_dass, pense_aja_pontos, pense_aja_premios, loja
+- File: `server/src/config/database.ts`, `server/src/models/` e `specs/backend/INTEGRATIONS.md`
+- Related: TypeORM DataSource, pense_aja_dass, pense_aja_pontos, pense_aja_premios, loja
 
 ## Redis Token Blacklist
 - Keywords: redis, blacklist, token blacklist, sessão, segurança

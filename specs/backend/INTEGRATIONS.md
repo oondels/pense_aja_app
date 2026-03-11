@@ -25,6 +25,13 @@ Carregadas por `server/src/config/dotenv.ts`:
 - fonte primária de dados do produto
 - leitura e escrita de ideias, pontos, prêmios, usuários e notificações
 
+### Camada de acesso
+
+- `server/src/config/database.ts` define o `AppDataSource` do TypeORM
+- entidades ficam em `server/src/models/`
+- `synchronize` permanece `false`; o schema continua sendo a fonte de verdade
+- transações de escrita usam `QueryRunner` para fluxos como cadastro, avaliação, resgate e manutenção de loja
+
 ### Tabelas/schema referenciados
 
 - `pense_aja.pense_aja_dass`
@@ -39,6 +46,11 @@ Carregadas por `server/src/config/dotenv.ts`:
 - `autenticacao.usuarios`
 - `autenticacao.emails`
 - `core.unidades_dass`
+
+### Observações de modelagem
+
+- as tabelas `pense_aja.*`, `autenticacao.usuarios`, `autenticacao.emails` e `core.unidades_dass` possuem entidades TypeORM registradas
+- as views/tabelas `colaborador.lista_funcionario[_UNIDADE]` continuam consultadas por nome qualificado, pois variam por unidade
 
 ## Redis
 

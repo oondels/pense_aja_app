@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { initializeDatabase } from "./config/database";
 import dotenv from "./config/dotenv";
 import { CustomError } from "./types/CustomError";
 import PenseAjaRoutes from "./routes/penseAja.route";
@@ -8,8 +9,6 @@ import UserPenseajaRoute from "./routes/userPensAaja.route";
 import AiTools from "./routes/aiTools.route";
 import DashboardRoutes from "./routes/dashboard.route";
 import { startUploadListener } from "./workers/uploadListener";
-
-startUploadListener();
 
 const app = express();
 const port = 2512;
@@ -44,8 +43,20 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   return;
 });
 
-app.listen(port, () => {
-  console.log(
-    `Pense Aja API is running at port: ${port} on ${dotenv.DEV_ENV} mode!`
-  );
-});
+const bootstrap = async () => {
+  try {
+    await initializeDatabase();
+    await startUploadListener();
+
+    app.listen(port, () => {
+      console.log(
+        `Pense Aja API is running at port: ${port} on ${dotenv.DEV_ENV} mode!`
+      );
+    });
+  } catch (error) {
+    console.error("Erro ao inicializar a API Pense Aja:", error);
+    process.exit(1);
+  }
+};
+
+bootstrap();

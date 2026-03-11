@@ -1,9 +1,10 @@
-import axios from "axios"
-import dotenv from "../config/dotenv"
-import { NotificationPayload } from "../types/Notification"
-import pool from "../config/db"
-import { CustomError } from "../types/CustomError"
-import { DassOffice } from "../types/contracts"
+import axios from "axios";
+import dotenv from "../config/dotenv";
+import { initializeDatabase } from "../config/database";
+import EmailEntity from "../models/Email";
+import { NotificationPayload } from "../types/Notification";
+import { CustomError } from "../types/CustomError";
+import { DassOffice } from "../types/contracts";
 
 export const NotificationService = {
   async sendNotification(payload: NotificationPayload) {
@@ -12,39 +13,39 @@ export const NotificationService = {
         headers: {
           "Content-Type": "application/json",
           "x-api-key": dotenv.NOTIFICATION_API_KEY,
-        }
-      })
+        },
+      });
     } catch (error: unknown) {
       console.error("Error sending notification:", error);
-      return
+      return;
     }
-
   },
 
   async isNotificationEnabled(
     registration: string | number,
     dassOffice: DassOffice
   ): Promise<boolean> {
-    const client = await pool.connect()
     try {
-      const query = `
-        SELECT 
-          authorized_notifications_apps AS notification_enabled
-        FROM 
-          autenticacao.emails
-        WHERE 
-          matricula = $1 AND authorized_notifications_apps @> '["pense_aja"]'::jsonb AND unidade_dass = $2
-      `;
+      const dataSource = await initializeDatabase();
+      const result = await dataSource
+        .getRepository(EmailEntity)
+        .createQueryBuilder("email")
+        .select("email.authorized_notifications_apps", "notification_enabled")
+        .where("email.matricula = :registration", {
+          registration: String(registration),
+        })
+        .andWhere("email.unidade_dass = :dassOffice", { dassOffice })
+        .andWhere(`email.authorized_notifications_apps @> '["pense_aja"]'::jsonb`)
+        .getRawOne<{ notification_enabled?: unknown }>();
 
-      const result = await client.query(query, [registration, dassOffice]);
-      return Boolean(result.rows[0]?.notification_enabled);
-
+      return Boolean(result?.notification_enabled);
     } catch (error) {
-      const errorMessage = error instanceof CustomError ? error.message : "Erro Interno no servidor!";
+      const errorMessage =
+        error instanceof CustomError
+          ? error.message
+          : "Erro Interno no servidor!";
       console.error("Error checking notification enabled:", errorMessage);
       throw error;
-    } finally {
-      client.release();
     }
-  }
-}
+  },
+};

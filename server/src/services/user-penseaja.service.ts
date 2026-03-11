@@ -1,5 +1,8 @@
 import logger from "../utils/logger";
-import pool from "../config/db";
+import { initializeDatabase } from "../config/database";
+import EmailEntity from "../models/Email";
+import UnidadeDassEntity from "../models/UnidadeDass";
+import UsuarioEntity from "../models/Usuario";
 import { CustomError } from "../types/CustomError";
 import {
   DassOffice,
@@ -10,22 +13,30 @@ import {
   UserProfileData,
 } from "../types/contracts";
 
-const checkDassOffice = (dassOffice: string) => {
+const checkDassOffice = (dassOffice: string): DassOffice => {
   const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
   if (!allowedOffices.includes(dassOffice)) {
     logger.error("Pense-aja", `Unidade inválida: ${dassOffice}`);
     throw new Error(`Unidade dass Inválida: ${dassOffice}`);
   }
+
+  return dassOffice as DassOffice;
+};
+
+const collaboratorTableMap: Record<DassOffice, string> = {
+  SEST: "colaborador.lista_funcionario",
+  VDC: "colaborador.lista_funcionario_VDC",
+  ITB: "colaborador.lista_funcionario_ITB",
+  "VDC-CONF": "colaborador.\"lista_funcionario_VDC-CONF\"",
+  STJ: "colaborador.lista_funcionario_STJ",
 };
 
 export const UserPenseaja = {
   async getUserData(registration: number, dassOffice: DassOffice): Promise<UserProfileData> {
-    checkDassOffice(dassOffice);
-    const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
-
-    const client = await pool.connect();
+    const validDassOffice = checkDassOffice(dassOffice);
     try {
-      const query = await client.query(
+      const dataSource = await initializeDatabase();
+      const query = await dataSource.query(
         `
         SELECT
           lf.nome,
@@ -38,7 +49,7 @@ export const UserPenseaja = {
           COALESCE(pa.classificacoes_json, '{}'::jsonb) AS classificacoes_pense_aja,
           ae.email,
           ae.authorized_notifications_apps
-        FROM colaborador.lista_funcionario${office} lf
+        FROM ${collaboratorTableMap[validDassOffice]} lf
         LEFT JOIN (
           SELECT matricula, SUM(valor) AS soma_pontos
           FROM pense_aja.pense_aja_pontos
@@ -66,19 +77,21 @@ export const UserPenseaja = {
         [registration]
       );
 
-      if (query.rowCount === 0) {
+      if (query.length === 0) {
         logger.error("user-pense-aja", `Usuário não encontrado: ${registration}`);
         throw new CustomError(`Usuário não encontrado: ${registration}`);
       }
 
-      return query.rows[0];
+      return {
+        ...query[0],
+        pontos: Number(query[0].pontos) || 0,
+        pontos_resgatados: Number(query[0].pontos_resgatados) || 0,
+      } as UserProfileData;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
 
       logger.error("user-pense-aja", `Erro ao buscar dados do usuario: ${errorMessage}`);
       throw error;
-    } finally {
-      client.release();
     }
   },
 
@@ -86,16 +99,13 @@ export const UserPenseaja = {
     registration: string | number,
     dassOffice: DassOffice
   ): Promise<UserManagerNotificationTarget | null> {
-    checkDassOffice(dassOffice);
-
-    const client = await pool.connect();
+    const validDassOffice = checkDassOffice(dassOffice);
     try {
-      const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
-
-      const query = await client.query(
+      const dataSource = await initializeDatabase();
+      const query = await dataSource.query(
         `
         SELECT lf.gerente, u.matricula, ue.email
-        FROM colaborador.lista_funcionario${office} lf
+        FROM ${collaboratorTableMap[validDassOffice]} lf
         INNER JOIN autenticacao.usuarios u ON LOWER(TRIM(lf.gerente)) = LOWER(TRIM(u.nome)) AND u.funcao = 'GERENTE'
         INNER JOIN autenticacao.emails ue ON u.matricula = ue.matricula
         WHERE lf.matricula = $1
@@ -103,14 +113,12 @@ export const UserPenseaja = {
         [registration]
       );
 
-      return query?.rows[0] ?? null;
+      return query[0] ?? null;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
 
       logger.error("user-pense-aja", `Erro ao buscar gerente do usuario: ${errorMessage}`);
       throw error;
-    } finally {
-      client.release();
     }
   },
 
@@ -118,22 +126,30 @@ export const UserPenseaja = {
     registration: string | number,
     dassOffice: DassOffice
   ): Promise<UserEmailNotificationTarget | undefined> {
-    const client = await pool.connect();
     try {
-      const query = await client.query(`
-        SELECT ue.email, ue.authorized_notifications_apps
-        FROM autenticacao.usuarios u
-        INNER JOIN autenticacao.emails ue ON u.matricula = ue.matricula
-        WHERE u.matricula = $1 AND u.unidade = $2 AND ue.authorized_notifications_apps @> '["pense_aja"]'::jsonb;
-      `, [registration, dassOffice]);
-      return query.rows[0];
+      const dataSource = await initializeDatabase();
+      const query = await dataSource
+        .getRepository(UsuarioEntity)
+        .createQueryBuilder("u")
+        .innerJoin("autenticacao.emails", "ue", "u.matricula = ue.matricula")
+        .select("ue.email", "email")
+        .addSelect(
+          "ue.authorized_notifications_apps",
+          "authorized_notifications_apps"
+        )
+        .where("u.matricula = :registration", {
+          registration: String(registration),
+        })
+        .andWhere("u.unidade = :dassOffice", { dassOffice })
+        .andWhere(`ue.authorized_notifications_apps @> '["pense_aja"]'::jsonb`)
+        .getRawOne<UserEmailNotificationTarget>();
+
+      return query ?? undefined;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
 
       logger.error("user-pense-aja", `Erro ao buscar email do usuario: ${errorMessage}`);
       throw error;
-    } finally {
-      client.release();
     }
   },
 
@@ -143,56 +159,65 @@ export const UserPenseaja = {
     formData: UpdateUserProfileInput
   ): Promise<Pick<UserProfileData, "email" | "authorized_notifications_apps">> {
     checkDassOffice(dassOffice);
-
-    const client = await pool.connect();
     try {
+      const dataSource = await initializeDatabase();
       const authorizedNotificationsApps = formData.authorized_notifications_apps.length
         ? formData.authorized_notifications_apps
         : ["null"];
 
-      const query = await client.query(
-        `
-        UPDATE autenticacao.emails
-        SET email = $1, authorized_notifications_apps = $2
-        WHERE matricula = $3
-        RETURNING email, authorized_notifications_apps;
-      `,
-        [formData.email, JSON.stringify(authorizedNotificationsApps), registration]
-      );
+      const query = await dataSource
+        .createQueryBuilder()
+        .update(EmailEntity)
+        .set({
+          email: formData.email,
+          authorized_notifications_apps: authorizedNotificationsApps,
+        })
+        .where("matricula = :registration", {
+          registration: String(registration),
+        })
+        .returning(["email", "authorized_notifications_apps"])
+        .execute();
 
-      if (query.rowCount === 0) {
+      if (!query.affected) {
         logger.error("user-pense-aja", `Usuário não encontrado: ${registration}`);
         throw new CustomError(`Usuário não encontrado: ${registration}`);
       }
 
-      return query.rows[0];
+      return query.raw[0];
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
 
       logger.error("user-pense-aja", `Erro ao atualizar dados do usuario: ${errorMessage}`);
       throw error;
-    } finally {
-      client.release();
     }
   },
 
   async getUserOffice(registration: string): Promise<UserOfficeLookupResult> {
-    const client = await pool.connect();
     try {
+      const dataSource = await initializeDatabase();
       const firstDigit = registration.charAt(0);
       if (!firstDigit || !Number(firstDigit)) {
         throw new Error("Registro inválido. Matrícula desconhecida!");
       }
-      const dasOffices = await client.query("SELECT unidade, location FROM core.unidades_dass WHERE $1 = ANY (key)", [Number(firstDigit)]);
+      const dasOffice = await dataSource
+        .getRepository(UnidadeDassEntity)
+        .createQueryBuilder("unidade")
+        .select("unidade.unidade", "unidade")
+        .addSelect("unidade.location", "location")
+        .where(":firstDigit = ANY(unidade.key)", {
+          firstDigit: Number(firstDigit),
+        })
+        .getRawOne<{ unidade?: DassOffice; location?: string | null }>();
 
-      return {userOffice: dasOffices.rows[0]?.unidade ?? null, location: dasOffices.rows[0]?.location ?? null};
+      return {
+        userOffice: dasOffice?.unidade ?? null,
+        location: dasOffice?.location ?? null,
+      };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
 
       logger.error("user-pense-aja", `Erro ao buscar unidade do usuario: ${errorMessage}`);
       throw error;
-    } finally {
-      client.release();
     }
-  }
+  },
 };
