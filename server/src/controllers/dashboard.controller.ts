@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { DashboardService } from "../services/dashboard.service";
+import { DashboardDateRange } from "../types/contracts";
 
-const parseDateRange = (req: Request, res: Response) => {
+const parseDateRange = (req: Request, res: Response): DashboardDateRange | null => {
   const { startDate, endDate } = req.query;
 
   let startDateParsed: Date | undefined;

@@ -1,6 +1,14 @@
 import logger from "../utils/logger";
 import pool from "../config/db";
 import { CustomError } from "../types/CustomError";
+import {
+  DassOffice,
+  UpdateUserProfileInput,
+  UserEmailNotificationTarget,
+  UserManagerNotificationTarget,
+  UserOfficeLookupResult,
+  UserProfileData,
+} from "../types/contracts";
 
 const checkDassOffice = (dassOffice: string) => {
   const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
@@ -11,7 +19,7 @@ const checkDassOffice = (dassOffice: string) => {
 };
 
 export const UserPenseaja = {
-  async getUserData(registration: number, dassOffice: string) {
+  async getUserData(registration: number, dassOffice: DassOffice): Promise<UserProfileData> {
     checkDassOffice(dassOffice);
     const office = dassOffice !== "SEST" ? "_" + dassOffice : "";
 
@@ -74,7 +82,10 @@ export const UserPenseaja = {
     }
   },
 
-  async getManagerByUser(registration: string | number, dassOffice: string) {
+  async getManagerByUser(
+    registration: string | number,
+    dassOffice: DassOffice
+  ): Promise<UserManagerNotificationTarget | null> {
     checkDassOffice(dassOffice);
 
     const client = await pool.connect();
@@ -103,7 +114,10 @@ export const UserPenseaja = {
     }
   },
 
-  async getUserEmail(registration: string | number, dassOffice: string) {
+  async getUserEmail(
+    registration: string | number,
+    dassOffice: DassOffice
+  ): Promise<UserEmailNotificationTarget | undefined> {
     const client = await pool.connect();
     try {
       const query = await client.query(`
@@ -123,14 +137,18 @@ export const UserPenseaja = {
     }
   },
 
-  async updateUserData(registration: string | number, dassOffice: string, formData: Record<string, any>) {
+  async updateUserData(
+    registration: string | number,
+    dassOffice: DassOffice,
+    formData: UpdateUserProfileInput
+  ): Promise<Pick<UserProfileData, "email" | "authorized_notifications_apps">> {
     checkDassOffice(dassOffice);
 
     const client = await pool.connect();
     try {
-      if (!formData.authorized_notifications_apps.length) {
-        formData.authorized_notifications_apps = JSON.stringify(['null']);
-      }
+      const authorizedNotificationsApps = formData.authorized_notifications_apps.length
+        ? formData.authorized_notifications_apps
+        : ["null"];
 
       const query = await client.query(
         `
@@ -139,7 +157,7 @@ export const UserPenseaja = {
         WHERE matricula = $3
         RETURNING email, authorized_notifications_apps;
       `,
-        [formData.email, JSON.stringify(formData.authorized_notifications_apps), registration]
+        [formData.email, JSON.stringify(authorizedNotificationsApps), registration]
       );
 
       if (query.rowCount === 0) {
@@ -158,7 +176,7 @@ export const UserPenseaja = {
     }
   },
 
-  async getUserOffice(registration: string) {
+  async getUserOffice(registration: string): Promise<UserOfficeLookupResult> {
     const client = await pool.connect();
     try {
       const firstDigit = registration.charAt(0);

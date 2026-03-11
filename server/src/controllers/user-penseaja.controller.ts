@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { UserPenseaja } from "../services/user-penseaja.service";
+import { DassOffice, UpdateUserProfileInput } from "../types/contracts";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -59,7 +60,10 @@ export const UserPenseajaController = {
   async updateUserData(req: Request, res: Response, next: NextFunction) {
     try {
       const { registration } = req.params;
-      const { formData, dassOffice } = req.body;
+      const { formData, dassOffice } = req.body as {
+        formData: UpdateUserProfileInput;
+        dassOffice: DassOffice;
+      };
 
       if (registration.length < 7) {
         res

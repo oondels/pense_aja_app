@@ -5,7 +5,12 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 ## Backend Overview
 - Keywords: backend, api, express, typescript, pense aja, arquitetura, visão geral
 - File: `specs/backend/ROUTES.md`, `specs/backend/BUSINESS_RULES.md`, `specs/backend/INTEGRATIONS.md`
-- Related: bootstrap, módulos HTTP, rotas, controllers, services, infraestrutura
+- Related: bootstrap, módulos HTTP, rotas, controllers, services, contratos tipados, infraestrutura
+
+## Shared Contracts
+- Keywords: contracts, dto, interfaces, tipagem, types, frontend integration
+- File: `server/src/types/contracts/`
+- Related: controllers, services, payloads, responses, integração frontend
 
 ## Application Entry Point
 - Keywords: bootstrap, app, express, cors, cookies, error handler, startup

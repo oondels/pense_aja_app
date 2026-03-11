@@ -1,61 +1,20 @@
 import pool from "../config/db";
 import { CustomError } from "../types/CustomError";
-
-interface SummaryData {
-  totalIdeas: number;
-  implementedIdeas: number;
-  pendingIdeas: number;
-  rejectedIdeas: number;
-  approvedByManager: number;
-  inAnalysis: number;
-  totalValue: number;
-  avgValue: number;
-}
-
-interface MonthlyData {
-  month: string;
-  count: number;
-  value: number;
-}
-
-interface DimensionalData {
-  manager: Array<{ label: string; count: number }>;
-  sector: Array<{ label: string; count: number }>;
-  factory: Array<{ label: string; count: number }>;
-}
-
-interface IdeaHighlight {
-  id: number;
-  title: string;
-  description: string;
-  author: string;
-  avatarColor: string;
-  date: string;
-  status: string;
-  category: string;
-  sector: string;
-  factory: string;
-  likes: number;
-  comments: number;
-}
-
-interface EngagementContributor {
-  id: number;
-  name: string;
-  role: string;
-  department: string;
-  ideas: number;
-  implemented: number;
-  avatarColor: string;
-}
-
-interface PeriodFilter {
-  start?: Date;
-  end?: Date;
-}
+import {
+  DashboardDimensionalData,
+  DashboardEngagementContributor,
+  DashboardIdeaHighlight,
+  DashboardMonthlyData,
+  DashboardSummaryData,
+  QueryValue,
+} from "../types/contracts";
 
 export class DashboardService {
-  static async getSummaryData(dassOffice: string, startDate?: Date, endDate?: Date): Promise<SummaryData> {
+  static async getSummaryData(
+    dassOffice: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<DashboardSummaryData> {
     const client = await pool.connect();
 
     try {
@@ -66,7 +25,7 @@ export class DashboardService {
 
       // Construir filtros de data
       let dateFilter = '';
-      const params: any[] = [dassOffice];
+      const params: QueryValue[] = [dassOffice];
 
       if (startDate && endDate) {
         dateFilter = ' AND createdat BETWEEN $2 AND $3';
@@ -134,7 +93,11 @@ export class DashboardService {
     }
   }
 
-  static async getMonthlyData(dassOffice: string, startDate?: Date, endDate?: Date): Promise<MonthlyData[]> {
+  static async getMonthlyData(
+    dassOffice: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<DashboardMonthlyData[]> {
     const client = await pool.connect();
 
     try {
@@ -146,7 +109,7 @@ export class DashboardService {
 
       // Construir filtros de data
       let dateFilter = '';
-      const params: any[] = [dassOffice];
+      const params: QueryValue[] = [dassOffice];
 
       if (startDate && endDate) {
         dateFilter = ' AND createdat BETWEEN $2 AND $3';
@@ -210,7 +173,11 @@ export class DashboardService {
     }
   }
 
-  static async getDimensionalData(dassOffice: string, startDate?: Date, endDate?: Date): Promise<DimensionalData> {
+  static async getDimensionalData(
+    dassOffice: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<DashboardDimensionalData> {
     const client = await pool.connect();
 
     try {
@@ -222,7 +189,7 @@ export class DashboardService {
 
       // Construir filtros de data
       let dateFilter = '';
-      const params: any[] = [dassOffice];
+      const params: QueryValue[] = [dassOffice];
 
       if (startDate && endDate) {
         dateFilter = ' AND createdat BETWEEN $2 AND $3';
@@ -316,7 +283,7 @@ export class DashboardService {
     }
   }
 
-  static async getIdeaHighlights(dassOffice: string): Promise<IdeaHighlight[]> {
+  static async getIdeaHighlights(dassOffice: string): Promise<DashboardIdeaHighlight[]> {
     const client = await pool.connect();
 
     try {
@@ -390,7 +357,7 @@ export class DashboardService {
         return { likes: Math.min(likes, 99), comments: Math.min(comments, 25) };
       };
 
-      const highlights: IdeaHighlight[] = result.rows.map((row, index) => {
+      const highlights: DashboardIdeaHighlight[] = result.rows.map((row) => {
         const { likes, comments } = getLikesAndComments(row.valor_amortizado, row.status);
 
         return {
@@ -418,12 +385,16 @@ export class DashboardService {
     }
   }
 
-  static async getEngagementData(dassOffice: string, startDate?: Date, endDate?: Date): Promise<EngagementContributor[]> {
+  static async getEngagementData(
+    dassOffice: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<DashboardEngagementContributor[]> {
     const client = await pool.connect();
 
     try {
       let dateFilter = '';
-      const queryParams: any[] = [dassOffice];
+      const queryParams: QueryValue[] = [dassOffice];
 
       if (startDate && endDate) {
         dateFilter = 'AND data_realizada BETWEEN $2 AND $3';
@@ -502,7 +473,7 @@ export class DashboardService {
         return departmentRoles[Math.min(roleIndex, departmentRoles.length - 1)];
       };
 
-      const contributors: EngagementContributor[] = result.rows.map((row, index) => ({
+      const contributors: DashboardEngagementContributor[] = result.rows.map((row, index) => ({
         id: index + 1,
         name: row.nome,
         role: getRole(row.setor, parseInt(row.total_ideas)),

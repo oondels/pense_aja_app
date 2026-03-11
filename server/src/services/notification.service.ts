@@ -3,6 +3,7 @@ import dotenv from "../config/dotenv"
 import { NotificationPayload } from "../types/Notification"
 import pool from "../config/db"
 import { CustomError } from "../types/CustomError"
+import { DassOffice } from "../types/contracts"
 
 export const NotificationService = {
   async sendNotification(payload: NotificationPayload) {
@@ -13,14 +14,17 @@ export const NotificationService = {
           "x-api-key": dotenv.NOTIFICATION_API_KEY,
         }
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error sending notification:", error);
       return
     }
 
   },
 
-  async isNotificationEnabled(registration: string | number, dassOffice: string) {
+  async isNotificationEnabled(
+    registration: string | number,
+    dassOffice: DassOffice
+  ): Promise<boolean> {
     const client = await pool.connect()
     try {
       const query = `
@@ -33,7 +37,7 @@ export const NotificationService = {
       `;
 
       const result = await client.query(query, [registration, dassOffice]);
-      return result.rows[0]?.notification_enabled || false;
+      return Boolean(result.rows[0]?.notification_enabled);
 
     } catch (error) {
       const errorMessage = error instanceof CustomError ? error.message : "Erro Interno no servidor!";

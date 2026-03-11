@@ -3,8 +3,28 @@ import pool from "../config/db";
 import { CustomError } from "../types/CustomError";
 import { UserPenseaja } from "./user-penseaja.service";
 import { NotificationService } from "./notification.service";
+import {
+  CreatePenseAjaResult,
+  DassOffice,
+  EvaluatePenseAjaResponse,
+  EvaluatePenseAjaResult,
+  EvaluationData,
+  NewProduct,
+  PenseAjaData,
+  PenseAjaDetails,
+  PenseAjaFilters,
+  PenseAjaListItem,
+  ProductRecord,
+  ProductUpdateInput,
+  PurchaseProductPayload,
+  PurchaseProductResponse,
+  QueryValue,
+  SubmitPenseAjaResponse,
+  UploadFileReference,
+  UserPointsBalance,
+} from "../types/contracts";
 
-const checkDassOffice = (dassOffice: string) => {
+const checkDassOffice = (dassOffice: string): asserts dassOffice is DassOffice => {
   const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
   if (!allowedOffices.includes(dassOffice)) {
     logger.error("Pense-aja", `Unidade inválida: ${dassOffice}`);
@@ -15,55 +35,6 @@ const checkDassOffice = (dassOffice: string) => {
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString("pt-BR");
 };
-
-interface PenseAjaData {
-  nome: string;
-  createDate: string | Date;
-  situationBefore: string;
-  situationNow: string;
-  registration: string | number;
-  perdas: Array<string>;
-  userName: string;
-  gerente: string;
-  setor: string;
-  turno: string;
-  a3Mae?: string;
-  valorA?: string;
-  valorB?: string;
-  valorAmortizado?: string;
-  outrosGanhos?: string;
-  ganhos?: Array<string>;
-  ganhoDetalhes?: string;
-  areaMelhoria: string;
-  factory: string
-}
-
-interface EvaluationData {
-  avaliacao: string;
-  emEspera: boolean;
-  replicavel: boolean;
-  justificativa: string;
-  usuario: string;
-  avaliadoAnteriormente: boolean;
-  nome: string;
-  funcao: string;
-  dassOffice: string;
-  status: string;
-  a3Mae?: string;
-}
-
-interface PurchaseProductPayload {
-  product: Record<string, any>;
-  colaboradorData: Record<string, any>;
-  analista: Record<string, any>;
-  dassOffice: string;
-}
-
-interface NewProduct {
-  name: string;
-  points: number;
-  image: string;
-}
 
 const turnoMap: Record<string, string> = {
   A: "1° Turno",
@@ -82,13 +53,23 @@ const formatUserName = (name: string) => {
 };
 
 export const PenseAjaService = {
-  async fetchPenseAja(dassOffice: string, startDateParsed: Date, endDateParsed: Date, name: string, sector: string, manager: string, project: string, turno: string, status: string) {
+  async fetchPenseAja(
+    dassOffice: string,
+    startDateParsed: PenseAjaFilters["startDate"],
+    endDateParsed: PenseAjaFilters["endDate"],
+    name?: string,
+    sector?: string,
+    manager?: string,
+    project?: string,
+    turno?: string,
+    status?: string
+  ): Promise<PenseAjaListItem[]> {
     checkDassOffice(dassOffice);
 
     const client = await pool.connect();
     try {
-      let params = []
-      let filters = []
+      const params: QueryValue[] = [];
+      const filters: string[] = [];
 
       params.push(startDateParsed)
       params.push(endDateParsed)
@@ -164,7 +145,7 @@ export const PenseAjaService = {
 
       const result = await client.query(baseQuery, params)
 
-      const dados = result.rows;
+      const dados = result.rows as PenseAjaListItem[];
       dados.forEach((row) => {
         row.criado = formatDate(row.criado);
         row.turno = turnoMap[row.turno] || "Comercial";
@@ -185,7 +166,7 @@ export const PenseAjaService = {
     }
   },
 
-  async createPenseAja(data: PenseAjaData, dassOffice: string) {
+  async createPenseAja(data: PenseAjaData, dassOffice: string): Promise<CreatePenseAjaResult> {
     checkDassOffice(dassOffice);
 
     const requiredFields: Array<keyof PenseAjaData> = [
@@ -258,7 +239,11 @@ export const PenseAjaService = {
       );
       if (dupCheck.rows.length > 0) {
         await client.query("COMMIT");
-        return { pense_aja: dupCheck.rows[0], userManager: null, duplicated: true } as any;
+        return {
+          pense_aja: dupCheck.rows[0],
+          userManager: null,
+          duplicated: true,
+        } as CreatePenseAjaResult;
       }
 
       const perdasSelecionads = new Set(data.perdas);
@@ -313,7 +298,11 @@ export const PenseAjaService = {
       const userManager = await UserPenseaja.getManagerByUser(data.registration, dassOffice);
 
       await client.query("COMMIT");
-      return { pense_aja: newPenseAja.rows[0], userManager, duplicated: false } as any;
+      return {
+        pense_aja: newPenseAja.rows[0],
+        userManager,
+        duplicated: false,
+      } as CreatePenseAjaResult;
     } catch (error) {
       await client.query("ROLLBACK");
       const messageError =
@@ -330,7 +319,7 @@ export const PenseAjaService = {
     }
   },
 
-  async submitPenseAja(data: PenseAjaData, dassOffice: string) {
+  async submitPenseAja(data: PenseAjaData, dassOffice: string): Promise<SubmitPenseAjaResponse> {
     const { pense_aja, userManager, duplicated } = await this.createPenseAja(data, dassOffice);
 
     if (duplicated) {
@@ -376,7 +365,7 @@ export const PenseAjaService = {
     };
   },
 
-  async getPenseAjaById(id: string, dassOffice: string) {
+  async getPenseAjaById(id: string, dassOffice: string): Promise<PenseAjaDetails> {
     checkDassOffice(dassOffice);
     const client = await pool.connect();
 
@@ -402,7 +391,7 @@ export const PenseAjaService = {
         );
       }
 
-      return data.rows[0];
+      return data.rows[0] as PenseAjaDetails;
     } catch (error) {
       logger.error("Pense-aja", `Erro ao consultar pense aja por ID: ${error}`);
       if (error instanceof CustomError) {
@@ -415,21 +404,19 @@ export const PenseAjaService = {
     }
   },
 
-  async evaluatePenseAja(
-    id: string,
-    {
+  async evaluatePenseAja(id: string, data: EvaluationData): Promise<EvaluatePenseAjaResult> {
+    const {
       dassOffice,
       status,
       usuario: avaliador,
       funcao,
-      justificativa = 'Sem justificativa.',
+      justificativa = "Sem justificativa.",
       avaliacao,
-      a3Mae = '',
+      a3Mae = "",
       emEspera,
       replicavel,
-      avaliadoAnteriormente = false
-    }: EvaluationData
-  ) {
+      avaliadoAnteriormente = false,
+    } = data;
     checkDassOffice(dassOffice);
 
     const client = await pool.connect();
@@ -472,7 +459,7 @@ export const PenseAjaService = {
 
       // build SET clauses and parameters
       const clauses: string[] = [];
-      const params: Array<string | boolean> = [];
+      const params: QueryValue[] = [];
       let idx = 1;
 
       // role‐specific fields
@@ -597,7 +584,7 @@ export const PenseAjaService = {
       }
 
       await client.query('COMMIT');
-      return { newEvaluation: result.rows[0], role };
+      return { newEvaluation: result.rows[0] as EvaluatePenseAjaResult["newEvaluation"], role };
     } catch (error) {
       await client.query('ROLLBACK');
       logger.error('PenseAjaService', `Erro ao avaliar Pense Aja: ${error}`);
@@ -609,12 +596,11 @@ export const PenseAjaService = {
     }
   },
 
-  async evaluatePenseAjaWithNotification(id: string, data: EvaluationData & Record<string, any>) {
-    const evaluationData = {
-      ...data,
-    };
-
-    const { newEvaluation, role } = await this.evaluatePenseAja(id, evaluationData);
+  async evaluatePenseAjaWithNotification(
+    id: string,
+    data: EvaluationData
+  ): Promise<EvaluatePenseAjaResponse> {
+    const { newEvaluation, role } = await this.evaluatePenseAja(id, data);
     const userEmail = await UserPenseaja.getUserEmail(newEvaluation.matricula, data.dassOffice);
 
     let avaliadorNome;
@@ -655,7 +641,13 @@ export const PenseAjaService = {
     };
   },
 
-  async buyProduct(dassOffice: string, product: Record<string, any>, colaboradorData: Record<string, any>, analista: Record<string, any>, userPoints: Record<string, any>) {
+  async buyProduct(
+    dassOffice: string,
+    product: PurchaseProductPayload["product"],
+    colaboradorData: PurchaseProductPayload["colaboradorData"],
+    analista: PurchaseProductPayload["analista"],
+    userPoints: UserPointsBalance
+  ): Promise<number> {
     checkDassOffice(dassOffice);
 
     const pontosRestantes = userPoints.pontos - userPoints.pontos_resgatados;
@@ -666,7 +658,7 @@ export const PenseAjaService = {
         SELECT * FROM pense_aja.pense_aja_loja
       `)
 
-      const getProduct = products.rows.find((p) => p.id === product.id);
+      const getProduct = (products.rows as ProductRecord[]).find((p) => p.id === product.id);
       if (!getProduct) {
         throw new CustomError(
           "Produto não encontrado.",
@@ -732,7 +724,7 @@ export const PenseAjaService = {
   async purchaseProductByRegistration(
     registration: number,
     { product, colaboradorData, analista, dassOffice }: PurchaseProductPayload
-  ) {
+  ): Promise<PurchaseProductResponse> {
     const user = await UserPenseaja.getUserData(registration, dassOffice);
     if (!user) {
       throw new CustomError("Erro ao resgatar produto! Usuário não encontrado.", 400);
@@ -756,7 +748,12 @@ export const PenseAjaService = {
     };
   },
 
-  async createProduct(dassOffice: string, productData: NewProduct, files: Record<any, any>[], userRegistration: string) {
+  async createProduct(
+    dassOffice: string,
+    productData: NewProduct,
+    files: UploadFileReference[],
+    userRegistration: string
+  ): Promise<string> {
     checkDassOffice(dassOffice);
 
     const client = await pool.connect()
@@ -795,7 +792,7 @@ export const PenseAjaService = {
     }
   },
 
-  async fetchProducts(dassOffice: string) {
+  async fetchProducts(dassOffice: string): Promise<ProductRecord[]> {
     checkDassOffice(dassOffice);
 
     const client = await pool.connect();
@@ -809,7 +806,7 @@ export const PenseAjaService = {
           unidade_dass = $1
       `, [dassOffice]);
 
-      return products.rows;
+      return products.rows as ProductRecord[];
     } catch (error) {
       logger.error("Pense-aja", `Erro ao buscar produtos: ${error}`);
       throw new CustomError("Erro ao buscar produtos.");
@@ -818,7 +815,11 @@ export const PenseAjaService = {
     }
   },
 
-  async updateProduct(productData: Array<{ id: number, nome: string, valor: number }>, dassOffice: string, usuario: string) {
+  async updateProduct(
+    productData: ProductUpdateInput[],
+    dassOffice: string,
+    usuario: string
+  ): Promise<ProductRecord[]> {
     checkDassOffice(dassOffice);
 
     if (!Array.isArray(productData) || productData.length === 0) {

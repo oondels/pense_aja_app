@@ -1,5 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { PenseAjaService } from "../services/pense-aja.service";
+import {
+  EvaluationData,
+  PenseAjaData,
+  ProductUpdateInput,
+  PurchaseProductPayload,
+} from "../types/contracts";
 
 const isInvalidDate = (value?: string) => value !== undefined && Number.isNaN(Date.parse(value));
 
@@ -27,7 +33,8 @@ export const PenseAjaController = {
   async purchaseProduct(req: Request, res: Response, next: NextFunction) {
     try {
       const { registration } = req.params;
-      const { product, colaboradorData, analista, dassOffice } = req.body;
+      const { product, colaboradorData, analista, dassOffice } =
+        req.body as PurchaseProductPayload;
 
       if (Number.isNaN(Number(registration))) {
         res.status(400).json({ message: "Matrícula Inválida." });
@@ -50,7 +57,7 @@ export const PenseAjaController = {
   async updateProducts(req: Request, res: Response, next: NextFunction) {
     try {
       const { dassOffice } = req.params;
-      const productData = req.body;
+      const productData = req.body as ProductUpdateInput[];
       const user = req.user;
 
       if (!dassOffice) {
@@ -133,7 +140,10 @@ export const PenseAjaController = {
   async createIdea(req: Request, res: Response, next: NextFunction) {
     try {
       const { dassOffice } = req.params;
-      const result = await PenseAjaService.submitPenseAja(req.body, dassOffice);
+      const result = await PenseAjaService.submitPenseAja(
+        req.body as PenseAjaData,
+        dassOffice
+      );
       res.status(result.statusCode).json(result.body);
     } catch (error) {
       next(error);
@@ -154,8 +164,8 @@ export const PenseAjaController = {
     try {
       const { id } = req.params;
       const result = await PenseAjaService.evaluatePenseAjaWithNotification(id, {
-        ...req.body,
-        ...req.user,
+        ...(req.body as Omit<EvaluationData, "usuario" | "funcao">),
+        ...(req.user as Pick<EvaluationData, "usuario" | "funcao">),
       });
 
       res.status(200).json(result);

@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import AIService from "../services/ai.service";
+import { ImproveTextRequest, ImproveTextResponse } from "../types/contracts";
 
 export const AiToolsController = {
   async improveText(req: Request, res: Response, next: NextFunction) {
     try {
-      const { situationBefore, situationNow, projectName } = req.body;
+      const { situationBefore, situationNow, projectName } = req.body as ImproveTextRequest;
 
       const hasInvalidParam = Object.values(req.body).some(
         (value) => typeof value !== "string" || value.trim() === ""
@@ -19,7 +20,8 @@ export const AiToolsController = {
       }
 
       const result = await AIService.improveText(projectName, situationBefore, situationNow);
-      res.status(200).json({ result });
+      const response: ImproveTextResponse = { result };
+      res.status(200).json(response);
     } catch (error) {
       next(error);
     }

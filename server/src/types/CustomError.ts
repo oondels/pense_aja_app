@@ -1,9 +1,9 @@
 // * Analisar com calma a extensão desta classe
 export class CustomError extends Error {
   statusCode: number;
-  details?: any;
+  details?: unknown;
 
-  constructor(message: string, statusCode = 500, details?: any) {
+  constructor(message: string, statusCode = 500, details?: unknown) {
     super(message);
     this.statusCode = statusCode;
     this.details = details;
