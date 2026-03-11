@@ -5,8 +5,8 @@ import { DashboardDateRange } from "../types/contracts";
 const parseDateRange = (req: Request, res: Response): DashboardDateRange | null => {
   const { startDate, endDate } = req.query;
 
-  let startDateParsed: Date | undefined;
-  let endDateParsed: Date | undefined;
+  let parsedStartDate: Date | undefined;
+  let parsedEndDate: Date | undefined;
 
   if (startDate && typeof startDate === "string") {
     if (Number.isNaN(Date.parse(startDate))) {
@@ -16,7 +16,7 @@ const parseDateRange = (req: Request, res: Response): DashboardDateRange | null 
       });
       return null;
     }
-    startDateParsed = new Date(startDate);
+    parsedStartDate = new Date(startDate);
   }
 
   if (endDate && typeof endDate === "string") {
@@ -27,10 +27,10 @@ const parseDateRange = (req: Request, res: Response): DashboardDateRange | null 
       });
       return null;
     }
-    endDateParsed = new Date(endDate);
+    parsedEndDate = new Date(endDate);
   }
 
-  return { startDateParsed, endDateParsed };
+  return { startDate: parsedStartDate, endDate: parsedEndDate };
 };
 
 const validateDassOffice = (req: Request, res: Response) => {
@@ -58,8 +58,8 @@ export const DashboardController = {
 
       const result = await DashboardService.getSummaryData(
         dassOffice,
-        range.startDateParsed,
-        range.endDateParsed
+        range.startDate,
+        range.endDate
       );
 
       res.status(200).json({ erro: false, dados: result });
@@ -78,8 +78,8 @@ export const DashboardController = {
 
       const result = await DashboardService.getMonthlyData(
         dassOffice,
-        range.startDateParsed,
-        range.endDateParsed
+        range.startDate,
+        range.endDate
       );
 
       res.status(200).json({ erro: false, dados: result });
@@ -98,8 +98,8 @@ export const DashboardController = {
 
       const result = await DashboardService.getDimensionalData(
         dassOffice,
-        range.startDateParsed,
-        range.endDateParsed
+        range.startDate,
+        range.endDate
       );
 
       res.status(200).json({ erro: false, dados: result });
@@ -130,8 +130,8 @@ export const DashboardController = {
 
       const result = await DashboardService.getEngagementData(
         dassOffice,
-        range.startDateParsed,
-        range.endDateParsed
+        range.startDate,
+        range.endDate
       );
 
       res.status(200).json({ erro: false, dados: result });

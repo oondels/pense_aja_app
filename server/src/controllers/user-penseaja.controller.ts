@@ -3,6 +3,10 @@ import { UserPenseaja } from "../services/user-penseaja.service";
 import { DassOffice, UpdateUserProfileInput } from "../types/contracts";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const allowedDassOffices: DassOffice[] = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
+
+const isDassOffice = (value: string): value is DassOffice =>
+  allowedDassOffices.includes(value as DassOffice);
 
 export const UserPenseajaController = {
   async getUserData(req: Request, res: Response, next: NextFunction) {
@@ -29,6 +33,11 @@ export const UserPenseajaController = {
         res
           .status(400)
           .json({ message: "Dados inválidos. Unidade Dass deve ser uma string!" });
+        return;
+      }
+
+      if (!isDassOffice(dassOffice)) {
+        res.status(400).json({ message: "Dados inválidos. Unidade Dass inválida!" });
         return;
       }
 

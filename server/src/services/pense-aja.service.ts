@@ -24,12 +24,14 @@ import {
   UserPointsBalance,
 } from "../types/contracts";
 
-const checkDassOffice = (dassOffice: string): asserts dassOffice is DassOffice => {
+const checkDassOffice = (dassOffice: string): DassOffice => {
   const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
   if (!allowedOffices.includes(dassOffice)) {
     logger.error("Pense-aja", `Unidade inválida: ${dassOffice}`);
     throw new Error(`Unidade dass Inválida: ${dassOffice}`);
   }
+
+  return dassOffice as DassOffice;
 };
 
 const formatDate = (date: string) => {
@@ -64,7 +66,7 @@ export const PenseAjaService = {
     turno?: string,
     status?: string
   ): Promise<PenseAjaListItem[]> {
-    checkDassOffice(dassOffice);
+    const validDassOffice = checkDassOffice(dassOffice);
 
     const client = await pool.connect();
     try {
@@ -73,7 +75,7 @@ export const PenseAjaService = {
 
       params.push(startDateParsed)
       params.push(endDateParsed)
-      params.push(dassOffice)
+      params.push(validDassOffice)
 
       if (name) {
         filters.push(` nome = $${params.length + 1} `);
@@ -167,7 +169,7 @@ export const PenseAjaService = {
   },
 
   async createPenseAja(data: PenseAjaData, dassOffice: string): Promise<CreatePenseAjaResult> {
-    checkDassOffice(dassOffice);
+    const validDassOffice = checkDassOffice(dassOffice);
 
     const requiredFields: Array<keyof PenseAjaData> = [
       "nome",
@@ -215,7 +217,7 @@ export const PenseAjaService = {
           String(data.registration ?? ''),
           String(data.nome ?? ''),
           String(data.createDate ?? ''),
-          String(dassOffice ?? ''),
+          String(validDassOffice ?? ''),
         ]
       );
 
@@ -234,7 +236,7 @@ export const PenseAjaService = {
           data.registration,
           data.nome,
           data.createDate,
-          dassOffice,
+          validDassOffice,
         ]
       );
       if (dupCheck.rows.length > 0) {
@@ -269,7 +271,7 @@ export const PenseAjaService = {
         JSON.stringify(data.ganhos),
         data.ganhoDetalhes || "",
         data.areaMelhoria,
-        dassOffice,
+        validDassOffice,
         data.factory
       ];
 
@@ -295,7 +297,7 @@ export const PenseAjaService = {
         );
       }
 
-      const userManager = await UserPenseaja.getManagerByUser(data.registration, dassOffice);
+      const userManager = await UserPenseaja.getManagerByUser(data.registration, validDassOffice);
 
       await client.query("COMMIT");
       return {
@@ -320,6 +322,7 @@ export const PenseAjaService = {
   },
 
   async submitPenseAja(data: PenseAjaData, dassOffice: string): Promise<SubmitPenseAjaResponse> {
+    const validDassOffice = checkDassOffice(dassOffice);
     const { pense_aja, userManager, duplicated } = await this.createPenseAja(data, dassOffice);
 
     if (duplicated) {
@@ -335,12 +338,12 @@ export const PenseAjaService = {
     if (userManager) {
       const notificationEnabled = await NotificationService.isNotificationEnabled(
         userManager.matricula,
-        dassOffice
+        validDassOffice
       );
 
       if (notificationEnabled) {
         await NotificationService.sendNotification({
-          to: userManager.matricula,
+          to: String(userManager.matricula),
           subject: "Aplicativo Pense Aja",
           title: "Novo Pense Aja Cadastrado.",
           message: `Um novo registro de Pense Aja foi cadastrado pelo usuário ${formatUserName(
@@ -366,7 +369,7 @@ export const PenseAjaService = {
   },
 
   async getPenseAjaById(id: string, dassOffice: string): Promise<PenseAjaDetails> {
-    checkDassOffice(dassOffice);
+    const validDassOffice = checkDassOffice(dassOffice);
     const client = await pool.connect();
 
     try {
@@ -380,7 +383,7 @@ export const PenseAjaService = {
         FROM 
           pense_aja.pense_aja_dass
         WHERE id = $1 AND unidade_dass = $2`,
-        [id, dassOffice]
+        [id, validDassOffice]
       );
 
       if (data.rows.length === 0) {
@@ -417,7 +420,7 @@ export const PenseAjaService = {
       replicavel,
       avaliadoAnteriormente = false,
     } = data;
-    checkDassOffice(dassOffice);
+    const validDassOffice = checkDassOffice(dassOffice);
 
     const client = await pool.connect();
 
@@ -493,7 +496,7 @@ export const PenseAjaService = {
           `em_espera     = $${idx + 2}`,
           `replicavel    = $${idx + 3}`
         );
-        params.push(avaliacao, a3Mae, emEspera, replicavel);
+        params.push(avaliacao ?? null, a3Mae, emEspera, replicavel);
         idx += 4;
       }
 
@@ -502,7 +505,7 @@ export const PenseAjaService = {
 
       // WHERE clause
       const whereSql = `id = $${idx} AND unidade_dass = $${idx + 1} AND excluido = false`;
-      params.push(id, dassOffice);
+      params.push(id, validDassOffice);
 
       const sql = `
         UPDATE pense_aja.pense_aja_dass
@@ -577,7 +580,7 @@ export const PenseAjaService = {
               avaliacao ?? 0,
               result.rows[0].gerente,
               classificacao,
-              dassOffice
+              validDassOffice
             ]
           );
         }
@@ -605,12 +608,12 @@ export const PenseAjaService = {
 
     let avaliadorNome;
     if (role.includes("gerente")) {
-      avaliadorNome = newEvaluation.gerente_aprovador
+      avaliadorNome = (newEvaluation.gerente_aprovador ?? "")
         .split(".")
         .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
         .join(" ");
     } else {
-      avaliadorNome = newEvaluation.analista_avaliador
+      avaliadorNome = (newEvaluation.analista_avaliador ?? "")
         .split(".")
         .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
         .join(" ");
@@ -648,7 +651,7 @@ export const PenseAjaService = {
     analista: PurchaseProductPayload["analista"],
     userPoints: UserPointsBalance
   ): Promise<number> {
-    checkDassOffice(dassOffice);
+    const validDassOffice = checkDassOffice(dassOffice);
 
     const pontosRestantes = userPoints.pontos - userPoints.pontos_resgatados;
 
@@ -684,7 +687,7 @@ export const PenseAjaService = {
         getProduct.valor,
         analista.analistaUser,
         analista.analistaName,
-        dassOffice,
+        validDassOffice,
       ];
 
       const query = await client.query(`
@@ -754,7 +757,7 @@ export const PenseAjaService = {
     files: UploadFileReference[],
     userRegistration: string
   ): Promise<string> {
-    checkDassOffice(dassOffice);
+    const validDassOffice = checkDassOffice(dassOffice);
 
     const client = await pool.connect()
     try {
@@ -765,7 +768,7 @@ export const PenseAjaService = {
         INSERT INTO pense_aja.pense_aja_loja (nome, imagem, valor, unidade_dass, user_create)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING nome;
-      `, [productData.name, image, productData.points, dassOffice, userRegistration])
+      `, [productData.name, image, productData.points, validDassOffice, userRegistration])
 
       if (product.rows.length === 0) {
         await client.query("ROLLBACK");
@@ -793,7 +796,7 @@ export const PenseAjaService = {
   },
 
   async fetchProducts(dassOffice: string): Promise<ProductRecord[]> {
-    checkDassOffice(dassOffice);
+    const validDassOffice = checkDassOffice(dassOffice);
 
     const client = await pool.connect();
     try {
@@ -804,7 +807,7 @@ export const PenseAjaService = {
           pense_aja.pense_aja_loja 
         WHERE 
           unidade_dass = $1
-      `, [dassOffice]);
+      `, [validDassOffice]);
 
       return products.rows as ProductRecord[];
     } catch (error) {
@@ -820,7 +823,7 @@ export const PenseAjaService = {
     dassOffice: string,
     usuario: string
   ): Promise<ProductRecord[]> {
-    checkDassOffice(dassOffice);
+    const validDassOffice = checkDassOffice(dassOffice);
 
     if (!Array.isArray(productData) || productData.length === 0) {
       throw new CustomError("Dados inválidos.", 400, "É necessário fornecer pelo menos um produto para atualização.");
@@ -844,7 +847,7 @@ export const PenseAjaService = {
         const verifyProduct = await client.query(
           `SELECT id FROM pense_aja.pense_aja_loja 
            WHERE id = $1 AND unidade_dass = $2`,
-          [product.id, dassOffice]
+          [product.id, validDassOffice]
         );
 
         if (verifyProduct.rowCount === 0) {
@@ -858,7 +861,7 @@ export const PenseAjaService = {
            SET nome = $1, valor = $2, updated_at = NOW(), updated_by = $3
            WHERE id = $4 AND unidade_dass = $5
            RETURNING id, nome, imagem, valor`,
-          [product.nome, product.valor, usuario, product.id, dassOffice]
+          [product.nome, product.valor, usuario, product.id, validDassOffice]
         );
 
         if (result.rows && result.rows.length > 0) {
@@ -881,7 +884,7 @@ export const PenseAjaService = {
       }
 
       await client.query("COMMIT");
-      logger.info("Store", `${updatedProducts.length} produtos atualizados com sucesso para a unidade ${dassOffice}`);
+      logger.info("Store", `${updatedProducts.length} produtos atualizados com sucesso para a unidade ${validDassOffice}`);
 
       return updatedProducts;
     } catch (error) {
