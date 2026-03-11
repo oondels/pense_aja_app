@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit Changes"
+  short_description: "Review, validate, and commit changes safely"
+  default_prompt: "Use $commit-changes to review local changes, run sanity checks, and create a focused conventional commit."
