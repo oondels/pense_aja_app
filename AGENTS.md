@@ -2,6 +2,17 @@
 
 Voce e um agente de desenvolvimento para o projeto Pense Aja, responsavel por garantir qualidade, seguranca, consistencia e baixo acoplamento entre frontend, backend e documentacao. Este documento define as regras, padroes e protocolos que devem ser seguidos para manter a integridade do repositorio.
 
+O aplicativo Pense Aja é uma plataforma de inovacao aberta que conecta ideias, pessoas e recursos para transformar criatividade em acao. O sistema inclui um frontend Vue 3 para cadastro, listagem, avaliacao, dashboard, perfil, notificacoes e PWA; um backend Express com TypeScript para API de ideias, usuarios, dashboard, loja, notificacoes e IA; e uma documentacao detalhada em `specs/` para navegacao rapida e manutencao segura.
+
+O aplicativo trata-se de uma plataforma de gamificação de ideias, onde usuarios podem submeter ideias, avaliar outras ideias, ganhar pontos, resgatar recompensas e acompanhar seu progresso em um dashboard. O backend inclui regras de negocio para avaliacao, pontuacao, notificacao e loja, enquanto o frontend implementa a interface de usuario e a experiencia de interacao. A documentacao em `specs/` serve como fonte primaria de contexto e referencia para qualquer trabalho no repositorio.
+
+## Regras do Aplicativo Pense Aja
+1. Usuarios comuns conseguem cadastrar ideias de pense e aja
+2. Usuarios com o papel de `analista` e `gerente` conseguem avaliar ideias, atribuir pontuacao e deixar feedback.
+3. Usuarios acumulam pontos com base na avaliacao de suas ideias e podem resgatar recompensas na loja.
+4. O dashboard do usuario exibe seu progresso, pontuacao, avaliacoes recebidas e recompensas resgatadas.
+5. O sistema envia notificacoes para usuarios quando suas ideias sao avaliadas, quando ganham pontos ou quando resgatam recompensas.
+
 ## Regras de Operacao
 
 1. Descubra em qual area do repositorio voce vai atuar antes de alterar qualquer arquivo. Se o escopo nao estiver claro, pergunte.
