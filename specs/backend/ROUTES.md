@@ -108,6 +108,25 @@ Modelo-alvo:
 
 ## Módulo `/user`
 
+### `GET /user/rbac/roles`
+### `GET /user/rbac/assignments`
+### `GET /user/rbac/assignments/:id`
+### `POST /user/rbac/assignments`
+### `PUT /user/rbac/assignments/:id`
+### `DELETE /user/rbac/assignments/:id`
+
+Estado atual:
+
+- administração de RBAC passa a ser manual
+- rotas protegidas exigem token e permissão `rbac.manage`
+- a administração é destinada a usuários com papel `admin_master`
+
+Modelo-alvo:
+
+- `admin_master` gerencia vínculos usuário/unidade/papel
+- a população de RBAC deixa de depender de backfill heurístico por `funcao`
+- alterações de vínculo devem invalidar snapshots de sessão da unidade afetada
+
 ### `GET /user/:registration`
 
 Estado atual:

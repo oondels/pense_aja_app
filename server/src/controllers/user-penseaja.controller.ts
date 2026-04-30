@@ -1,8 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthorizationService } from "../services/authorization.service";
 import { LedgerService } from "../services/ledger.service";
+import { RbacAdminService } from "../services/rbac-admin.service";
 import { UserPenseaja } from "../services/user-penseaja.service";
-import { DassOffice, UpdateUserProfileInput } from "../types/contracts";
+import {
+  CreateRbacAssignmentInput,
+  DassOffice,
+  UpdateRbacAssignmentInput,
+  UpdateUserProfileInput,
+} from "../types/contracts";
 import { isDassOffice } from "../utils/dassOffice";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -162,6 +168,72 @@ export const UserPenseajaController = {
         snapshotVersion: context.snapshotVersion,
         snapshotExpiresAt: context.snapshotExpiresAt.toISOString(),
       });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async listRbacRoles(req: Request, res: Response, next: NextFunction) {
+    try {
+      const roles = await RbacAdminService.listRoles();
+      res.status(200).json(roles);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async listRbacAssignments(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { registration, dassOffice, active } = req.query;
+      const assignments = await RbacAdminService.listAssignments({
+        registration:
+          typeof registration === "string" ? registration : undefined,
+        dassOffice: typeof dassOffice === "string" ? dassOffice : undefined,
+        active: typeof active === "string" ? active : undefined,
+      });
+
+      res.status(200).json(assignments);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getRbacAssignmentById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const assignment = await RbacAdminService.getAssignmentById(id);
+      res.status(200).json(assignment);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async createRbacAssignment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const payload = req.body as CreateRbacAssignmentInput;
+      const assignment = await RbacAdminService.createAssignment(payload);
+      res.status(201).json(assignment);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async updateRbacAssignment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const payload = req.body as UpdateRbacAssignmentInput;
+      const assignment = await RbacAdminService.updateAssignment(id, payload);
+      res.status(200).json(assignment);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async deleteRbacAssignment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      await RbacAdminService.deleteAssignment(id);
+      res.status(204).send();
     } catch (error) {
       next(error);
     }

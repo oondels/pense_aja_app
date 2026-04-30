@@ -10,7 +10,7 @@
     "migrate:run": "ts-node ./src/scripts/run-migrations.ts",
     "migrate:revert": "ts-node ./src/scripts/revert-last-migration.ts",
     "backfill:ledger": "ts-node ./src/scripts/backfill-ledger.ts",
-    "backfill:rbac": "ts-node ./src/scripts/backfill-rbac.ts",
+    "bootstrap:admin-master": "ts-node ./src/scripts/bootstrap-admin-master.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

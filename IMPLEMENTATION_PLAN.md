@@ -175,6 +175,67 @@ stateDiagram-v2
 - adaptar telas de saldo, histórico e marketplace
 - revisar status e UX para refletir workflow auditável
 
+## Status de conclusão
+
+### Legenda
+
+- `concluído`
+- `parcial`
+- `pendente`
+
+### Fase 1 - Sincronização documental
+
+- status: `concluído`
+- entregue:
+  - `README.md` atualizado
+  - `specs/DESIGN_SPEC.md` atualizado
+  - `specs/backend/BUSINESS_RULES.md` reescrito
+  - `specs/backend/ROUTES.md`, `INTEGRATIONS.md` e `DATABASE_MODELS.md` alinhados
+  - `specs/frontend/BUSINESS_RULES.md` e `INTEGRATIONS.md` alinhados
+  - `IMPLEMENTATION_PLAN.md` criado na raiz
+
+### Fase 2 - Refatoração técnica backend-first
+
+- status: `parcial`
+- concluído:
+  - infraestrutura inicial de migrations TypeORM
+  - modelos de RBAC, ledger, auditoria e resgate legado
+  - middleware de permissão por unidade
+  - dual-write inicial em avaliação e resgate legado
+  - projeção de saldo
+  - script de bootstrap inicial para `admin_master`
+  - script de backfill para ledger
+  - CRUD RBAC para administração manual por `admin_master`
+  - endpoints mínimos de contexto de sessão, histórico de pontos e trilha de auditoria
+  - testes unitários iniciais
+- pendente:
+  - executar `migrate:run` em ambiente real
+  - executar `backfill:ledger` em ambiente real
+  - validar relatório de migração e divergências por unidade
+  - adicionar testes de integração com banco real
+  - migrar leituras restantes para `points_balance_projection`
+  - completar workflow novo de marketplace
+  - remover dependência final do fluxo legado como fonte primária
+
+### Fase 3 - Ajustes de frontend
+
+- status: `pendente`
+- pendente:
+  - consumir `session-context` no frontend
+  - remover inferência de permissão por `funcao`
+  - adaptar perfil para saldo consolidado e histórico de ledger
+  - adaptar loja e resgate ao workflow novo
+  - revisar status e avaliação para workflow por unidade
+  - alinhar dashboard às leituras consolidadas do backend
+
+## Próximas etapas recomendadas
+
+1. rodar migrations e backfills em ambiente controlado
+2. validar totais migrados por unidade e por usuário
+3. adicionar testes de integração backend com PostgreSQL
+4. migrar leituras de saldo e dashboard para projeções novas
+5. iniciar a segunda etapa do marketplace e, depois, a adaptação do frontend
+
 ## Critérios de aceite da arquitetura-alvo
 
 - nenhuma decisão sensível depende de substring em `funcao`

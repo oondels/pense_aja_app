@@ -183,6 +183,7 @@ O nome final dos estados pode variar por apresentação, mas a estrutura semânt
 - autorização passa a usar modelo normalizado de usuário, papel, permissão e escopo por unidade
 - a mesma pessoa pode ser avaliadora em uma unidade e apenas colaboradora em outra
 - permissões do marketplace são separadas das permissões de avaliação
+- a administração dos vínculos RBAC é manual e restrita a `admin_master`
 
 ### Regra operacional
 
@@ -190,6 +191,7 @@ O nome final dos estados pode variar por apresentação, mas a estrutura semânt
 - o backend resolve permissões efetivas no contexto da unidade
 - a sessão pode carregar snapshot curto de permissões com TTL e versão
 - snapshot não substitui a fonte de verdade
+- snapshots devem ser invalidados quando um vínculo RBAC da unidade é criado, alterado ou removido
 
 ## Ledger de pontuação
 

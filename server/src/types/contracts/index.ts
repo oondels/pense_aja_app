@@ -5,4 +5,5 @@ export * from "./common.contract";
 export * from "./dashboard.contract";
 export * from "./ledger.contract";
 export * from "./pense-aja.contract";
+export * from "./rbac.contract";
 export * from "./user.contract";
