@@ -1,6 +1,7 @@
 import logger from "../utils/logger";
 import { initializeDatabase } from "../config/database";
 import EmailEntity from "../models/Email";
+import PointsBalanceProjectionEntity from "../models/PointsBalanceProjection";
 import UnidadeDassEntity from "../models/UnidadeDass";
 import UsuarioEntity from "../models/Usuario";
 import { CustomError } from "../types/CustomError";
@@ -12,16 +13,7 @@ import {
   UserOfficeLookupResult,
   UserProfileData,
 } from "../types/contracts";
-
-const checkDassOffice = (dassOffice: string): DassOffice => {
-  const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
-  if (!allowedOffices.includes(dassOffice)) {
-    logger.error("Pense-aja", `Unidade inválida: ${dassOffice}`);
-    throw new Error(`Unidade dass Inválida: ${dassOffice}`);
-  }
-
-  return dassOffice as DassOffice;
-};
+import { assertDassOffice } from "../utils/dassOffice";
 
 const collaboratorTableMap: Record<DassOffice, string> = {
   SEST: "colaborador.lista_funcionario",
@@ -33,7 +25,7 @@ const collaboratorTableMap: Record<DassOffice, string> = {
 
 export const UserPenseaja = {
   async getUserData(registration: number, dassOffice: DassOffice): Promise<UserProfileData> {
-    const validDassOffice = checkDassOffice(dassOffice);
+    const validDassOffice = assertDassOffice(dassOffice);
     try {
       const dataSource = await initializeDatabase();
       const query = await dataSource.query(
@@ -81,15 +73,39 @@ export const UserPenseaja = {
         [registration, validDassOffice]
       );
 
+      const projection = await dataSource
+        .getRepository(PointsBalanceProjectionEntity)
+        .findOne({
+          where: {
+            matricula: String(registration),
+            unidade_dass: validDassOffice,
+          },
+        });
+
       if (query.length === 0) {
         logger.error("user-pense-aja", `Usuário não encontrado: ${registration}`);
         throw new CustomError(`Usuário não encontrado: ${registration}`);
       }
 
+      const pontos = projection
+        ? Number(projection.total_earned) - Number(projection.total_reversed)
+        : Number(query[0].pontos) || 0;
+      const pontosResgatados = projection
+        ? Number(projection.total_committed) || 0
+        : Number(query[0].pontos_resgatados) || 0;
+      const pontosReservados = projection
+        ? Number(projection.total_reserved) || 0
+        : 0;
+      const saldoDisponivel = projection
+        ? Number(projection.available_balance) || 0
+        : pontos - pontosResgatados;
+
       return {
         ...query[0],
-        pontos: Number(query[0].pontos) || 0,
-        pontos_resgatados: Number(query[0].pontos_resgatados) || 0,
+        pontos,
+        pontos_resgatados: pontosResgatados,
+        pontos_reservados: pontosReservados,
+        saldo_disponivel: saldoDisponivel,
       } as UserProfileData;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
@@ -103,7 +119,7 @@ export const UserPenseaja = {
     registration: string | number,
     dassOffice: DassOffice
   ): Promise<UserManagerNotificationTarget | null> {
-    const validDassOffice = checkDassOffice(dassOffice);
+    const validDassOffice = assertDassOffice(dassOffice);
     try {
       const dataSource = await initializeDatabase();
       const query = await dataSource.query(
@@ -162,7 +178,7 @@ export const UserPenseaja = {
     dassOffice: DassOffice,
     formData: UpdateUserProfileInput
   ): Promise<Pick<UserProfileData, "email" | "authorized_notifications_apps">> {
-    checkDassOffice(dassOffice);
+    assertDassOffice(dassOffice);
     try {
       const dataSource = await initializeDatabase();
       const authorizedNotificationsApps = formData.authorized_notifications_apps.length

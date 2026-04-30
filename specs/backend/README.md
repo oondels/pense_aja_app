@@ -3,9 +3,9 @@
 Este arquivo é a porta de entrada do backend para leitura humana e lookup por code agents. Use os módulos abaixo para encontrar rapidamente a fonte de verdade mais barata em tokens: primeiro as specs, depois os arquivos-fonte quando necessário.
 
 ## Backend Overview
-- Keywords: backend, api, express, typescript, pense aja, arquitetura, visão geral
-- File: `specs/backend/ROUTES.md`, `specs/backend/BUSINESS_RULES.md`, `specs/backend/INTEGRATIONS.md`
-- Related: bootstrap, módulos HTTP, rotas, controllers, services, contratos tipados, infraestrutura
+- Keywords: backend, api, express, typescript, pense aja, arquitetura, visão geral, ledger, rbac, auditoria
+- File: `specs/backend/ROUTES.md`, `specs/backend/BUSINESS_RULES.md`, `specs/backend/INTEGRATIONS.md`, `specs/backend/DATABASE_MODELS.md`
+- Related: bootstrap, módulos HTTP, rotas, controllers, services, contratos tipados, infraestrutura, transição de arquitetura
 
 ## Shared Contracts
 - Keywords: contracts, dto, interfaces, tipagem, types, frontend integration
@@ -18,14 +18,14 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 - Related: middleware global, rotas, worker RabbitMQ, tratamento de erro
 
 ## Idea Management API
-- Keywords: pense aja, ideias, cadastro, listagem, detalhe, avaliação, loja, produtos, compra
+- Keywords: pense aja, ideias, cadastro, listagem, detalhe, avaliação, workflow, loja, produtos, compra
 - File: `specs/backend/ROUTES.md`, `server/src/routes/penseAja.route.ts`, `server/src/controllers/pense-aja.controller.ts`
 - Related: pontuação, notificações, unidade dass, duplicidade, store, service layer
 
 ## Idea Business Rules
-- Keywords: regras de negócio, avaliação, classificação, pontos, duplicidade, exclusão, reprovação
+- Keywords: regras de negócio, avaliação, classificação, pontos, ledger, duplicidade, exclusão, reprovação, auditoria
 - File: `specs/backend/BUSINESS_RULES.md` e `server/src/services/pense-aja.service.ts`
-- Related: gerente, analista, admin, loja, status, a3, replicável
+- Related: gerente, analista, admin, loja, status, a3, replicável, eventos, saldo
 
 ## User Profile API
 - Keywords: user, usuário, perfil, matrícula, unidade, email, notificações, preferências
@@ -50,22 +50,32 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 ## Authentication
 - Keywords: auth, token, jwt, cookie, session, blacklist, refresh, autenticação
 - File: `server/src/middlewares/auth.ts`
-- Related: redis, serviço externo de autenticação, cookies, req.user
+- Related: redis, serviço externo de autenticação, cookies, req.user, identidade
 
 ## Authorization
-- Keywords: authorization, role, permissões, analista, gerente, automacao, autorização
-- File: `server/src/middlewares/roleVerificationMiddleware.ts`
-- Related: avaliação, atualização de produtos, compra de prêmio
+- Keywords: authorization, role, permissões, analista, gerente, automacao, autorização, rbac
+- File: `specs/backend/BUSINESS_RULES.md`, `specs/backend/DATABASE_MODELS.md`, `server/src/middlewares/roleVerificationMiddleware.ts`
+- Related: avaliação, atualização de produtos, compra de prêmio, unidade, escopo, permissão dinâmica
 
 ## Notifications
 - Keywords: notification, email, aviso, envio, api key, opt-in
 - File: `server/src/services/notification.service.ts`
 - Related: cadastro de ideia, avaliação, authorized_notifications_apps
 
+## Ledger and Balance
+- Keywords: ledger, pontos, saldo, reserva, commit, reverse, refund
+- File: `specs/backend/BUSINESS_RULES.md`, `specs/backend/DATABASE_MODELS.md`
+- Related: avaliação, resgate, auditoria, projeção de saldo
+
+## Audit Trail
+- Keywords: auditoria, histórico, evento, transição, diff, actor, actorId
+- File: `specs/backend/BUSINESS_RULES.md`, `specs/backend/DATABASE_MODELS.md`
+- Related: avaliação, resgate, rbac, notificações
+
 ## Database Access
 - Keywords: postgres, pool, query, banco, persistência, schemas, database
-- File: `server/src/config/database.ts`, `server/src/models/` e `specs/backend/INTEGRATIONS.md`
-- Related: TypeORM DataSource, pense_aja_dass, pense_aja_pontos, pense_aja_premios, loja
+- File: `server/src/config/database.ts`, `server/src/models/`, `specs/backend/INTEGRATIONS.md`, `specs/backend/DATABASE_MODELS.md`
+- Related: TypeORM DataSource, pense_aja_dass, pense_aja_pontos, pense_aja_premios, loja, ledger, rbac
 
 ## Redis Token Blacklist
 - Keywords: redis, blacklist, token blacklist, sessão, segurança
@@ -94,5 +104,5 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 
 ## Suggested Reading Order
 - Keywords: onboarding, leitura, lookup, descoberta, navegação
-- File: começar por `specs/backend/ROUTES.md`; depois `specs/backend/BUSINESS_RULES.md`; por fim `specs/backend/INTEGRATIONS.md`
-- Related: debugging, manutenção, implementação de feature, revisão
+- File: começar por `specs/backend/BUSINESS_RULES.md`; depois `specs/backend/ROUTES.md`; depois `specs/backend/DATABASE_MODELS.md`; por fim `specs/backend/INTEGRATIONS.md`
+- Related: debugging, manutenção, implementação de feature, revisão, auditoria arquitetural

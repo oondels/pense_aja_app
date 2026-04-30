@@ -14,6 +14,8 @@ export interface UserProfileData {
   matricula: number;
   pontos: number;
   pontos_resgatados: number;
+  pontos_reservados?: number;
+  saldo_disponivel?: number;
   classificacoes_pense_aja: UserClassifications;
   email: string;
   authorized_notifications_apps: AuthorizedNotificationApp[];

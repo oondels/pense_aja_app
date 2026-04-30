@@ -1,6 +1,6 @@
 # Backend Integrations
 
-## Environment variables usadas
+## Variáveis de ambiente atuais
 
 Carregadas por `server/src/config/dotenv.ts`:
 
@@ -20,81 +20,92 @@ Carregadas por `server/src/config/dotenv.ts`:
 
 ## PostgreSQL
 
-### Uso
+### Papel no sistema
 
 - fonte primária de dados do produto
-- leitura e escrita de ideias, pontos, prêmios, usuários e notificações
+- persistência de ideias, usuários, catálogo, pontos e resgates no estado atual
+- destino da futura modelagem de RBAC, ledger, auditoria e marketplace
 
 ### Camada de acesso
 
-- `server/src/config/database.ts` define o `AppDataSource` do TypeORM
-- entidades ficam em `server/src/models/`
-- `synchronize` permanece `false`; o schema continua sendo a fonte de verdade
-- transações de escrita usam `QueryRunner` para fluxos como cadastro, avaliação, resgate e manutenção de loja
+- `server/src/config/database.ts` define o `AppDataSource`
+- entidades TypeORM ficam em `server/src/models/`
+- `synchronize = false`
+- transações de escrita usam `QueryRunner`
 
-### Tabelas/schema referenciados
+### Estruturas atuais relevantes
 
 - `pense_aja.pense_aja_dass`
 - `pense_aja.pense_aja_pontos`
 - `pense_aja.pense_aja_premios`
 - `pense_aja.pense_aja_loja`
-- `colaborador.lista_funcionario`
-- `colaborador.lista_funcionario_VDC`
-- `colaborador.lista_funcionario_ITB`
-- `colaborador.lista_funcionario_VDC-CONF`
-- `colaborador.lista_funcionario_STJ`
 - `autenticacao.usuarios`
 - `autenticacao.emails`
 - `core.unidades_dass`
+- `colaborador.lista_funcionario[_UNIDADE]`
 
-### Observações de modelagem
+### Evolução documentada
 
-- as tabelas `pense_aja.*`, `autenticacao.usuarios`, `autenticacao.emails` e `core.unidades_dass` possuem entidades TypeORM registradas
-- as views/tabelas `colaborador.lista_funcionario[_UNIDADE]` continuam consultadas por nome qualificado, pois variam por unidade
+O banco deve passar a acomodar:
+
+- RBAC normalizado por unidade
+- ledger append-only de pontuação
+- projeção de saldo
+- histórico de auditoria por evento
+- workflow de marketplace
+- configuração versionada por unidade
 
 ## Redis
 
-### Uso
+### Papel atual
 
 - verificar blacklist de token JWT
 
-### Regra
+### Regra atual
 
 - se existir `bl_<token>`, a request autenticada é negada
 
+### Evolução documentada
+
+- Redis pode apoiar cache curto de snapshot de permissões por sessão
+- esse snapshot não substitui o backend como fonte de verdade autorizadora
+
 ## RabbitMQ
 
-### Worker
+### Papel atual
 
-`server/src/workers/uploadListener.ts`
+- worker `uploadListener.ts`
+- fila principal `pense_aja`
+- retry e DLQ para processos assíncronos
 
-### Filas e exchanges
-
-- fila principal: `pense_aja`
-- fila de retry: `pense_aja.retry`
-- exchange DLX: `pense_aja.dlx`
-- fila final de falha: `pense_aja.dlq`
-
-### Regras operacionais
+### Regras atuais
 
 - retry com TTL de 15 segundos
 - máximo de 3 tentativas
-- mensagens inválidas seguem para DLQ
 - hoje o `processType` suportado explicitamente é `product`
+
+### Evolução documentada
+
+- o barramento pode ser expandido para eventos de marketplace, emissão de voucher e tarefas assíncronas de notificação
+- eventos assíncronos não devem ser usados para substituir a consistência transacional do ledger
 
 ## Serviço externo de autenticação
 
-O backend não implementa login. O frontend fala com um serviço separado na porta `2399` para:
+O backend não implementa login. O serviço externo continua responsável por:
 
 - `POST /auth/login`
 - `POST /auth/logout`
 - `POST /auth/token/refresh`
 
-O backend atual apenas consome o cookie JWT emitido por esse serviço.
+No modelo-alvo:
+
+- JWT continua representando identidade e sessão
+- autorização de negócio passa a ser resolvida pelo backend do Pense&Aja
+- permissões por sessão podem ser cacheadas com TTL e versão
 
 ## Serviço externo de notificação
 
-### Endpoint
+### Endpoint atual
 
 - `POST ${NOTIFICATION_API}/notification/`
 
@@ -102,12 +113,15 @@ O backend atual apenas consome o cookie JWT emitido por esse serviço.
 
 - `x-api-key: ${NOTIFICATION_API_KEY}`
 
-### Uso
+### Uso atual
 
 - avisar gerente sobre novo cadastro
 - avisar colaborador sobre avaliação
 
-Falhas no disparo são logadas, mas não derrubam o fluxo principal.
+### Direção
+
+- eventos de pontuação e de resgate devem poder disparar notificações futuras
+- falha no envio continua não devendo derrubar a transação principal do domínio
 
 ## Gemini
 
@@ -117,29 +131,38 @@ Falhas no disparo são logadas, mas não derrubam o fluxo principal.
 
 ### Uso
 
-- melhorar texto do cadastro
-- resumir texto internamente na service
+- melhoria de texto do cadastro
+- sumarização interna da service
 
-### Regras
+### Regra
 
-- se `GEMINI_API_KEY` não existir, a inicialização da service lança erro
-- a entrada é sanitizada antes do prompt
+- IA é apoio de UX e produtividade
+- não participa da fonte de verdade de autorização, classificação, ledger ou marketplace
 
-## Deploy atual
+## Integrações futuras do marketplace
+
+O modelo-alvo admite provedores externos para voucher ou fulfillment digital. Quando isso for implementado, as integrações devem obedecer a estas regras:
+
+- o backend inicia o fluxo com reserva transacional de saldo
+- a confirmação externa nunca substitui o lançamento de ledger
+- falha operacional deve resultar em `release` ou `refund`, conforme o estágio do processo
+- integração externa deve gerar evento auditável correlacionado ao resgate
+
+## Deploy e operação
 
 ### Backend container
 
 - build TypeScript para `dist/`
 - runtime Node exposto em `2512`
-- usa `.env.production` no container
+- usa `.env.production`
 
 ### Frontend container
 
 - build Vite
 - entrega estática via Nginx na porta `5050`
 
-## Observações operacionais
+## Riscos operacionais atuais
 
-- o backend inicia o consumidor RabbitMQ no bootstrap da API
-- se RabbitMQ estiver indisponível no startup, isso impacta a inicialização do processo
-- Redis também tenta conectar no boot, fora de uma estratégia explícita de retry controlado
+- RabbitMQ e Redis ainda impactam o boot sem estratégia madura de degradação
+- o auth externo está fora deste repositório
+- o modelo atual ainda mistura persistência operacional com agregados de leitura

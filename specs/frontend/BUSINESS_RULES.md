@@ -1,120 +1,156 @@
 # Frontend Business Rules
 
+O frontend do Pense&Aja é uma camada de experiência e consumo de dados consolidados. Ele não é a fonte de verdade para autorização, saldo, pontuação ou decisão operacional.
+
 ## Sessão e identidade
 
-- o login decodifica `userData` retornado pela auth API e grava os dados em `sessionStorage`
-- a store `userStore` apenas reidrata esses dados
-- logout limpa `sessionStorage` e recarrega a página
-- se a sessão expira, o interceptor mostra alerta, limpa armazenamento e recarrega a app
+### Estado atual
+
+- login grava `userData` em `sessionStorage`
+- `userStore` reidrata a sessão
+- logout limpa armazenamento e recarrega a aplicação
+- expiração de sessão também dispara limpeza e reload
+
+### Modelo-alvo
+
+- a sessão continua vindo do auth externo
+- o frontend deve consumir snapshot de permissões e contexto já resolvidos pelo backend
+- esse snapshot serve para UX, nunca para substituir validação do servidor
 
 ## Unidade Dass
 
-- a unidade é pré-requisito de quase todo fluxo de negócio
-- `GetUserOffice.vue` pede matrícula e resolve `unidadeDass`
-- sem `unidadeDass` em `localStorage`, várias consultas não funcionam corretamente
-- o frontend trata `SEST` como fallback em vários pontos quando a unidade não está resolvida
+### Estado atual
 
-## Login e permissões
+- `unidadeDass` é pré-requisito de quase todo fluxo
+- `GetUserOffice.vue` resolve unidade a partir da matrícula
+- existe fallback de `SEST` em alguns pontos
 
-- a UI considera permissões elevadas quando `funcao` contém:
-  - `analista`
-  - `gerente`
-  - `automacao`
-- essa regra existe em `userService.setUserRole` e `userService.getUserPermission`
-- a autorização visual pode divergir do backend se os dados de sessão estiverem inconsistentes
+### Modelo-alvo
 
-## Cadastro de Pense Aja
+- a unidade continua sendo o eixo do escopo funcional
+- a UI deve evitar mascarar ausência de contexto com fallback silencioso quando isso alterar comportamento de negócio
 
-- o cadastro exige no mínimo:
-  - nome do projeto
-  - data do projeto
-  - situação anterior
-  - situação atual
-- o frontend deriva `turno` a partir do último caractere de `userData.setor`
-- o payload enviado ao backend traduz os nomes locais do formulário para o contrato da API
-- ao sucesso:
-  - mostra notificação
-  - dispara confete
-  - recarrega a página depois de alguns segundos
+## Permissões na UI
+
+### Estado atual
+
+- a UI infere permissões quando `funcao` contém `analista`, `gerente` ou `automacao`
+
+### Modelo-alvo
+
+- permissões devem ser tratadas como dados derivados do backend
+- papéis e ações podem variar por unidade
+- a UI pode ocultar ou exibir ações com base no snapshot da sessão, mas a decisão final permanece no backend
+
+## Cadastro de ideia
+
+### Estado atual
+
+- valida campos mínimos no formulário
+- deriva `turno` a partir do contexto do usuário
+- traduz campos da UI para o contrato da API
+
+### Modelo-alvo
+
+- continua sendo o ponto de entrada do fluxo
+- a UI deve apresentar feedback claro para sucesso, duplicidade ou rejeição
+- a integridade final do cadastro continua sendo do backend
 
 ## IA no cadastro
 
-- existe integração com `/ai/improve-text`
-- a função está disponível em `aiService.js`
-- o botão de melhoria por IA está desabilitado na UI atual do cadastro
+- a integração com `/ai/improve-text` permanece assistiva
+- IA não deve participar de autorização, pontuação ou mudança formal de status
 
-## Listagem e filtros
+## Listagem e status
 
-- a tela principal usa filtros locais e remotos para reduzir o conjunto exibido
-- a UI trabalha com filtros multi-seleção para nome, gerente, setor, status, projeto e turno
-- o status exibido ao usuário é calculado no frontend, não apenas consumido pronto da API
+### Estado atual
 
-## Regra de status no frontend
+- a tela principal usa filtros locais e remotos
+- parte do status exibido ainda é derivada no frontend
 
-Funções como `setPenseAjaStatus` derivam o status em cascata:
+### Modelo-alvo
 
-- `REPROVADO` se gerente ou analista reprovou
-- `EM ESPERA` se `em_espera === "1"`
-- `SEM ANÁLISE` se nenhum avaliador está preenchido
-- `VISTO PELA MELHORIA CONTINUA` se só o analista avaliou
-- `VISTO PELO GERENTE` se só o gerente avaliou
-- `AVALIADO` se ambos avaliaram
-
-Isso é relevante porque o frontend usa essas labels para:
-
-- legenda da listagem
-- agregações de relatório
-- parte do detalhamento visual
+- a UI pode manter labels amigáveis
+- a semântica do status deve refletir o workflow resolvido pelo backend
+- duplicação local de regra de status deve ser reduzida na Fase 2
 
 ## Avaliação
 
-- o frontend exige `avaliacao` para quase todos os status, exceto `exclude` e `reprove`
-- o frontend exige `justificativa` para todos os casos, exceto `exclude`
-- a validação final continua sendo do backend
-- após sucesso, a UI fecha o diálogo e mostra popup
+### Estado atual
+
+- o formulário exige `avaliacao` na maior parte dos casos
+- exige `justificativa` em quase todos os casos
+
+### Modelo-alvo
+
+- o formulário deve respeitar a etapa atual do workflow e as permissões devolvidas pelo backend
+- a UI precisa estar pronta para exibir histórico e justificativas auditáveis
+- a validação final continua sendo do servidor
+
+## Perfil, saldo e pontuação
+
+### Estado atual
+
+- o perfil exibe pontuação e classificações agregadas
+
+### Modelo-alvo
+
+- saldo deve ser exibido como leitura consolidada do backend
+- a UI não deve assumir soma simples de tabelas legadas
+- histórico futuro de pontos deve refletir eventos do ledger em linguagem compreensível ao usuário
+
+## Marketplace e recompensas
+
+### Estado atual
+
+- resgate usa uma rota autenticada de compra
+- criação e edição de produto já existem em módulos próprios
+
+### Modelo-alvo
+
+- o fluxo deve expor:
+  - solicitação
+  - reserva de saldo
+  - aprovação ou rejeição
+  - andamento de fulfillment
+  - conclusão, liberação ou estorno
+- item físico e voucher compartilham backbone de status, com detalhes específicos por tipo
+- a UI deve refletir sempre o estado consolidado do backend
 
 ## Dashboard
 
-- a tela usa período padrão do ano atual até o dia presente
-- `dashboardService.getMonthlyData` deve respeitar o período recebido pelos filtros
-- `dashboardService.getIdeaHighlights` deve respeitar o período recebido pelos filtros
-- os composables de dashboard retornam dados fallback em caso de erro
-- o relatório XLSX é montado no cliente a partir de dados brutos e agregados
-- a aba `Detalhes Pense&Aja` exporta a coluna `Pontuação` quando a ideia possuir registro em `pense_aja_pontos`
+### Estado atual
 
-## Perfil e notificações
+- consome agregações do backend e fallback local em parte dos composables
+- o relatório XLSX é montado no cliente
 
-- a página de perfil usa a matrícula da sessão como pré-condição
-- o formulário só considera mudança quando email ou preferências diferem do snapshot inicial
-- o checkbox "Receber notificações por email" controla a presença de `pense_aja` em `authorized_notifications_apps`
-- ao salvar, a página recarrega
+### Modelo-alvo
 
-## Popup de email
+- continua como camada de leitura
+- métricas de pontuação e resgate devem consumir projeções do backend baseadas em ledger e marketplace
+- dados heurísticos ou simulados precisam ficar claramente separados de dados canônicos
 
-- o popup não depende apenas de login; ele depende de:
-  - `unidadeDass`
-  - `emailProvided`
-  - `emailSkipUntil`
-- "Agora não" adia o popup por 3 dias
-- "Não tenho email" oculta permanentemente via `localStorage`
-- o fluxo também redireciona para `/news` quando apropriado
+## Notificações e email
 
-## Store e recompensas
+### Estado atual
 
-- loja e cadastro convivem na navbar
-- resgate usa rota autenticada de compra e exige feedback visual via popup
-- criação de produto usa um upload service separado em `http://10.100.1.43:3020/`
-- edição de produtos chama o backend principal
+- o perfil controla a presença de `pense_aja` em `authorized_notifications_apps`
+- o popup de email depende de flags locais e da unidade
+
+### Modelo-alvo
+
+- a UX continua guiando opt-in e atualização de email
+- eventos de avaliação, pontuação e resgate podem ampliar o uso de notificações
 
 ## PWA
 
-- a instalação depende do evento `beforeinstallprompt`
-- se o browser não disponibilizar o evento, a UI mostra que o recurso ainda não está disponível
+- a PWA continua sendo camada de distribuição e conveniência
+- ela não altera o modelo de verdade do domínio
 
 ## Riscos atuais observáveis
 
 - forte dependência de `window.location.reload()`
-- regras de status duplicadas em mais de um arquivo
-- parte das permissões é inferida no cliente
-- há mistura entre dados reais e fallback/mock em widgets analíticos
-- alguns serviços usam endpoints/hosts hardcoded fora de env, como o upload da loja
+- permissões ainda parcialmente inferidas no cliente
+- regra de status duplicada
+- mistura de dados reais e fallback/mock em alguns widgets
+- upload da loja ainda depende de host hardcoded fora de env

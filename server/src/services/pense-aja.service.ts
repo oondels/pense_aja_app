@@ -1,13 +1,18 @@
+import { randomUUID } from "crypto";
 import { QueryRunner } from "typeorm";
 import { initializeDatabase } from "../config/database";
+import MarketplaceRedemptionRequestEntity from "../models/MarketplaceRedemptionRequest";
 import PenseAjaDassEntity, { PenseAjaDass } from "../models/PenseAjaDass";
 import PenseAjaLojaEntity from "../models/PenseAjaLoja";
 import PenseAjaPontosEntity from "../models/PenseAjaPontos";
 import PenseAjaPremiosEntity from "../models/PenseAjaPremios";
 import logger from "../utils/logger";
+import { assertDassOffice } from "../utils/dassOffice";
 import { CustomError } from "../types/CustomError";
 import { UserPenseaja } from "./user-penseaja.service";
 import { NotificationService } from "./notification.service";
+import { AuditService } from "./audit.service";
+import { LedgerService } from "./ledger.service";
 import {
   CreatePenseAjaResult,
   DassOffice,
@@ -27,17 +32,6 @@ import {
   UploadFileReference,
   UserPointsBalance,
 } from "../types/contracts";
-
-const allowedOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
-
-const checkDassOffice = (dassOffice: string): DassOffice => {
-  if (!allowedOffices.includes(dassOffice)) {
-    logger.error("Pense-aja", `Unidade inválida: ${dassOffice}`);
-    throw new Error(`Unidade dass Inválida: ${dassOffice}`);
-  }
-
-  return dassOffice as DassOffice;
-};
 
 const formatDate = (date: string | Date) =>
   new Date(date).toLocaleDateString("pt-BR");
@@ -76,6 +70,24 @@ const releaseQueryRunner = async (queryRunner: QueryRunner) => {
     await queryRunner.release();
   }
 };
+
+const hasPermission = (permissions: string[] | undefined, permission: string) =>
+  Array.isArray(permissions) && permissions.includes(permission);
+
+const mapIdeaAuditState = (idea: PenseAjaDass) => ({
+  id: Number(idea.id),
+  matricula: String(idea.matricula),
+  unidade_dass: idea.unidade_dass,
+  status_analista: idea.status_analista,
+  status_gerente: idea.status_gerente,
+  analista_avaliador: idea.analista_avaliador,
+  gerente_aprovador: idea.gerente_aprovador,
+  classificacao: idea.classificacao,
+  em_espera: idea.em_espera,
+  replicavel: idea.replicavel,
+  excluido: idea.excluido,
+  a3_mae: idea.a3_mae,
+});
 
 const mapListItem = (row: Record<string, unknown>): PenseAjaListItem => ({
   id: Number(row.id),
@@ -141,7 +153,7 @@ export const PenseAjaService = {
     turno?: string,
     status?: string
   ): Promise<PenseAjaListItem[]> {
-    const validDassOffice = checkDassOffice(dassOffice);
+    const validDassOffice = assertDassOffice(dassOffice);
 
     try {
       const dataSource = await initializeDatabase();
@@ -239,7 +251,7 @@ export const PenseAjaService = {
     data: PenseAjaData,
     dassOffice: string
   ): Promise<CreatePenseAjaResult> {
-    const validDassOffice = checkDassOffice(dassOffice);
+    const validDassOffice = assertDassOffice(dassOffice);
 
     const requiredFields: Array<keyof PenseAjaData> = [
       "nome",
@@ -409,7 +421,7 @@ export const PenseAjaService = {
     data: PenseAjaData,
     dassOffice: string
   ): Promise<SubmitPenseAjaResponse> {
-    const validDassOffice = checkDassOffice(dassOffice);
+    const validDassOffice = assertDassOffice(dassOffice);
     const { pense_aja, userManager, duplicated } = await this.createPenseAja(
       data,
       dassOffice
@@ -459,7 +471,7 @@ export const PenseAjaService = {
   },
 
   async getPenseAjaById(id: string, dassOffice: string): Promise<PenseAjaDetails> {
-    const validDassOffice = checkDassOffice(dassOffice);
+    const validDassOffice = assertDassOffice(dassOffice);
 
     try {
       const dataSource = await initializeDatabase();
@@ -541,16 +553,15 @@ export const PenseAjaService = {
       a3Mae = "",
       emEspera,
       replicavel,
-      avaliadoAnteriormente = false,
+      actorRegistration,
+      permissions,
     } = data;
-    const validDassOffice = checkDassOffice(dassOffice);
+    const validDassOffice = assertDassOffice(dassOffice);
     const dataSource = await initializeDatabase();
     const queryRunner = dataSource.createQueryRunner();
 
-    const role = funcao.toLowerCase();
-    const isAnalista = role.includes("analista");
-    const isGerente = role.includes("gerente");
-    const isAdmin = role.includes("automacao");
+    const isManagerSlot = hasPermission(permissions, "idea.exclude");
+    const role = isManagerSlot ? "gerente" : "analista";
 
     const EXCLUDE = "exclude";
     const REPROVE = "reprove";
@@ -564,7 +575,14 @@ export const PenseAjaService = {
       await queryRunner.connect();
       await queryRunner.startTransaction();
 
-      if (status === EXCLUDE && !(isGerente || isAdmin)) {
+      if (!hasPermission(permissions, "idea.evaluate")) {
+        throw new CustomError(
+          "Acesso proibido: permissão insuficiente para avaliar ideias.",
+          403
+        );
+      }
+
+      if (status === EXCLUDE && !hasPermission(permissions, "idea.exclude")) {
         throw new CustomError(
           "Somente Gerentes e Administradores podem excluir um registro pense e aja!",
           403,
@@ -582,6 +600,7 @@ export const PenseAjaService = {
 
       const ideaRepository = queryRunner.manager.getRepository(PenseAjaDassEntity);
       const pointsRepository = queryRunner.manager.getRepository(PenseAjaPontosEntity);
+      const correlationId = randomUUID();
 
       const currentIdea = await ideaRepository.findOne({
         where: {
@@ -599,12 +618,20 @@ export const PenseAjaService = {
         );
       }
 
+      const currentPoints = await pointsRepository.findOne({
+        where: {
+          id_pense_aja: String(currentIdea.id),
+          matricula: String(currentIdea.matricula),
+          unidade_dass: validDassOffice,
+        },
+      });
+
       const now = new Date();
       const updateData: Partial<PenseAjaDass> = {
         updatedat: now,
       };
 
-      if (isAnalista) {
+      if (!isManagerSlot) {
         Object.assign(updateData, {
           status_analista: status,
           analista_avaliador: avaliador,
@@ -663,17 +690,50 @@ export const PenseAjaService = {
         );
       }
 
-      if ((status === EXCLUDE || status === REPROVE) && isGerente) {
+      const classificacao = CLASSIFICATION_MAP[String(avaliacao ?? "")] ?? "C";
+
+      if (currentPoints && (status === EXCLUDE || status === REPROVE)) {
+        await LedgerService.createEntry(queryRunner, {
+          registration: String(newEvaluation.matricula),
+          dassOffice: validDassOffice,
+          entryType: "reverse",
+          amount: Number(currentPoints.valor),
+          sourceType: "idea_evaluation",
+          sourceId: String(newEvaluation.id),
+          relatedEntryId: currentPoints.id,
+          correlationId,
+          reason: justificativa,
+          createdByRegistration: actorRegistration ?? null,
+          createdByName: avaliador,
+          metadata: { status },
+        });
+
         await pointsRepository.delete({
           id_pense_aja: String(newEvaluation.id),
           matricula: String(newEvaluation.matricula),
+          unidade_dass: validDassOffice,
         });
       }
 
-      const classificacao = CLASSIFICATION_MAP[String(avaliacao ?? "")] ?? "C";
-
       if (status !== EXCLUDE && status !== REPROVE && avaliacao) {
-        if (avaliadoAnteriormente) {
+        if (currentPoints) {
+          if (Number(currentPoints.valor) !== Number(avaliacao)) {
+            await LedgerService.createEntry(queryRunner, {
+              registration: String(newEvaluation.matricula),
+              dassOffice: validDassOffice,
+              entryType: "reverse",
+              amount: Number(currentPoints.valor),
+              sourceType: "idea_evaluation",
+              sourceId: String(newEvaluation.id),
+              relatedEntryId: currentPoints.id,
+              correlationId,
+              reason: "Reavaliação de pontuação.",
+              createdByRegistration: actorRegistration ?? null,
+              createdByName: avaliador,
+              metadata: { previousScore: Number(currentPoints.valor) },
+            });
+          }
+
           await pointsRepository
             .createQueryBuilder()
             .update()
@@ -701,7 +761,50 @@ export const PenseAjaService = {
             })
           );
         }
+
+        if (!currentPoints || Number(currentPoints.valor) !== Number(avaliacao)) {
+          await LedgerService.createEntry(queryRunner, {
+            registration: String(newEvaluation.matricula),
+            dassOffice: validDassOffice,
+            entryType: "earn",
+            amount: Number(avaliacao),
+            sourceType: "idea_evaluation",
+            sourceId: String(newEvaluation.id),
+            correlationId,
+            reason: justificativa,
+            createdByRegistration: actorRegistration ?? null,
+            createdByName: avaliador,
+            metadata: {
+              classificacao,
+              role,
+            },
+          });
+        }
       }
+
+      await LedgerService.syncBalanceProjection(
+        queryRunner,
+        String(newEvaluation.matricula),
+        validDassOffice
+      );
+
+      await AuditService.recordEvent(queryRunner, {
+        eventType: "idea.evaluated",
+        aggregateType: "idea",
+        aggregateId: newEvaluation.id,
+        dassOffice: validDassOffice,
+        actorRegistration: actorRegistration ?? null,
+        actorRole: funcao,
+        reason: justificativa,
+        beforeState: mapIdeaAuditState(currentIdea),
+        afterState: mapIdeaAuditState(newEvaluation),
+        metadata: {
+          status,
+          avaliacao: avaliacao ? Number(avaliacao) : null,
+          role,
+        },
+        correlationId,
+      });
 
       await queryRunner.commitTransaction();
       return { newEvaluation: mapEvaluationRow(newEvaluation), role };
@@ -777,10 +880,14 @@ export const PenseAjaService = {
     product: PurchaseProductPayload["product"],
     colaboradorData: PurchaseProductPayload["colaboradorData"],
     analista: PurchaseProductPayload["analista"],
-    userPoints: UserPointsBalance
+    userPoints: UserPointsBalance & { saldo_disponivel?: number },
+    actorRegistration?: string,
+    actorName?: string
   ): Promise<number> {
-    const validDassOffice = checkDassOffice(dassOffice);
-    const pontosRestantes = userPoints.pontos - userPoints.pontos_resgatados;
+    const validDassOffice = assertDassOffice(dassOffice);
+    const pontosRestantes =
+      userPoints.saldo_disponivel ??
+      userPoints.pontos - userPoints.pontos_resgatados;
     const dataSource = await initializeDatabase();
     const queryRunner = dataSource.createQueryRunner();
 
@@ -815,6 +922,46 @@ export const PenseAjaService = {
 
       await queryRunner.startTransaction();
       const now = new Date();
+      const correlationId = randomUUID();
+      const operatorRegistration =
+        actorRegistration ?? analista.analistaUser ?? null;
+      const operatorName = actorName ?? analista.analistaName ?? "";
+
+      const reserveEntry = await LedgerService.createEntry(queryRunner, {
+        registration: String(colaboradorData.matricula),
+        dassOffice: validDassOffice,
+        entryType: "reserve",
+        amount: Number(getProduct.valor),
+        sourceType: "reward_redemption",
+        sourceId: `product:${getProduct.id}`,
+        correlationId,
+        reason: "Reserva de saldo para resgate legado.",
+        createdByRegistration: operatorRegistration,
+        createdByName: operatorName,
+        metadata: {
+          catalogItemId: Number(getProduct.id),
+          fulfillmentType: "legacy_instant",
+        },
+      });
+
+      const redemptionRepository = queryRunner.manager.getRepository(
+        MarketplaceRedemptionRequestEntity
+      );
+      const redemptionRequest = await redemptionRepository.save(
+        redemptionRepository.create({
+          matricula: String(colaboradorData.matricula),
+          unidade_dass: validDassOffice,
+          catalog_item_id: String(getProduct.id),
+          request_status: "legacy_completed",
+          reserved_ledger_entry_id: String(reserveEntry.id),
+          approval_actor_registration: operatorRegistration,
+          approval_actor_name: operatorName,
+          fulfillment_type: "legacy_instant",
+          legacy_prize_id: null,
+          createdat: now,
+          updatedat: now,
+        })
+      );
 
       const prize = await prizeRepository.save(
         prizeRepository.create({
@@ -822,8 +969,8 @@ export const PenseAjaService = {
           nome: colaboradorData.nome,
           premio_solicitado: getProduct.nome,
           pontos_premio_solicitado: String(getProduct.valor),
-          usuario_entregador: analista.analistaUser,
-          nome_entregador: analista.analistaName,
+          usuario_entregador: operatorRegistration ?? "",
+          nome_entregador: operatorName ?? "",
           data_solicitacao: now,
           data_entrega: now,
           createdat: now,
@@ -831,6 +978,59 @@ export const PenseAjaService = {
           unidade_dass: validDassOffice,
         })
       );
+
+      await LedgerService.createEntry(queryRunner, {
+        registration: String(colaboradorData.matricula),
+        dassOffice: validDassOffice,
+        entryType: "commit",
+        amount: Number(getProduct.valor),
+        sourceType: "reward_redemption",
+        sourceId: String(redemptionRequest.id),
+        relatedEntryId: reserveEntry.id,
+        correlationId,
+        reason: "Confirmação de resgate legado.",
+        createdByRegistration: operatorRegistration,
+        createdByName: operatorName,
+        metadata: {
+          legacyPrizeId: Number(prize.id),
+          catalogItemId: Number(getProduct.id),
+        },
+      });
+
+      await redemptionRepository.update(
+        { id: redemptionRequest.id },
+        {
+          legacy_prize_id: String(prize.id),
+          updatedat: new Date(),
+        }
+      );
+
+      await LedgerService.syncBalanceProjection(
+        queryRunner,
+        String(colaboradorData.matricula),
+        validDassOffice
+      );
+
+      await AuditService.recordEvent(queryRunner, {
+        eventType: "reward.redemption.legacy_completed",
+        aggregateType: "reward_redemption",
+        aggregateId: redemptionRequest.id,
+        dassOffice: validDassOffice,
+        actorRegistration: operatorRegistration,
+        actorRole: "marketplace_operator",
+        reason: "Resgate legado confirmado.",
+        beforeState: null,
+        afterState: {
+          request_status: "legacy_completed",
+          catalog_item_id: Number(getProduct.id),
+          legacy_prize_id: Number(prize.id),
+        },
+        metadata: {
+          productName: getProduct.nome,
+          points: Number(getProduct.valor),
+        },
+        correlationId,
+      });
 
       await queryRunner.commitTransaction();
       return Number(prize.id);
@@ -850,7 +1050,14 @@ export const PenseAjaService = {
 
   async purchaseProductByRegistration(
     registration: number,
-    { product, colaboradorData, analista, dassOffice }: PurchaseProductPayload
+    {
+      product,
+      colaboradorData,
+      analista,
+      dassOffice,
+      actorRegistration,
+      actorName,
+    }: PurchaseProductPayload
   ): Promise<PurchaseProductResponse> {
     const user = await UserPenseaja.getUserData(registration, dassOffice);
     if (!user) {
@@ -863,13 +1070,16 @@ export const PenseAjaService = {
     const userPoints = {
       pontos: user.pontos,
       pontos_resgatados: user.pontos_resgatados,
+      saldo_disponivel: user.saldo_disponivel,
     };
     const result = await this.buyProduct(
       dassOffice,
       product,
       colaboradorData,
       analista,
-      userPoints
+      userPoints,
+      actorRegistration,
+      actorName
     );
 
     return {
@@ -878,13 +1088,17 @@ export const PenseAjaService = {
     };
   },
 
+  async getIdeaAuditTimeline(id: string, dassOffice: string) {
+    return AuditService.getIdeaAuditTimeline(id, assertDassOffice(dassOffice));
+  },
+
   async createProduct(
     dassOffice: string,
     productData: NewProduct,
     files: UploadFileReference[],
     userRegistration: string
   ): Promise<string> {
-    const validDassOffice = checkDassOffice(dassOffice);
+    const validDassOffice = assertDassOffice(dassOffice);
     const dataSource = await initializeDatabase();
     const queryRunner = dataSource.createQueryRunner();
 
@@ -926,7 +1140,7 @@ export const PenseAjaService = {
   },
 
   async fetchProducts(dassOffice: string): Promise<ProductRecord[]> {
-    const validDassOffice = checkDassOffice(dassOffice);
+    const validDassOffice = assertDassOffice(dassOffice);
 
     try {
       const dataSource = await initializeDatabase();
@@ -960,7 +1174,7 @@ export const PenseAjaService = {
     dassOffice: string,
     usuario: string
   ): Promise<ProductRecord[]> {
-    const validDassOffice = checkDassOffice(dassOffice);
+    const validDassOffice = assertDassOffice(dassOffice);
 
     if (!Array.isArray(productData) || productData.length === 0) {
       throw new CustomError(

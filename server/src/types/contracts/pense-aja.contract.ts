@@ -118,6 +118,8 @@ export interface EvaluationData extends AuthenticatedUserIdentity {
   dassOffice: DassOffice;
   status: string;
   a3Mae?: string;
+  actorRegistration?: string;
+  permissions?: string[];
 }
 
 export interface PenseAjaEvaluationRow {
@@ -178,6 +180,8 @@ export interface PurchaseProductPayload {
   colaboradorData: CollaboratorData;
   analista: AnalystData;
   dassOffice: DassOffice;
+  actorRegistration?: string;
+  actorName?: string;
 }
 
 export interface PurchaseProductResponse {

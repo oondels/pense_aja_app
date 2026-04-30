@@ -26,6 +26,11 @@ Consumido por `authApi`.
 - autenticação usa cookies e `withCredentials: true`
 - refresh é executado de forma proativa e reativa pelo interceptor
 
+### Papel arquitetural
+
+- o serviço externo continua responsável por identidade
+- o backend do Pense&Aja continua responsável por autorização e contexto de negócio
+
 ## Backend API
 
 Consumido por `api` e `commonApi`.
@@ -41,6 +46,10 @@ Consumido por `api` e `commonApi`.
 
 - `api` é reservado para chamadas autenticadas que devem participar da lógica de refresh
 - `commonApi` faz chamadas sem esse interceptor
+
+### Evolução esperada
+
+- respostas do backend devem poder incluir snapshot de permissões, saldo consolidado e estado de resgate sem depender de cálculo local
 
 ## Upload Service
 
@@ -58,6 +67,11 @@ Usado pelo módulo de loja.
 
 - sessão e identidade
 - tempo de expiração informado pelo serviço de auth
+
+### Modelo-alvo
+
+- pode armazenar snapshot curto de permissões para UX
+- não substitui a verificação do backend
 
 ### localStorage
 
@@ -104,3 +118,4 @@ Usado pelo módulo de loja.
 - integração de upload não usa env e depende de IP fixo
 - o frontend depende de múltiplos serviços externos estarem disponíveis ao mesmo tempo
 - parte da UX assume que cookies cross-origin e `withCredentials` estão corretamente configurados no ambiente
+- parte da renderização de permissão e status ainda depende de heurística local

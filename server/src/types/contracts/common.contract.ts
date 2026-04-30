@@ -10,4 +10,5 @@ export interface DateRange {
 export interface AuthenticatedUserIdentity {
   usuario: string;
   funcao: string;
+  matricula?: string;
 }

@@ -1,12 +1,11 @@
 import { NextFunction, Request, Response } from "express";
+import { AuthorizationService } from "../services/authorization.service";
+import { LedgerService } from "../services/ledger.service";
 import { UserPenseaja } from "../services/user-penseaja.service";
 import { DassOffice, UpdateUserProfileInput } from "../types/contracts";
+import { isDassOffice } from "../utils/dassOffice";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const allowedDassOffices: DassOffice[] = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
-
-const isDassOffice = (value: string): value is DassOffice =>
-  allowedDassOffices.includes(value as DassOffice);
 
 export const UserPenseajaController = {
   async getUserData(req: Request, res: Response, next: NextFunction) {
@@ -43,6 +42,31 @@ export const UserPenseajaController = {
 
       const userData = await UserPenseaja.getUserData(matricula, dassOffice);
       res.status(200).json(userData);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getUserPointsHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { registration } = req.params;
+      const { dassOffice } = req.query;
+
+      if (Number.isNaN(Number(registration))) {
+        res.status(400).json({ message: "Matrícula inválida." });
+        return;
+      }
+
+      if (typeof dassOffice !== "string" || !isDassOffice(dassOffice)) {
+        res.status(400).json({ message: "Unidade Dass inválida." });
+        return;
+      }
+
+      const history = await LedgerService.getUserLedgerHistory(
+        Number(registration),
+        dassOffice
+      );
+      res.status(200).json(history);
     } catch (error) {
       next(error);
     }
@@ -106,6 +130,38 @@ export const UserPenseajaController = {
 
       const updatedUser = await UserPenseaja.updateUserData(matricula, dassOffice, formData);
       res.status(200).json(updatedUser);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getSessionContext(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { dassOffice } = req.params;
+
+      if (!req.user) {
+        res.status(401).json({ message: "Usuário não autenticado." });
+        return;
+      }
+
+      if (!isDassOffice(dassOffice)) {
+        res.status(400).json({ message: "Unidade Dass inválida." });
+        return;
+      }
+
+      const context = await AuthorizationService.resolveSessionContext(
+        req.user,
+        dassOffice,
+        req.cookies.token
+      );
+
+      res.status(200).json({
+        registration: context.registration,
+        dassOffice: context.dassOffice,
+        permissions: context.permissions,
+        snapshotVersion: context.snapshotVersion,
+        snapshotExpiresAt: context.snapshotExpiresAt.toISOString(),
+      });
     } catch (error) {
       next(error);
     }

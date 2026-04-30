@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { verifyToken } from "../middlewares/auth";
-import roleVerificationAccess from "../middlewares/roleVerificationMiddleware";
+import { requirePermission } from "../middlewares/permissionMiddleware";
 import { PenseAjaController } from "../controllers/pense-aja.controller";
 
 const router = Router();
@@ -10,24 +10,25 @@ router.get("/products/:dassOffice", PenseAjaController.listProducts);
 router.put(
   "/purchase/:registration",
   verifyToken,
-  roleVerificationAccess,
+  requirePermission("reward.legacy.redeem", (req) => req.body?.dassOffice),
   PenseAjaController.purchaseProduct
 );
 router.put(
   "/products/:dassOffice",
   verifyToken,
-  roleVerificationAccess,
+  requirePermission("catalog.manage", (req) => req.params.dassOffice),
   PenseAjaController.updateProducts
 );
 
 // Pense e aja
 router.get("/:dassOffice", PenseAjaController.listIdeas);
 router.post("/:dassOffice", PenseAjaController.createIdea);
+router.get("/:dassOffice/:id/audit", PenseAjaController.getIdeaAuditTimeline);
 router.get("/:dassOffice/:id", PenseAjaController.getIdeaById);
 router.put(
   "/avaliar/:id",
   verifyToken,
-  roleVerificationAccess,
+  requirePermission("idea.evaluate", (req) => req.body?.dassOffice),
   PenseAjaController.evaluateIdea
 );
 

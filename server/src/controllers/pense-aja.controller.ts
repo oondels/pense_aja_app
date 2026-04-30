@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { assertDassOffice } from "../utils/dassOffice";
 import { PenseAjaService } from "../services/pense-aja.service";
 import {
   EvaluationData,
@@ -46,6 +47,8 @@ export const PenseAjaController = {
         colaboradorData,
         analista,
         dassOffice,
+        actorRegistration: req.authContext?.registration,
+        actorName: req.authContext?.username,
       });
 
       res.status(200).json(result);
@@ -166,8 +169,23 @@ export const PenseAjaController = {
       const result = await PenseAjaService.evaluatePenseAjaWithNotification(id, {
         ...(req.body as Omit<EvaluationData, "usuario" | "funcao">),
         ...(req.user as Pick<EvaluationData, "usuario" | "funcao">),
+        actorRegistration: req.authContext?.registration,
+        permissions: req.authContext?.permissions,
       });
 
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getIdeaAuditTimeline(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id, dassOffice } = req.params;
+      const result = await PenseAjaService.getIdeaAuditTimeline(
+        id,
+        assertDassOffice(dassOffice)
+      );
       res.status(200).json(result);
     } catch (error) {
       next(error);

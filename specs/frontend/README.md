@@ -23,7 +23,7 @@ Este arquivo é a porta de entrada do frontend para leitura humana e lookup por 
 - Related: login, store, register, links principais
 
 ## Session and User Store
-- Keywords: session, storage, pinia, user store, sessionStorage, localStorage, unidadeDass
+- Keywords: session, storage, pinia, user store, sessionStorage, localStorage, unidadeDass, permission snapshot
 - File: `cliente/src/stores/userStore.js` e `specs/frontend/ARCHITECTURE.md`
 - Related: auth, perfil, permissões, unidade, sessão
 
@@ -63,7 +63,7 @@ Este arquivo é a porta de entrada do frontend para leitura humana e lookup por 
 - Related: user data, unidade, ai improve text, validações
 
 ## Idea Detail and Evaluation
-- Keywords: detalhe, avaliação, status, classificacao, gerente, analista, justificativa
+- Keywords: detalhe, avaliação, status, classificacao, workflow, permissões, justificativa
 - File: `cliente/src/views/ItemPenseAja.vue`, `cliente/src/services/evaluatePenseAjaService.js`
 - Related: permissões, status mapping, notificações
 
@@ -78,12 +78,12 @@ Este arquivo é a porta de entrada do frontend para leitura humana e lookup por 
 - Related: dashboard service, error fallback, loading state
 
 ## User Profile
-- Keywords: profile, user page, pontuação, classificações, email, notificações, preferências
+- Keywords: profile, user page, pontuação, saldo, ledger, classificações, email, notificações, preferências
 - File: `cliente/src/views/UserPage.vue`, `cliente/src/services/userService.js`
 - Related: auth, session store, notification opt-in
 
 ## Store and Rewards
-- Keywords: loja, store, products, rewards, resgate, compra, prêmio
+- Keywords: loja, store, products, rewards, resgate, compra, prêmio, marketplace
 - File: `cliente/src/components/Store/`, `cliente/src/services/storeService.js`
 - Related: permissões, pontuação, backend store
 
@@ -103,12 +103,12 @@ Este arquivo é a porta de entrada do frontend para leitura humana e lookup por 
 - Related: localStorage, email popup, rollout communication
 
 ## Frontend Business Rules
-- Keywords: regras de negócio, validação, status, permissões, fallback, storage
+- Keywords: regras de negócio, validação, status, permissões, ledger, marketplace, fallback, storage
 - File: `specs/frontend/BUSINESS_RULES.md`
 - Related: rotas, services, profile, dashboard
 
 ## Frontend Integrations
-- Keywords: integration, backend, auth api, notification, upload, vite api url
+- Keywords: integration, backend, auth api, notification, upload, vite api url, permission snapshot
 - File: `specs/frontend/INTEGRATIONS.md`
 - Related: httpClient, interceptors, env, Docker
 

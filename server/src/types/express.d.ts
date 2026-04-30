@@ -2,6 +2,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: import("../middlewares/auth").DecodedToken;
+      authContext?: import("../types/contracts").AuthenticatedSessionContext;
     }
   }
 }

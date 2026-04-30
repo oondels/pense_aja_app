@@ -1,260 +1,186 @@
 # Backend Routes
 
-## `GET /pense-aja/products/:dassOffice`
+Este documento separa:
 
-Lista produtos da loja para a unidade informada.
+- `estado atual`: comportamento observado no código hoje
+- `modelo-alvo`: direção arquitetural esperada para a Fase 2
 
-- Auth: não exige.
-- Entrada: `dassOffice` em `params`.
-- Validação: retorna `400` se a unidade não vier; a service valida se a unidade está na lista permitida.
-- Fonte: tabela `pense_aja.pense_aja_loja`.
-- Saída: `id`, `nome`, `imagem`, `valor`, `user_create`, `created_at`.
+## Módulo `/pense-aja`
 
-## `PUT /pense-aja/purchase/:registration`
+### `GET /pense-aja/products/:dassOffice`
 
-Registra o resgate de um prêmio.
+Estado atual:
 
-- Auth: exige `verifyToken` e `roleVerificationAccess`.
-- Entrada:
-  - `registration` em `params`
-  - `product`, `colaboradorData`, `analista`, `dassOffice` em `body`
-- Regras:
-  - matrícula deve ser numérica
-  - usuário precisa existir
-  - pontos disponíveis = `pontos - pontos_resgatados`
-  - o produto precisa existir
-  - o usuário precisa ter pontos suficientes
-- Efeito colateral: insere linha em `pense_aja.pense_aja_premios`.
+- lista produtos da loja por unidade
+- não exige autenticação
+- lê de `pense_aja.pense_aja_loja`
 
-## `PUT /pense-aja/products/:dassOffice`
+Modelo-alvo:
 
-Atualiza um ou mais produtos da loja.
+- pode continuar público para leitura autenticada ou semiautenticada, conforme regra final do produto
+- deverá respeitar visibilidade e disponibilidade por unidade
+- deve expor metadados suficientes para distinguir item físico e voucher
 
-- Auth: exige `verifyToken` e `roleVerificationAccess`.
-- Entrada: array de produtos com `id`, `nome`, `valor`.
-- Regras:
-  - a lista não pode ser vazia
-  - cada produto é validado individualmente
-  - apenas produtos da unidade informada podem ser atualizados
-  - o usuário autenticado vira `updated_by`
-- Transação:
-  - se nenhum item for atualizado com sucesso, a transação é revertida
-  - se ao menos um item for atualizado, o commit é mantido
+### `PUT /pense-aja/purchase/:registration`
 
-## `GET /pense-aja/:dassOffice`
+Estado atual:
 
-Consulta registros de ideias por unidade e filtros.
+- registra resgate em passo único
+- exige `verifyToken` e `roleVerificationAccess`
+- calcula saldo como `pontos - pontos_resgatados`
+- insere uma linha em `pense_aja.pense_aja_premios`
 
-- Auth: não exige.
-- Query params aceitos:
-  - `startDate`
-  - `endDate`
-  - `name`
-  - `sector`
-  - `manager`
-  - `project`
-  - `turno`
-  - `status`
-- Regras:
-  - `startDate` e `endDate` devem ser datas válidas quando enviados
-  - consulta apenas registros `excluido = false`
-  - intervalo final inclui o dia inteiro via `+ interval '1 day'`
-  - `turno` é traduzido para `A`, `B` ou `C`
-- Ordenação: `createdat DESC`
-- Saída atual também inclui:
-  - `matricula`
-  - `pontuacao` quando existir linha correspondente em `pense_aja.pense_aja_pontos`
+Modelo-alvo:
 
-## `POST /pense-aja/:dassOffice`
+- o fluxo atual deve evoluir para workflow de marketplace
+- a primeira operação sensível será a solicitação de resgate com reserva imediata de saldo
+- aprovação, separação, entrega, emissão de voucher, cancelamento e estorno devem virar transições explícitas
+- nenhum débito definitivo deve ocorrer sem reserva anterior
 
-Cria um novo registro de ideia.
+### `PUT /pense-aja/products/:dassOffice`
 
-- Auth: não exige no código atual.
-- Entrada: payload de cadastro do frontend.
-- Campos obrigatórios na service:
-  - `nome`
-  - `createDate`
-  - `situationBefore`
-  - `situationNow`
-  - `registration`
-  - `userName`
-  - `gerente`
-  - `setor`
-  - `turno`
-  - `areaMelhoria`
-  - `factory`
-- Regras:
-  - inicializa `perdas` como lista vazia se ausente
-  - converte as 8 perdas lean em colunas binárias
-  - usa `pg_advisory_xact_lock` para reduzir duplicidade concorrente
-  - considera duplicado um registro com mesma matrícula, nome do projeto, data realizada e unidade
-- Efeitos colaterais:
-  - persiste em `pense_aja.pense_aja_dass`
-  - consulta o gerente do colaborador
-  - envia notificação ao gerente se ele existir e tiver notificações ativas
-- Resposta:
-  - `201` quando cria
-  - `200` quando detecta duplicidade e ignora a nova inserção
+Estado atual:
 
-## `GET /pense-aja/:dassOffice/:id`
+- atualiza produtos em lote parcial
+- exige token e autorização hardcoded por papel
 
-Busca detalhes completos de um registro.
+Modelo-alvo:
 
-- Auth: não exige.
-- Regras:
-  - valida unidade
-  - retorna `404` se não encontrar o registro
-- Uso principal: tela de detalhe e avaliação.
+- a gestão de catálogo deve usar permissão operacional específica de marketplace
+- alterações relevantes de catálogo devem gerar trilha de auditoria
 
-## `PUT /pense-aja/avaliar/:id`
+### `GET /pense-aja/:dassOffice`
 
-Avalia, reprova ou exclui um registro.
+Estado atual:
 
-- Auth: exige `verifyToken` e `roleVerificationAccess`.
-- Entrada:
-  - `id` em `params`
-  - dados de avaliação em `body`
-  - identidade do avaliador é enriquecida com `req.user`
-- Regras centrais:
-  - analista atualiza campos de analista
-  - gerente e admin atualizam campos de gerente
-  - apenas gerente ou admin podem excluir
-  - não é permitido `status = reprove` com nota/classificação preenchida
-  - `exclude` marca `excluido = true`
-  - demais status atualizam `classificacao`, `a3_mae`, `em_espera` e `replicavel`
-  - ao reprovar ou excluir como gerente, os pontos do registro são removidos
-  - ao aprovar com nota, cria ou atualiza pontuação em `pense_aja.pense_aja_pontos`
-- Efeitos colaterais:
-  - pode enviar notificação por email ao colaborador avaliado
+- lista ideias por unidade e filtros
+- não exige autenticação
+- filtra `excluido = false`
+- inclui `pontuacao` quando existir linha em `pense_aja.pense_aja_pontos`
 
-## `GET /user/:registration`
+Modelo-alvo:
 
-Carrega dados consolidados do colaborador.
+- a listagem deve continuar centrada em leitura consolidada
+- a coluna de pontuação deve ser tratada como projeção de leitura do ledger, não como valor diretamente autoritativo de tabela legada
 
-- Auth: não exige.
-- Entrada:
-  - `registration` em `params`
-  - `dassOffice` em `query`
-- Regras:
-  - matrícula precisa ter ao menos 7 caracteres
-  - matrícula deve ser numérica
-  - unidade deve ser string válida
-- Retorna:
-  - dados básicos do colaborador
-  - pontuação acumulada
-  - pontos já resgatados
-  - classificações agregadas
-  - email
-  - apps autorizados para notificação
+### `POST /pense-aja/:dassOffice`
 
-## `GET /user/unidade/:registration`
+Estado atual:
 
-Resolve a unidade do usuário pela matrícula.
+- cria novo cadastro de ideia
+- hoje não exige autenticação no código
+- usa lock transacional para reduzir duplicidade
+- notifica gerente quando elegível
 
-- Auth: não exige.
-- Regra:
-  - usa o primeiro dígito da matrícula para consultar `core.unidades_dass`
-- Retorna:
-  - `dassOffice`
-  - `location`
+Modelo-alvo:
 
-## `PUT /user/:registration`
+- o cadastro deve continuar sendo o ponto de entrada do ciclo
+- o registro deve gerar evento auditável de criação
+- regras de autenticação e autoria devem ser revisadas na Fase 2 sem quebrar indevidamente o fluxo atual
 
-Atualiza email e preferências de notificação.
+### `GET /pense-aja/:dassOffice/:id`
 
-- Auth: exige `verifyToken`.
-- Entrada:
-  - `registration` em `params`
-  - `formData` e `dassOffice` em `body`
-- Regras:
-  - matrícula mínima de 7 caracteres
-  - matrícula numérica
-  - `formData.email` deve ser string válida
-  - email precisa terminar em `@grupodass.com.br`
-  - se a lista `authorized_notifications_apps` vier vazia, a service grava `["null"]`
-- Persistência: `autenticacao.emails`
+Estado atual:
 
-## `GET /dashboard/summary/:dassOffice`
+- retorna detalhes completos da ideia
+- não exige autenticação
 
-Entrega indicadores gerais por unidade e período.
+Modelo-alvo:
 
-- Auth: não exige.
-- Query params: `startDate`, `endDate`
-- Métricas:
-  - total de ideias
-  - implementadas
-  - pendentes
-  - rejeitadas
-  - aprovadas por gerente
-  - em análise
-  - valor total
-  - valor médio
+- deve continuar expondo o contexto funcional da ideia
+- pode evoluir para incluir histórico resumido de avaliação e estado operacional
 
-## `GET /dashboard/monthly/:dassOffice`
+### `PUT /pense-aja/avaliar/:id`
 
-Entrega série mensal agregada.
+Estado atual:
 
-- Auth: não exige.
-- Query params: `startDate`, `endDate`
-- Métricas:
-  - volume mensal
-  - total de aprovados por mês
-- Observação:
-  - o campo `value` retornado hoje representa quantidade de aprovados, não valor financeiro
-  - a API respeita o período informado na query
+- exige `verifyToken` e `roleVerificationAccess`
+- usa `funcao` do usuário para decidir se atua como analista ou gerente
+- reprovação ou exclusão por gerente remove pontos em vez de gerar reversão auditável
+- aprovação com nota cria ou atualiza `pense_aja.pense_aja_pontos`
 
-## `GET /dashboard/dimensional/:dassOffice`
+Modelo-alvo:
 
-Entrega ranking por dimensões organizacionais.
+- o middleware de papel deve ser substituído por autorização dinâmica por unidade
+- a avaliação deve respeitar workflow configurável por unidade
+- toda transição relevante deve gerar evento auditável com `before` e `after`
+- toda mudança de pontuação deve virar lançamento no ledger
 
-- Auth: não exige.
-- Query params: `startDate`, `endDate`
-- Retorno:
-  - top 10 gerentes
-  - top 10 setores
-  - top 10 fábricas
+## Módulo `/user`
 
-## `GET /dashboard/idea-highlights/:dassOffice`
+### `GET /user/:registration`
 
-Entrega ideias de destaque para cards visuais.
+Estado atual:
 
-- Auth: não exige.
-- Query params aceitos: `startDate`, `endDate`
-- Critério:
-  - prioriza aprovadas por valor amortizado
-  - desempata por data
-- Observações de implementação:
-  - categoria é inferida do nome do setor
-  - likes e comments são simulados em memória, não persistidos
+- entrega dados básicos, classificações, pontuação acumulada, pontos resgatados, email e apps autorizados
 
-## `GET /dashboard/engagement/:dassOffice`
+Modelo-alvo:
 
-Entrega ranking de colaboradores mais engajados.
+- deve continuar entregando visão consolidada ao frontend
+- saldo e histórico devem vir de projeções consistentes do ledger e do marketplace
 
-- Auth: não exige.
-- Query params: `startDate`, `endDate`
-- Critério:
-  - conta ideias por colaborador
-  - conta implementações usando aprovação do gerente
-  - limita top 10
-- Observações:
-  - cargo e departamento são inferidos por heurística baseada no setor e volume de ideias
+### `GET /user/unidade/:registration`
 
-## `POST /ai/improve-text`
+Estado atual:
 
-Melhora a escrita de textos do cadastro usando Gemini.
+- resolve unidade a partir da matrícula em `core.unidades_dass`
 
-- Auth: não exige no código atual.
-- Entrada:
-  - `situationBefore`
-  - `situationNow`
-  - `projectName`
-- Regras:
-  - todos os campos devem ser string não vazia
-  - o texto é sanitizado removendo crases, cifrão e barra invertida
-  - a chamada é bloqueada se o prompt exceder 3000 tokens
-- Saída:
-  - objeto com `before` e `after`
+Modelo-alvo:
+
+- permanece como lookup de contexto
+- pode ser complementado por regras de elegibilidade e múltiplos escopos por sessão
+
+### `PUT /user/:registration`
+
+Estado atual:
+
+- atualiza email e preferências de notificação
+- mantém fallback `["null"]` para lista vazia
+
+Modelo-alvo:
+
+- preferências devem preservar compatibilidade
+- o fallback legado deve ser tratado como dívida técnica e não como semântica ideal
+
+## Módulo `/dashboard`
+
+### `GET /dashboard/summary/:dassOffice`
+### `GET /dashboard/monthly/:dassOffice`
+### `GET /dashboard/dimensional/:dassOffice`
+### `GET /dashboard/idea-highlights/:dassOffice`
+### `GET /dashboard/engagement/:dassOffice`
+
+Estado atual:
+
+- endpoints de leitura agregada por unidade
+- não exigem autenticação
+- parte dos widgets usa inferência ou dados sintéticos para apresentação
+
+Modelo-alvo:
+
+- dashboards devem consumir projeções derivadas do backend
+- métricas de pontuação e resgate devem refletir ledger e marketplace auditável
+- dados sintéticos ou heurísticos devem ser claramente segregados de dados canônicos
+
+## Módulo `/ai`
+
+### `POST /ai/improve-text`
+
+Estado atual:
+
+- melhora texto de cadastro
+- não exige autenticação no código atual
+
+Modelo-alvo:
+
+- IA continua auxiliar do fluxo
+- não deve participar de decisão autorizadora, pontuação ou mudança formal de status
+
+## Observações de contrato
+
+- a Fase 1 não redefine os endpoints já existentes como implementados de outra forma; ela documenta a evolução esperada
+- na Fase 2, a compatibilidade progressiva deve ser preservada sempre que possível
+- endpoints novos de RBAC, auditoria, ledger e marketplace devem nascer apenas quando a refatoração técnica começar
 
 ## Tratamento global de erro
 
