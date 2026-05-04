@@ -7,6 +7,11 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 - File: `specs/backend/ROUTES.md`, `specs/backend/BUSINESS_RULES.md`, `specs/backend/INTEGRATIONS.md`, `specs/backend/DATABASE_MODELS.md`
 - Related: bootstrap, módulos HTTP, rotas, controllers, services, contratos tipados, infraestrutura, transição de arquitetura
 
+## OpenAPI Documentation
+- Keywords: swagger, openapi, api docs, contratos http, exemplos, status codes
+- File: `server/openapi.yaml`
+- Related: documentação OpenAPI 3.0 das rotas backend com permissões, parâmetros, payloads e exemplos de resposta; UI disponível em `GET /docs` e spec bruta em `GET /docs/openapi.yaml`
+
 ## Shared Contracts
 - Keywords: contracts, dto, interfaces, tipagem, types, frontend integration
 - File: `server/src/types/contracts/`

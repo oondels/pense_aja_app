@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from "path";
+import swaggerUi from "swagger-ui-express";
 import { initializeDatabase } from "./config/database";
 import dotenv from "./config/dotenv";
 import { CustomError } from "./types/CustomError";
@@ -13,10 +15,24 @@ import { startUploadListener } from "./workers/uploadListener";
 
 const app = express();
 const port = 2512;
+const openApiPath = path.resolve(process.cwd(), "openapi.yaml");
 
 app.use(cors({ origin: ["http://10.100.1.43:5050", "http://localhost:5050"], credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
+app.get("/docs/openapi.yaml", (req: Request, res: Response) => {
+  res.sendFile(openApiPath);
+});
+app.use(
+  "/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(undefined, {
+    customSiteTitle: "Pense Aja API Docs",
+    swaggerOptions: {
+      url: "/docs/openapi.yaml",
+    },
+  })
+);
 app.use("/pense-aja/", PenseAjaRoutes);
 app.use("/user/", UserPenseajaRoute);
 app.use("/ai/", AiTools);

@@ -1,0 +1,2504 @@
+openapi: 3.0.3
+info:
+  title: Pense Aja Backend API
+  version: 1.0.0
+  description: >
+    API backend do Pense Aja para cadastro e avaliação de ideias, pontuação,
+    marketplace de recompensas, perfil de usuário, RBAC, dashboards e apoio de IA.
+servers:
+  - url: http://localhost:2512
+    description: Desenvolvimento local
+tags:
+  - name: Pense Aja
+    description: Ideias, avaliação, compatibilidade de loja legada e catálogo.
+  - name: Marketplace
+    description: Catálogo operacional, solicitação de resgate, aprovação, fulfillment, conclusão, cancelamento e estorno.
+  - name: User
+    description: Perfil do colaborador, preferências, unidade, histórico de pontos e contexto de sessão.
+  - name: RBAC
+    description: Administração manual de vínculos usuário/unidade/papel.
+  - name: Dashboard
+    description: Métricas agregadas por unidade Dass.
+  - name: AI
+    description: Ferramentas auxiliares de IA para melhorar textos de ideias.
+security:
+  - cookieAuth: []
+
+paths:
+  /:
+    get:
+      tags: [Pense Aja]
+      summary: Healthcheck textual da API
+      description: >
+        Retorna uma mensagem simples indicando que a API está disponível.
+        Acesso público, sem autenticação.
+      security: []
+      responses:
+        "200":
+          description: API disponível.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Pense Aja API
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /pense-aja/products/{dassOffice}:
+    get:
+      tags: [Pense Aja]
+      summary: Listar produtos da loja por unidade
+      description: >
+        Lista os itens ativos do catálogo operacional da unidade Dass informada.
+        A rota é pública no código atual e não exige token.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+      responses:
+        "200":
+          description: Produtos encontrados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LegacyProduct"
+              example:
+                - id: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+                  nome: "Garrafa térmica"
+                  imagem: "https://cdn.exemplo.com/garrafa.png"
+                  valor: 150
+        "400":
+          $ref: "#/components/responses/LegacyValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags: [Pense Aja]
+      summary: Atualizar produtos em lote
+      description: >
+        Atualiza parcialmente produtos do catálogo da unidade. Exige usuário
+        autenticado com permissão dinâmica `catalog.manage` para a unidade.
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/ProductUpdateInput"
+            example:
+              - id: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+                nome: "Garrafa térmica Dass"
+                valor: 180
+      responses:
+        "200":
+          description: Produtos atualizados.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductUpdateResponse"
+              example:
+                message: "Produto atualizado com sucesso!"
+                data:
+                  updated: 1
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /pense-aja/purchase/{registration}:
+    put:
+      tags: [Pense Aja]
+      summary: Resgatar produto pelo fluxo legado compatível
+      description: >
+        Mantém compatibilidade com o endpoint antigo de compra, mas registra o
+        resgate no marketplace operacional e no ledger. Exige token válido e
+        permissão `reward.legacy.redeem` na unidade enviada no payload.
+      parameters:
+        - $ref: "#/components/parameters/RegistrationPath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseProductPayload"
+            example:
+              product:
+                id: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+              colaboradorData:
+                matricula: 1234567
+                nome: "Maria Souza"
+              analista:
+                analistaUser: "7654321"
+                analistaName: "João Analista"
+              dassOffice: "SEST"
+      responses:
+        "200":
+          description: Resgate registrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseProductResponse"
+              example:
+                message: "Produto resgatado com sucesso!"
+                data: 927
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /pense-aja/{dassOffice}:
+    get:
+      tags: [Pense Aja]
+      summary: Listar ideias por unidade
+      description: >
+        Lista ideias não excluídas da unidade, com filtros opcionais e pontuação
+        calculada a partir do ledger. Acesso público no código atual.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/StartDateQuery"
+        - $ref: "#/components/parameters/EndDateQuery"
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtro parcial por nome do colaborador.
+        - name: sector
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtro por setor.
+        - name: manager
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtro por gerente.
+        - name: project
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtro por nome do projeto.
+        - name: turno
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtro por turno.
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtro por status operacional.
+      responses:
+        "200":
+          description: Ideias encontradas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PenseAjaListItem"
+              example:
+                - id: 101
+                  criado: "2026-04-20T12:00:00.000Z"
+                  matricula: 1234567
+                  fabrica: "SEST"
+                  nome: "Maria Souza"
+                  setor: "Costura"
+                  gerente: "Ana Gerente"
+                  nome_projeto: "Redução de retrabalho"
+                  turno: "A"
+                  situacao_anterior: "Retrabalho recorrente na linha."
+                  situacao_atual: "Checklist visual implantado."
+                  ganhos: ["Qualidade", "Produtividade"]
+                  outros_ganhos: null
+                  gerente_aprovador: "Ana Gerente"
+                  analista_avaliador: "João Analista"
+                  status_gerente: "aprovado"
+                  status_analista: "concluido"
+                  em_espera: false
+                  createdat: "2026-04-20T12:00:00.000Z"
+                  classificacao: "A"
+                  pontuacao: 100
+        "400":
+          $ref: "#/components/responses/LegacyValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [Pense Aja]
+      summary: Criar ideia
+      description: >
+        Cadastra uma nova ideia na unidade Dass. Exige token válido e permissão
+        `idea.submit` para a unidade. O backend gera auditoria e notificação ao
+        gerente quando aplicável.
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePenseAjaPayload"
+            example:
+              nome: "Redução de retrabalho"
+              createDate: "2026-04-20T12:00:00.000Z"
+              situationBefore: "A linha registrava retrabalho diário por falta de identificação."
+              situationNow: "Foi criado um checklist visual no posto de trabalho."
+              registration: 1234567
+              perdas: ["retrabalho", "espera"]
+              userName: "Maria Souza"
+              gerente: "Ana Gerente"
+              setor: "Costura"
+              turno: "A"
+              ganhos: ["Qualidade", "Produtividade"]
+              areaMelhoria: "Qualidade"
+              factory: "SEST"
+      responses:
+        "201":
+          description: Ideia criada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatePenseAjaResponse"
+              example:
+                message: "Pense e Aja cadastrado com sucesso!"
+                id: 101
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /pense-aja/{dassOffice}/{id}:
+    get:
+      tags: [Pense Aja]
+      summary: Consultar detalhe de ideia
+      description: >
+        Retorna os dados completos de uma ideia por unidade e identificador.
+        Acesso público no código atual.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/IdeaIdPath"
+      responses:
+        "200":
+          description: Detalhe da ideia.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PenseAjaDetails"
+              example:
+                matricula: 1234567
+                nome: "Maria Souza"
+                setor: "Costura"
+                turno: "A"
+                gerente: "Ana Gerente"
+                criado: "2026-04-20T12:00:00.000Z"
+                situacao_anterior: "Retrabalho recorrente na linha."
+                situacao_atual: "Checklist visual implantado."
+                nome_projeto: "Redução de retrabalho"
+                super_producao: 0
+                transporte: 0
+                processamento: 0
+                movimento: 0
+                estoque: 0
+                espera: 1
+                talento: 0
+                retrabalho: 1
+                gerente_aprovador: "Ana Gerente"
+                data_aprogerente: "2026-04-21T12:00:00.000Z"
+                analista_avaliador: "João Analista"
+                classificacao: "A"
+                a3_mae: null
+                fabrica: "SEST"
+                ganhos: ["Qualidade", "Produtividade"]
+                justificativa_analista: "Ideia implementada e validada."
+                outros_ganhos: null
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /pense-aja/{dassOffice}/{id}/audit:
+    get:
+      tags: [Pense Aja]
+      summary: Consultar trilha de auditoria de uma ideia
+      description: >
+        Lista eventos de auditoria associados à ideia na unidade. Acesso público
+        no código atual.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/IdeaIdPath"
+      responses:
+        "200":
+          description: Eventos de auditoria encontrados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEvent"
+              example:
+                - id: 55
+                  eventType: "idea.created"
+                  aggregateType: "idea"
+                  aggregateId: "101"
+                  dassOffice: "SEST"
+                  actorRegistration: "1234567"
+                  actorName: "Maria Souza"
+                  actorRole: "colaborador"
+                  reason: "Cadastro de nova ideia."
+                  createdAt: "2026-04-20T12:00:00.000Z"
+                  metadata:
+                    source: "pense_aja"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /pense-aja/avaliar/{id}:
+    put:
+      tags: [Pense Aja]
+      summary: Avaliar ideia
+      description: >
+        Avalia ou reavalia uma ideia, podendo gerar pontuação, reversão,
+        reprovação, exclusão ou espera. Exige token válido e permissão
+        `idea.evaluate` na unidade informada no payload.
+      parameters:
+        - $ref: "#/components/parameters/IdeaIdPath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvaluateIdeaPayload"
+            example:
+              dassOffice: "SEST"
+              status: "concluido"
+              avaliacao: "A"
+              emEspera: false
+              replicavel: true
+              justificativa: "Ideia implementada com ganho de qualidade comprovado."
+              avaliadoAnteriormente: false
+              a3Mae: null
+      responses:
+        "200":
+          description: Ideia avaliada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvaluatePenseAjaResponse"
+              example:
+                message: "Pense e Aja avaliado com sucesso!"
+                data:
+                  id: 101
+                  data_realizada: "2026-04-22T12:00:00.000Z"
+                  fabrica: "SEST"
+                  nome: "Maria Souza"
+                  matricula: 1234567
+                  setor: "Costura"
+                  gerente: "Ana Gerente"
+                  nome_projeto: "Redução de retrabalho"
+                  turno: "A"
+                  situacao_anterior: "Retrabalho recorrente na linha."
+                  situacao_atual: "Checklist visual implantado."
+                  gerente_aprovador: "Ana Gerente"
+                  analista_avaliador: "João Analista"
+                  status_gerente: "aprovado"
+                  status_analista: "concluido"
+                  em_espera: false
+                  criado: "2026-04-20T12:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /marketplace/catalog/{dassOffice}:
+    get:
+      tags: [Marketplace]
+      summary: Listar catálogo operacional
+      description: >
+        Lista itens do catálogo operacional da unidade Dass. Acesso público no
+        código atual.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+      responses:
+        "200":
+          description: Catálogo encontrado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MarketplaceCatalogItem"
+              example:
+                - id: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+                  legacyProductId: "12"
+                  dassOffice: "SEST"
+                  name: "Garrafa térmica"
+                  imageUrl: "https://cdn.exemplo.com/garrafa.png"
+                  pointsCost: 150
+                  itemType: "physical"
+                  active: true
+                  availableQuantity: null
+                  metadata:
+                    source: "pense_aja_loja"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags: [Marketplace]
+      summary: Criar ou atualizar itens de catálogo
+      description: >
+        Cria ou atualiza itens do catálogo operacional. Exige token válido e
+        permissão `catalog.manage` na unidade.
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/UpsertCatalogItemInput"
+            example:
+              - id: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+                name: "Garrafa térmica Dass"
+                imageUrl: "https://cdn.exemplo.com/garrafa.png"
+                pointsCost: 180
+                itemType: "physical"
+                active: true
+                availableQuantity: 25
+                metadata:
+                  supplier: "almoxarifado"
+      responses:
+        "200":
+          description: Catálogo atualizado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MarketplaceCatalogItem"
+              example:
+                - id: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+                  legacyProductId: "12"
+                  dassOffice: "SEST"
+                  name: "Garrafa térmica Dass"
+                  imageUrl: "https://cdn.exemplo.com/garrafa.png"
+                  pointsCost: 180
+                  itemType: "physical"
+                  active: true
+                  availableQuantity: 25
+                  metadata:
+                    supplier: "almoxarifado"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /marketplace/requests:
+    post:
+      tags: [Marketplace]
+      summary: Solicitar resgate no marketplace
+      description: >
+        Cria solicitação de resgate, reserva pontos no ledger e deixa a
+        solicitação em `pending_approval`. Exige token válido e permissão
+        `marketplace.request.create` na unidade.
+      parameters:
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMarketplaceRequestInput"
+            example:
+              dassOffice: "SEST"
+              catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+              registration: 1234567
+              requesterName: "Maria Souza"
+              reason: "Resgate de premiação por pontos acumulados."
+      responses:
+        "201":
+          description: Solicitação criada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketplaceRequest"
+              example:
+                id: 927
+                registration: "1234567"
+                dassOffice: "SEST"
+                catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+                requestStatus: "pending_approval"
+                reservedLedgerEntryId: 451
+                approvalActorRegistration: null
+                approvalActorName: null
+                fulfillmentType: "none"
+                legacyPrizeId: null
+                createdAt: "2026-04-22T12:00:00.000Z"
+                updatedAt: "2026-04-22T12:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    get:
+      tags: [Marketplace]
+      summary: Listar solicitações de marketplace
+      description: >
+        Lista solicitações da unidade para operação de aprovação/fulfillment.
+        Exige token válido e permissão `marketplace.request.approve`.
+      parameters:
+        - $ref: "#/components/parameters/DassOfficeQueryRequired"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Solicitações encontradas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MarketplaceRequest"
+              example:
+                - id: 927
+                  registration: "1234567"
+                  dassOffice: "SEST"
+                  catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+                  requestStatus: "pending_approval"
+                  reservedLedgerEntryId: 451
+                  approvalActorRegistration: null
+                  approvalActorName: null
+                  fulfillmentType: "none"
+                  legacyPrizeId: null
+                  createdAt: "2026-04-22T12:00:00.000Z"
+                  updatedAt: "2026-04-22T12:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /marketplace/requests/{id}/approve:
+    put:
+      tags: [Marketplace]
+      summary: Aprovar solicitação de resgate
+      description: >
+        Aprova uma solicitação pendente. Exige token válido e permissão
+        `marketplace.request.approve` na unidade enviada no payload.
+      parameters:
+        - $ref: "#/components/parameters/RequestIdPath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        $ref: "#/components/requestBodies/MarketplaceTransition"
+      responses:
+        "200":
+          $ref: "#/components/responses/MarketplaceRequestApproved"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /marketplace/requests/{id}/reject:
+    put:
+      tags: [Marketplace]
+      summary: Rejeitar solicitação de resgate
+      description: >
+        Rejeita uma solicitação e libera pontos reservados quando existir reserva.
+        Exige token válido e permissão `marketplace.request.approve`.
+      parameters:
+        - $ref: "#/components/parameters/RequestIdPath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        $ref: "#/components/requestBodies/MarketplaceTransition"
+      responses:
+        "200":
+          $ref: "#/components/responses/MarketplaceRequestRejected"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /marketplace/requests/{id}/fulfillment:
+    put:
+      tags: [Marketplace]
+      summary: Executar etapa de fulfillment
+      description: >
+        Registra etapa operacional de separação física, entrega física ou emissão
+        de voucher. Exige token válido e permissão `marketplace.fulfillment.execute`.
+      parameters:
+        - $ref: "#/components/parameters/RequestIdPath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExecuteFulfillmentInput"
+            example:
+              dassOffice: "SEST"
+              stepType: "physical_separation"
+              notes: "Produto separado no almoxarifado."
+              reason: "Preparação para entrega ao colaborador."
+              metadata:
+                shelf: "A-12"
+      responses:
+        "200":
+          $ref: "#/components/responses/MarketplaceRequestFulfillment"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /marketplace/requests/{id}/complete:
+    put:
+      tags: [Marketplace]
+      summary: Concluir solicitação de resgate
+      description: >
+        Conclui o resgate e confirma o débito reservado no ledger com lançamento
+        `commit`. Exige token válido e permissão `marketplace.fulfillment.execute`.
+      parameters:
+        - $ref: "#/components/parameters/RequestIdPath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        $ref: "#/components/requestBodies/MarketplaceTransition"
+      responses:
+        "200":
+          $ref: "#/components/responses/MarketplaceRequestCompleted"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /marketplace/requests/{id}/cancel:
+    put:
+      tags: [Marketplace]
+      summary: Cancelar solicitação de resgate
+      description: >
+        Cancela uma solicitação antes da conclusão e libera pontos reservados.
+        Exige token válido e permissão `marketplace.cancel`.
+      parameters:
+        - $ref: "#/components/parameters/RequestIdPath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        $ref: "#/components/requestBodies/MarketplaceTransition"
+      responses:
+        "200":
+          $ref: "#/components/responses/MarketplaceRequestCancelled"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /marketplace/requests/{id}/refund:
+    put:
+      tags: [Marketplace]
+      summary: Estornar solicitação concluída
+      description: >
+        Estorna uma solicitação concluída com lançamento `refund` no ledger.
+        Exige token válido e permissão `marketplace.refund`.
+      parameters:
+        - $ref: "#/components/parameters/RequestIdPath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        $ref: "#/components/requestBodies/MarketplaceTransition"
+      responses:
+        "200":
+          $ref: "#/components/responses/MarketplaceRequestRefunded"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /user/session-context/{dassOffice}:
+    get:
+      tags: [User]
+      summary: Obter contexto de sessão por unidade
+      description: >
+        Resolve permissões efetivas do usuário autenticado na unidade e persiste
+        snapshot curto de autorização. Exige token válido.
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Contexto de sessão resolvido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionContext"
+              example:
+                registration: "1234567"
+                dassOffice: "SEST"
+                permissions:
+                  - "idea.submit"
+                  - "marketplace.request.create"
+                snapshotVersion: 3
+                snapshotExpiresAt: "2026-04-22T13:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /user/rbac/roles:
+    get:
+      tags: [RBAC]
+      summary: Listar papéis RBAC
+      description: >
+        Lista papéis disponíveis para administração de permissões. Exige token
+        válido e permissão `rbac.manage`.
+      parameters:
+        - $ref: "#/components/parameters/DassOfficeQueryOptional"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Papéis encontrados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RbacRole"
+              example:
+                - id: 1
+                  code: "admin_master"
+                  nome: "Administrador Master"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /user/rbac/assignments:
+    get:
+      tags: [RBAC]
+      summary: Listar vínculos RBAC
+      description: >
+        Lista vínculos usuário/unidade/papel com filtros opcionais. Exige token
+        válido e permissão `rbac.manage`.
+      parameters:
+        - $ref: "#/components/parameters/DassOfficeQueryOptional"
+        - name: registration
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Matrícula para filtro.
+        - name: active
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ["true", "false"]
+          description: Filtra vínculos ativos ou inativos.
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Vínculos encontrados.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RbacAssignment"
+              example:
+                - id: 10
+                  registration: "1234567"
+                  dassOffice: "SEST"
+                  roleId: 1
+                  roleCode: "admin_master"
+                  roleName: "Administrador Master"
+                  active: true
+                  activeFrom: null
+                  activeUntil: null
+                  createdAt: "2026-04-22T12:00:00.000Z"
+                  updatedAt: "2026-04-22T12:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [RBAC]
+      summary: Criar vínculo RBAC
+      description: >
+        Cria vínculo usuário/unidade/papel. Exige token válido e permissão
+        `rbac.manage` na unidade enviada no payload.
+      parameters:
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRbacAssignmentInput"
+            example:
+              registration: "1234567"
+              dassOffice: "SEST"
+              roleCode: "analista"
+              active: true
+              activeFrom: "2026-04-22T12:00:00.000Z"
+              activeUntil: null
+      responses:
+        "201":
+          description: Vínculo criado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RbacAssignment"
+              example:
+                id: 11
+                registration: "1234567"
+                dassOffice: "SEST"
+                roleId: 2
+                roleCode: "analista"
+                roleName: "Analista"
+                active: true
+                activeFrom: "2026-04-22T12:00:00.000Z"
+                activeUntil: null
+                createdAt: "2026-04-22T12:00:00.000Z"
+                updatedAt: "2026-04-22T12:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /user/rbac/assignments/{id}:
+    get:
+      tags: [RBAC]
+      summary: Consultar vínculo RBAC
+      description: >
+        Retorna um vínculo RBAC por identificador. Exige token válido e permissão
+        `rbac.manage`.
+      parameters:
+        - $ref: "#/components/parameters/AssignmentIdPath"
+        - $ref: "#/components/parameters/DassOfficeQueryOptional"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Vínculo encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RbacAssignment"
+              example:
+                id: 11
+                registration: "1234567"
+                dassOffice: "SEST"
+                roleId: 2
+                roleCode: "analista"
+                roleName: "Analista"
+                active: true
+                activeFrom: "2026-04-22T12:00:00.000Z"
+                activeUntil: null
+                createdAt: "2026-04-22T12:00:00.000Z"
+                updatedAt: "2026-04-22T12:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags: [RBAC]
+      summary: Atualizar vínculo RBAC
+      description: >
+        Atualiza papel, vigência ou status de um vínculo. Exige token válido e
+        permissão `rbac.manage`.
+      parameters:
+        - $ref: "#/components/parameters/AssignmentIdPath"
+        - $ref: "#/components/parameters/DassOfficeQueryOptional"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRbacAssignmentInput"
+            example:
+              roleCode: "gerente"
+              active: true
+              activeFrom: "2026-04-22T12:00:00.000Z"
+              activeUntil: null
+      responses:
+        "200":
+          description: Vínculo atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RbacAssignment"
+              example:
+                id: 11
+                registration: "1234567"
+                dassOffice: "SEST"
+                roleId: 3
+                roleCode: "gerente"
+                roleName: "Gerente"
+                active: true
+                activeFrom: "2026-04-22T12:00:00.000Z"
+                activeUntil: null
+                createdAt: "2026-04-22T12:00:00.000Z"
+                updatedAt: "2026-04-23T12:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [RBAC]
+      summary: Remover vínculo RBAC
+      description: >
+        Remove ou inativa vínculo RBAC e invalida snapshots relacionados. Exige
+        token válido e permissão `rbac.manage`.
+      parameters:
+        - $ref: "#/components/parameters/AssignmentIdPath"
+        - $ref: "#/components/parameters/DassOfficeQueryOptional"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      responses:
+        "204":
+          description: Vínculo removido sem corpo de resposta.
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /user/{registration}:
+    get:
+      tags: [User]
+      summary: Consultar perfil do colaborador
+      description: >
+        Retorna dados básicos, classificações, saldo, pontos resgatados, email e
+        preferências. Acesso público no código atual, mas exige `dassOffice` em query.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/RegistrationPath"
+        - $ref: "#/components/parameters/DassOfficeQueryRequired"
+      responses:
+        "200":
+          description: Perfil encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+              example:
+                nome: "Maria Souza"
+                setor: "Costura"
+                gerente: "Ana Gerente"
+                funcao: "colaborador"
+                matricula: 1234567
+                pontos: 320
+                pontos_resgatados: 150
+                pontos_reservados: 0
+                pontos_estornados: 0
+                saldo_disponivel: 170
+                classificacoes_pense_aja:
+                  A: 2
+                  B: 1
+                email: "maria.souza@grupodass.com.br"
+                authorized_notifications_apps: ["pense_aja"]
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags: [User]
+      summary: Atualizar perfil do colaborador
+      description: >
+        Atualiza email e preferências de notificação do colaborador. Exige token
+        válido.
+      parameters:
+        - $ref: "#/components/parameters/RegistrationPath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserPayload"
+            example:
+              dassOffice: "SEST"
+              formData:
+                email: "maria.souza@grupodass.com.br"
+                authorized_notifications_apps: ["pense_aja"]
+      responses:
+        "200":
+          description: Perfil atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+              example:
+                nome: "Maria Souza"
+                setor: "Costura"
+                gerente: "Ana Gerente"
+                funcao: "colaborador"
+                matricula: 1234567
+                pontos: 320
+                pontos_resgatados: 150
+                saldo_disponivel: 170
+                classificacoes_pense_aja:
+                  A: 2
+                  B: 1
+                email: "maria.souza@grupodass.com.br"
+                authorized_notifications_apps: ["pense_aja"]
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /user/{registration}/points-history:
+    get:
+      tags: [User]
+      summary: Consultar histórico de pontos
+      description: >
+        Retorna o histórico append-only do ledger para a matrícula e unidade.
+        Acesso público no código atual, com `dassOffice` obrigatório na query.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/RegistrationPath"
+        - $ref: "#/components/parameters/DassOfficeQueryRequired"
+      responses:
+        "200":
+          description: Histórico encontrado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LedgerEntry"
+              example:
+                - id: 451
+                  registration: "1234567"
+                  dassOffice: "SEST"
+                  entryType: "earn"
+                  amount: 100
+                  sourceType: "idea_evaluation"
+                  sourceId: "101"
+                  status: "confirmed"
+                  createdAt: "2026-04-22T12:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /user/unidade/{registration}:
+    get:
+      tags: [User]
+      summary: Resolver unidade do colaborador
+      description: >
+        Consulta a unidade Dass associada à matrícula em `core.unidades_dass`.
+        Acesso público no código atual.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/RegistrationPath"
+      responses:
+        "200":
+          description: Unidade resolvida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserOfficeResponse"
+              example:
+                dassOffice: "SEST"
+                message: "Matrícula validada, unidade: SEST"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /dashboard/summary/{dassOffice}:
+    get:
+      tags: [Dashboard]
+      summary: Obter resumo do dashboard
+      description: >
+        Retorna métricas consolidadas da unidade, incluindo ideias, valores,
+        ledger e marketplace. Acesso público no código atual.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/StartDateQuery"
+        - $ref: "#/components/parameters/EndDateQuery"
+      responses:
+        "200":
+          description: Resumo calculado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummaryEnvelope"
+              example:
+                erro: false
+                dados:
+                  totalIdeas: 120
+                  implementedIdeas: 80
+                  pendingIdeas: 20
+                  rejectedIdeas: 5
+                  approvedByManager: 95
+                  inAnalysis: 15
+                  totalValue: 25000
+                  avgValue: 208.33
+                  totalPointsEarned: 10500
+                  totalPointsRedeemed: 3800
+                  totalPointsReserved: 600
+                  marketplacePending: 4
+                  marketplaceCompleted: 30
+        "400":
+          $ref: "#/components/responses/DashboardValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /dashboard/monthly/{dassOffice}:
+    get:
+      tags: [Dashboard]
+      summary: Obter série mensal do dashboard
+      description: >
+        Retorna quantidade e valor agregado de ideias por mês para a unidade.
+        Acesso público no código atual.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/StartDateQuery"
+        - $ref: "#/components/parameters/EndDateQuery"
+      responses:
+        "200":
+          description: Série mensal calculada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardMonthlyEnvelope"
+              example:
+                erro: false
+                dados:
+                  - month: "2026-04"
+                    count: 12
+                    value: 4200
+        "400":
+          $ref: "#/components/responses/DashboardValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /dashboard/dimensional/{dassOffice}:
+    get:
+      tags: [Dashboard]
+      summary: Obter métricas dimensionais
+      description: >
+        Retorna distribuição de ideias por gerente, setor e fábrica. Acesso
+        público no código atual.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/StartDateQuery"
+        - $ref: "#/components/parameters/EndDateQuery"
+      responses:
+        "200":
+          description: Dimensões calculadas.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardDimensionalEnvelope"
+              example:
+                erro: false
+                dados:
+                  manager:
+                    - label: "Ana Gerente"
+                      count: 35
+                  sector:
+                    - label: "Costura"
+                      count: 48
+                  factory:
+                    - label: "SEST"
+                      count: 120
+        "400":
+          $ref: "#/components/responses/DashboardValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /dashboard/idea-highlights/{dassOffice}:
+    get:
+      tags: [Dashboard]
+      summary: Obter ideias em destaque
+      description: >
+        Retorna ideias destacadas para exibição no dashboard. Acesso público no
+        código atual.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/StartDateQuery"
+        - $ref: "#/components/parameters/EndDateQuery"
+      responses:
+        "200":
+          description: Destaques encontrados.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardHighlightsEnvelope"
+              example:
+                erro: false
+                dados:
+                  - id: 101
+                    title: "Redução de retrabalho"
+                    description: "Checklist visual implantado na linha."
+                    author: "Maria Souza"
+                    avatarColor: "#2563eb"
+                    date: "2026-04-20"
+                    status: "concluido"
+                    category: "Qualidade"
+                    sector: "Costura"
+                    factory: "SEST"
+                    likes: 0
+                    comments: 0
+                    syntheticEngagement: false
+        "400":
+          $ref: "#/components/responses/DashboardValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /dashboard/engagement/{dassOffice}:
+    get:
+      tags: [Dashboard]
+      summary: Obter engajamento de colaboradores
+      description: >
+        Retorna ranking de colaboradores por participação e implementação de
+        ideias. Acesso público no código atual.
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/StartDateQuery"
+        - $ref: "#/components/parameters/EndDateQuery"
+      responses:
+        "200":
+          description: Engajamento calculado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardEngagementEnvelope"
+              example:
+                erro: false
+                dados:
+                  - id: 1234567
+                    name: "Maria Souza"
+                    role: "colaborador"
+                    department: "Costura"
+                    ideas: 6
+                    implemented: 4
+                    avatarColor: "#2563eb"
+        "400":
+          $ref: "#/components/responses/DashboardValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /ai/improve-text:
+    post:
+      tags: [AI]
+      summary: Melhorar texto de uma ideia
+      description: >
+        Usa IA para reescrever os textos de situação anterior e atual de uma
+        ideia. Acesso público no código atual; não participa de autorização,
+        pontuação ou mudança formal de status.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImproveTextRequest"
+            example:
+              projectName: "Redução de retrabalho"
+              situationBefore: "Tinha muito retrabalho porque a peça era enviada errada."
+              situationNow: "Foi colocado uma identificação visual para evitar envio errado."
+      responses:
+        "200":
+          description: Texto melhorado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImproveTextResponse"
+              example:
+                result:
+                  before: "O processo apresentava retrabalho recorrente devido ao envio incorreto de peças."
+                  after: "Foi implantada identificação visual para reduzir erros de envio e aumentar a qualidade."
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+      description: Token JWT de sessão enviado no cookie `token`.
+
+  parameters:
+    CookieHeader:
+      name: Cookie
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Cookie de autenticação contendo `token=<jwt>`.
+      example: "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    DassOfficePath:
+      name: dassOffice
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/DassOffice"
+      description: Unidade Dass da operação.
+      example: "SEST"
+    DassOfficeQueryRequired:
+      name: dassOffice
+      in: query
+      required: true
+      schema:
+        $ref: "#/components/schemas/DassOffice"
+      description: Unidade Dass da consulta.
+      example: "SEST"
+    DassOfficeQueryOptional:
+      name: dassOffice
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/DassOffice"
+      description: Unidade Dass usada para escopo de autorização/filtro.
+      example: "SEST"
+    RegistrationPath:
+      name: registration
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 7
+      description: Matrícula do colaborador.
+      example: "1234567"
+    IdeaIdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Identificador da ideia.
+      example: 101
+    RequestIdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Identificador da solicitação de marketplace.
+      example: 927
+    AssignmentIdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Identificador do vínculo RBAC.
+      example: 11
+    StartDateQuery:
+      name: startDate
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+      description: Data inicial do filtro.
+      example: "2026-04-01T00:00:00.000Z"
+    EndDateQuery:
+      name: endDate
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+      description: Data final do filtro.
+      example: "2026-04-30T23:59:59.999Z"
+
+  requestBodies:
+    MarketplaceTransition:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/MarketplaceTransitionInput"
+          example:
+            dassOffice: "SEST"
+            reason: "Solicitação validada pela liderança."
+            notes: "Sem pendências operacionais."
+            metadata:
+              channel: "admin_panel"
+
+  responses:
+    ValidationError:
+      description: Erro de validação de entrada.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          example:
+            message: "Dados inválidos. Unidade Dass inválida!"
+    LegacyValidationError:
+      description: Erro de validação em formato legado.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/LegacyError"
+          example:
+            erro: true
+            mensagem: "O campo 'dassOffice' é obrigatório."
+            dados: "Não há registros!"
+    DashboardValidationError:
+      description: Erro de validação de filtros do dashboard.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DashboardError"
+          example:
+            erro: true
+            mensagem: "Data de início inválida."
+    Unauthorized:
+      description: Usuário não autenticado ou token ausente/inválido.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          example:
+            message: "Usuário não autenticado."
+    Forbidden:
+      description: Usuário autenticado sem permissão para a operação.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          example:
+            message: "Acesso negado. Permissão insuficiente."
+    InternalServerError:
+      description: Erro interno tratado pelo middleware global.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          example:
+            message: "Erro interno no servidor. - Contate a equipe de automação!"
+    MarketplaceRequestApproved:
+      description: Solicitação aprovada.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/MarketplaceRequest"
+          example:
+            id: 927
+            registration: "1234567"
+            dassOffice: "SEST"
+            catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+            requestStatus: "approved"
+            reservedLedgerEntryId: 451
+            approvalActorRegistration: "7654321"
+            approvalActorName: "João Analista"
+            fulfillmentType: "none"
+            legacyPrizeId: null
+            createdAt: "2026-04-22T12:00:00.000Z"
+            updatedAt: "2026-04-22T13:00:00.000Z"
+    MarketplaceRequestRejected:
+      description: Solicitação rejeitada.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/MarketplaceRequest"
+          example:
+            id: 927
+            registration: "1234567"
+            dassOffice: "SEST"
+            catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+            requestStatus: "rejected"
+            reservedLedgerEntryId: null
+            approvalActorRegistration: "7654321"
+            approvalActorName: "João Analista"
+            fulfillmentType: "none"
+            legacyPrizeId: null
+            createdAt: "2026-04-22T12:00:00.000Z"
+            updatedAt: "2026-04-22T13:00:00.000Z"
+    MarketplaceRequestFulfillment:
+      description: Fulfillment registrado.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/MarketplaceRequest"
+          example:
+            id: 927
+            registration: "1234567"
+            dassOffice: "SEST"
+            catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+            requestStatus: "fulfillment_in_progress"
+            reservedLedgerEntryId: 451
+            approvalActorRegistration: "7654321"
+            approvalActorName: "João Analista"
+            fulfillmentType: "physical_separation"
+            legacyPrizeId: null
+            createdAt: "2026-04-22T12:00:00.000Z"
+            updatedAt: "2026-04-22T14:00:00.000Z"
+    MarketplaceRequestCompleted:
+      description: Solicitação concluída.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/MarketplaceRequest"
+          example:
+            id: 927
+            registration: "1234567"
+            dassOffice: "SEST"
+            catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+            requestStatus: "completed"
+            reservedLedgerEntryId: null
+            approvalActorRegistration: "7654321"
+            approvalActorName: "João Analista"
+            fulfillmentType: "physical_delivery"
+            legacyPrizeId: null
+            createdAt: "2026-04-22T12:00:00.000Z"
+            updatedAt: "2026-04-22T15:00:00.000Z"
+    MarketplaceRequestCancelled:
+      description: Solicitação cancelada.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/MarketplaceRequest"
+          example:
+            id: 927
+            registration: "1234567"
+            dassOffice: "SEST"
+            catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+            requestStatus: "cancelled"
+            reservedLedgerEntryId: null
+            approvalActorRegistration: null
+            approvalActorName: null
+            fulfillmentType: "none"
+            legacyPrizeId: null
+            createdAt: "2026-04-22T12:00:00.000Z"
+            updatedAt: "2026-04-22T13:00:00.000Z"
+    MarketplaceRequestRefunded:
+      description: Solicitação estornada.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/MarketplaceRequest"
+          example:
+            id: 927
+            registration: "1234567"
+            dassOffice: "SEST"
+            catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
+            requestStatus: "refunded"
+            reservedLedgerEntryId: null
+            approvalActorRegistration: "7654321"
+            approvalActorName: "João Analista"
+            fulfillmentType: "physical_delivery"
+            legacyPrizeId: null
+            createdAt: "2026-04-22T12:00:00.000Z"
+            updatedAt: "2026-04-23T12:00:00.000Z"
+
+  schemas:
+    DassOffice:
+      type: string
+      enum: [SEST, VDC, ITB, VDC-CONF, STJ]
+    ErrorMessage:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+    LegacyError:
+      type: object
+      properties:
+        erro:
+          type: boolean
+        mensagem:
+          type: string
+        dados:
+          type: string
+    DashboardError:
+      type: object
+      properties:
+        erro:
+          type: boolean
+        mensagem:
+          type: string
+    LegacyProduct:
+      type: object
+      properties:
+        id:
+          type: string
+        nome:
+          type: string
+        imagem:
+          type: string
+          nullable: true
+        valor:
+          type: integer
+    ProductUpdateInput:
+      type: object
+      required: [id, nome, valor]
+      properties:
+        id:
+          type: string
+        nome:
+          type: string
+        valor:
+          type: integer
+    ProductUpdateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+    PurchaseProductPayload:
+      type: object
+      required: [product, colaboradorData, analista, dassOffice]
+      properties:
+        product:
+          type: object
+          required: [id]
+          properties:
+            id:
+              oneOf:
+                - type: string
+                - type: integer
+        colaboradorData:
+          type: object
+          required: [matricula, nome]
+          properties:
+            matricula:
+              type: integer
+            nome:
+              type: string
+        analista:
+          type: object
+          required: [analistaUser, analistaName]
+          properties:
+            analistaUser:
+              type: string
+            analistaName:
+              type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+    PurchaseProductResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: integer
+    CreatePenseAjaPayload:
+      type: object
+      required:
+        - nome
+        - createDate
+        - situationBefore
+        - situationNow
+        - registration
+        - perdas
+        - userName
+        - gerente
+        - setor
+        - turno
+        - areaMelhoria
+        - factory
+      properties:
+        nome:
+          type: string
+        createDate:
+          type: string
+          format: date-time
+        situationBefore:
+          type: string
+        situationNow:
+          type: string
+        registration:
+          oneOf:
+            - type: string
+            - type: integer
+        perdas:
+          type: array
+          items:
+            type: string
+        userName:
+          type: string
+        gerente:
+          type: string
+        setor:
+          type: string
+        turno:
+          type: string
+        a3Mae:
+          type: string
+          nullable: true
+        valorA:
+          type: string
+        valorB:
+          type: string
+        valorAmortizado:
+          type: string
+        outrosGanhos:
+          type: string
+        ganhos:
+          type: array
+          items:
+            type: string
+        ganhoDetalhes:
+          type: string
+        areaMelhoria:
+          type: string
+        factory:
+          type: string
+    CreatePenseAjaResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        id:
+          type: integer
+    PenseAjaListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        criado:
+          type: string
+        matricula:
+          type: integer
+        fabrica:
+          type: string
+          nullable: true
+        nome:
+          type: string
+        setor:
+          type: string
+        gerente:
+          type: string
+        nome_projeto:
+          type: string
+        turno:
+          type: string
+        situacao_anterior:
+          type: string
+        situacao_atual:
+          type: string
+        ganhos:
+          type: array
+          nullable: true
+          items:
+            type: string
+        outros_ganhos:
+          type: string
+          nullable: true
+        gerente_aprovador:
+          type: string
+          nullable: true
+        analista_avaliador:
+          type: string
+          nullable: true
+        status_gerente:
+          type: string
+          nullable: true
+        status_analista:
+          type: string
+          nullable: true
+        em_espera:
+          nullable: true
+          oneOf:
+            - type: boolean
+            - type: string
+        createdat:
+          type: string
+        classificacao:
+          type: string
+          nullable: true
+        pontuacao:
+          type: integer
+          nullable: true
+    PenseAjaDetails:
+      type: object
+      additionalProperties: true
+    EvaluateIdeaPayload:
+      type: object
+      required: [dassOffice, status, emEspera, replicavel]
+      properties:
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        status:
+          type: string
+        avaliacao:
+          type: string
+        emEspera:
+          type: boolean
+        replicavel:
+          type: boolean
+        justificativa:
+          type: string
+        avaliadoAnteriormente:
+          type: boolean
+        a3Mae:
+          type: string
+          nullable: true
+    EvaluatePenseAjaResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+    AuditEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        eventType:
+          type: string
+        aggregateType:
+          type: string
+        aggregateId:
+          type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        actorRegistration:
+          type: string
+          nullable: true
+        actorName:
+          type: string
+          nullable: true
+        actorRole:
+          type: string
+          nullable: true
+        reason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+          nullable: true
+    MarketplaceItemType:
+      type: string
+      enum: [physical, voucher]
+    MarketplaceRequestStatus:
+      type: string
+      enum:
+        - pending_approval
+        - approved
+        - rejected
+        - fulfillment_in_progress
+        - completed
+        - cancelled
+        - refunded
+    MarketplaceCatalogItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        legacyProductId:
+          type: string
+          nullable: true
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        name:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        pointsCost:
+          type: integer
+        itemType:
+          $ref: "#/components/schemas/MarketplaceItemType"
+        active:
+          type: boolean
+        availableQuantity:
+          type: integer
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties: true
+          nullable: true
+    UpsertCatalogItemInput:
+      type: object
+      required: [name, pointsCost]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        pointsCost:
+          type: integer
+        itemType:
+          $ref: "#/components/schemas/MarketplaceItemType"
+        active:
+          type: boolean
+        availableQuantity:
+          type: integer
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties: true
+          nullable: true
+    CreateMarketplaceRequestInput:
+      type: object
+      required: [dassOffice, catalogItemId]
+      properties:
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        catalogItemId:
+          type: string
+          format: uuid
+        registration:
+          oneOf:
+            - type: string
+            - type: integer
+        requesterName:
+          type: string
+        reason:
+          type: string
+    MarketplaceTransitionInput:
+      type: object
+      required: [dassOffice]
+      properties:
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        reason:
+          type: string
+        notes:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+    ExecuteFulfillmentInput:
+      allOf:
+        - $ref: "#/components/schemas/MarketplaceTransitionInput"
+        - type: object
+          properties:
+            stepType:
+              type: string
+              enum: [physical_separation, physical_delivery, voucher_issue]
+    MarketplaceRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+        registration:
+          type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        catalogItemId:
+          type: string
+          format: uuid
+        requestStatus:
+          $ref: "#/components/schemas/MarketplaceRequestStatus"
+        reservedLedgerEntryId:
+          type: integer
+          nullable: true
+        approvalActorRegistration:
+          type: string
+          nullable: true
+        approvalActorName:
+          type: string
+          nullable: true
+        fulfillmentType:
+          type: string
+        legacyPrizeId:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    SessionContext:
+      type: object
+      properties:
+        registration:
+          type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        permissions:
+          type: array
+          items:
+            type: string
+        snapshotVersion:
+          type: integer
+        snapshotExpiresAt:
+          type: string
+          format: date-time
+    RbacRole:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        nome:
+          type: string
+    RbacAssignment:
+      type: object
+      properties:
+        id:
+          type: integer
+        registration:
+          type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        roleId:
+          type: integer
+        roleCode:
+          type: string
+        roleName:
+          type: string
+        active:
+          type: boolean
+        activeFrom:
+          type: string
+          format: date-time
+          nullable: true
+        activeUntil:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateRbacAssignmentInput:
+      type: object
+      required: [registration, dassOffice, roleCode]
+      properties:
+        registration:
+          type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        roleCode:
+          type: string
+        active:
+          type: boolean
+        activeFrom:
+          type: string
+          format: date-time
+          nullable: true
+        activeUntil:
+          type: string
+          format: date-time
+          nullable: true
+    UpdateRbacAssignmentInput:
+      type: object
+      properties:
+        roleCode:
+          type: string
+        active:
+          type: boolean
+        activeFrom:
+          type: string
+          format: date-time
+          nullable: true
+        activeUntil:
+          type: string
+          format: date-time
+          nullable: true
+    UserProfile:
+      type: object
+      properties:
+        nome:
+          type: string
+        setor:
+          type: string
+        gerente:
+          type: string
+        funcao:
+          type: string
+        matricula:
+          type: integer
+        pontos:
+          type: integer
+        pontos_resgatados:
+          type: integer
+        pontos_reservados:
+          type: integer
+        pontos_estornados:
+          type: integer
+        saldo_disponivel:
+          type: integer
+        classificacoes_pense_aja:
+          type: object
+          additionalProperties:
+            type: integer
+        email:
+          type: string
+          format: email
+        authorized_notifications_apps:
+          type: array
+          items:
+            type: string
+    UpdateUserPayload:
+      type: object
+      required: [dassOffice, formData]
+      properties:
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        formData:
+          type: object
+          required: [email, authorized_notifications_apps]
+          properties:
+            email:
+              type: string
+              format: email
+            authorized_notifications_apps:
+              type: array
+              items:
+                type: string
+    LedgerEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        registration:
+          type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        entryType:
+          type: string
+          enum: [earn, reserve, release, commit, refund, reverse]
+        amount:
+          type: integer
+        sourceType:
+          type: string
+        sourceId:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    UserOfficeResponse:
+      type: object
+      properties:
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        message:
+          type: string
+    DashboardEnvelope:
+      type: object
+      properties:
+        erro:
+          type: boolean
+        dados:
+          type: object
+          nullable: true
+          additionalProperties: true
+    DashboardSummaryEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/DashboardEnvelope"
+        - type: object
+          properties:
+            dados:
+              $ref: "#/components/schemas/DashboardSummary"
+    DashboardSummary:
+      type: object
+      properties:
+        totalIdeas:
+          type: integer
+        implementedIdeas:
+          type: integer
+        pendingIdeas:
+          type: integer
+        rejectedIdeas:
+          type: integer
+        approvedByManager:
+          type: integer
+        inAnalysis:
+          type: integer
+        totalValue:
+          type: number
+        avgValue:
+          type: number
+        totalPointsEarned:
+          type: integer
+        totalPointsRedeemed:
+          type: integer
+        totalPointsReserved:
+          type: integer
+        marketplacePending:
+          type: integer
+        marketplaceCompleted:
+          type: integer
+    DashboardMonthlyEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/DashboardEnvelope"
+        - type: object
+          properties:
+            dados:
+              type: array
+              items:
+                $ref: "#/components/schemas/DashboardMonthlyItem"
+    DashboardMonthlyItem:
+      type: object
+      properties:
+        month:
+          type: string
+        count:
+          type: integer
+        value:
+          type: number
+    DashboardDimensionalEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/DashboardEnvelope"
+        - type: object
+          properties:
+            dados:
+              type: object
+              properties:
+                manager:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/DashboardDimensionItem"
+                sector:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/DashboardDimensionItem"
+                factory:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/DashboardDimensionItem"
+    DashboardDimensionItem:
+      type: object
+      properties:
+        label:
+          type: string
+        count:
+          type: integer
+    DashboardHighlightsEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/DashboardEnvelope"
+        - type: object
+          properties:
+            dados:
+              type: array
+              items:
+                $ref: "#/components/schemas/DashboardIdeaHighlight"
+    DashboardIdeaHighlight:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        avatarColor:
+          type: string
+        date:
+          type: string
+        status:
+          type: string
+        category:
+          type: string
+        sector:
+          type: string
+        factory:
+          type: string
+        likes:
+          type: integer
+        comments:
+          type: integer
+        syntheticEngagement:
+          type: boolean
+    DashboardEngagementEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/DashboardEnvelope"
+        - type: object
+          properties:
+            dados:
+              type: array
+              items:
+                $ref: "#/components/schemas/DashboardEngagementContributor"
+    DashboardEngagementContributor:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        department:
+          type: string
+        ideas:
+          type: integer
+        implemented:
+          type: integer
+        avatarColor:
+          type: string
+    ImproveTextRequest:
+      type: object
+      required: [projectName, situationBefore, situationNow]
+      properties:
+        projectName:
+          type: string
+        situationBefore:
+          type: string
+        situationNow:
+          type: string
+    ImproveTextResponse:
+      type: object
+      properties:
+        result:
+          type: object
+          properties:
+            before:
+              type: string
+            after:
+              type: string

@@ -9,7 +9,11 @@
     "dev-win": "set DEV_ENV=development && nodemon --watch './**/*.ts' --exec ts-node ./src/penseAja.ts",
     "migrate:run": "ts-node ./src/scripts/run-migrations.ts",
     "migrate:revert": "ts-node ./src/scripts/revert-last-migration.ts",
+    "backfill:catalog": "ts-node ./src/scripts/backfill-catalog.ts",
     "backfill:ledger": "ts-node ./src/scripts/backfill-ledger.ts",
+    "backfill:marketplace": "ts-node ./src/scripts/backfill-marketplace.ts",
+    "rebuild:balance-projections": "ts-node ./src/scripts/rebuild-balance-projections.ts",
+    "verify:transition": "ts-node ./src/scripts/verify-transition.ts",
     "bootstrap:admin-master": "ts-node ./src/scripts/bootstrap-admin-master.ts",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -30,6 +34,7 @@
     "pg": "^8.14.1",
     "redis": "^4.7.0",
     "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.28",
     "winston": "^3.17.0"
   },
@@ -42,6 +47,7 @@
     "@types/node": "^22.14.0",
     "@types/pg": "^8.11.11",
     "@types/supertest": "^7.2.0",
+    "@types/swagger-ui-express": "^4.1.8",
     "@types/winston": "^2.4.4",
     "nodemon": "^3.1.9",
     "supertest": "^7.2.2",

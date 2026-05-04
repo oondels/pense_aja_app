@@ -11,6 +11,7 @@ COPY package*.json ./
 RUN npm install --only=production
 
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/openapi.yaml ./openapi.yaml
 COPY --from=builder /app/.env.production ./
 
 EXPOSE 2512
