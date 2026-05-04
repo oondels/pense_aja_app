@@ -15,6 +15,7 @@ export interface UserProfileData {
   pontos: number;
   pontos_resgatados: number;
   pontos_reservados?: number;
+  pontos_estornados?: number;
   saldo_disponivel?: number;
   classificacoes_pense_aja: UserClassifications;
   email: string;

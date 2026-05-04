@@ -43,13 +43,13 @@ O Pense&Aja é uma plataforma de inovação aberta usada para transformar ideias
 ### Operador de marketplace
 
 - aprova solicitações de resgate
-- executa separação, entrega ou emissão de voucher
+- executa separação, entrega ou emissão de voucher (Geração de voucher é feito por api separada, mas a aprovação da solicitação de resgate é realizada na api principal)
 - cancela ou sinaliza falha operacional quando necessário
 
 ### Administrador/configurador
 
 - mantém regras da unidade
-- gerencia permissões, catálogo e configurações
+- gerencia permissões, catálogo da loja, configurações e regras
 
 ## Princípios obrigatórios
 
@@ -195,12 +195,13 @@ O nome final dos estados pode variar por apresentação, mas a estrutura semânt
 
 ## Ledger de pontuação
 
-### Estado atual
+### Estado atual após corte direto
 
-- aprovação com nota grava ou atualiza linha em `pense_aja.pense_aja_pontos`
-- reprovação ou exclusão gerencial remove pontos associados
+- aprovação com nota gera `earn` em `points_ledger_entries`
+- reavaliação, reprovação ou exclusão geram `reverse` quando há saldo de origem para a ideia
+- `pense_aja.pense_aja_pontos` permanece apenas como histórico/backfill
 
-### Problema do modelo atual
+### Problema legado resolvido no corte direto
 
 - mistura histórico de origem com saldo efetivo
 - dificulta auditoria e reconciliação
@@ -251,13 +252,15 @@ O frontend deve consumir projeções consolidadas dessa conta, não recalcular p
 
 ## Marketplace e resgates
 
-### Estado atual
+### Estado atual após corte direto
 
-- produto precisa existir
-- saldo atual é calculado por soma de pontos e soma de resgates
-- o resgate é persistido diretamente em `pense_aja.pense_aja_premios`
+- item precisa existir em `marketplace_catalog_items`
+- saldo vem de `points_balance_projection`
+- solicitação e transições são persistidas em `marketplace_redemption_requests`
+- fulfillment físico/voucher é registrado em tabelas próprias
+- `pense_aja.pense_aja_premios` permanece apenas como histórico/backfill
 
-### Problema do modelo atual
+### Problema legado resolvido no corte direto
 
 - não há separação entre solicitação, aprovação, fulfillment e entrega
 - não há reserva de saldo na origem
@@ -337,8 +340,8 @@ Fluxo-base:
 
 ### Estado atual relevante
 
-- parte dos indicadores usa inferência e dados sintéticos
-- pontuação ainda deriva de tabela legada, não de ledger
+- indicadores de pontuação e resgate derivam de ledger e marketplace
+- widgets de destaque não devem tratar dados sintéticos como métrica canônica
 
 ### Modelo-alvo
 
@@ -355,9 +358,9 @@ Fluxo-base:
 ## Riscos atuais observáveis
 
 - vocabulário de status ainda não está totalmente normalizado
-- algumas rotas seguem sem autenticação no código atual
-- permissões críticas continuam hardcoded
-- pontuação e resgate ainda não têm trilha contábil formal
+- rotas públicas de leitura ainda precisam ser revisadas conforme política final de exposição
+- permissões dependem de vínculos RBAC populados corretamente por unidade
+- integração real de voucher ainda depende de provider externo conectado ao adapter
 
 ## Resumo operacional
 

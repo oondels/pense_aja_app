@@ -36,13 +36,24 @@ Carregadas por `server/src/config/dotenv.ts`:
 ### Estruturas atuais relevantes
 
 - `pense_aja.pense_aja_dass`
-- `pense_aja.pense_aja_pontos`
-- `pense_aja.pense_aja_premios`
-- `pense_aja.pense_aja_loja`
+- `pense_aja.points_ledger_entries`
+- `pense_aja.points_balance_projection`
+- `pense_aja.marketplace_catalog_items`
+- `pense_aja.marketplace_redemption_requests`
+- `pense_aja.marketplace_fulfillment_steps`
+- `pense_aja.marketplace_voucher_deliveries`
+- `pense_aja.audit_events`
+- `pense_aja.rbac_*`
 - `autenticacao.usuarios`
 - `autenticacao.emails`
 - `core.unidades_dass`
 - `colaborador.lista_funcionario[_UNIDADE]`
+
+Estruturas legadas preservadas apenas para histórico/backfill:
+
+- `pense_aja.pense_aja_pontos`
+- `pense_aja.pense_aja_premios`
+- `pense_aja.pense_aja_loja`
 
 ### Evolução documentada
 

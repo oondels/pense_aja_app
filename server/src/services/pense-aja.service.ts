@@ -3,9 +3,8 @@ import { QueryRunner } from "typeorm";
 import { initializeDatabase } from "../config/database";
 import MarketplaceRedemptionRequestEntity from "../models/MarketplaceRedemptionRequest";
 import PenseAjaDassEntity, { PenseAjaDass } from "../models/PenseAjaDass";
-import PenseAjaLojaEntity from "../models/PenseAjaLoja";
-import PenseAjaPontosEntity from "../models/PenseAjaPontos";
-import PenseAjaPremiosEntity from "../models/PenseAjaPremios";
+import MarketplaceCatalogItemEntity from "../models/MarketplaceCatalogItem";
+import UnitScoringRuleEntity from "../models/UnitScoringRule";
 import logger from "../utils/logger";
 import { assertDassOffice } from "../utils/dassOffice";
 import { CustomError } from "../types/CustomError";
@@ -184,15 +183,20 @@ export const PenseAjaService = {
         .leftJoin(
           (subQuery) =>
             subQuery
-              .select("pontos.id_pense_aja", "id_pense_aja")
-              .addSelect("MAX(pontos.valor)", "valor")
-              .from("pense_aja.pense_aja_pontos", "pontos")
+              .select("pontos.source_id", "id_pense_aja")
+              .addSelect(
+                "COALESCE(SUM(CASE WHEN pontos.entry_type = 'earn' THEN pontos.amount ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN pontos.entry_type = 'reverse' THEN pontos.amount ELSE 0 END), 0)",
+                "valor"
+              )
+              .from("pense_aja.points_ledger_entries", "pontos")
               .where("pontos.unidade_dass = :dassOffice", {
                 dassOffice: validDassOffice,
               })
-              .groupBy("pontos.id_pense_aja"),
+              .andWhere("pontos.source_type = 'idea_evaluation'")
+              .andWhere("pontos.status = 'confirmed'")
+              .groupBy("pontos.source_id"),
           "points",
-          "points.id_pense_aja = CAST(idea.id AS bigint)"
+          "points.id_pense_aja = CAST(idea.id AS varchar)"
         )
         .where("idea.excluido = false")
         .andWhere("idea.createdat >= :startDate", {
@@ -249,7 +253,8 @@ export const PenseAjaService = {
 
   async createPenseAja(
     data: PenseAjaData,
-    dassOffice: string
+    dassOffice: string,
+    actor?: { actorRegistration?: string; actorName?: string }
   ): Promise<CreatePenseAjaResult> {
     const validDassOffice = assertDassOffice(dassOffice);
 
@@ -386,6 +391,24 @@ export const PenseAjaService = {
         validDassOffice
       );
 
+      await AuditService.recordEvent(queryRunner, {
+        eventType: "idea.created",
+        aggregateType: "idea",
+        aggregateId: savedIdea.id,
+        dassOffice: validDassOffice,
+        actorRegistration:
+          actor?.actorRegistration ?? String(data.registration ?? ""),
+        actorRole: "idea.submit",
+        reason: "Cadastro de ideia.",
+        beforeState: null,
+        afterState: mapIdeaAuditState(savedIdea),
+        metadata: {
+          projectName: savedIdea.nome_projeto,
+          requesterName: actor?.actorName ?? savedIdea.nome,
+        },
+        correlationId: randomUUID(),
+      });
+
       await queryRunner.commitTransaction();
 
       return {
@@ -419,12 +442,14 @@ export const PenseAjaService = {
 
   async submitPenseAja(
     data: PenseAjaData,
-    dassOffice: string
+    dassOffice: string,
+    actor?: { actorRegistration?: string; actorName?: string }
   ): Promise<SubmitPenseAjaResponse> {
     const validDassOffice = assertDassOffice(dassOffice);
     const { pense_aja, userManager, duplicated } = await this.createPenseAja(
       data,
-      dassOffice
+      dassOffice,
+      actor
     );
 
     if (duplicated) {
@@ -599,7 +624,6 @@ export const PenseAjaService = {
       }
 
       const ideaRepository = queryRunner.manager.getRepository(PenseAjaDassEntity);
-      const pointsRepository = queryRunner.manager.getRepository(PenseAjaPontosEntity);
       const correlationId = randomUUID();
 
       const currentIdea = await ideaRepository.findOne({
@@ -618,12 +642,11 @@ export const PenseAjaService = {
         );
       }
 
-      const currentPoints = await pointsRepository.findOne({
-        where: {
-          id_pense_aja: String(currentIdea.id),
-          matricula: String(currentIdea.matricula),
-          unidade_dass: validDassOffice,
-        },
+      const currentPoints = await LedgerService.getSourceNetAmount(queryRunner, {
+        registration: String(currentIdea.matricula),
+        dassOffice: validDassOffice,
+        sourceType: "idea_evaluation",
+        sourceId: String(currentIdea.id),
       });
 
       const now = new Date();
@@ -691,83 +714,60 @@ export const PenseAjaService = {
       }
 
       const classificacao = CLASSIFICATION_MAP[String(avaliacao ?? "")] ?? "C";
+      const scoringRule = avaliacao
+        ? await queryRunner.manager.getRepository(UnitScoringRuleEntity).findOne({
+            where: {
+              unidade_dass: validDassOffice,
+              classification: classificacao,
+              active: true,
+            },
+          })
+        : null;
+      const evaluationScore = scoringRule
+        ? Number(scoringRule.score)
+        : Number(avaliacao ?? 0);
 
-      if (currentPoints && (status === EXCLUDE || status === REPROVE)) {
+      if (currentPoints.netAmount > 0 && (status === EXCLUDE || status === REPROVE)) {
         await LedgerService.createEntry(queryRunner, {
           registration: String(newEvaluation.matricula),
           dassOffice: validDassOffice,
           entryType: "reverse",
-          amount: Number(currentPoints.valor),
+          amount: currentPoints.netAmount,
           sourceType: "idea_evaluation",
           sourceId: String(newEvaluation.id),
-          relatedEntryId: currentPoints.id,
+          relatedEntryId: currentPoints.latestEarnEntryId,
           correlationId,
           reason: justificativa,
           createdByRegistration: actorRegistration ?? null,
           createdByName: avaliador,
           metadata: { status },
         });
-
-        await pointsRepository.delete({
-          id_pense_aja: String(newEvaluation.id),
-          matricula: String(newEvaluation.matricula),
-          unidade_dass: validDassOffice,
-        });
       }
 
       if (status !== EXCLUDE && status !== REPROVE && avaliacao) {
-        if (currentPoints) {
-          if (Number(currentPoints.valor) !== Number(avaliacao)) {
-            await LedgerService.createEntry(queryRunner, {
-              registration: String(newEvaluation.matricula),
-              dassOffice: validDassOffice,
-              entryType: "reverse",
-              amount: Number(currentPoints.valor),
-              sourceType: "idea_evaluation",
-              sourceId: String(newEvaluation.id),
-              relatedEntryId: currentPoints.id,
-              correlationId,
-              reason: "Reavaliação de pontuação.",
-              createdByRegistration: actorRegistration ?? null,
-              createdByName: avaliador,
-              metadata: { previousScore: Number(currentPoints.valor) },
-            });
-          }
-
-          await pointsRepository
-            .createQueryBuilder()
-            .update()
-            .set({
-              valor: String(avaliacao),
-              classificacao,
-              updatedat: now,
-            })
-            .where("id_pense_aja = :idPenseAja", {
-              idPenseAja: String(newEvaluation.id),
-            })
-            .execute();
-        } else {
-          await pointsRepository.save(
-            pointsRepository.create({
-              id_pense_aja: String(newEvaluation.id),
-              matricula: String(newEvaluation.matricula),
-              nome: newEvaluation.nome,
-              valor: String(avaliacao),
-              gerente: newEvaluation.gerente,
-              classificacao,
-              createdat: now,
-              updatedat: now,
-              unidade_dass: validDassOffice,
-            })
-          );
+        if (currentPoints.netAmount > 0 && currentPoints.netAmount !== evaluationScore) {
+          await LedgerService.createEntry(queryRunner, {
+            registration: String(newEvaluation.matricula),
+            dassOffice: validDassOffice,
+            entryType: "reverse",
+            amount: currentPoints.netAmount,
+            sourceType: "idea_evaluation",
+            sourceId: String(newEvaluation.id),
+            relatedEntryId: currentPoints.latestEarnEntryId,
+            correlationId,
+            reason: "Reavaliação de pontuação.",
+            createdByRegistration: actorRegistration ?? null,
+            createdByName: avaliador,
+            metadata: { previousScore: currentPoints.netAmount },
+          });
         }
 
-        if (!currentPoints || Number(currentPoints.valor) !== Number(avaliacao)) {
+        if (currentPoints.netAmount !== evaluationScore) {
           await LedgerService.createEntry(queryRunner, {
             registration: String(newEvaluation.matricula),
             dassOffice: validDassOffice,
             entryType: "earn",
-            amount: Number(avaliacao),
+            amount: evaluationScore,
             sourceType: "idea_evaluation",
             sourceId: String(newEvaluation.id),
             correlationId,
@@ -777,6 +777,7 @@ export const PenseAjaService = {
             metadata: {
               classificacao,
               role,
+              scoringRuleId: scoringRule ? Number(scoringRule.id) : null,
             },
           });
         }
@@ -894,14 +895,23 @@ export const PenseAjaService = {
     try {
       await queryRunner.connect();
 
-      const productRepository = queryRunner.manager.getRepository(PenseAjaLojaEntity);
-      const prizeRepository = queryRunner.manager.getRepository(PenseAjaPremiosEntity);
+      const productRepository = queryRunner.manager.getRepository(
+        MarketplaceCatalogItemEntity
+      );
 
       const getProduct = await productRepository.findOne({
-        where: {
-          id: Number(product.id),
-          unidade_dass: validDassOffice,
-        },
+        where: [
+          {
+            id: String(product.id),
+            unidade_dass: validDassOffice,
+            active: true,
+          },
+          {
+            legacy_product_id: String(product.id),
+            unidade_dass: validDassOffice,
+            active: true,
+          },
+        ],
       });
 
       if (!getProduct) {
@@ -912,7 +922,7 @@ export const PenseAjaService = {
         );
       }
 
-      if (pontosRestantes < getProduct.valor) {
+      if (pontosRestantes < Number(getProduct.points_cost)) {
         throw new CustomError(
           "Pontos insuficientes para resgatar o prêmio.",
           400,
@@ -931,16 +941,16 @@ export const PenseAjaService = {
         registration: String(colaboradorData.matricula),
         dassOffice: validDassOffice,
         entryType: "reserve",
-        amount: Number(getProduct.valor),
-        sourceType: "reward_redemption",
-        sourceId: `product:${getProduct.id}`,
+        amount: Number(getProduct.points_cost),
+        sourceType: "marketplace_redemption",
+        sourceId: `catalog:${getProduct.id}`,
         correlationId,
         reason: "Reserva de saldo para resgate legado.",
         createdByRegistration: operatorRegistration,
         createdByName: operatorName,
         metadata: {
-          catalogItemId: Number(getProduct.id),
-          fulfillmentType: "legacy_instant",
+          catalogItemId: String(getProduct.id),
+          fulfillmentType: getProduct.item_type === "voucher" ? "voucher_issue" : "physical_delivery",
         },
       });
 
@@ -952,30 +962,15 @@ export const PenseAjaService = {
           matricula: String(colaboradorData.matricula),
           unidade_dass: validDassOffice,
           catalog_item_id: String(getProduct.id),
-          request_status: "legacy_completed",
+          request_status: "completed",
           reserved_ledger_entry_id: String(reserveEntry.id),
           approval_actor_registration: operatorRegistration,
           approval_actor_name: operatorName,
-          fulfillment_type: "legacy_instant",
+          fulfillment_type:
+            getProduct.item_type === "voucher" ? "voucher_issue" : "physical_delivery",
           legacy_prize_id: null,
           createdat: now,
           updatedat: now,
-        })
-      );
-
-      const prize = await prizeRepository.save(
-        prizeRepository.create({
-          matricula: String(colaboradorData.matricula),
-          nome: colaboradorData.nome,
-          premio_solicitado: getProduct.nome,
-          pontos_premio_solicitado: String(getProduct.valor),
-          usuario_entregador: operatorRegistration ?? "",
-          nome_entregador: operatorName ?? "",
-          data_solicitacao: now,
-          data_entrega: now,
-          createdat: now,
-          updatedat: now,
-          unidade_dass: validDassOffice,
         })
       );
 
@@ -983,8 +978,8 @@ export const PenseAjaService = {
         registration: String(colaboradorData.matricula),
         dassOffice: validDassOffice,
         entryType: "commit",
-        amount: Number(getProduct.valor),
-        sourceType: "reward_redemption",
+        amount: Number(getProduct.points_cost),
+        sourceType: "marketplace_redemption",
         sourceId: String(redemptionRequest.id),
         relatedEntryId: reserveEntry.id,
         correlationId,
@@ -992,18 +987,9 @@ export const PenseAjaService = {
         createdByRegistration: operatorRegistration,
         createdByName: operatorName,
         metadata: {
-          legacyPrizeId: Number(prize.id),
-          catalogItemId: Number(getProduct.id),
+          catalogItemId: String(getProduct.id),
         },
       });
-
-      await redemptionRepository.update(
-        { id: redemptionRequest.id },
-        {
-          legacy_prize_id: String(prize.id),
-          updatedat: new Date(),
-        }
-      );
 
       await LedgerService.syncBalanceProjection(
         queryRunner,
@@ -1012,8 +998,8 @@ export const PenseAjaService = {
       );
 
       await AuditService.recordEvent(queryRunner, {
-        eventType: "reward.redemption.legacy_completed",
-        aggregateType: "reward_redemption",
+        eventType: "marketplace.request.completed",
+        aggregateType: "marketplace_redemption",
         aggregateId: redemptionRequest.id,
         dassOffice: validDassOffice,
         actorRegistration: operatorRegistration,
@@ -1021,19 +1007,18 @@ export const PenseAjaService = {
         reason: "Resgate legado confirmado.",
         beforeState: null,
         afterState: {
-          request_status: "legacy_completed",
-          catalog_item_id: Number(getProduct.id),
-          legacy_prize_id: Number(prize.id),
+          request_status: "completed",
+          catalog_item_id: String(getProduct.id),
         },
         metadata: {
-          productName: getProduct.nome,
-          points: Number(getProduct.valor),
+          productName: getProduct.name,
+          points: Number(getProduct.points_cost),
         },
         correlationId,
       });
 
       await queryRunner.commitTransaction();
-      return Number(prize.id);
+      return Number(redemptionRequest.id);
     } catch (error) {
       if (queryRunner.isTransactionActive) {
         await queryRunner.rollbackTransaction();
@@ -1108,22 +1093,45 @@ export const PenseAjaService = {
 
       const image = files[0].fileUrl;
       const now = new Date();
-      const productRepository = queryRunner.manager.getRepository(PenseAjaLojaEntity);
+      const productRepository = queryRunner.manager.getRepository(
+        MarketplaceCatalogItemEntity
+      );
 
       const product = await productRepository.save(
         productRepository.create({
-          nome: productData.name,
-          imagem: image,
-          valor: productData.points,
+          legacy_product_id: null,
           unidade_dass: validDassOffice,
-          user_create: userRegistration,
-          created_at: now,
-          updated_at: now,
+          name: productData.name,
+          image_url: image,
+          points_cost: String(productData.points),
+          item_type: "physical",
+          active: true,
+          available_quantity: null,
+          metadata: null,
+          created_by: userRegistration,
+          updated_by: userRegistration,
+          createdat: now,
+          updatedat: now,
         })
       );
 
+      await AuditService.recordEvent(queryRunner, {
+        eventType: "catalog.item.created",
+        aggregateType: "catalog_item",
+        aggregateId: product.id,
+        dassOffice: validDassOffice,
+        actorRegistration: userRegistration,
+        actorRole: "catalog.manage",
+        afterState: {
+          name: product.name,
+          points_cost: Number(product.points_cost),
+          item_type: product.item_type,
+        },
+        correlationId: randomUUID(),
+      });
+
       await queryRunner.commitTransaction();
-      return product.nome;
+      return product.name;
     } catch (error) {
       if (queryRunner.isTransactionActive) {
         await queryRunner.rollbackTransaction();
@@ -1145,22 +1153,23 @@ export const PenseAjaService = {
     try {
       const dataSource = await initializeDatabase();
       const products = await dataSource
-        .getRepository(PenseAjaLojaEntity)
+        .getRepository(MarketplaceCatalogItemEntity)
         .createQueryBuilder("product")
         .select("product.id", "id")
-        .addSelect("product.nome", "nome")
-        .addSelect("product.imagem", "imagem")
-        .addSelect("product.valor", "valor")
-        .addSelect("product.user_create", "user_create")
-        .addSelect("product.created_at", "created_at")
+        .addSelect("product.name", "nome")
+        .addSelect("product.image_url", "imagem")
+        .addSelect("product.points_cost", "valor")
+        .addSelect("product.created_by", "user_create")
+        .addSelect("product.createdat", "created_at")
         .where("product.unidade_dass = :dassOffice", {
           dassOffice: validDassOffice,
         })
+        .andWhere("product.active = true")
         .getRawMany<ProductRecord>();
 
       return products.map((product) => ({
         ...product,
-        id: Number(product.id),
+        id: String(product.id),
         valor: Number(product.valor),
       }));
     } catch (error) {
@@ -1191,9 +1200,11 @@ export const PenseAjaService = {
       await queryRunner.connect();
       await queryRunner.startTransaction();
 
-      const productRepository = queryRunner.manager.getRepository(PenseAjaLojaEntity);
+      const productRepository = queryRunner.manager.getRepository(
+        MarketplaceCatalogItemEntity
+      );
       const updatedProducts: ProductRecord[] = [];
-      const failedProducts: Array<{ id: number; error: string }> = [];
+      const failedProducts: Array<{ id: string; error: string }> = [];
 
       for (const product of productData) {
         if (!product.id || !product.nome || product.valor === undefined) {
@@ -1203,7 +1214,7 @@ export const PenseAjaService = {
 
         const existingProduct = await productRepository.findOne({
           where: {
-            id: Number(product.id),
+            id: String(product.id),
             unidade_dass: validDassOffice,
           },
         });
@@ -1220,23 +1231,42 @@ export const PenseAjaService = {
           .createQueryBuilder()
           .update()
           .set({
-            nome: product.nome,
-            valor: product.valor,
-            updated_at: new Date(),
+            name: product.nome,
+            points_cost: String(product.valor),
+            updatedat: new Date(),
             updated_by: usuario,
           })
-          .where("id = :id", { id: Number(product.id) })
+          .where("id = :id", { id: String(product.id) })
           .andWhere("unidade_dass = :dassOffice", {
             dassOffice: validDassOffice,
           })
-          .returning(["id", "nome", "imagem", "valor"])
+          .returning(["id", "name", "image_url", "points_cost"])
           .execute();
 
         if (result.raw?.length) {
+          await AuditService.recordEvent(queryRunner, {
+            eventType: "catalog.item.updated",
+            aggregateType: "catalog_item",
+            aggregateId: product.id,
+            dassOffice: validDassOffice,
+            actorRegistration: usuario,
+            actorRole: "catalog.manage",
+            beforeState: {
+              name: existingProduct.name,
+              points_cost: Number(existingProduct.points_cost),
+            },
+            afterState: {
+              name: result.raw[0].name,
+              points_cost: Number(result.raw[0].points_cost),
+            },
+            correlationId: randomUUID(),
+          });
+
           updatedProducts.push({
-            ...result.raw[0],
-            id: Number(result.raw[0].id),
-            valor: Number(result.raw[0].valor),
+            nome: result.raw[0].name,
+            imagem: result.raw[0].image_url,
+            valor: Number(result.raw[0].points_cost),
+            id: String(result.raw[0].id),
           });
         } else {
           failedProducts.push({ id: product.id, error: "Falha ao atualizar" });

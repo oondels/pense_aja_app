@@ -36,24 +36,12 @@ export const UserPenseaja = {
           lf.gerente,
           lf.funcao,
           lf.matricula,
-          COALESCE(p.soma_pontos, 0) AS pontos,
-          COALESCE(pm.soma_premios, 0) AS pontos_resgatados,
+          0 AS pontos,
+          0 AS pontos_resgatados,
           COALESCE(pa.classificacoes_json, '{}'::jsonb) AS classificacoes_pense_aja,
           ae.email,
           ae.authorized_notifications_apps
         FROM ${collaboratorTableMap[validDassOffice]} lf
-        LEFT JOIN (
-          SELECT matricula, SUM(valor) AS soma_pontos
-          FROM pense_aja.pense_aja_pontos
-          WHERE unidade_dass = $2
-          GROUP BY matricula
-        ) p ON lf.matricula = p.matricula
-        LEFT JOIN (
-          SELECT matricula, SUM(pontos_premio_solicitado) AS soma_premios
-          FROM pense_aja.pense_aja_premios
-          WHERE unidade_dass = $2
-          GROUP BY matricula
-        ) pm ON lf.matricula = pm.matricula
         LEFT JOIN (
           SELECT COALESCE(email, '') as email, matricula, authorized_notifications_apps FROM autenticacao.emails
         ) ae ON lf.matricula = ae.matricula
@@ -89,12 +77,19 @@ export const UserPenseaja = {
 
       const pontos = projection
         ? Number(projection.total_earned) - Number(projection.total_reversed)
-        : Number(query[0].pontos) || 0;
+        : 0;
       const pontosResgatados = projection
-        ? Number(projection.total_committed) || 0
-        : Number(query[0].pontos_resgatados) || 0;
+        ? Math.max(
+            0,
+            Number(projection.total_committed) -
+              Number(projection.total_refunded ?? 0)
+          )
+        : 0;
       const pontosReservados = projection
         ? Number(projection.total_reserved) || 0
+        : 0;
+      const pontosEstornados = projection
+        ? Number(projection.total_refunded ?? 0) || 0
         : 0;
       const saldoDisponivel = projection
         ? Number(projection.available_balance) || 0
@@ -105,6 +100,7 @@ export const UserPenseaja = {
         pontos,
         pontos_resgatados: pontosResgatados,
         pontos_reservados: pontosReservados,
+        pontos_estornados: pontosEstornados,
         saldo_disponivel: saldoDisponivel,
       } as UserProfileData;
     } catch (error) {

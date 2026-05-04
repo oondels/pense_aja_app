@@ -33,7 +33,7 @@ const MarketplaceRedemptionRequestEntity =
         type: String,
       },
       catalog_item_id: {
-        type: "bigint",
+        type: String,
       },
       request_status: {
         type: String,

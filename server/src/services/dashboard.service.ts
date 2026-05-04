@@ -62,7 +62,7 @@ export class DashboardService {
       validateDassOffice(dassOffice);
 
       const dataSource = await initializeDatabase();
-      const result = await dataSource
+      const result = dataSource
         .getRepository(PenseAjaDassEntity)
         .createQueryBuilder("idea")
         .select("COUNT(*)", "total_ideas")
@@ -93,7 +93,8 @@ export class DashboardService {
 
       applyDateFilter(result, "idea", "createdat", startDate, endDate);
 
-      const data = await result.getRawOne<{
+      const [data, ledgerRows, marketplaceRows] = await Promise.all([
+        result.getRawOne<{
         total_ideas?: string;
         implemented_ideas?: string;
         pending_ideas?: string;
@@ -102,7 +103,43 @@ export class DashboardService {
         in_analysis?: string;
         total_value?: string;
         avg_value?: string;
-      }>();
+        }>(),
+        dataSource.query(
+          `
+            SELECT
+              COALESCE(SUM(total_earned), 0) AS total_earned,
+              COALESCE(SUM(total_committed), 0) AS total_committed,
+              COALESCE(SUM(total_refunded), 0) AS total_refunded,
+              COALESCE(SUM(total_reserved), 0) AS total_reserved
+            FROM pense_aja.points_balance_projection
+            WHERE unidade_dass = $1
+          `,
+          [dassOffice]
+        ) as Promise<Array<{
+          total_earned: string;
+          total_committed: string;
+          total_refunded: string;
+          total_reserved: string;
+        }>>,
+        dataSource.query(
+          `
+            SELECT
+              COUNT(*) FILTER (WHERE request_status IN ('pending_approval', 'approved', 'fulfillment_in_progress')) AS pending,
+              COUNT(*) FILTER (WHERE request_status = 'completed') AS completed
+            FROM pense_aja.marketplace_redemption_requests
+            WHERE unidade_dass = $1
+          `,
+          [dassOffice]
+        ) as Promise<Array<{ pending: string; completed: string }>>,
+      ]);
+
+      const ledger = ledgerRows[0] ?? {
+        total_earned: "0",
+        total_committed: "0",
+        total_refunded: "0",
+        total_reserved: "0",
+      };
+      const marketplace = marketplaceRows[0] ?? { pending: "0", completed: "0" };
 
       return {
         totalIdeas: Number(data?.total_ideas) || 0,
@@ -113,6 +150,13 @@ export class DashboardService {
         inAnalysis: Number(data?.in_analysis) || 0,
         totalValue: Number(data?.total_value) || 0,
         avgValue: Number(data?.avg_value) || 0,
+        totalPointsEarned: Number(ledger.total_earned) || 0,
+        totalPointsRedeemed:
+          (Number(ledger.total_committed) || 0) -
+          (Number(ledger.total_refunded) || 0),
+        totalPointsReserved: Number(ledger.total_reserved) || 0,
+        marketplacePending: Number(marketplace.pending) || 0,
+        marketplaceCompleted: Number(marketplace.completed) || 0,
       };
     } catch (error) {
       if (error instanceof CustomError) {
@@ -324,27 +368,7 @@ export class DashboardService {
         return "Outros";
       };
 
-      const getLikesAndComments = (value: number, status: string) => {
-        const baseValue = Math.max(value || 0, 1000);
-        const statusMultiplier =
-          status === "Aprovada" ? 1.5 : status === "Pendente" ? 1 : 0.7;
-
-        const likes = Math.floor(
-          (baseValue / 1000) * statusMultiplier * (Math.random() * 10 + 15)
-        );
-        const comments = Math.floor(likes * 0.15 * (Math.random() + 0.5));
-
-        return {
-          likes: Math.min(likes, 99),
-          comments: Math.min(comments, 25),
-        };
-      };
-
       return rawRows.map((row) => {
-        const { likes, comments } = getLikesAndComments(
-          Number(row.valor_amortizado) || 0,
-          row.status
-        );
         const description = row.description || "Sem descrição disponível";
 
         return {
@@ -360,8 +384,9 @@ export class DashboardService {
           category: getCategory(row.setor || ""),
           sector: row.setor || "Não informado",
           factory: row.fabrica || "Não informado",
-          likes,
-          comments,
+          likes: 0,
+          comments: 0,
+          syntheticEngagement: false,
         };
       });
     } catch (error) {

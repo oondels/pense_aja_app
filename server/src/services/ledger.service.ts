@@ -24,11 +24,27 @@ interface CreateLedgerEntryInput {
 }
 
 const toPositiveInteger = (value: number) => Math.max(0, Math.trunc(value));
+const ledgerTypes: LedgerEntryType[] = [
+  "earn",
+  "reverse",
+  "reserve",
+  "commit",
+  "release",
+  "refund",
+];
 
 export const LedgerService = {
   async createEntry(queryRunner: QueryRunner, input: CreateLedgerEntryInput) {
     const repository = queryRunner.manager.getRepository(PointsLedgerEntryEntity);
     const amount = toPositiveInteger(input.amount);
+
+    if (!ledgerTypes.includes(input.entryType)) {
+      throw new Error(`Tipo de lançamento inválido: ${input.entryType}`);
+    }
+
+    if (amount <= 0) {
+      throw new Error("Lançamento de ledger deve possuir valor positivo.");
+    }
 
     return repository.save(
       repository.create({
@@ -65,6 +81,7 @@ export const LedgerService = {
             - COALESCE(SUM(CASE WHEN entry_type = 'release' THEN amount ELSE 0 END), 0)
             - COALESCE(SUM(CASE WHEN entry_type = 'commit' THEN amount ELSE 0 END), 0) AS total_reserved,
           COALESCE(SUM(CASE WHEN entry_type = 'commit' THEN amount ELSE 0 END), 0) AS total_committed,
+          COALESCE(SUM(CASE WHEN entry_type = 'refund' THEN amount ELSE 0 END), 0) AS total_refunded,
           COALESCE(SUM(CASE WHEN entry_type = 'reverse' THEN amount ELSE 0 END), 0) AS total_reversed
         FROM pense_aja.points_ledger_entries
         WHERE matricula = $1
@@ -76,6 +93,7 @@ export const LedgerService = {
       total_earned: string;
       total_reserved: string;
       total_committed: string;
+      total_refunded: string;
       total_reversed: string;
     }>;
 
@@ -83,15 +101,17 @@ export const LedgerService = {
       total_earned: "0",
       total_reserved: "0",
       total_committed: "0",
+      total_refunded: "0",
       total_reversed: "0",
     };
 
     const totalEarned = Number(aggregate.total_earned);
     const totalReserved = Number(aggregate.total_reserved);
     const totalCommitted = Number(aggregate.total_committed);
+    const totalRefunded = Number(aggregate.total_refunded);
     const totalReversed = Number(aggregate.total_reversed);
     const availableBalance =
-      totalEarned - totalReserved - totalCommitted - totalReversed;
+      totalEarned - totalReserved - totalCommitted - totalReversed + totalRefunded;
     const repository = queryRunner.manager.getRepository(PointsBalanceProjectionEntity);
     const existing = await repository.findOne({
       where: {
@@ -108,6 +128,7 @@ export const LedgerService = {
           total_earned: String(totalEarned),
           total_reserved: String(totalReserved),
           total_committed: String(totalCommitted),
+          total_refunded: String(totalRefunded),
           total_reversed: String(totalReversed),
           available_balance: String(availableBalance),
           updatedat: now,
@@ -123,6 +144,7 @@ export const LedgerService = {
         total_earned: String(totalEarned),
         total_reserved: String(totalReserved),
         total_committed: String(totalCommitted),
+        total_refunded: String(totalRefunded),
         total_reversed: String(totalReversed),
         available_balance: String(availableBalance),
         updatedat: now,
@@ -138,6 +160,50 @@ export const LedgerService = {
         unidade_dass: dassOffice,
       },
     });
+  },
+
+  async getSourceNetAmount(
+    queryRunner: QueryRunner,
+    input: {
+      registration: string;
+      dassOffice: DassOffice;
+      sourceType: string;
+      sourceId: string;
+    }
+  ): Promise<{ netAmount: number; latestEarnEntryId: number | null }> {
+    const rows = (await queryRunner.query(
+      `
+        SELECT
+          COALESCE(SUM(CASE WHEN entry_type = 'earn' THEN amount ELSE 0 END), 0)
+            - COALESCE(SUM(CASE WHEN entry_type = 'reverse' THEN amount ELSE 0 END), 0) AS net_amount,
+          (
+            SELECT id
+            FROM pense_aja.points_ledger_entries latest
+            WHERE latest.matricula = $1
+              AND latest.unidade_dass = $2
+              AND latest.source_type = $3
+              AND latest.source_id = $4
+              AND latest.entry_type = 'earn'
+              AND latest.status = 'confirmed'
+            ORDER BY latest.createdat DESC, latest.id DESC
+            LIMIT 1
+          ) AS latest_earn_entry_id
+        FROM pense_aja.points_ledger_entries
+        WHERE matricula = $1
+          AND unidade_dass = $2
+          AND source_type = $3
+          AND source_id = $4
+          AND status = 'confirmed'
+      `,
+      [input.registration, input.dassOffice, input.sourceType, input.sourceId]
+    )) as Array<{ net_amount: string; latest_earn_entry_id: string | null }>;
+
+    return {
+      netAmount: Number(rows[0]?.net_amount ?? 0),
+      latestEarnEntryId: rows[0]?.latest_earn_entry_id
+        ? Number(rows[0].latest_earn_entry_id)
+        : null,
+    };
   },
 
   async getUserLedgerHistory(

@@ -9,6 +9,11 @@ export interface DashboardSummaryData {
   inAnalysis: number;
   totalValue: number;
   avgValue: number;
+  totalPointsEarned?: number;
+  totalPointsRedeemed?: number;
+  totalPointsReserved?: number;
+  marketplacePending?: number;
+  marketplaceCompleted?: number;
 }
 
 export interface DashboardMonthlyData {
@@ -41,6 +46,7 @@ export interface DashboardIdeaHighlight {
   factory: string;
   likes: number;
   comments: number;
+  syntheticEngagement?: boolean;
 }
 
 export interface DashboardEngagementContributor {

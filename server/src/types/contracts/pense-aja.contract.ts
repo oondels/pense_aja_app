@@ -153,7 +153,7 @@ export interface EvaluatePenseAjaResponse {
 }
 
 export interface ProductRecord {
-  id: number;
+  id: string;
   nome: string;
   imagem: string;
   valor: number;
@@ -162,7 +162,7 @@ export interface ProductRecord {
 }
 
 export interface ProductSelection {
-  id: number;
+  id: string | number;
 }
 
 export interface CollaboratorData {
@@ -190,7 +190,7 @@ export interface PurchaseProductResponse {
 }
 
 export interface ProductUpdateInput {
-  id: number;
+  id: string;
   nome: string;
   valor: number;
 }

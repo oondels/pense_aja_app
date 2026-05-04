@@ -61,7 +61,9 @@ Tabelas atuais:
 - `core.unidades_dass`
 - `colaborador.lista_funcionario[_UNIDADE]`
 
-## Modelo-alvo recomendado
+## Modelo-alvo implementado no corte direto
+
+Novas tabelas criadas a partir do corte direto usam `id uuid DEFAULT uuid_generate_v4()` como chave primária. Tabelas legadas ou fundações já aplicadas com `bigint` mantêm seus tipos para evitar migração destrutiva.
 
 ## 1. Autorização por unidade
 
@@ -159,6 +161,7 @@ Tipos esperados:
   - total gerado
   - total consumido
   - total reservado
+  - total estornado
   - saldo disponível
 
 ## 4. Auditoria
@@ -190,6 +193,7 @@ Campos conceituais mínimos:
 - substitui ou evolui a tabela atual de loja
 - suporta tipo do item: físico ou voucher
 - suporta disponibilidade e política por unidade
+- usa `id` UUID; referências legadas ficam em `legacy_product_id` textual
 
 ### `marketplace_redemption_requests`
 
@@ -216,7 +220,15 @@ Campos conceituais mínimos:
 
 ### `marketplace_voucher_deliveries`
 
-- integra status externo de voucher quando aplicável
+- persiste tentativas/status de emissão de voucher
+- a implementação atual usa adapter `noop` até existir provider externo configurado
+
+## Corte direto e legado
+
+- `pense_aja.pense_aja_pontos`, `pense_aja.pense_aja_premios` e `pense_aja.pense_aja_loja` permanecem como histórico/backfill.
+- Novas avaliações gravam pontuação apenas em `points_ledger_entries`.
+- Novos resgates gravam workflow em `marketplace_redemption_requests`.
+- Novo catálogo operacional usa `marketplace_catalog_items`.
 
 ## Relações recomendadas
 

@@ -22,6 +22,11 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 - File: `specs/backend/ROUTES.md`, `server/src/routes/penseAja.route.ts`, `server/src/controllers/pense-aja.controller.ts`
 - Related: pontuação, notificações, unidade dass, duplicidade, store, service layer
 
+## Marketplace Workflow API
+- Keywords: marketplace, catálogo, resgate, aprovação, fulfillment, voucher, cancelamento, estorno
+- File: `specs/backend/ROUTES.md`, `server/src/routes/marketplace.route.ts`, `server/src/controllers/marketplace.controller.ts`
+- Related: ledger, auditoria, catálogo, políticas por unidade, voucher adapter
+
 ## Idea Business Rules
 - Keywords: regras de negócio, avaliação, classificação, pontos, ledger, duplicidade, exclusão, reprovação, auditoria
 - File: `specs/backend/BUSINESS_RULES.md` e `server/src/services/pense-aja.service.ts`

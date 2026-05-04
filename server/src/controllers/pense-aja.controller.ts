@@ -145,7 +145,11 @@ export const PenseAjaController = {
       const { dassOffice } = req.params;
       const result = await PenseAjaService.submitPenseAja(
         req.body as PenseAjaData,
-        dassOffice
+        dassOffice,
+        {
+          actorRegistration: req.authContext?.registration,
+          actorName: req.authContext?.username,
+        }
       );
       res.status(result.statusCode).json(result.body);
     } catch (error) {

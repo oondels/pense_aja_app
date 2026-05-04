@@ -7,6 +7,7 @@ export interface PointsBalanceProjection {
   total_earned: string;
   total_reserved: string;
   total_committed: string;
+  total_refunded: string;
   total_reversed: string;
   available_balance: string;
   updatedat: Date;
@@ -37,6 +38,10 @@ const PointsBalanceProjectionEntity = new EntitySchema<PointsBalanceProjection>(
       default: 0,
     },
     total_committed: {
+      type: "bigint",
+      default: 0,
+    },
+    total_refunded: {
       type: "bigint",
       default: 0,
     },

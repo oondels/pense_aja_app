@@ -22,7 +22,12 @@ router.put(
 
 // Pense e aja
 router.get("/:dassOffice", PenseAjaController.listIdeas);
-router.post("/:dassOffice", PenseAjaController.createIdea);
+router.post(
+  "/:dassOffice",
+  verifyToken,
+  requirePermission("idea.submit", (req) => req.params.dassOffice),
+  PenseAjaController.createIdea
+);
 router.get("/:dassOffice/:id/audit", PenseAjaController.getIdeaAuditTimeline);
 router.get("/:dassOffice/:id", PenseAjaController.getIdeaById);
 router.put(

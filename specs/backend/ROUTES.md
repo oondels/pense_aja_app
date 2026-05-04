@@ -9,11 +9,11 @@ Este documento separa:
 
 ### `GET /pense-aja/products/:dassOffice`
 
-Estado atual:
+Estado atual após corte direto:
 
 - lista produtos da loja por unidade
 - não exige autenticação
-- lê de `pense_aja.pense_aja_loja`
+- lê de `pense_aja.marketplace_catalog_items`
 
 Modelo-alvo:
 
@@ -23,12 +23,12 @@ Modelo-alvo:
 
 ### `PUT /pense-aja/purchase/:registration`
 
-Estado atual:
+Estado atual após corte direto:
 
-- registra resgate em passo único
-- exige `verifyToken` e `roleVerificationAccess`
-- calcula saldo como `pontos - pontos_resgatados`
-- insere uma linha em `pense_aja.pense_aja_premios`
+- mantido como compatibilidade, mas grava em `marketplace_redemption_requests`
+- exige `verifyToken` e autorização dinâmica
+- reserva e confirma saldo via `points_ledger_entries`
+- não insere novas linhas em `pense_aja.pense_aja_premios`
 
 Modelo-alvo:
 
@@ -39,10 +39,11 @@ Modelo-alvo:
 
 ### `PUT /pense-aja/products/:dassOffice`
 
-Estado atual:
+Estado atual após corte direto:
 
 - atualiza produtos em lote parcial
-- exige token e autorização hardcoded por papel
+- exige token e permissão `catalog.manage`
+- grava em `marketplace_catalog_items` e gera auditoria
 
 Modelo-alvo:
 
@@ -51,12 +52,12 @@ Modelo-alvo:
 
 ### `GET /pense-aja/:dassOffice`
 
-Estado atual:
+Estado atual após corte direto:
 
 - lista ideias por unidade e filtros
 - não exige autenticação
 - filtra `excluido = false`
-- inclui `pontuacao` quando existir linha em `pense_aja.pense_aja_pontos`
+- inclui `pontuacao` a partir do saldo líquido de ledger por ideia
 
 Modelo-alvo:
 
@@ -65,12 +66,13 @@ Modelo-alvo:
 
 ### `POST /pense-aja/:dassOffice`
 
-Estado atual:
+Estado atual após corte direto:
 
 - cria novo cadastro de ideia
-- hoje não exige autenticação no código
+- exige `verifyToken` e permissão `idea.submit`
 - usa lock transacional para reduzir duplicidade
 - notifica gerente quando elegível
+- gera evento `idea.created`
 
 Modelo-alvo:
 
@@ -92,12 +94,12 @@ Modelo-alvo:
 
 ### `PUT /pense-aja/avaliar/:id`
 
-Estado atual:
+Estado atual após corte direto:
 
-- exige `verifyToken` e `roleVerificationAccess`
-- usa `funcao` do usuário para decidir se atua como analista ou gerente
-- reprovação ou exclusão por gerente remove pontos em vez de gerar reversão auditável
-- aprovação com nota cria ou atualiza `pense_aja.pense_aja_pontos`
+- exige `verifyToken` e permissão `idea.evaluate`
+- usa permissões efetivas da sessão para diferenciar avaliador comum e permissão de exclusão
+- reprovação, exclusão ou reavaliação geram `reverse` no ledger
+- aprovação com nota gera `earn` em `points_ledger_entries`, sem nova escrita em `pense_aja_pontos`
 
 Modelo-alvo:
 
@@ -107,6 +109,18 @@ Modelo-alvo:
 - toda mudança de pontuação deve virar lançamento no ledger
 
 ## Módulo `/user`
+
+### `GET /user/session-context/:dassOffice`
+
+Estado atual após corte direto:
+
+- exige `verifyToken`
+- resolve permissões efetivas por unidade em RBAC
+- persiste snapshot curto em `rbac_session_snapshots`
+
+Modelo-alvo:
+
+- continua sendo a fonte de contexto autorizador para o frontend
 
 ### `GET /user/rbac/roles`
 ### `GET /user/rbac/assignments`
@@ -137,6 +151,44 @@ Modelo-alvo:
 
 - deve continuar entregando visão consolidada ao frontend
 - saldo e histórico devem vir de projeções consistentes do ledger e do marketplace
+
+### `GET /user/:registration/points-history`
+
+Estado atual após corte direto:
+
+- retorna histórico do usuário em `points_ledger_entries`
+- exige `dassOffice` válido em query string
+
+Modelo-alvo:
+
+- permanece como trilha de leitura do ledger append-only
+
+## Módulo `/marketplace`
+
+### `GET /marketplace/catalog/:dassOffice`
+### `PUT /marketplace/catalog/:dassOffice`
+### `POST /marketplace/requests`
+### `GET /marketplace/requests`
+### `PUT /marketplace/requests/:id/approve`
+### `PUT /marketplace/requests/:id/reject`
+### `PUT /marketplace/requests/:id/fulfillment`
+### `PUT /marketplace/requests/:id/complete`
+### `PUT /marketplace/requests/:id/cancel`
+### `PUT /marketplace/requests/:id/refund`
+
+Estado atual após corte direto:
+
+- catálogo operacional usa `marketplace_catalog_items`
+- solicitação cria `reserve` no ledger e status `pending_approval`
+- rejeição ou cancelamento antes de commit gera `release`
+- conclusão de entrega/emissão gera `commit`
+- estorno após conclusão gera `refund`
+- fulfillment físico e voucher registram passos em `marketplace_fulfillment_steps`
+- voucher usa adapter `noop` configurável e registra entrega em `marketplace_voucher_deliveries`
+
+Modelo-alvo:
+
+- marketplace é o fluxo canônico para resgate, aprovação, fulfillment e reconciliação
 
 ### `GET /user/unidade/:registration`
 
@@ -173,7 +225,8 @@ Estado atual:
 
 - endpoints de leitura agregada por unidade
 - não exigem autenticação
-- parte dos widgets usa inferência ou dados sintéticos para apresentação
+- resumo inclui métricas de ledger e marketplace
+- destaques não geram likes/comments aleatórios como dado canônico
 
 Modelo-alvo:
 
@@ -199,7 +252,7 @@ Modelo-alvo:
 
 - a Fase 1 não redefine os endpoints já existentes como implementados de outra forma; ela documenta a evolução esperada
 - na Fase 2, a compatibilidade progressiva deve ser preservada sempre que possível
-- endpoints novos de RBAC, auditoria, ledger e marketplace devem nascer apenas quando a refatoração técnica começar
+- endpoints de RBAC, ledger e marketplace já fazem parte do corte direto backend
 
 ## Tratamento global de erro
 

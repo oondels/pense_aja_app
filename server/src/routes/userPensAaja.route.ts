@@ -62,9 +62,9 @@ router.get(
   verifyToken,
   UserPenseajaController.getSessionContext
 );
-router.get("/:registration", UserPenseajaController.getUserData);
-router.get("/:registration/points-history", UserPenseajaController.getUserPointsHistory);
 router.get("/unidade/:registration", UserPenseajaController.getUserOffice);
+router.get("/:registration/points-history", UserPenseajaController.getUserPointsHistory);
+router.get("/:registration", UserPenseajaController.getUserData);
 router.put("/:registration", verifyToken, UserPenseajaController.updateUserData);
 
 export default router;
