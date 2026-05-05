@@ -1,4 +1,11 @@
 import AuditEventEntity from "./AuditEvent";
+import {
+  CollaboratorItbEntity,
+  CollaboratorSestEntity,
+  CollaboratorStjEntity,
+  CollaboratorVdcConfEntity,
+  CollaboratorVdcEntity,
+} from "./Collaborator";
 import EmailEntity from "./Email";
 import MarketplaceRedemptionRequestEntity from "./MarketplaceRedemptionRequest";
 import MarketplaceCatalogItemEntity from "./MarketplaceCatalogItem";
@@ -25,6 +32,11 @@ import UsuarioEntity from "./Usuario";
 
 export {
   AuditEventEntity,
+  CollaboratorItbEntity,
+  CollaboratorSestEntity,
+  CollaboratorStjEntity,
+  CollaboratorVdcConfEntity,
+  CollaboratorVdcEntity,
   EmailEntity,
   MarketplaceRedemptionRequestEntity,
   MarketplaceCatalogItemEntity,
@@ -52,6 +64,11 @@ export {
 
 export const entities = [
   AuditEventEntity,
+  CollaboratorSestEntity,
+  CollaboratorVdcEntity,
+  CollaboratorItbEntity,
+  CollaboratorVdcConfEntity,
+  CollaboratorStjEntity,
   PenseAjaDassEntity,
   PointsLedgerEntryEntity,
   PointsBalanceProjectionEntity,

@@ -71,7 +71,7 @@ Estado atual após corte direto:
 - cria novo cadastro de ideia
 - exige `verifyToken` e permissão `idea.submit`
 - usa lock transacional para reduzir duplicidade
-- notifica gerente quando elegível
+- tenta notificar gerente quando elegível, sem bloquear o cadastro se email ou notificação falhar
 - gera evento `idea.created`
 
 Modelo-alvo:
@@ -100,6 +100,7 @@ Estado atual após corte direto:
 - usa permissões efetivas da sessão para diferenciar avaliador comum e permissão de exclusão
 - reprovação, exclusão ou reavaliação geram `reverse` no ledger
 - aprovação com nota gera `earn` em `points_ledger_entries`, sem nova escrita em `pense_aja_pontos`
+- busca de email, opt-in e envio de notificação são pós-processamento não bloqueante
 
 Modelo-alvo:
 

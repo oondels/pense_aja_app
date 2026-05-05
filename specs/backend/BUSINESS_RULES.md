@@ -320,11 +320,13 @@ Fluxo-base:
 - email corporativo `@grupodass.com.br`
 - opt-in por `authorized_notifications_apps`
 - fallback legado `["null"]` quando lista vem vazia
+- cadastro e avaliação tratam busca de email, opt-in e envio como efeito colateral não bloqueante
 
 ### Regra de negócio
 
 - receber notificação depende de política de autorização do app
 - existir email não significa poder ser notificado
+- falha de busca de email ou envio não deve transformar cadastro ou avaliação concluídos em erro de API
 
 ### Evolução
 

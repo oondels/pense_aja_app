@@ -1,6 +1,15 @@
 import logger from "../utils/logger";
 import { initializeDatabase } from "../config/database";
+import {
+  Collaborator,
+  CollaboratorItbEntity,
+  CollaboratorSestEntity,
+  CollaboratorStjEntity,
+  CollaboratorVdcConfEntity,
+  CollaboratorVdcEntity,
+} from "../models/Collaborator";
 import EmailEntity from "../models/Email";
+import PenseAjaDassEntity from "../models/PenseAjaDass";
 import PointsBalanceProjectionEntity from "../models/PointsBalanceProjection";
 import UnidadeDassEntity from "../models/UnidadeDass";
 import UsuarioEntity from "../models/Usuario";
@@ -15,51 +24,33 @@ import {
 } from "../types/contracts";
 import { assertDassOffice } from "../utils/dassOffice";
 
-const collaboratorTableMap: Record<DassOffice, string> = {
-  SEST: "colaborador.lista_funcionario",
-  VDC: "colaborador.lista_funcionario_VDC",
-  ITB: "colaborador.lista_funcionario_ITB",
-  "VDC-CONF": "colaborador.\"lista_funcionario_VDC-CONF\"",
-  STJ: "colaborador.lista_funcionario_STJ",
+const collaboratorEntityMap = {
+  SEST: CollaboratorSestEntity,
+  VDC: CollaboratorVdcEntity,
+  ITB: CollaboratorItbEntity,
+  "VDC-CONF": CollaboratorVdcConfEntity,
+  STJ: CollaboratorStjEntity,
 };
+
+const normalizeName = (value?: string | null) =>
+  String(value ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+
+const hasPenseAjaNotificationEnabled = (apps?: string[] | null) =>
+  Array.isArray(apps) && apps.includes("pense_aja");
 
 export const UserPenseaja = {
   async getUserData(registration: number, dassOffice: DassOffice): Promise<UserProfileData> {
     const validDassOffice = assertDassOffice(dassOffice);
     try {
       const dataSource = await initializeDatabase();
-      const query = await dataSource.query(
-        `
-        SELECT
-          lf.nome,
-          lf.nome_setor AS setor,
-          lf.gerente,
-          lf.funcao,
-          lf.matricula,
-          0 AS pontos,
-          0 AS pontos_resgatados,
-          COALESCE(pa.classificacoes_json, '{}'::jsonb) AS classificacoes_pense_aja,
-          ae.email,
-          ae.authorized_notifications_apps
-        FROM ${collaboratorTableMap[validDassOffice]} lf
-        LEFT JOIN (
-          SELECT COALESCE(email, '') as email, matricula, authorized_notifications_apps FROM autenticacao.emails
-        ) ae ON lf.matricula = ae.matricula
-        LEFT JOIN LATERAL (
-          SELECT jsonb_object_agg(COALESCE(classificacao, 'Não classificado'), total) AS classificacoes_json
-          FROM (
-            SELECT classificacao, COUNT(*) AS total
-            FROM pense_aja.pense_aja_dass
-            WHERE matricula = lf.matricula
-              AND unidade_dass = $2
-              AND excluido = false
-            GROUP BY classificacao
-          ) sub
-        ) pa ON true
-        WHERE lf.matricula = $1;
-        `,
-        [registration, validDassOffice]
-      );
+      const collaborator = await dataSource
+        .getRepository<Collaborator>(collaboratorEntityMap[validDassOffice])
+        .findOne({
+          where: { matricula: String(registration) },
+        });
 
       const projection = await dataSource
         .getRepository(PointsBalanceProjectionEntity)
@@ -70,10 +61,34 @@ export const UserPenseaja = {
           },
         });
 
-      if (query.length === 0) {
+      if (!collaborator) {
         logger.error("user-pense-aja", `Usuário não encontrado: ${registration}`);
         throw new CustomError(`Usuário não encontrado: ${registration}`);
       }
+
+      const email = await dataSource.getRepository(EmailEntity).findOne({
+        where: {
+          matricula: String(registration),
+          unidade_dass: validDassOffice,
+        },
+      });
+
+      const ideas = await dataSource.getRepository(PenseAjaDassEntity).find({
+        select: ["classificacao"],
+        where: {
+          matricula: String(registration),
+          unidade_dass: validDassOffice,
+          excluido: false,
+        },
+      });
+      const classificacoes = ideas.reduce<Record<string, number>>(
+        (acc, idea) => {
+          const key = idea.classificacao ?? "Não classificado";
+          acc[key] = (acc[key] ?? 0) + 1;
+          return acc;
+        },
+        {}
+      );
 
       const pontos = projection
         ? Number(projection.total_earned) - Number(projection.total_reversed)
@@ -96,7 +111,15 @@ export const UserPenseaja = {
         : pontos - pontosResgatados;
 
       return {
-        ...query[0],
+        nome: collaborator.nome ?? "",
+        setor: collaborator.nome_setor ?? "",
+        gerente: collaborator.gerente ?? "",
+        funcao: collaborator.funcao ?? "",
+        matricula: Number(collaborator.matricula),
+        email: email?.email ?? "",
+        authorized_notifications_apps:
+          email?.authorized_notifications_apps ?? ["null"],
+        classificacoes_pense_aja: classificacoes,
         pontos,
         pontos_resgatados: pontosResgatados,
         pontos_reservados: pontosReservados,
@@ -118,18 +141,42 @@ export const UserPenseaja = {
     const validDassOffice = assertDassOffice(dassOffice);
     try {
       const dataSource = await initializeDatabase();
-      const query = await dataSource.query(
-        `
-        SELECT lf.gerente, u.matricula, ue.email
-        FROM ${collaboratorTableMap[validDassOffice]} lf
-        INNER JOIN autenticacao.usuarios u ON LOWER(TRIM(lf.gerente)) = LOWER(TRIM(u.nome)) AND u.funcao = 'GERENTE'
-        INNER JOIN autenticacao.emails ue ON u.matricula = ue.matricula
-        WHERE lf.matricula = $1
-      `,
-        [registration]
+      const collaborator = await dataSource
+        .getRepository<Collaborator>(collaboratorEntityMap[validDassOffice])
+        .findOne({
+          where: { matricula: String(registration) },
+        });
+
+      if (!collaborator?.gerente) {
+        return null;
+      }
+
+      const managers = await dataSource.getRepository(UsuarioEntity).find({
+        where: { funcao: "GERENTE" },
+      });
+      const manager = managers.find(
+        (user) => normalizeName(user.nome) === normalizeName(collaborator.gerente)
       );
 
-      return query[0] ?? null;
+      if (!manager) {
+        return null;
+      }
+
+      const email = await dataSource.getRepository(EmailEntity).findOne({
+        where: {
+          matricula: String(manager.matricula),
+        },
+      });
+
+      if (!email?.email) {
+        return null;
+      }
+
+      return {
+        gerente: collaborator.gerente,
+        matricula: Number(manager.matricula),
+        email: email.email,
+      };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
 
@@ -142,25 +189,38 @@ export const UserPenseaja = {
     registration: string | number,
     dassOffice: DassOffice
   ): Promise<UserEmailNotificationTarget | undefined> {
+    const validDassOffice = assertDassOffice(dassOffice);
     try {
       const dataSource = await initializeDatabase();
-      const query = await dataSource
-        .getRepository(UsuarioEntity)
-        .createQueryBuilder("u")
-        .innerJoin("autenticacao.emails", "ue", "u.matricula = ue.matricula")
-        .select("ue.email", "email")
-        .addSelect(
-          "ue.authorized_notifications_apps",
-          "authorized_notifications_apps"
-        )
-        .where("u.matricula = :registration", {
-          registration: String(registration),
-        })
-        .andWhere("u.unidade = :dassOffice", { dassOffice })
-        .andWhere(`ue.authorized_notifications_apps @> '["pense_aja"]'::jsonb`)
-        .getRawOne<UserEmailNotificationTarget>();
+      const user = await dataSource.getRepository(UsuarioEntity).findOne({
+        where: {
+          matricula: String(registration),
+          unidade: validDassOffice,
+        },
+      });
 
-      return query ?? undefined;
+      if (!user) {
+        return undefined;
+      }
+
+      const email = await dataSource.getRepository(EmailEntity).findOne({
+        where: {
+          matricula: String(registration),
+          unidade_dass: validDassOffice,
+        },
+      });
+
+      if (
+        !email?.email ||
+        !hasPenseAjaNotificationEnabled(email.authorized_notifications_apps)
+      ) {
+        return undefined;
+      }
+
+      return {
+        email: email.email,
+        authorized_notifications_apps: email.authorized_notifications_apps ?? [],
+      };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
 

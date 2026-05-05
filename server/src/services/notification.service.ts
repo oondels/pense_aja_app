@@ -45,7 +45,7 @@ export const NotificationService = {
           ? error.message
           : "Erro Interno no servidor!";
       console.error("Error checking notification enabled:", errorMessage);
-      throw error;
+      return false;
     }
   },
 };
