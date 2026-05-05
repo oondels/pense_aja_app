@@ -159,4 +159,16 @@ export const AuthorizationService = {
       );
     }
   },
+
+  assertAnyPermission(
+    context: AuthenticatedSessionContext,
+    permissions: string[]
+  ) {
+    if (!permissions.some((permission) => context.permissions.includes(permission))) {
+      throw new CustomError(
+        "Acesso proibido: permissão insuficiente para executar esta ação.",
+        403
+      );
+    }
+  },
 };

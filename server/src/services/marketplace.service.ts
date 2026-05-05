@@ -397,8 +397,10 @@ export const MarketplaceService = {
   ) {
     return this.transitionRequest(id, input, actor, {
       expected: ["pending_approval"],
-      status: "approved",
+      status: "completed",
       eventType: "marketplace.request.approved",
+      ledgerEntryType: "commit",
+      setApprovalActor: true,
     });
   },
 
@@ -557,6 +559,7 @@ export const MarketplaceService = {
       status: string;
       eventType: string;
       ledgerEntryType?: "release" | "commit" | "refund";
+      setApprovalActor?: boolean;
     }
   ): Promise<MarketplaceRequestRecord> {
     const validDassOffice = assertDassOffice(input.dassOffice);
@@ -622,11 +625,11 @@ export const MarketplaceService = {
         {
           request_status: transition.status,
           approval_actor_registration:
-            transition.status === "approved"
+            transition.setApprovalActor
               ? actor.registration
               : request.approval_actor_registration,
           approval_actor_name:
-            transition.status === "approved"
+            transition.setApprovalActor
               ? actor.username
               : request.approval_actor_name,
           updatedat: new Date(),

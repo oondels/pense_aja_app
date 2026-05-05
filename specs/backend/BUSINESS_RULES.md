@@ -258,7 +258,7 @@ O frontend deve consumir projeções consolidadas dessa conta, não recalcular p
 - item precisa existir em `marketplace_catalog_items`
 - saldo vem de `points_balance_projection`
 - solicitação e transições são persistidas em `marketplace_redemption_requests`
-- fulfillment físico/voucher é registrado em tabelas próprias
+- aprovação do Pense Aja conclui o resgate e desconta pontos; não há fulfillment ou voucher local no fluxo público atual
 - `pense_aja.pense_aja_premios` permanece apenas como histórico/backfill
 
 ### Problema legado resolvido no corte direto
@@ -273,18 +273,17 @@ Fluxo-base:
 
 1. usuário solicita resgate
 2. backend valida elegibilidade e cria `reserve`
-3. resgate entra em estado operacional
-4. operador aprova ou rejeita
-5. item físico segue separação e entrega, ou voucher segue emissão
-6. conclusão gera `commit`
-7. falha ou cancelamento elegível gera `release` ou `refund`
+3. aprovador com `marketplace.request.approve` aprova ou rejeita
+4. aprovação gera `commit` e status `completed`
+5. rejeição gera `release`
+6. estorno posterior gera `refund`
 
 ### Regras mínimas
 
 - catálogo é segregado por unidade
 - permissões operacionais do marketplace são próprias
-- item físico e voucher compartilham backbone de estados
-- passos específicos de fulfillment podem divergir
+- o fluxo público atual não gera voucher, separação ou fulfillment no Pense Aja
+- tabelas de fulfillment/voucher podem permanecer por compatibilidade, mas não são usadas no fluxo simplificado
 
 ## Auditoria de domínio
 
@@ -294,7 +293,7 @@ Fluxo-base:
 - transição de avaliação
 - geração ou reversão de pontos
 - solicitação de resgate
-- aprovação, rejeição, separação, entrega, emissão de voucher, cancelamento e estorno
+- aprovação, rejeição e estorno de resgate
 - alteração de configuração sensível da unidade
 
 ### Conteúdo mínimo do evento

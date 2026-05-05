@@ -12,7 +12,7 @@ tags:
   - name: Pense Aja
     description: Ideias, avaliação, compatibilidade de loja legada e catálogo.
   - name: Marketplace
-    description: Catálogo operacional, solicitação de resgate, aprovação, fulfillment, conclusão, cancelamento e estorno.
+    description: Catálogo operacional, solicitação de resgate, aprovação com desconto de pontos, rejeição e estorno.
   - name: User
     description: Perfil do colaborador, preferências, unidade, histórico de pontos e contexto de sessão.
   - name: RBAC
@@ -642,7 +642,9 @@ paths:
       tags: [Marketplace]
       summary: Aprovar solicitação de resgate
       description: >
-        Aprova uma solicitação pendente. Exige token válido e permissão
+        Aprova uma solicitação pendente, confirma o consumo dos pontos com
+        lançamento `commit` e finaliza o resgate como `completed`. Não gera
+        voucher ou fulfillment. Exige token válido e permissão
         `marketplace.request.approve` na unidade enviada no payload.
       parameters:
         - $ref: "#/components/parameters/RequestIdPath"
@@ -689,102 +691,14 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
-  /marketplace/requests/{id}/fulfillment:
-    put:
-      tags: [Marketplace]
-      summary: Executar etapa de fulfillment
-      description: >
-        Registra etapa operacional de separação física, entrega física ou emissão
-        de voucher. Exige token válido e permissão `marketplace.fulfillment.execute`.
-      parameters:
-        - $ref: "#/components/parameters/RequestIdPath"
-        - $ref: "#/components/parameters/CookieHeader"
-      security:
-        - cookieAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ExecuteFulfillmentInput"
-            example:
-              dassOffice: "SEST"
-              stepType: "physical_separation"
-              notes: "Produto separado no almoxarifado."
-              reason: "Preparação para entrega ao colaborador."
-              metadata:
-                shelf: "A-12"
-      responses:
-        "200":
-          $ref: "#/components/responses/MarketplaceRequestFulfillment"
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-
-  /marketplace/requests/{id}/complete:
-    put:
-      tags: [Marketplace]
-      summary: Concluir solicitação de resgate
-      description: >
-        Conclui o resgate e confirma o débito reservado no ledger com lançamento
-        `commit`. Exige token válido e permissão `marketplace.fulfillment.execute`.
-      parameters:
-        - $ref: "#/components/parameters/RequestIdPath"
-        - $ref: "#/components/parameters/CookieHeader"
-      security:
-        - cookieAuth: []
-      requestBody:
-        $ref: "#/components/requestBodies/MarketplaceTransition"
-      responses:
-        "200":
-          $ref: "#/components/responses/MarketplaceRequestCompleted"
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-
-  /marketplace/requests/{id}/cancel:
-    put:
-      tags: [Marketplace]
-      summary: Cancelar solicitação de resgate
-      description: >
-        Cancela uma solicitação antes da conclusão e libera pontos reservados.
-        Exige token válido e permissão `marketplace.cancel`.
-      parameters:
-        - $ref: "#/components/parameters/RequestIdPath"
-        - $ref: "#/components/parameters/CookieHeader"
-      security:
-        - cookieAuth: []
-      requestBody:
-        $ref: "#/components/requestBodies/MarketplaceTransition"
-      responses:
-        "200":
-          $ref: "#/components/responses/MarketplaceRequestCancelled"
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-
   /marketplace/requests/{id}/refund:
     put:
       tags: [Marketplace]
       summary: Estornar solicitação concluída
       description: >
         Estorna uma solicitação concluída com lançamento `refund` no ledger.
-        Exige token válido e permissão `marketplace.refund`.
+        Exige token válido e permissão `marketplace.request.approve` ou
+        `marketplace.refund`.
       parameters:
         - $ref: "#/components/parameters/RequestIdPath"
         - $ref: "#/components/parameters/CookieHeader"
@@ -1618,7 +1532,7 @@ components:
           example:
             message: "Erro interno no servidor. - Contate a equipe de automação!"
     MarketplaceRequestApproved:
-      description: Solicitação aprovada.
+      description: Solicitação aprovada e concluída com desconto de pontos.
       content:
         application/json:
           schema:
@@ -1628,7 +1542,7 @@ components:
             registration: "1234567"
             dassOffice: "SEST"
             catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
-            requestStatus: "approved"
+            requestStatus: "completed"
             reservedLedgerEntryId: 451
             approvalActorRegistration: "7654321"
             approvalActorName: "João Analista"
@@ -1651,63 +1565,6 @@ components:
             reservedLedgerEntryId: null
             approvalActorRegistration: "7654321"
             approvalActorName: "João Analista"
-            fulfillmentType: "none"
-            legacyPrizeId: null
-            createdAt: "2026-04-22T12:00:00.000Z"
-            updatedAt: "2026-04-22T13:00:00.000Z"
-    MarketplaceRequestFulfillment:
-      description: Fulfillment registrado.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/MarketplaceRequest"
-          example:
-            id: 927
-            registration: "1234567"
-            dassOffice: "SEST"
-            catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
-            requestStatus: "fulfillment_in_progress"
-            reservedLedgerEntryId: 451
-            approvalActorRegistration: "7654321"
-            approvalActorName: "João Analista"
-            fulfillmentType: "physical_separation"
-            legacyPrizeId: null
-            createdAt: "2026-04-22T12:00:00.000Z"
-            updatedAt: "2026-04-22T14:00:00.000Z"
-    MarketplaceRequestCompleted:
-      description: Solicitação concluída.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/MarketplaceRequest"
-          example:
-            id: 927
-            registration: "1234567"
-            dassOffice: "SEST"
-            catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
-            requestStatus: "completed"
-            reservedLedgerEntryId: null
-            approvalActorRegistration: "7654321"
-            approvalActorName: "João Analista"
-            fulfillmentType: "physical_delivery"
-            legacyPrizeId: null
-            createdAt: "2026-04-22T12:00:00.000Z"
-            updatedAt: "2026-04-22T15:00:00.000Z"
-    MarketplaceRequestCancelled:
-      description: Solicitação cancelada.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/MarketplaceRequest"
-          example:
-            id: 927
-            registration: "1234567"
-            dassOffice: "SEST"
-            catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
-            requestStatus: "cancelled"
-            reservedLedgerEntryId: null
-            approvalActorRegistration: null
-            approvalActorName: null
             fulfillmentType: "none"
             legacyPrizeId: null
             createdAt: "2026-04-22T12:00:00.000Z"

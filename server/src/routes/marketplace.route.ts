@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { MarketplaceController } from "../controllers/marketplace.controller";
 import { verifyToken } from "../middlewares/auth";
-import { requirePermission } from "../middlewares/permissionMiddleware";
+import {
+  requireAnyPermission,
+  requirePermission,
+} from "../middlewares/permissionMiddleware";
 
 const router = Router();
 
@@ -40,27 +43,12 @@ router.put(
   MarketplaceController.rejectRequest
 );
 router.put(
-  "/requests/:id/fulfillment",
-  verifyToken,
-  requirePermission("marketplace.fulfillment.execute", (req) => req.body?.dassOffice),
-  MarketplaceController.executeFulfillment
-);
-router.put(
-  "/requests/:id/complete",
-  verifyToken,
-  requirePermission("marketplace.fulfillment.execute", (req) => req.body?.dassOffice),
-  MarketplaceController.completeRequest
-);
-router.put(
-  "/requests/:id/cancel",
-  verifyToken,
-  requirePermission("marketplace.cancel", (req) => req.body?.dassOffice),
-  MarketplaceController.cancelRequest
-);
-router.put(
   "/requests/:id/refund",
   verifyToken,
-  requirePermission("marketplace.refund", (req) => req.body?.dassOffice),
+  requireAnyPermission(
+    ["marketplace.request.approve", "marketplace.refund"],
+    (req) => req.body?.dassOffice
+  ),
   MarketplaceController.refundRequest
 );
 

@@ -172,24 +172,20 @@ Modelo-alvo:
 ### `GET /marketplace/requests`
 ### `PUT /marketplace/requests/:id/approve`
 ### `PUT /marketplace/requests/:id/reject`
-### `PUT /marketplace/requests/:id/fulfillment`
-### `PUT /marketplace/requests/:id/complete`
-### `PUT /marketplace/requests/:id/cancel`
 ### `PUT /marketplace/requests/:id/refund`
 
 Estado atual após corte direto:
 
 - catálogo operacional usa `marketplace_catalog_items`
 - solicitação cria `reserve` no ledger e status `pending_approval`
-- rejeição ou cancelamento antes de commit gera `release`
-- conclusão de entrega/emissão gera `commit`
-- estorno após conclusão gera `refund`
-- fulfillment físico e voucher registram passos em `marketplace_fulfillment_steps`
-- voucher usa adapter `noop` configurável e registra entrega em `marketplace_voucher_deliveries`
+- aprovação com `marketplace.request.approve` gera `commit` e conclui a solicitação como `completed`
+- rejeição antes do commit gera `release`
+- estorno após aprovação/conclusão gera `refund`
+- não há geração de voucher, separação ou fulfillment no fluxo público atual
 
 Modelo-alvo:
 
-- marketplace é o fluxo canônico para resgate, aprovação, fulfillment e reconciliação
+- marketplace é o fluxo canônico para solicitação, aprovação, desconto de pontos, rejeição e estorno no Pense Aja
 
 ### `GET /user/unidade/:registration`
 
