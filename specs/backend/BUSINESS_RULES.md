@@ -247,6 +247,7 @@ O saldo funcional do usuário deve ser entendido em pelo menos três visões:
 Regra principal:
 
 - `saldo_disponivel = ganhos_confirmados - consumos_confirmados - reservas_ativas`
+- `reservas_ativas` nunca pode ser negativa; resgates legados migrados como `commit` sem `reserve` anterior reduzem saldo disponível por `consumos_confirmados`
 
 O frontend deve consumir projeções consolidadas dessa conta, não recalcular por heurística local.
 

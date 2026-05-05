@@ -70,7 +70,16 @@ export const RbacAdminService = {
     const query = dataSource
       .getRepository(RbacUserUnitRoleEntity)
       .createQueryBuilder("assignment")
-      .innerJoin("pense_aja.rbac_roles", "role", "role.id = assignment.role_id")
+      .innerJoin(
+        (subQuery) =>
+          subQuery
+            .select("rbacRole.id", "id")
+            .addSelect("rbacRole.code", "code")
+            .addSelect("rbacRole.nome", "nome")
+            .from(RbacRoleEntity, "rbacRole"),
+        "role",
+        "role.id = assignment.role_id"
+      )
       .select("assignment.id", "id")
       .addSelect("assignment.matricula", "registration")
       .addSelect("assignment.unidade_dass", "dassOffice")
@@ -111,7 +120,16 @@ export const RbacAdminService = {
     const row = await dataSource
       .getRepository(RbacUserUnitRoleEntity)
       .createQueryBuilder("assignment")
-      .innerJoin("pense_aja.rbac_roles", "role", "role.id = assignment.role_id")
+      .innerJoin(
+        (subQuery) =>
+          subQuery
+            .select("rbacRole.id", "id")
+            .addSelect("rbacRole.code", "code")
+            .addSelect("rbacRole.nome", "nome")
+            .from(RbacRoleEntity, "rbacRole"),
+        "role",
+        "role.id = assignment.role_id"
+      )
       .select("assignment.id", "id")
       .addSelect("assignment.matricula", "registration")
       .addSelect("assignment.unidade_dass", "dassOffice")

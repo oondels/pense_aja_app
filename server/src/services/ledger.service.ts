@@ -33,6 +33,31 @@ const ledgerTypes: LedgerEntryType[] = [
   "refund",
 ];
 
+export const calculateBalanceProjection = (aggregate: {
+  totalEarned: number;
+  totalReservedRaw: number;
+  totalCommitted: number;
+  totalRefunded: number;
+  totalReversed: number;
+}) => {
+  const totalReserved = Math.max(aggregate.totalReservedRaw, 0);
+  const availableBalance =
+    aggregate.totalEarned -
+    aggregate.totalReversed -
+    aggregate.totalCommitted -
+    totalReserved +
+    aggregate.totalRefunded;
+
+  return {
+    totalEarned: aggregate.totalEarned,
+    totalReserved,
+    totalCommitted: aggregate.totalCommitted,
+    totalRefunded: aggregate.totalRefunded,
+    totalReversed: aggregate.totalReversed,
+    availableBalance,
+  };
+};
+
 export const LedgerService = {
   async createEntry(queryRunner: QueryRunner, input: CreateLedgerEntryInput) {
     const repository = queryRunner.manager.getRepository(PointsLedgerEntryEntity);
@@ -79,7 +104,7 @@ export const LedgerService = {
           COALESCE(SUM(CASE WHEN entry_type = 'earn' THEN amount ELSE 0 END), 0) AS total_earned,
           COALESCE(SUM(CASE WHEN entry_type = 'reserve' THEN amount ELSE 0 END), 0)
             - COALESCE(SUM(CASE WHEN entry_type = 'release' THEN amount ELSE 0 END), 0)
-            - COALESCE(SUM(CASE WHEN entry_type = 'commit' THEN amount ELSE 0 END), 0) AS total_reserved,
+            - COALESCE(SUM(CASE WHEN entry_type = 'commit' THEN amount ELSE 0 END), 0) AS total_reserved_raw,
           COALESCE(SUM(CASE WHEN entry_type = 'commit' THEN amount ELSE 0 END), 0) AS total_committed,
           COALESCE(SUM(CASE WHEN entry_type = 'refund' THEN amount ELSE 0 END), 0) AS total_refunded,
           COALESCE(SUM(CASE WHEN entry_type = 'reverse' THEN amount ELSE 0 END), 0) AS total_reversed
@@ -91,7 +116,7 @@ export const LedgerService = {
       [registration, dassOffice]
     )) as Array<{
       total_earned: string;
-      total_reserved: string;
+      total_reserved_raw: string;
       total_committed: string;
       total_refunded: string;
       total_reversed: string;
@@ -99,19 +124,19 @@ export const LedgerService = {
 
     const aggregate = rows[0] ?? {
       total_earned: "0",
-      total_reserved: "0",
+      total_reserved_raw: "0",
       total_committed: "0",
       total_refunded: "0",
       total_reversed: "0",
     };
 
-    const totalEarned = Number(aggregate.total_earned);
-    const totalReserved = Number(aggregate.total_reserved);
-    const totalCommitted = Number(aggregate.total_committed);
-    const totalRefunded = Number(aggregate.total_refunded);
-    const totalReversed = Number(aggregate.total_reversed);
-    const availableBalance =
-      totalEarned - totalReserved - totalCommitted - totalReversed + totalRefunded;
+    const projection = calculateBalanceProjection({
+      totalEarned: Number(aggregate.total_earned),
+      totalReservedRaw: Number(aggregate.total_reserved_raw),
+      totalCommitted: Number(aggregate.total_committed),
+      totalRefunded: Number(aggregate.total_refunded),
+      totalReversed: Number(aggregate.total_reversed),
+    });
     const repository = queryRunner.manager.getRepository(PointsBalanceProjectionEntity);
     const existing = await repository.findOne({
       where: {
@@ -125,12 +150,12 @@ export const LedgerService = {
       await repository.update(
         { id: existing.id },
         {
-          total_earned: String(totalEarned),
-          total_reserved: String(totalReserved),
-          total_committed: String(totalCommitted),
-          total_refunded: String(totalRefunded),
-          total_reversed: String(totalReversed),
-          available_balance: String(availableBalance),
+          total_earned: String(projection.totalEarned),
+          total_reserved: String(projection.totalReserved),
+          total_committed: String(projection.totalCommitted),
+          total_refunded: String(projection.totalRefunded),
+          total_reversed: String(projection.totalReversed),
+          available_balance: String(projection.availableBalance),
           updatedat: now,
         }
       );
@@ -141,12 +166,12 @@ export const LedgerService = {
       repository.create({
         matricula: registration,
         unidade_dass: dassOffice,
-        total_earned: String(totalEarned),
-        total_reserved: String(totalReserved),
-        total_committed: String(totalCommitted),
-        total_refunded: String(totalRefunded),
-        total_reversed: String(totalReversed),
-        available_balance: String(availableBalance),
+        total_earned: String(projection.totalEarned),
+        total_reserved: String(projection.totalReserved),
+        total_committed: String(projection.totalCommitted),
+        total_refunded: String(projection.totalRefunded),
+        total_reversed: String(projection.totalReversed),
+        available_balance: String(projection.availableBalance),
         updatedat: now,
       })
     );

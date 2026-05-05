@@ -17,7 +17,7 @@ const app = express();
 const port = 2512;
 const openApiPath = path.resolve(process.cwd(), "openapi.yaml");
 
-app.use(cors({ origin: ["http://10.100.1.43:5050", "http://localhost:5050"], credentials: true }));
+app.use(cors({ origin: ["http://10.100.1.43:5050", "http://localhost:5050", "http://localhost:5173/"], credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.get("/docs/openapi.yaml", (req: Request, res: Response) => {
