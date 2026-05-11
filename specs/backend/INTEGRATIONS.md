@@ -108,6 +108,11 @@ O backend não implementa login. O serviço externo continua responsável por:
 - `POST /auth/logout`
 - `POST /auth/token/refresh`
 
+Regra operacional atual:
+
+- `JWT_SECRET` é obrigatório no boot do backend
+- a API não deve iniciar com segredo padrão ou ausente
+
 No modelo-alvo:
 
 - JWT continua representando identidade e sessão

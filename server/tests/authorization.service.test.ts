@@ -1,4 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.hoisted(() => {
+  process.env.JWT_SECRET = "test_secret";
+});
+
 import { AuthorizationService } from "../src/services/authorization.service";
 import { CustomError } from "../src/types/CustomError";
 

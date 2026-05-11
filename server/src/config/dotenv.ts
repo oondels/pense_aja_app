@@ -10,7 +10,7 @@ const vars = {
   USERS: process.env.USERS,
   DBASE: process.env.DBASE,
   RABBITMQ_URL: process.env.RABBITMQ_URL,
-  JWT_SECRET: process.env.JWT_SECRET || 'default_value',
+  JWT_SECRET: process.env.JWT_SECRET ?? "",
   DEV_ENV: process.env.DEV_ENV,
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
   NOTIFICATION_API: process.env.NOTIFICATION_API || "",
@@ -18,5 +18,9 @@ const vars = {
   REDIS_HOST: process.env.REDIS_HOST || "",
   REDIS_PASS: process.env.REDIS_PASS || "",
 };
+
+if (!vars.JWT_SECRET) {
+  throw new Error("JWT_SECRET não configurado.");
+}
 
 export default vars;

@@ -58,6 +58,7 @@ Estado atual após corte direto:
 - não exige autenticação
 - filtra `excluido = false`
 - inclui `pontuacao` a partir do saldo líquido de ledger por ideia
+- `startDate` e `endDate` são filtros opcionais; quando omitidos, a listagem não aplica recorte temporal
 
 Modelo-alvo:
 
@@ -91,6 +92,19 @@ Modelo-alvo:
 
 - deve continuar expondo o contexto funcional da ideia
 - pode evoluir para incluir histórico resumido de avaliação e estado operacional
+
+### `GET /pense-aja/:dassOffice/:id/audit`
+
+Estado atual após corte direto:
+
+- retorna timeline de auditoria da ideia
+- exige `verifyToken` e permissão `idea.view`
+- retorna eventos com ator, motivo, estados `before`/`after`, metadata e `correlationId`
+
+Modelo-alvo:
+
+- permanece como leitura protegida da trilha operacional da ideia
+- pode evoluir para paginação e filtros por tipo de evento
 
 ### `PUT /pense-aja/avaliar/:id`
 
@@ -158,6 +172,9 @@ Modelo-alvo:
 Estado atual após corte direto:
 
 - retorna histórico do usuário em `points_ledger_entries`
+- exige `verifyToken`
+- permite leitura própria quando a matrícula autenticada é igual à matrícula da URL
+- leitura de terceiros exige permissão `marketplace.request.approve`
 - exige `dassOffice` válido em query string
 
 Modelo-alvo:

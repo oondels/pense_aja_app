@@ -1,4 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+vi.hoisted(() => {
+  process.env.JWT_SECRET = "test_secret";
+});
+
 import { PenseAjaService } from "../src/services/pense-aja.service";
 import { UserPenseaja } from "../src/services/user-penseaja.service";
 import { NotificationService } from "../src/services/notification.service";

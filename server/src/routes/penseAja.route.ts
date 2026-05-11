@@ -28,7 +28,12 @@ router.post(
   requirePermission("idea.submit", (req) => req.params.dassOffice),
   PenseAjaController.createIdea
 );
-router.get("/:dassOffice/:id/audit", PenseAjaController.getIdeaAuditTimeline);
+router.get(
+  "/:dassOffice/:id/audit",
+  verifyToken,
+  requirePermission("idea.view", (req) => req.params.dassOffice),
+  PenseAjaController.getIdeaAuditTimeline
+);
 router.get("/:dassOffice/:id", PenseAjaController.getIdeaById);
 router.put(
   "/avaliar/:id",

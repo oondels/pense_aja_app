@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { verifyToken } from "../middlewares/auth";
-import { requirePermission } from "../middlewares/permissionMiddleware";
+import {
+  requirePermission,
+  requireSelfOrPermission,
+} from "../middlewares/permissionMiddleware";
 import { UserPenseajaController } from "../controllers/user-penseaja.controller";
 
 const router = Router();
@@ -63,7 +66,19 @@ router.get(
   UserPenseajaController.getSessionContext
 );
 router.get("/unidade/:registration", UserPenseajaController.getUserOffice);
-router.get("/:registration/points-history", UserPenseajaController.getUserPointsHistory);
+router.get(
+  "/:registration/points-history",
+  verifyToken,
+  requireSelfOrPermission(
+    "marketplace.request.approve",
+    (req) => {
+      const office = req.query.dassOffice;
+      return typeof office === "string" ? office : undefined;
+    },
+    (req) => req.params.registration
+  ),
+  UserPenseajaController.getUserPointsHistory
+);
 router.get("/:registration", UserPenseajaController.getUserData);
 router.put("/:registration", verifyToken, UserPenseajaController.updateUserData);
 

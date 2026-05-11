@@ -327,15 +327,24 @@ export const PenseAjaService = {
           "points.id_pense_aja = CAST(idea.id AS varchar)"
         )
         .where("idea.excluido = false")
-        .andWhere("idea.createdat >= :startDate", {
-          startDate: startDateParsed,
-        })
-        .andWhere("idea.createdat < (:endDate::timestamptz + interval '1 day')", {
-          endDate: endDateParsed,
-        })
         .andWhere("idea.unidade_dass = :dassOffice", {
           dassOffice: validDassOffice,
         });
+
+      if (startDateParsed) {
+        query.andWhere("idea.createdat >= :startDate", {
+          startDate: startDateParsed,
+        });
+      }
+
+      if (endDateParsed) {
+        query.andWhere(
+          "idea.createdat < (:endDate::timestamptz + interval '1 day')",
+          {
+            endDate: endDateParsed,
+          }
+        );
+      }
 
       if (name) {
         query.andWhere("idea.nome = :name", { name });
@@ -962,15 +971,14 @@ export const PenseAjaService = {
     actorRegistration?: string,
     actorName?: string
   ): Promise<number> {
+    void userPoints;
     const validDassOffice = assertDassOffice(dassOffice);
-    const pontosRestantes =
-      userPoints.saldo_disponivel ??
-      userPoints.pontos - userPoints.pontos_resgatados;
     const dataSource = await initializeDatabase();
     const queryRunner = dataSource.createQueryRunner();
 
     try {
       await queryRunner.connect();
+      await queryRunner.startTransaction();
 
       const productRepository = queryRunner.manager.getRepository(
         MarketplaceCatalogItemEntity
@@ -999,6 +1007,24 @@ export const PenseAjaService = {
         );
       }
 
+      await LedgerService.syncBalanceProjection(
+        queryRunner,
+        String(colaboradorData.matricula),
+        validDassOffice
+      );
+
+      const balanceRows = (await queryRunner.query(
+        `
+          SELECT available_balance
+          FROM pense_aja.points_balance_projection
+          WHERE matricula = $1
+            AND unidade_dass = $2
+          FOR UPDATE
+        `,
+        [String(colaboradorData.matricula), validDassOffice]
+      )) as Array<{ available_balance: string }>;
+      const pontosRestantes = Number(balanceRows[0]?.available_balance ?? 0);
+
       if (pontosRestantes < Number(getProduct.points_cost)) {
         throw new CustomError(
           "Pontos insuficientes para resgatar o prêmio.",
@@ -1007,7 +1033,6 @@ export const PenseAjaService = {
         );
       }
 
-      await queryRunner.startTransaction();
       const now = new Date();
       const correlationId = randomUUID();
       const operatorRegistration =
@@ -1027,7 +1052,10 @@ export const PenseAjaService = {
         createdByName: operatorName,
         metadata: {
           catalogItemId: String(getProduct.id),
-          fulfillmentType: getProduct.item_type === "voucher" ? "voucher_issue" : "physical_delivery",
+          fulfillmentType:
+            getProduct.item_type === "voucher"
+              ? "voucher_issue"
+              : "physical_delivery",
         },
       });
 
@@ -1044,7 +1072,9 @@ export const PenseAjaService = {
           approval_actor_registration: operatorRegistration,
           approval_actor_name: operatorName,
           fulfillment_type:
-            getProduct.item_type === "voucher" ? "voucher_issue" : "physical_delivery",
+            getProduct.item_type === "voucher"
+              ? "voucher_issue"
+              : "physical_delivery",
           legacy_prize_id: null,
           createdat: now,
           updatedat: now,

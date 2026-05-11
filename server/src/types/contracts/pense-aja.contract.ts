@@ -24,8 +24,8 @@ export interface PenseAjaData {
 }
 
 export interface PenseAjaFilters {
-  startDate: Date;
-  endDate: Date;
+  startDate?: Date;
+  endDate?: Date;
   name?: string;
   sector?: string;
   manager?: string;

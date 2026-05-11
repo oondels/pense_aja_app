@@ -119,8 +119,10 @@ export const PenseAjaController = {
         return;
       }
 
-      const startDateParsed = new Date(startDate as string);
-      const endDateParsed = new Date(endDate as string);
+      const startDateParsed =
+        typeof startDate === "string" ? new Date(startDate) : undefined;
+      const endDateParsed =
+        typeof endDate === "string" ? new Date(endDate) : undefined;
 
       const result = await PenseAjaService.fetchPenseAja(
         dassOffice,

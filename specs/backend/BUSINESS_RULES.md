@@ -135,7 +135,8 @@ flowchart TD
 
 ### Estado atual
 
-- backend diferencia analista e gerente por substring em `funcao`
+- backend resolve permissões efetivas por RBAC no contexto da unidade
+- a atuação de avaliação comum ou de exclusão deriva das permissões `idea.evaluate` e `idea.exclude`
 - `exclude` exclui
 - `reprove` reprova sem classificação
 - demais status atualizam `classificacao`, `a3_mae`, `em_espera` e `replicavel`
@@ -173,10 +174,9 @@ O nome final dos estados pode variar por apresentação, mas a estrutura semânt
 
 ### Estado atual
 
-- o backend aceita papéis por substring:
-  - `analista`
-  - `gerente`
-  - `automacao`
+- o backend usa papéis, permissões, vínculo usuário/unidade e snapshot de sessão em tabelas RBAC
+- rotas sensíveis usam permissões como `idea.submit`, `idea.view`, `idea.evaluate`, `idea.exclude`, `catalog.manage`, `marketplace.request.create`, `marketplace.request.approve`, `marketplace.refund` e `rbac.manage`
+- `funcao` permanece no JWT e em dados de perfil como atributo legado de identidade, não como fonte autorizadora de negócio
 
 ### Modelo-alvo
 

@@ -64,7 +64,7 @@ Este arquivo é a porta de entrada do backend para leitura humana e lookup por c
 
 ## Authorization
 - Keywords: authorization, role, permissões, analista, gerente, automacao, autorização, rbac
-- File: `specs/backend/BUSINESS_RULES.md`, `specs/backend/DATABASE_MODELS.md`, `server/src/middlewares/roleVerificationMiddleware.ts`
+- File: `specs/backend/BUSINESS_RULES.md`, `specs/backend/DATABASE_MODELS.md`, `server/src/middlewares/permissionMiddleware.ts`, `server/src/services/authorization.service.ts`
 - Related: avaliação, atualização de produtos, compra de prêmio, unidade, escopo, permissão dinâmica
 
 ## Notifications
