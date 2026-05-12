@@ -1,81 +1,62 @@
 # Backend Business Rules
 
-Este documento é a regra de negócio canônica do backend do Pense&Aja. Ele descreve:
+Este documento descreve as regras de negócio atuais do backend Pense Aja.
+Ele deve ser usado como referência operacional para cadastro de ideias,
+avaliação, pontuação, marketplace, notificações, RBAC e dashboards.
 
-- o fluxo operacional esperado do produto
-- o estado atual relevante do código
-- o modelo-alvo que deve orientar a refatoração
+## Contexto de Negócio
 
-## Contexto de negócio
+O Pense Aja é uma plataforma de inovação aberta usada para transformar ideias
+em ação operacional. O backend é a fonte de verdade para:
 
-O Pense&Aja é uma plataforma de inovação aberta usada para transformar ideias em ação operacional. O backend sustenta esse processo garantindo:
+- validade do contexto organizacional;
+- autorização por unidade Dass;
+- integridade da avaliação;
+- rastreabilidade da pontuação;
+- consistência de resgates;
+- projeções de dashboard e perfil;
+- disparos de notificação como efeitos colaterais não bloqueantes.
 
-- validade do contexto organizacional
-- autorização por unidade e responsabilidade
-- integridade da avaliação
-- rastreabilidade da pontuação
-- consistência dos resgates
-- alimentação de dashboard e notificações
-
-## Objetivos funcionais
-
-1. permitir que colaboradores submetam ideias de melhoria
-2. submeter essas ideias a avaliação governada
-3. reconhecer ideias avaliadas com pontuação confiável
-4. converter pontuação disponível em recompensas
-5. manter visibilidade e histórico do ciclo inteiro
-
-## Atores de domínio
+## Atores de Domínio
 
 ### Colaborador
 
-- cadastra ideia
-- acompanha avaliação e histórico
-- consulta saldo e classificações
-- solicita resgates
+- cadastra ideias;
+- acompanha avaliações e histórico;
+- consulta saldo e classificações;
+- solicita resgates quando possui pontuação disponível.
 
 ### Avaliador
 
-- atua em etapas de avaliação configuradas para sua unidade
-- registra decisão, justificativa e atributos operacionais
-- pode existir em papéis diferentes conforme a unidade
+- avalia ideias conforme permissões efetivas da sessão;
+- registra status, classificação, justificativa e atributos operacionais;
+- atua no slot de avaliação resolvido pelo workflow da unidade.
 
-### Operador de marketplace
+### Operador de Marketplace
 
-- aprova solicitações de resgate
-- executa separação, entrega ou emissão de voucher (Geração de voucher é feito por api separada, mas a aprovação da solicitação de resgate é realizada na api principal)
-- cancela ou sinaliza falha operacional quando necessário
+- aprova ou rejeita solicitações de resgate;
+- realiza estornos quando permitido;
+- opera separação, entrega ou voucher apenas quando houver fluxo específico conectado.
 
-### Administrador/configurador
+### Administrador
 
-- mantém regras da unidade
-- gerencia permissões, catálogo da loja, configurações e regras
+- gerencia permissões RBAC;
+- mantém catálogo da loja;
+- configura vínculos usuário/unidade/papel.
 
-## Princípios obrigatórios
+## Princípios Obrigatórios
 
-### Backend como fonte de verdade
+- Decisões críticas não dependem apenas da UI.
+- Autorização, saldo, estado de resgate e histórico são definidos no backend.
+- Toda regra sensível é resolvida no contexto de uma unidade Dass.
+- Pontos são registrados em ledger append-only.
+- Correções de pontuação usam contralançamentos, não remoção de histórico.
+- Escritas relevantes de ideias, catálogo, marketplace e ledger geram trilha auditável.
+- Falhas de notificação não invalidam a transação principal.
 
-- nenhuma decisão crítica depende apenas da UI
-- autorização, saldo, estado do resgate e histórico devem ser definidos no backend
+## Unidades Válidas
 
-### Escopo por unidade Dass
-
-- toda regra sensível é resolvida dentro do contexto da unidade
-- uma pessoa pode ter papéis diferentes em unidades diferentes
-
-### Rastreabilidade
-
-- toda mudança de negócio relevante deve gerar evento auditável
-- todo ponto gerado ou consumido precisa de lastro identificável
-
-### Imutabilidade do ledger
-
-- pontos não devem ser apagados logicamente como forma principal de correção
-- reversões e estornos devem ocorrer por contralançamento
-
-## Unidades válidas
-
-Hoje o backend valida explicitamente estas unidades:
+O backend valida explicitamente as unidades:
 
 - `SEST`
 - `VDC`
@@ -83,294 +64,196 @@ Hoje o backend valida explicitamente estas unidades:
 - `VDC-CONF`
 - `STJ`
 
-No modelo-alvo, a validação por unidade continua obrigatória, mas a governança de permissões, workflow e pontuação deve ser configurável dentro de cada unidade.
+Permissões, pontuação, workflow e marketplace são sempre avaliados dentro do
+escopo da unidade.
 
-## Fluxo operacional-alvo
+## Cadastro de Ideia
 
-1. colaborador submete a ideia em uma unidade válida
-2. backend valida campos, unidade e duplicidade
-3. a ideia entra no workflow de avaliação definido para a unidade
-4. cada decisão gera transição auditável
-5. avaliações elegíveis geram lançamentos de ledger
-6. saldo disponível pode ser reservado em solicitações de resgate
-7. workflow de marketplace decide aprovação, fulfillment, débito definitivo ou estorno
-8. dashboards, perfil e notificações refletem projeções consolidadas
-
-```mermaid
-flowchart TD
-  A[Cadastro de ideia] --> B[Workflow de avaliacao]
-  B --> C[Evento auditavel]
-  B --> D[Lancamento no ledger]
-  D --> E[Saldo disponivel]
-  E --> F[Solicitacao de resgate]
-  F --> G[Reserva de saldo]
-  G --> H[Aprovacao operacional]
-  H --> I[Entrega ou voucher]
-  I --> J[Debito definitivo]
-  H --> K[Cancelamento ou falha]
-  K --> L[Liberacao ou estorno]
-```
-
-## Cadastro de ideia
-
-### Estado atual
-
-- exige campos essenciais
-- converte as 8 perdas lean em colunas binárias
-- grava ganhos em JSON
-- usa lock transacional e verificação de duplicidade por matrícula, projeto, data e unidade
-
-### Regra de negócio
-
-- o cadastro é a origem do ciclo operacional
-- a unidade vinculada ao registro define seu escopo de negócio
-- duplicidade não pode gerar competição artificial em ranking, avaliação ou pontos
-
-### Modelo-alvo
-
-- o evento de criação deve ser auditável
-- autoria e contexto da unidade devem ser preservados para correlação futura com avaliação, pontos e resgate
+- O cadastro é a origem do ciclo operacional da ideia.
+- A unidade vinculada ao registro define o escopo funcional do cadastro.
+- O backend valida campos essenciais, unidade e duplicidade.
+- As oito perdas lean são convertidas para colunas binárias.
+- Ganhos são gravados como estrutura JSON.
+- A duplicidade é controlada por lock transacional e busca por matrícula,
+  projeto, data realizada e unidade.
+- Quando a duplicidade é detectada, o backend retorna a ideia existente sem
+  criar novo registro.
+- Novos cadastros registram auditoria `idea.created`.
+- Após o commit, o backend dispara evento interno de notificação `idea.created`.
+- Busca de gerente, opt-in e envio de notificação são efeitos colaterais não
+  bloqueantes.
 
 ## Avaliação
 
-### Estado atual
-
-- backend resolve permissões efetivas por RBAC no contexto da unidade
-- a atuação de avaliação comum ou de exclusão deriva das permissões `idea.evaluate` e `idea.exclude`
-- `exclude` exclui
-- `reprove` reprova sem classificação
-- demais status atualizam `classificacao`, `a3_mae`, `em_espera` e `replicavel`
-
-### Regra de negócio
-
-- avaliação existe para transformar ideia cadastrada em decisão operacional
-- reprovação não deve coexistir com classificação
-- exclusão é ação sensível com alto impacto analítico e histórico
-
-### Modelo-alvo
-
-- o fluxo deve ser configurável por unidade
-- permissões deixam de ser derivadas de `funcao` hardcoded
-- cada transição deve registrar:
-  - ator
-  - papel efetivo
-  - unidade
-  - justificativa
-  - timestamp
-  - `before` e `after` dos campos relevantes
-
-### Backbone mínimo de estados
-
-O nome final dos estados pode variar por apresentação, mas a estrutura semântica mínima deve comportar:
-
-- cadastrada
-- em avaliação
-- aprovada em etapa
-- reprovada
-- excluída
-- concluída
-
-## RBAC dinâmico por unidade
-
-### Estado atual
-
-- o backend usa papéis, permissões, vínculo usuário/unidade e snapshot de sessão em tabelas RBAC
-- rotas sensíveis usam permissões como `idea.submit`, `idea.view`, `idea.evaluate`, `idea.exclude`, `catalog.manage`, `marketplace.request.create`, `marketplace.request.approve`, `marketplace.refund` e `rbac.manage`
-- `funcao` permanece no JWT e em dados de perfil como atributo legado de identidade, não como fonte autorizadora de negócio
-
-### Modelo-alvo
-
-- autorização passa a usar modelo normalizado de usuário, papel, permissão e escopo por unidade
-- a mesma pessoa pode ser avaliadora em uma unidade e apenas colaboradora em outra
-- permissões do marketplace são separadas das permissões de avaliação
-- a administração dos vínculos RBAC é manual e restrita a `admin_master`
-
-### Regra operacional
-
-- JWT serve para identidade e sessão
-- o backend resolve permissões efetivas no contexto da unidade
-- a sessão pode carregar snapshot curto de permissões com TTL e versão
-- snapshot não substitui a fonte de verdade
-- snapshots devem ser invalidados quando um vínculo RBAC da unidade é criado, alterado ou removido
-
-## Ledger de pontuação
-
-### Estado atual após corte direto
-
-- aprovação com nota gera `earn` em `points_ledger_entries`
-- reavaliação, reprovação ou exclusão geram `reverse` quando há saldo de origem para a ideia
-- `pense_aja.pense_aja_pontos` permanece apenas como histórico/backfill
-
-### Problema legado resolvido no corte direto
-
-- mistura histórico de origem com saldo efetivo
-- dificulta auditoria e reconciliação
-- corrige inconsistência por mutação ou remoção, não por contralançamento
-
-### Modelo-alvo
-
-O sistema deve adotar ledger append-only.
-
-Tipos mínimos de lançamento:
-
-- `earn`
-- `reverse`
-- `reserve`
-- `commit`
-- `release`
-- `refund`
-
-### Regras do ledger
-
-- todo lançamento é imutável
-- todo lançamento referencia entidade de origem
-- toda reversão referencia o lançamento anterior afetado
-- saldo disponível é projeção, não update arbitrário
-- nenhum resgate pode consumir saldo não lastreado
-
-### Relação entre avaliação e ledger
-
-- avaliação elegível gera `earn`
-- correção ou invalidação gera `reverse`
-- solicitação de resgate gera `reserve`
-- entrega ou emissão concluída gera `commit`
-- rejeição ou cancelamento elegível gera `release` ou `refund`
-
-## Saldo
-
-O saldo funcional do usuário deve ser entendido em pelo menos três visões:
-
-- saldo total gerado
-- saldo reservado
-- saldo disponível
-
-Regra principal:
-
-- `saldo_disponivel = ganhos_confirmados - consumos_confirmados - reservas_ativas`
-- `reservas_ativas` nunca pode ser negativa; resgates legados migrados como `commit` sem `reserve` anterior reduzem saldo disponível por `consumos_confirmados`
-
-O frontend deve consumir projeções consolidadas dessa conta, não recalcular por heurística local.
-
-## Marketplace e resgates
-
-### Estado atual após corte direto
-
-- item precisa existir em `marketplace_catalog_items`
-- saldo vem de `points_balance_projection`
-- solicitação e transições são persistidas em `marketplace_redemption_requests`
-- aprovação do Pense Aja conclui o resgate e desconta pontos; não há fulfillment ou voucher local no fluxo público atual
-- `pense_aja.pense_aja_premios` permanece apenas como histórico/backfill
-
-### Problema legado resolvido no corte direto
-
-- não há separação entre solicitação, aprovação, fulfillment e entrega
-- não há reserva de saldo na origem
-- não há mecanismo claro de rollback operacional auditável
-
-### Modelo-alvo
-
-Fluxo-base:
-
-1. usuário solicita resgate
-2. backend valida elegibilidade e cria `reserve`
-3. aprovador com `marketplace.request.approve` aprova ou rejeita
-4. aprovação gera `commit` e status `completed`
-5. rejeição gera `release`
-6. estorno posterior gera `refund`
-
-### Regras mínimas
-
-- catálogo é segregado por unidade
-- permissões operacionais do marketplace são próprias
-- o fluxo público atual não gera voucher, separação ou fulfillment no Pense Aja
-- tabelas de fulfillment/voucher podem permanecer por compatibilidade, mas não são usadas no fluxo simplificado
-
-## Auditoria de domínio
-
-### Eventos mínimos
-
-- cadastro de ideia
-- transição de avaliação
-- geração ou reversão de pontos
-- solicitação de resgate
-- aprovação, rejeição e estorno de resgate
-- alteração de configuração sensível da unidade
-
-### Conteúdo mínimo do evento
-
-- tipo de evento
-- entidade e id correlacionado
-- ator
-- unidade
-- timestamp
-- motivo ou justificativa
-- `before`
-- `after`
-- correlation id
-
-### Regra
-
-- auditoria não substitui tabela operacional
-- auditoria registra história de decisão e mutação relevante
-
-## Usuário e notificações
-
-### Estado atual
-
-- email corporativo `@grupodass.com.br`
-- opt-in por `authorized_notifications_apps`
-- fallback legado `["null"]` quando lista vem vazia
-- cadastro e avaliação tratam busca de email, opt-in e envio como efeito colateral não bloqueante
-
-### Regra de negócio
-
-- receber notificação depende de política de autorização do app
-- existir email não significa poder ser notificado
-- falha de busca de email ou envio não deve transformar cadastro ou avaliação concluídos em erro de API
-
-### Evolução
-
-- notificações de avaliação, pontuação e resgate devem nascer de eventos de domínio
-- falha de notificação não deve invalidar a transação principal
-
-## Dashboard e analytics
-
-### Papel
-
-- o dashboard é projeção de leitura do domínio
-- ele não cria regra nova, apenas expõe o estado consolidado
-
-### Estado atual relevante
-
-- indicadores de pontuação e resgate derivam de ledger e marketplace
-- widgets de destaque não devem tratar dados sintéticos como métrica canônica
-
-### Modelo-alvo
-
-- dashboards devem consumir leituras derivadas do ledger e do marketplace
-- dados sintéticos devem ser claramente segregados de dados canônicos
+- A avaliação transforma uma ideia cadastrada em decisão operacional.
+- A rota exige token e permissão `idea.evaluate`.
+- O service resolve a etapa ativa em `unit_workflow_steps` para a unidade.
+- Quando não há workflow configurado, aplica fallback compatível:
+  `analyst_review` para avaliação comum e `manager_review` para atuação gerencial.
+- O slot de avaliação vem de `metadata.reviewSlot`, do `step_code` ou da ordem
+  da etapa.
+- Usuários sem a permissão exigida pela etapa não podem avaliar.
+- Exclusão exige permissão adicional `idea.exclude`.
+- Reprovação não pode coexistir com classificação.
+- Avaliação comum grava campos de analista.
+- Atuação gerencial grava campos de gerente.
+- Status `exclude` marca a ideia como excluída.
+- Status `reprove` reprova sem gerar nova pontuação.
+- Demais status podem atualizar `classificacao`, `a3_mae`, `em_espera` e
+  `replicavel`.
+- Cada avaliação registra auditoria `idea.evaluated` com estado anterior,
+  estado posterior, status, classificação, slot e etapa de workflow.
+- Após o commit, o backend dispara evento interno de notificação `idea.evaluated`.
+
+## RBAC por Unidade
+
+- JWT representa identidade e sessão.
+- Permissões de negócio são resolvidas por RBAC no contexto da unidade.
+- A mesma matrícula pode ter papéis diferentes em unidades diferentes.
+- Rotas sensíveis usam permissões atômicas como:
+  - `idea.submit`
+  - `idea.view`
+  - `idea.evaluate`
+  - `idea.exclude`
+  - `catalog.manage`
+  - `marketplace.request.create`
+  - `marketplace.request.approve`
+  - `marketplace.refund`
+  - `rbac.manage`
+- O backend cria snapshots curtos de sessão em `rbac_session_snapshots`.
+- Snapshots possuem TTL e versão.
+- Criação, alteração ou remoção de vínculo RBAC invalida snapshots da matrícula
+  na unidade afetada.
+- `funcao` permanece no JWT e em dados de perfil como atributo legado de
+  identidade, não como fonte autorizadora principal.
+
+## Ledger de Pontuação
+
+- `points_ledger_entries` é a fonte auditável da movimentação de pontos.
+- `pense_aja.pense_aja_pontos` permanece apenas como histórico/backfill.
+- Lançamentos são append-only e possuem origem rastreável.
+- Tipos usados:
+  - `earn`
+  - `reverse`
+  - `reserve`
+  - `commit`
+  - `release`
+  - `refund`
+- Avaliação elegível gera `earn`.
+- Reavaliação, reprovação ou exclusão geram `reverse` quando há saldo líquido
+  associado à ideia.
+- Solicitação de resgate gera `reserve`.
+- Aprovação ou conclusão de resgate gera `commit`.
+- Rejeição ou cancelamento elegível gera `release`.
+- Estorno posterior gera `refund`.
+- Reversões e transições relacionadas referenciam lançamento anterior quando
+  aplicável.
+
+## Pontuação e Saldo
+
+- Pontuação de avaliação usa `unit_scoring_rules` ativa por unidade e
+  classificação.
+- Quando não há regra ativa, o backend usa o valor de avaliação recebido.
+- O saldo funcional é mantido em `points_balance_projection`.
+- O saldo disponível é calculado a partir de ganhos, reversões, consumos,
+  reservas ativas e estornos.
+- Reservas ativas não podem ficar negativas.
+- Resgates legados migrados como `commit` sem reserva anterior reduzem saldo
+  disponível como consumo confirmado.
+- Frontend e dashboard devem consumir projeções consolidadas do backend, não
+  recalcular saldo por heurística local.
+
+## Marketplace e Resgates
+
+- Catálogo operacional usa `marketplace_catalog_items`.
+- Catálogo é segregado por unidade.
+- Solicitação de resgate usa `marketplace_redemption_requests`.
+- `pense_aja.pense_aja_premios` permanece como histórico/backfill.
+- Antes de validar saldo, o backend sincroniza `points_balance_projection` e
+  bloqueia o registro com `FOR UPDATE`.
+- Solicitação valida item ativo, disponibilidade e saldo disponível.
+- Solicitação cria `reserve` e entra como `pending_approval`.
+- Aprovação exige `marketplace.request.approve`, cria `commit` e conclui a
+  solicitação como `completed`.
+- Rejeição exige `marketplace.request.approve`, cria `release` e marca
+  `rejected`.
+- Estorno exige `marketplace.request.approve` ou `marketplace.refund`, cria
+  `refund` e marca `refunded`.
+- O endpoint legado de compra direta cria `reserve`, `commit` e uma solicitação
+  já concluída para preservar compatibilidade.
+- O fluxo público atual não executa voucher, separação ou fulfillment no Pense Aja.
+
+## Auditoria
+
+Eventos operacionais atuais incluem:
+
+- `idea.created`
+- `idea.evaluated`
+- `catalog.item.created`
+- `catalog.item.updated`
+- `marketplace.request.created`
+- `marketplace.request.approved`
+- `marketplace.request.rejected`
+- `marketplace.request.completed`
+- `marketplace.request.refunded`
+
+Cada evento registra, quando aplicável:
+
+- tipo de evento;
+- entidade e id correlacionado;
+- unidade;
+- ator;
+- motivo ou justificativa;
+- estado anterior;
+- estado posterior;
+- metadata;
+- `correlationId`;
+- timestamp.
+
+Auditoria não substitui a tabela operacional; ela registra histórico de decisão
+e mutação relevante.
+
+## Usuário e Notificações
+
+- Email corporativo deve usar domínio `@grupodass.com.br`.
+- Opt-in de notificação usa `authorized_notifications_apps`.
+- Lista vazia mantém compatibilidade com fallback legado `["null"]`.
+- Notificação de cadastro nasce do evento interno `idea.created`.
+- Notificação de avaliação nasce do evento interno `idea.evaluated`.
+- Busca de email, opt-in e envio são pós-processamento não bloqueante.
+- Falhas de integração de notificação são registradas em log e não mudam a
+  resposta da operação principal.
+
+## Dashboard e Analytics
+
+- Dashboard é projeção de leitura do domínio.
+- Dashboard não cria regra de negócio nova.
+- Indicadores de pontuação e resgate derivam de ledger e marketplace.
+- Destaques de ideias não devem tratar dados sintéticos como métrica canônica.
+- Métricas devem refletir estados consolidados do backend.
 
 ## IA
 
-### Regra
+- IA é assistiva.
+- IA melhora textos de antes/depois do cadastro.
+- IA não substitui autorização, avaliação formal, ledger, auditoria ou decisão
+  operacional.
 
-- IA é assistiva
-- não substitui autorização, avaliação formal, ledger ou auditoria
+## Limitações Conhecidas
 
-## Riscos atuais observáveis
+- Vocabulário de status ainda não está totalmente normalizado.
+- Rotas públicas de leitura ainda dependem da política final de exposição.
+- Permissões dependem de vínculos RBAC populados corretamente por unidade.
+- Integração real de voucher depende de provider externo conectado ao adapter.
+- Fulfillment físico/voucher possui tabelas e service auxiliar, mas não faz
+  parte do fluxo público atual simplificado.
 
-- vocabulário de status ainda não está totalmente normalizado
-- rotas públicas de leitura ainda precisam ser revisadas conforme política final de exposição
-- permissões dependem de vínculos RBAC populados corretamente por unidade
-- integração real de voucher ainda depende de provider externo conectado ao adapter
+## Resumo Operacional
 
-## Resumo operacional
-
-O núcleo do produto deve permanecer:
-
-1. ideia válida nasce dentro de uma unidade válida
-2. ela evolui por ações autorizadas no backend
-3. cada decisão relevante deixa trilha auditável
-4. cada ponto gerado ou consumido possui lastro em ledger
-5. cada resgate respeita reserva, workflow operacional e reconciliação
-6. frontend, dashboard e notificações consomem estados consolidados do backend
+1. Ideia válida nasce em uma unidade válida.
+2. A ideia evolui por ações autorizadas no backend.
+3. A avaliação usa workflow configurável por unidade com fallback compatível.
+4. Cada decisão relevante deixa trilha auditável.
+5. Cada ponto gerado ou consumido possui lastro em ledger.
+6. Cada resgate respeita reserva, validação de saldo, aprovação e reconciliação.
+7. Frontend, dashboard e notificações consomem estados consolidados do backend.

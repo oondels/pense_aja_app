@@ -226,6 +226,12 @@ export const MarketplaceService = {
       await queryRunner.connect();
       await queryRunner.startTransaction();
 
+      await LedgerService.syncBalanceProjection(
+        queryRunner,
+        registration,
+        validDassOffice
+      );
+
       const balanceRows = (await queryRunner.query(
         `
           SELECT available_balance
