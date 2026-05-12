@@ -390,6 +390,9 @@ export class DashboardService {
         };
       });
     } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
       console.error("Erro ao buscar ideias em destaque:", error);
       throw new CustomError("Erro interno do servidor ao buscar ideias em destaque");
     }
@@ -537,6 +540,9 @@ export class DashboardService {
         avatarColor: getAvatarColor(row.nome),
       }));
     } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
       console.error("Erro ao buscar dados de engajamento:", error);
       throw new CustomError("Erro interno do servidor ao buscar dados de engajamento");
     }
