@@ -1,278 +1,290 @@
 # Backend Routes
 
-Este documento separa:
+Este documento descreve o contrato atual das rotas do backend Pense Aja.
+Ele deve ser lido como referência operacional do que está implementado em
+`server/src/routes/*` e nos controllers/services correspondentes.
 
-- `estado atual`: comportamento observado no código hoje
-- `modelo-alvo`: direção arquitetural esperada para a Fase 2
+## Convenções
+
+- Rotas protegidas usam `verifyToken` e esperam token válido no cookie `token`.
+- Autorização operacional usa permissões RBAC resolvidas por unidade Dass.
+- Parâmetros `dassOffice` são validados como unidade Dass válida nos controllers ou services.
+- Filtros de data aceitam strings parseáveis por `Date.parse`; valores inválidos retornam `400`.
+- Escritas sensíveis de ideias, catálogo, marketplace e ledger geram eventos de auditoria quando o fluxo possui trilha operacional.
+
+## Rotas de suporte
+
+### `GET /`
+
+- Retorna mensagem simples da API.
+
+### `GET /docs`
+### `GET /docs/openapi.yaml`
+
+- Expõem a documentação Swagger/OpenAPI servida pelo backend.
 
 ## Módulo `/pense-aja`
 
 ### `GET /pense-aja/products/:dassOffice`
 
-Estado atual após corte direto:
-
-- lista produtos da loja por unidade
-- não exige autenticação
-- lê de `pense_aja.marketplace_catalog_items`
-
-Modelo-alvo:
-
-- pode continuar público para leitura autenticada ou semiautenticada, conforme regra final do produto
-- deverá respeitar visibilidade e disponibilidade por unidade
-- deve expor metadados suficientes para distinguir item físico e voucher
+- Lista produtos ativos da loja para a unidade informada.
+- Não exige autenticação.
+- Lê de `pense_aja.marketplace_catalog_items`.
+- Mantém formato de resposta legado com `id`, `nome`, `imagem`, `valor`, `user_create` e `created_at`.
 
 ### `PUT /pense-aja/purchase/:registration`
 
-Estado atual após corte direto:
-
-- mantido como compatibilidade, mas grava em `marketplace_redemption_requests`
-- exige `verifyToken` e autorização dinâmica
-- reserva e confirma saldo via `points_ledger_entries`
-- não insere novas linhas em `pense_aja.pense_aja_premios`
-
-Modelo-alvo:
-
-- o fluxo atual deve evoluir para workflow de marketplace
-- a primeira operação sensível será a solicitação de resgate com reserva imediata de saldo
-- aprovação, separação, entrega, emissão de voucher, cancelamento e estorno devem virar transições explícitas
-- nenhum débito definitivo deve ocorrer sem reserva anterior
+- Endpoint legado de resgate direto por matrícula.
+- Exige `verifyToken` e permissão `reward.legacy.redeem` no `dassOffice` enviado no corpo.
+- Valida matrícula da URL, usuário, produto ativo e unidade Dass.
+- Usa `marketplace_catalog_items` para localizar produto por `id` ou `legacy_product_id`.
+- Recalcula e bloqueia `points_balance_projection` dentro da transação antes de validar saldo.
+- Cria lançamento `reserve` e `commit` em `points_ledger_entries`.
+- Cria solicitação concluída em `marketplace_redemption_requests`.
+- Registra auditoria `marketplace.request.completed`.
+- Não grava novos resgates na tabela legada `pense_aja.pense_aja_premios`.
 
 ### `PUT /pense-aja/products/:dassOffice`
 
-Estado atual após corte direto:
-
-- atualiza produtos em lote parcial
-- exige token e permissão `catalog.manage`
-- grava em `marketplace_catalog_items` e gera auditoria
-
-Modelo-alvo:
-
-- a gestão de catálogo deve usar permissão operacional específica de marketplace
-- alterações relevantes de catálogo devem gerar trilha de auditoria
+- Atualiza produtos em lote parcial para a unidade informada.
+- Exige `verifyToken` e permissão `catalog.manage`.
+- Atualiza nome e custo em pontos de itens existentes em `marketplace_catalog_items`.
+- Registra auditoria `catalog.item.updated` para produtos atualizados.
+- Retorna erro quando nenhum item enviado é atualizado com sucesso.
 
 ### `GET /pense-aja/:dassOffice`
 
-Estado atual após corte direto:
-
-- lista ideias por unidade e filtros
-- não exige autenticação
-- filtra `excluido = false`
-- inclui `pontuacao` a partir do saldo líquido de ledger por ideia
-- `startDate` e `endDate` são filtros opcionais; quando omitidos, a listagem não aplica recorte temporal
-
-Modelo-alvo:
-
-- a listagem deve continuar centrada em leitura consolidada
-- a coluna de pontuação deve ser tratada como projeção de leitura do ledger, não como valor diretamente autoritativo de tabela legada
+- Lista ideias por unidade.
+- Não exige autenticação.
+- Filtra `excluido = false`.
+- Retorna `pontuacao` como saldo líquido de lançamentos `idea_evaluation` confirmados no ledger.
+- Aceita filtros opcionais `startDate`, `endDate`, `name`, `sector`, `manager`, `project`, `turno` e `status`.
+- `startDate` e `endDate` são opcionais; quando omitidos, a listagem não aplica recorte temporal.
+- `endDate` é tratado como data inclusiva até o fim do dia informado.
 
 ### `POST /pense-aja/:dassOffice`
 
-Estado atual após corte direto:
-
-- cria novo cadastro de ideia
-- exige `verifyToken` e permissão `idea.submit`
-- usa lock transacional para reduzir duplicidade
-- tenta notificar gerente quando elegível, sem bloquear o cadastro se email ou notificação falhar
-- gera evento `idea.created`
-
-Modelo-alvo:
-
-- o cadastro deve continuar sendo o ponto de entrada do ciclo
-- o registro deve gerar evento auditável de criação
-- regras de autenticação e autoria devem ser revisadas na Fase 2 sem quebrar indevidamente o fluxo atual
+- Cria uma ideia Pense Aja na unidade informada.
+- Exige `verifyToken` e permissão `idea.submit`.
+- Valida campos obrigatórios do cadastro.
+- Usa lock transacional para reduzir duplicidade por matrícula, projeto, data realizada e unidade.
+- Quando encontra duplicidade, retorna a ideia existente sem criar novo registro.
+- Registra evento `idea.created` para novos cadastros.
+- Tenta notificar o gerente quando elegível; falhas de email ou notificação são tratadas como pós-processamento não bloqueante.
 
 ### `GET /pense-aja/:dassOffice/:id`
 
-Estado atual:
-
-- retorna detalhes completos da ideia
-- não exige autenticação
-
-Modelo-alvo:
-
-- deve continuar expondo o contexto funcional da ideia
-- pode evoluir para incluir histórico resumido de avaliação e estado operacional
+- Retorna detalhes completos da ideia.
+- Não exige autenticação.
+- Valida unidade Dass e busca a ideia pelo `id` na unidade informada.
 
 ### `GET /pense-aja/:dassOffice/:id/audit`
 
-Estado atual após corte direto:
-
-- retorna timeline de auditoria da ideia
-- exige `verifyToken` e permissão `idea.view`
-- retorna eventos com ator, motivo, estados `before`/`after`, metadata e `correlationId`
-
-Modelo-alvo:
-
-- permanece como leitura protegida da trilha operacional da ideia
-- pode evoluir para paginação e filtros por tipo de evento
+- Retorna a timeline de auditoria da ideia.
+- Exige `verifyToken` e permissão `idea.view`.
+- Retorna eventos com ator, motivo, estados `before`/`after`, metadata e `correlationId`.
 
 ### `PUT /pense-aja/avaliar/:id`
 
-Estado atual após corte direto:
-
-- exige `verifyToken` e permissão `idea.evaluate`
-- usa permissões efetivas da sessão para diferenciar avaliador comum e permissão de exclusão
-- reprovação, exclusão ou reavaliação geram `reverse` no ledger
-- aprovação com nota gera `earn` em `points_ledger_entries`, sem nova escrita em `pense_aja_pontos`
-- busca de email, opt-in e envio de notificação são pós-processamento não bloqueante
-
-Modelo-alvo:
-
-- o middleware de papel deve ser substituído por autorização dinâmica por unidade
-- a avaliação deve respeitar workflow configurável por unidade
-- toda transição relevante deve gerar evento auditável com `before` e `after`
-- toda mudança de pontuação deve virar lançamento no ledger
+- Avalia, reprova ou exclui uma ideia.
+- Exige `verifyToken` e permissão `idea.evaluate` no `dassOffice` enviado no corpo.
+- Usa as permissões efetivas da sessão para determinar se a atuação é de avaliação comum ou de gerenciamento.
+- Exclusão exige permissão adicional `idea.exclude`.
+- Reprovação com avaliação preenchida retorna `400`.
+- Reprovação, exclusão e reavaliação revertem pontuação anterior com lançamento `reverse` quando há saldo líquido da avaliação anterior.
+- Aprovação com nota gera lançamento `earn` em `points_ledger_entries`.
+- Pontuação usa regra ativa de `unit_scoring_rules` quando disponível; caso contrário, usa o valor recebido na avaliação.
+- Sincroniza `points_balance_projection` após mudança de pontuação.
+- Registra auditoria `idea.evaluated` com estados antes/depois.
+- Tenta notificar o usuário avaliado; falhas de notificação não bloqueiam a avaliação.
 
 ## Módulo `/user`
 
 ### `GET /user/session-context/:dassOffice`
 
-Estado atual após corte direto:
-
-- exige `verifyToken`
-- resolve permissões efetivas por unidade em RBAC
-- persiste snapshot curto em `rbac_session_snapshots`
-
-Modelo-alvo:
-
-- continua sendo a fonte de contexto autorizador para o frontend
+- Exige `verifyToken`.
+- Resolve permissões efetivas do usuário para a unidade.
+- Persiste snapshot curto em `rbac_session_snapshots`.
+- Retorna matrícula, unidade, permissões, versão e expiração do snapshot.
 
 ### `GET /user/rbac/roles`
+
+- Exige `verifyToken` e permissão `rbac.manage`.
+- Lista papéis RBAC disponíveis.
+- Usa `dassOffice` em query string para escopo de autorização.
+
 ### `GET /user/rbac/assignments`
+
+- Exige `verifyToken` e permissão `rbac.manage`.
+- Lista vínculos usuário/unidade/papel.
+- Aceita filtros opcionais `registration`, `dassOffice` e `active`.
+
 ### `GET /user/rbac/assignments/:id`
+
+- Exige `verifyToken` e permissão `rbac.manage`.
+- Retorna um vínculo RBAC pelo identificador.
+- Usa `dassOffice` em query string para escopo de autorização.
+
 ### `POST /user/rbac/assignments`
+
+- Exige `verifyToken` e permissão `rbac.manage`.
+- Cria vínculo de usuário, unidade e papel.
+- Valida usuário de autenticação e papel RBAC.
+- Impede vínculo duplicado para a mesma matrícula, unidade e papel.
+- Invalida snapshots de sessão da matrícula na unidade afetada.
+
 ### `PUT /user/rbac/assignments/:id`
+
+- Exige `verifyToken` e permissão `rbac.manage`.
+- Atualiza papel, status ativo e janela de vigência do vínculo.
+- Usa `dassOffice` do corpo ou da query string para escopo de autorização.
+- Invalida snapshots de sessão da matrícula na unidade afetada.
+
 ### `DELETE /user/rbac/assignments/:id`
 
-Estado atual:
+- Exige `verifyToken` e permissão `rbac.manage`.
+- Remove vínculo RBAC.
+- Usa `dassOffice` em query string para escopo de autorização.
+- Invalida snapshots de sessão da matrícula na unidade afetada.
 
-- administração de RBAC passa a ser manual
-- rotas protegidas exigem token e permissão `rbac.manage`
-- a administração é destinada a usuários com papel `admin_master`
+### `GET /user/unidade/:registration`
 
-Modelo-alvo:
-
-- `admin_master` gerencia vínculos usuário/unidade/papel
-- a população de RBAC deixa de depender de backfill heurístico por `funcao`
-- alterações de vínculo devem invalidar snapshots de sessão da unidade afetada
-
-### `GET /user/:registration`
-
-Estado atual:
-
-- entrega dados básicos, classificações, pontuação acumulada, pontos resgatados, email e apps autorizados
-
-Modelo-alvo:
-
-- deve continuar entregando visão consolidada ao frontend
-- saldo e histórico devem vir de projeções consistentes do ledger e do marketplace
+- Resolve a unidade Dass da matrícula.
+- Não exige autenticação.
+- Consulta `core.unidades_dass`.
+- Retorna `400` quando a matrícula não é conhecida.
 
 ### `GET /user/:registration/points-history`
 
-Estado atual após corte direto:
+- Retorna histórico de pontos do usuário em `points_ledger_entries`.
+- Exige `verifyToken`.
+- Permite leitura própria quando a matrícula autenticada é igual à matrícula da URL.
+- Leitura de terceiros exige permissão `marketplace.request.approve`.
+- Exige `dassOffice` válido em query string.
 
-- retorna histórico do usuário em `points_ledger_entries`
-- exige `verifyToken`
-- permite leitura própria quando a matrícula autenticada é igual à matrícula da URL
-- leitura de terceiros exige permissão `marketplace.request.approve`
-- exige `dassOffice` válido em query string
+### `GET /user/:registration`
 
-Modelo-alvo:
+- Retorna dados consolidados do usuário para a unidade enviada em query string.
+- Não exige autenticação.
+- Valida matrícula mínima, formato numérico e `dassOffice`.
+- Inclui dados básicos, classificações, pontuação acumulada, pontos resgatados, saldo disponível, email e apps autorizados.
+- Saldo e histórico são derivados do ledger e das projeções de pontos.
 
-- permanece como trilha de leitura do ledger append-only
+### `PUT /user/:registration`
+
+- Atualiza email e preferências de notificação do usuário.
+- Exige `verifyToken`.
+- Valida matrícula, email e domínio `@grupodass.com.br`.
+- Mantém compatibilidade com o fallback legado `["null"]` para lista vazia de apps autorizados.
 
 ## Módulo `/marketplace`
 
 ### `GET /marketplace/catalog/:dassOffice`
+
+- Lista catálogo ativo da unidade.
+- Não exige autenticação.
+- Retorna metadados de item físico ou voucher, custo em pontos, disponibilidade e metadata.
+
 ### `PUT /marketplace/catalog/:dassOffice`
+
+- Cria ou atualiza itens de catálogo operacional.
+- Exige `verifyToken` e permissão `catalog.manage`.
+- Aceita lote de itens.
+- Valida nome e custo positivo.
+- Registra auditoria `catalog.item.created` ou `catalog.item.updated`.
+- Retorna o catálogo ativo atualizado.
+
 ### `POST /marketplace/requests`
+
+- Cria solicitação de resgate.
+- Exige `verifyToken` e permissão `marketplace.request.create`.
+- Usa `registration` do corpo quando enviado; caso contrário, usa a matrícula do ator autenticado.
+- Valida item ativo, disponibilidade e saldo disponível.
+- Bloqueia `points_balance_projection` com `FOR UPDATE`.
+- Cria lançamento `reserve` no ledger.
+- Cria solicitação `pending_approval` em `marketplace_redemption_requests`.
+- Registra auditoria `marketplace.request.created`.
+
 ### `GET /marketplace/requests`
+
+- Lista solicitações de resgate da unidade.
+- Exige `verifyToken` e permissão `marketplace.request.approve`.
+- Exige `dassOffice` em query string.
+- Ordena por atualização mais recente.
+
 ### `PUT /marketplace/requests/:id/approve`
+
+- Aprova solicitação pendente.
+- Exige `verifyToken` e permissão `marketplace.request.approve`.
+- Transiciona `pending_approval` para `completed`.
+- Cria lançamento `commit` relacionado à reserva.
+- Registra auditoria `marketplace.request.approved`.
+
 ### `PUT /marketplace/requests/:id/reject`
+
+- Rejeita solicitação pendente.
+- Exige `verifyToken` e permissão `marketplace.request.approve`.
+- Transiciona `pending_approval` para `rejected`.
+- Cria lançamento `release` relacionado à reserva.
+- Registra auditoria `marketplace.request.rejected`.
+
 ### `PUT /marketplace/requests/:id/refund`
 
-Estado atual após corte direto:
-
-- catálogo operacional usa `marketplace_catalog_items`
-- solicitação cria `reserve` no ledger e status `pending_approval`
-- aprovação com `marketplace.request.approve` gera `commit` e conclui a solicitação como `completed`
-- rejeição antes do commit gera `release`
-- estorno após aprovação/conclusão gera `refund`
-- não há geração de voucher, separação ou fulfillment no fluxo público atual
-
-Modelo-alvo:
-
-- marketplace é o fluxo canônico para solicitação, aprovação, desconto de pontos, rejeição e estorno no Pense Aja
-
-### `GET /user/unidade/:registration`
-
-Estado atual:
-
-- resolve unidade a partir da matrícula em `core.unidades_dass`
-
-Modelo-alvo:
-
-- permanece como lookup de contexto
-- pode ser complementado por regras de elegibilidade e múltiplos escopos por sessão
-
-### `PUT /user/:registration`
-
-Estado atual:
-
-- atualiza email e preferências de notificação
-- mantém fallback `["null"]` para lista vazia
-
-Modelo-alvo:
-
-- preferências devem preservar compatibilidade
-- o fallback legado deve ser tratado como dívida técnica e não como semântica ideal
+- Estorna solicitação concluída.
+- Exige `verifyToken` e uma das permissões `marketplace.request.approve` ou `marketplace.refund`.
+- Transiciona `completed` para `refunded`.
+- Cria lançamento `refund`.
+- Registra auditoria `marketplace.request.refunded`.
 
 ## Módulo `/dashboard`
 
 ### `GET /dashboard/summary/:dassOffice`
+
+- Retorna resumo agregado da unidade.
+- Não exige autenticação.
+- Aceita `startDate` e `endDate` opcionais.
+- Inclui métricas de ideias, pontuação, ledger e marketplace.
+
 ### `GET /dashboard/monthly/:dassOffice`
+
+- Retorna série mensal de ideias e métricas relacionadas.
+- Não exige autenticação.
+- Aceita `startDate` e `endDate` opcionais.
+
 ### `GET /dashboard/dimensional/:dassOffice`
+
+- Retorna agregações dimensionais da unidade.
+- Não exige autenticação.
+- Aceita `startDate` e `endDate` opcionais.
+
 ### `GET /dashboard/idea-highlights/:dassOffice`
+
+- Retorna ideias em destaque da unidade.
+- Não exige autenticação.
+- Aceita `startDate` e `endDate` opcionais.
+- Não usa likes ou comentários aleatórios como dado canônico.
+
 ### `GET /dashboard/engagement/:dassOffice`
 
-Estado atual:
-
-- endpoints de leitura agregada por unidade
-- não exigem autenticação
-- resumo inclui métricas de ledger e marketplace
-- destaques não geram likes/comments aleatórios como dado canônico
-
-Modelo-alvo:
-
-- dashboards devem consumir projeções derivadas do backend
-- métricas de pontuação e resgate devem refletir ledger e marketplace auditável
-- dados sintéticos ou heurísticos devem ser claramente segregados de dados canônicos
+- Retorna dados de engajamento dos colaboradores.
+- Não exige autenticação.
+- Aceita `startDate` e `endDate` opcionais.
 
 ## Módulo `/ai`
 
 ### `POST /ai/improve-text`
 
-Estado atual:
-
-- melhora texto de cadastro
-- não exige autenticação no código atual
-
-Modelo-alvo:
-
-- IA continua auxiliar do fluxo
-- não deve participar de decisão autorizadora, pontuação ou mudança formal de status
-
-## Observações de contrato
-
-- a Fase 1 não redefine os endpoints já existentes como implementados de outra forma; ela documenta a evolução esperada
-- na Fase 2, a compatibilidade progressiva deve ser preservada sempre que possível
-- endpoints de RBAC, ledger e marketplace já fazem parte do corte direto backend
+- Melhora o texto de antes/depois do cadastro de ideia usando Gemini.
+- Não exige autenticação.
+- Sanitiza caracteres de entrada sensíveis para o prompt.
+- Rejeita prompts acima do limite de tokens configurado no service.
+- Atua apenas como auxílio textual; não altera status, pontuação, autorização ou dados formais da ideia.
 
 ## Tratamento global de erro
 
 O app possui middleware global que:
 
-- usa `CustomError.statusCode` quando disponível
-- responde `500` nos demais casos
-- acrescenta `"Contate a equipe de automação!"` à mensagem
-- inclui `details` apenas quando `DEV_ENV === "development"`
+- usa `CustomError.statusCode` quando disponível;
+- responde `500` nos demais casos;
+- acrescenta `"Contate a equipe de automação!"` à mensagem;
+- inclui `details` apenas quando `DEV_ENV === "development"`.
