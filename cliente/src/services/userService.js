@@ -1,4 +1,5 @@
 import { commonApi, api } from './httpClient.js'
+import { hasAnyPermission, hasPermission } from './permissionService.js'
 
 export const getUserData = async (registration, userData, loading = null, emit = null) => {
   const dassOffice = localStorage.getItem("unidadeDass");
@@ -27,6 +28,11 @@ export const getUserData = async (registration, userData, loading = null, emit =
 }
 
 export const setUserRole = (user) => {
+  const permissions = JSON.parse(sessionStorage.getItem("permissions") || "[]");
+  if (permissions.includes("rbac.manage")) return "automacao";
+  if (permissions.includes("idea.exclude")) return "gerente";
+  if (permissions.includes("idea.evaluate")) return "analista";
+
   if (!user.matricula) {
     return "common-user";
   }
@@ -47,6 +53,9 @@ export const getUserPermission = () => {
   if (!matricula) {
     return false;
   }
+  if (hasAnyPermission(["idea.evaluate", "idea.exclude", "catalog.manage", "marketplace.request.approve"])) {
+    return true;
+  }
   if (
     funcao?.toLowerCase().includes("analista") ||
     funcao?.toLowerCase().includes("gerente") ||
@@ -54,6 +63,16 @@ export const getUserPermission = () => {
   ) {
     return true;
   }
+};
+
+export const can = (permission) => hasPermission(permission);
+export const canAny = (permissions) => hasAnyPermission(permissions);
+
+export const getUserPointsHistory = async (registration, dassOffice) => {
+  const response = await api.get(`/user/${registration}/points-history`, {
+    params: { dassOffice },
+  });
+  return response.data;
 };
 
 export const formateName = (name) => {

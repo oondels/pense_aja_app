@@ -27,6 +27,7 @@ const unidade = localStorage.getItem("unidadeDass");
 onMounted(() => {
   const userStore = useUserStore();
   userStore.carregarUsuario();
+  userStore.loadSessionContext(unidade);
 });
 </script>
 
