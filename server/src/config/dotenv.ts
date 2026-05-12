@@ -17,10 +17,21 @@ const vars = {
   NOTIFICATION_API_KEY: process.env.NOTIFICATION_API_KEY || "",
   REDIS_HOST: process.env.REDIS_HOST || "",
   REDIS_PASS: process.env.REDIS_PASS || "",
+  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS || "",
 };
 
 if (!vars.JWT_SECRET) {
   throw new Error("JWT_SECRET não configurado.");
+}
+
+if (!vars.REDIS_HOST) {
+  console.warn("[CONFIG] REDIS_HOST não configurado: blacklist de token JWT desativada.");
+}
+if (!vars.NOTIFICATION_API) {
+  console.warn("[CONFIG] NOTIFICATION_API não configurada: notificações por push desativadas.");
+}
+if (!vars.GEMINI_API_KEY) {
+  console.warn("[CONFIG] GEMINI_API_KEY não configurada: melhoria de texto por IA desativada.");
 }
 
 export default vars;

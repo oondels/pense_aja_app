@@ -120,6 +120,7 @@ escopo da unidade.
   - `marketplace.request.approve`
   - `marketplace.refund`
   - `rbac.manage`
+  - `reward.legacy.redeem` _(fluxo legado: `PUT /pense-aja/purchase/:registration`)_
 - O backend cria snapshots curtos de sessão em `rbac_session_snapshots`.
 - Snapshots possuem TTL e versão.
 - Criação, alteração ou remoção de vínculo RBAC invalida snapshots da matrícula

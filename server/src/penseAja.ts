@@ -14,10 +14,14 @@ import MarketplaceRoutes from "./routes/marketplace.route";
 import { startUploadListener } from "./workers/uploadListener";
 
 const app = express();
-const port = 2512;
+const port = Number(dotenv.PORT) || 2512;
 const openApiPath = path.resolve(process.cwd(), "openapi.yaml");
 
-app.use(cors({ origin: ["http://10.100.1.43:5050", "http://localhost:5050", "http://localhost:5173/"], credentials: true }));
+const allowedOrigins = dotenv.ALLOWED_ORIGINS
+  ? dotenv.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : ["http://10.100.1.43:5050", "http://localhost:5050", "http://localhost:5173/"];
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.get("/docs/openapi.yaml", (req: Request, res: Response) => {
@@ -55,7 +59,7 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
 
   res.status(statusCode).json({
     message: message + " - Contate a equipe de automação!",
-    ...(process.env.DEV_ENV === "development" && details && { details }),
+    ...(dotenv.DEV_ENV && details && { details }),
   });
   return;
 });
