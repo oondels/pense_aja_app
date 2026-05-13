@@ -46,11 +46,13 @@ const applyDateFilter = (
   }
 };
 
-const approvedExpression =
-  "idea.status_gerente = 'approve' AND idea.status_analista = 'approve'";
+const implementedExpression = [
+  "(idea.em_espera IS NULL OR idea.em_espera != '1')",
+  "(idea.status_gerente = 'approve' OR idea.status_analista = 'approve')",
+].join(" AND ");
 const rejectedExpression =
   "idea.status_gerente = 'reprove' OR idea.status_analista = 'reprove'";
-const pendingExpression = `NOT (${approvedExpression}) AND NOT (${rejectedExpression})`;
+const pendingExpression = `NOT (${implementedExpression}) AND NOT (${rejectedExpression})`;
 
 export class DashboardService {
   static async getSummaryData(
@@ -67,7 +69,7 @@ export class DashboardService {
         .createQueryBuilder("idea")
         .select("COUNT(*)", "total_ideas")
         .addSelect(
-          `COUNT(CASE WHEN ${approvedExpression} THEN 1 END)`,
+          `COUNT(CASE WHEN ${implementedExpression} THEN 1 END)`,
           "implemented_ideas"
         )
         .addSelect(
@@ -183,7 +185,7 @@ export class DashboardService {
         .addSelect("TO_CHAR(idea.createdat, 'Mon')", "month_name")
         .addSelect("COUNT(*)", "count")
         .addSelect(
-          `COUNT(*) FILTER (WHERE ${approvedExpression})`,
+          `COUNT(*) FILTER (WHERE ${implementedExpression})`,
           "total_aprovados"
         )
         .where("idea.unidade_dass = :dassOffice", { dassOffice })
@@ -313,7 +315,7 @@ export class DashboardService {
         .addSelect(
           `
             CASE
-              WHEN ${approvedExpression} THEN 'Aprovada'
+              WHEN ${implementedExpression} THEN 'Aprovada'
               WHEN ${rejectedExpression} THEN 'Rejeitada'
               ELSE 'Pendente'
             END
@@ -331,7 +333,7 @@ export class DashboardService {
         .orderBy(
           `
             CASE
-              WHEN ${approvedExpression} THEN idea.valor_amortizado
+              WHEN ${implementedExpression} THEN idea.valor_amortizado
               ELSE 0
             END
           `,
@@ -414,7 +416,7 @@ export class DashboardService {
         .addSelect("idea.setor", "setor")
         .addSelect("COUNT(*)", "total_ideas")
         .addSelect(
-          `COUNT(CASE WHEN ${approvedExpression} THEN 1 END)`,
+          `COUNT(CASE WHEN ${implementedExpression} THEN 1 END)`,
           "implemented_ideas"
         )
         .where("idea.unidade_dass = :dassOffice", { dassOffice })
@@ -427,7 +429,7 @@ export class DashboardService {
         .addGroupBy("idea.setor")
         .having("COUNT(*) > 0")
         .orderBy("COUNT(*)", "DESC")
-        .addOrderBy(`COUNT(CASE WHEN ${approvedExpression} THEN 1 END)`, "DESC")
+        .addOrderBy(`COUNT(CASE WHEN ${implementedExpression} THEN 1 END)`, "DESC")
         .limit(10)
         .getRawMany<{
           nome: string;

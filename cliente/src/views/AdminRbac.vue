@@ -3,12 +3,15 @@
     <UnitRequiredState v-if="!dassOffice" />
 
     <div v-else class="mx-auto max-w-7xl space-y-6">
-      <header>
-        <p class="text-sm font-semibold uppercase tracking-wide text-red-700">Administração</p>
-        <h1 class="mt-1 text-2xl font-bold text-gray-950">Permissões e papéis</h1>
-        <p class="mt-2 max-w-2xl text-sm text-gray-600">
-          Vínculos RBAC por matrícula e unidade, com invalidação de snapshot pelo backend.
-        </p>
+      <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-wide text-red-700">Administração</p>
+          <h1 class="mt-1 text-2xl font-bold text-gray-950">Permissões e papéis</h1>
+          <p class="mt-2 max-w-2xl text-sm text-gray-600">
+            Vínculos RBAC por matrícula e unidade, com invalidação de snapshot pelo backend.
+          </p>
+        </div>
+        <ViewModeToggle v-model="viewMode" />
       </header>
 
       <PermissionGate permission="rbac.manage">
@@ -30,7 +33,7 @@
           </button>
         </form>
 
-        <AdminDataTable :columns="columns" :rows="assignments" :loading="loading" empty-text="Nenhum vínculo encontrado.">
+        <AdminDataTable v-if="viewMode === 'list'" :columns="columns" :rows="assignments" :loading="loading" empty-text="Nenhum vínculo encontrado.">
           <template #cell-active="{ value }">
             <span class="font-semibold" :class="value ? 'text-green-700' : 'text-gray-500'">{{ value ? 'Ativo' : 'Inativo' }}</span>
           </template>
@@ -51,6 +54,42 @@
             </div>
           </template>
         </AdminDataTable>
+
+        <section v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <article v-for="assignment in assignments" :key="assignment.id" class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ assignment.registration }} · {{ assignment.dassOffice }}</p>
+                <h2 class="mt-1 text-base font-semibold text-gray-950">{{ assignment.roleName }}</h2>
+                <p class="mt-1 text-sm text-gray-600">{{ assignment.roleCode }}</p>
+              </div>
+              <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="assignment.active ? 'bg-green-50 text-green-800 ring-1 ring-green-200' : 'bg-gray-100 text-gray-600 ring-1 ring-gray-200'">
+                {{ assignment.active ? 'Ativo' : 'Inativo' }}
+              </span>
+            </div>
+            <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <dt class="text-xs font-medium text-gray-500">Início</dt>
+                <dd class="font-medium text-gray-800">{{ formatDate(assignment.activeFrom) }}</dd>
+              </div>
+              <div>
+                <dt class="text-xs font-medium text-gray-500">Fim</dt>
+                <dd class="font-medium text-gray-800">{{ formatDate(assignment.activeUntil) }}</dd>
+              </div>
+            </dl>
+            <div class="mt-4 flex justify-end gap-2">
+              <button class="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50" type="button" @click="editAssignment(assignment)">
+                Editar
+              </button>
+              <button class="rounded-md border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="removeAssignment(assignment)">
+                Remover
+              </button>
+            </div>
+          </article>
+          <div v-if="!loading && assignments.length === 0" class="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500 md:col-span-2 xl:col-span-3">
+            Nenhum vínculo encontrado.
+          </div>
+        </section>
       </PermissionGate>
 
       <PermissionGate permission="rbac.manage">
@@ -69,6 +108,8 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import AdminDataTable from '@/components/shared/AdminDataTable.vue'
 import PermissionGate from '@/components/shared/PermissionGate.vue'
 import UnitRequiredState from '@/components/shared/UnitRequiredState.vue'
+import ViewModeToggle from '@/components/shared/ViewModeToggle.vue'
+import { usePersistedViewMode } from '@/composables/usePersistedViewMode.js'
 import { rbacService } from '@/services/rbacService.js'
 import { useUserStore } from '@/stores/userStore.js'
 
@@ -76,6 +117,7 @@ const userStore = useUserStore()
 const roles = ref([])
 const assignments = ref([])
 const loading = ref(false)
+const viewMode = usePersistedViewMode('viewMode:adminRbac')
 const form = reactive({
   id: null,
   registration: '',

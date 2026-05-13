@@ -242,7 +242,27 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Lista solicitações de resgate da unidade.
 - Exige `verifyToken` e permissão `marketplace.request.approve`.
 - Exige `dassOffice` em query string.
+- Aceita filtros `status` e `registration`.
+- Aceita `page` e `limit`; o frontend usa `limit=5`.
+- Retorna `{ data, pagination }`.
+- Cada item pode incluir nome, custo em pontos e tipo do item de catálogo.
 - Ordena por atualização mais recente.
+
+### `GET /marketplace/requests/me`
+
+- Lista solicitações da matrícula autenticada.
+- Exige `verifyToken`.
+- Exige `dassOffice` em query string.
+- Aceita filtro `status`, `page` e `limit`.
+- Retorna `{ data, pagination }`.
+
+### `GET /marketplace/requests/public`
+
+- Consulta pública de solicitações por matrícula e unidade.
+- Não exige autenticação.
+- Exige `dassOffice` e `registration` em query string.
+- Aceita filtro `status`, `page` e `limit`.
+- Retorna `{ data, pagination }`.
 
 ### `PUT /marketplace/requests/:id/approve`
 
@@ -276,12 +296,14 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Não exige autenticação.
 - Aceita `startDate` e `endDate` opcionais.
 - Inclui métricas de ideias, pontuação, ledger e marketplace.
+- Considera ideia implementada quando não está em espera e possui aprovação de analista ou gerente.
 
 ### `GET /dashboard/monthly/:dassOffice`
 
 - Retorna série mensal de ideias e métricas relacionadas.
 - Não exige autenticação.
 - Aceita `startDate` e `endDate` opcionais.
+- A métrica de aprovadas usa a mesma regra de ideia implementada do resumo.
 
 ### `GET /dashboard/dimensional/:dassOffice`
 
@@ -294,6 +316,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Retorna ideias em destaque da unidade.
 - Não exige autenticação.
 - Aceita `startDate` e `endDate` opcionais.
+- Rotula como `Aprovada` quando a ideia atende à regra de implementada.
 - Não usa likes ou comentários aleatórios como dado canônico.
 
 ### `GET /dashboard/engagement/:dassOffice`
@@ -301,6 +324,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Retorna dados de engajamento dos colaboradores.
 - Não exige autenticação.
 - Aceita `startDate` e `endDate` opcionais.
+- Conta implementadas por colaborador quando a ideia não está em espera e possui aprovação de analista ou gerente.
 
 ## Módulo `/ai`
 

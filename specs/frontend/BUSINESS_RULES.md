@@ -94,27 +94,21 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 
 ## Perfil, saldo e pontuação
 
-### Estado atual
-
-- o perfil exibe pontuação e classificações agregadas
-
-### Modelo-alvo
-
 - saldo deve ser exibido como leitura consolidada do backend
 - a UI não deve assumir soma simples de tabelas legadas
+- perfil exibe dados do colaborador, classificações recebidas, saldo disponível, pontos ganhos, pontos resgatados e pontos reservados
 - histórico de pontos reflete eventos do ledger em linguagem compreensível ao usuário, incluindo avaliação, bonificação, ajuste manual e marketplace
+- histórico de pontos pode ser visualizado em cards ou lista
 - ajustes manuais ficam na guia de configurações da unidade e exigem permissão `points.adjust`
 - ajustes de débito não devem ser enviados com valor que deixe saldo negativo; o bloqueio definitivo é do backend
+- solicitações de resgate do usuário são exibidas no perfil com acompanhamento em popup
 
 ## Marketplace e recompensas
 
-### Estado atual
-
 - resgate usa uma rota autenticada de compra
 - criação e edição de produto já existem em módulos próprios
-
-### Modelo-alvo
-
+- catálogo administrativo usa cards ou lista editável e modal de cadastro com upload de imagem
+- feedback de cadastro e edição do catálogo usa `Notification.vue`
 - o fluxo deve expor:
   - solicitação
   - reserva de saldo
@@ -123,6 +117,15 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
   - conclusão, liberação ou estorno
 - item físico e voucher compartilham backbone de status, com detalhes específicos por tipo
 - a UI deve refletir sempre o estado consolidado do backend
+- cadastro de novo item deve validar nome, pontuação e imagem antes de enviar
+- solicitações administrativas podem ser filtradas por status e matrícula, com paginação de 5 resultados
+- acompanhamento de solicitação abre em popup a partir da lista ou dos cards
+- usuários logados consultam suas próprias solicitações; usuários não logados consultam por unidade e matrícula
+
+## Preferências de listagem
+
+- histórico de pontos, solicitações de marketplace, catálogo e RBAC permitem alternar entre cards e lista
+- a preferência de cada tela é salva em `localStorage`
 
 ## Dashboard
 
@@ -134,6 +137,7 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 ### Modelo-alvo
 
 - continua como camada de leitura
+- a métrica `Implementadas` vem do backend e significa ideia fora de espera com aprovação de analista ou gerente
 - métricas de pontuação e resgate devem consumir projeções do backend baseadas em ledger e marketplace
 - dados heurísticos ou simulados precisam ficar claramente separados de dados canônicos
 
