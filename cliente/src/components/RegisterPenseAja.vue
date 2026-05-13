@@ -143,7 +143,7 @@
                     color="red"
                     class="mt-1 w-full"
                     label="Fábrica"
-                    :items="['Fábrica 1', 'Fábrica 2', 'Fábrica 3', 'Manutenção']"
+                    :items="['Geral', 'Fábrica 1', 'Fábrica 2', 'Fábrica 3', 'Manutenção']"
                     v-model="penseAjaData.factory"
                   ></v-select>
                 </div>
@@ -359,6 +359,7 @@ const serachUser = async (e) => {
 const unidadeDass = localStorage.getItem("unidadeDass");
 const setoresDass = {
   SEST: [
+    "Geral",
     "Corte (Recorte, chanfração)",
     "Serigrafia",
     "Frequência",
