@@ -14,131 +14,192 @@
         <ViewModeToggle v-model="viewMode" />
       </header>
 
+      <div>
+        <span>Matrícula:</span>
+        <v-text-field
+          placeholder="Digite sua matrícula"
+          v-model="matriculaUser"
+          @keyup.enter="handleUserData($event, false)"
+        ></v-text-field>
+        <v-btn v-if="Object.keys(userData).length <= 0" @click="handleUserData($event, true)">Buscar</v-btn>
+
+        <!-- User Info -->
+        <div v-if="Object.keys(userData).length > 0" class="mb-6">
+          <div class="flex items-center bg-white rounded-lg shadow p-4 space-x-4">
+            <i class="bi bi-person-circle text-primary text-4xl"></i>
+            <div class="space-y-1">
+              <p id="nomeLoja" class="text-sm text-gray-700">Nome: {{ userData?.nome }}</p>
+              <p id="setorLoja" class="text-sm text-gray-700">Setor: {{ userData?.setor }}</p>
+              <p id="gerenteLoja" class="text-sm text-gray-700">Gerente: {{ userData?.gerente }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <PointBalanceSummary :user-data="userData" />
 
-      <AdminDataTable v-if="viewMode === 'list'" :columns="columns" :rows="history" :loading="loading" empty-text="Nenhuma movimentação encontrada.">
-        <template #cell-entryType="{ value }">
-          <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="entryClass(value)">
-            {{ entryLabel(value) }}
-          </span>
-        </template>
-        <template #cell-amount="{ row, value }">
-          <span class="font-semibold" :class="amountClass(row.entryType)">
-            {{ amountSign(row.entryType) }}{{ value }}
-          </span>
-        </template>
-        <template #cell-sourceType="{ value }">
-          {{ sourceLabel(value) }}
-        </template>
-        <template #cell-createdAt="{ value }">
-          {{ formatDate(value) }}
-        </template>
-      </AdminDataTable>
-
-      <section v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <article v-for="entry in history" :key="entry.id || `${entry.sourceId}-${entry.createdAt}`" class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="entryClass(entry.entryType)">
-                {{ entryLabel(entry.entryType) }}
-              </span>
-              <h2 class="mt-3 text-base font-semibold text-gray-950">{{ sourceLabel(entry.sourceType) }}</h2>
-            </div>
-            <span class="text-xl font-bold" :class="amountClass(entry.entryType)">
-              {{ amountSign(entry.entryType) }}{{ entry.amount }}
+      <div v-if="Object.keys(userData).length > 0">
+        <AdminDataTable
+          v-if="viewMode === 'list'"
+          :columns="columns"
+          :rows="history"
+          :loading="loading"
+          empty-text="Nenhuma movimentação encontrada."
+        >
+          <template #cell-entryType="{ value }">
+            <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="entryClass(value)">
+              {{ entryLabel(value) }}
             </span>
+          </template>
+          <template #cell-amount="{ row, value }">
+            <span class="font-semibold" :class="amountClass(row.entryType)">
+              {{ amountSign(row.entryType) }}{{ value }}
+            </span>
+          </template>
+          <template #cell-sourceType="{ value }">
+            {{ sourceLabel(value) }}
+          </template>
+          <template #cell-createdAt="{ value }">
+            {{ formatDate(value) }}
+          </template>
+        </AdminDataTable>
+
+        <section v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <article
+            v-for="entry in history"
+            :key="entry.id || `${entry.sourceId}-${entry.createdAt}`"
+            class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="entryClass(entry.entryType)">
+                  {{ entryLabel(entry.entryType) }}
+                </span>
+                <h2 class="mt-3 text-base font-semibold text-gray-950">{{ sourceLabel(entry.sourceType) }}</h2>
+              </div>
+              <span class="text-xl font-bold" :class="amountClass(entry.entryType)">
+                {{ amountSign(entry.entryType) }}{{ entry.amount }}
+              </span>
+            </div>
+            <dl class="mt-4 space-y-2 text-sm">
+              <div class="flex justify-between gap-3">
+                <dt class="text-gray-500">Referência</dt>
+                <dd class="font-medium text-gray-800">{{ entry.sourceId || "-" }}</dd>
+              </div>
+              <div class="flex justify-between gap-3">
+                <dt class="text-gray-500">Ator</dt>
+                <dd class="font-medium text-gray-800">{{ entry.createdByName || "-" }}</dd>
+              </div>
+              <div class="flex justify-between gap-3">
+                <dt class="text-gray-500">Data</dt>
+                <dd class="font-medium text-gray-800">{{ formatDate(entry.createdAt) }}</dd>
+              </div>
+            </dl>
+            <p v-if="entry.reason" class="mt-3 rounded-md bg-gray-50 p-3 text-sm text-gray-600">{{ entry.reason }}</p>
+          </article>
+          <div
+            v-if="!loading && history.length === 0"
+            class="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500 md:col-span-2 xl:col-span-3"
+          >
+            Nenhuma movimentação encontrada.
           </div>
-          <dl class="mt-4 space-y-2 text-sm">
-            <div class="flex justify-between gap-3">
-              <dt class="text-gray-500">Referência</dt>
-              <dd class="font-medium text-gray-800">{{ entry.sourceId || '-' }}</dd>
-            </div>
-            <div class="flex justify-between gap-3">
-              <dt class="text-gray-500">Ator</dt>
-              <dd class="font-medium text-gray-800">{{ entry.createdByName || '-' }}</dd>
-            </div>
-            <div class="flex justify-between gap-3">
-              <dt class="text-gray-500">Data</dt>
-              <dd class="font-medium text-gray-800">{{ formatDate(entry.createdAt) }}</dd>
-            </div>
-          </dl>
-          <p v-if="entry.reason" class="mt-3 rounded-md bg-gray-50 p-3 text-sm text-gray-600">{{ entry.reason }}</p>
-        </article>
-        <div v-if="!loading && history.length === 0" class="rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500 md:col-span-2 xl:col-span-3">
-          Nenhuma movimentação encontrada.
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
+
+    <Notification ref="notification" />
   </main>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import AdminDataTable from '@/components/shared/AdminDataTable.vue'
-import PointBalanceSummary from '@/components/shared/PointBalanceSummary.vue'
-import UnitRequiredState from '@/components/shared/UnitRequiredState.vue'
-import ViewModeToggle from '@/components/shared/ViewModeToggle.vue'
-import { usePersistedViewMode } from '@/composables/usePersistedViewMode.js'
-import { getUserData, getUserPointsHistory } from '@/services/userService.js'
-import { useUserStore } from '@/stores/userStore.js'
+import { computed, onMounted, ref } from "vue";
+import AdminDataTable from "@/components/shared/AdminDataTable.vue";
+import PointBalanceSummary from "@/components/shared/PointBalanceSummary.vue";
+import UnitRequiredState from "@/components/shared/UnitRequiredState.vue";
+import ViewModeToggle from "@/components/shared/ViewModeToggle.vue";
+import { usePersistedViewMode } from "@/composables/usePersistedViewMode.js";
+import { getUserData, getUserPointsHistory } from "@/services/userService.js";
+import { useUserStore } from "@/stores/userStore.js";
+import Notification from "@/components/Notification.vue";
 
-const userStore = useUserStore()
-const userData = ref({})
-const history = ref([])
-const loading = ref(false)
-const viewMode = usePersistedViewMode('viewMode:pointsHistory')
+const notification = ref(null);
+const emit = defineEmits(["notify"]);
 
-const dassOffice = computed(() => userStore.dassOffice || localStorage.getItem('unidadeDass') || '')
+const userStore = useUserStore();
+const userData = ref({});
+const history = ref([]);
+const loading = ref(false);
+const viewMode = usePersistedViewMode("viewMode:pointsHistory");
+
+const dassOffice = computed(() => userStore.dassOffice || localStorage.getItem("unidadeDass") || "");
 const columns = [
-  { key: 'entryType', label: 'Tipo' },
-  { key: 'amount', label: 'Pontos' },
-  { key: 'sourceType', label: 'Origem' },
-  { key: 'sourceId', label: 'Ref.' },
-  { key: 'reason', label: 'Motivo' },
-  { key: 'createdByName', label: 'Ator' },
-  { key: 'createdAt', label: 'Data' },
-]
+  { key: "entryType", label: "Tipo" },
+  { key: "amount", label: "Pontos" },
+  { key: "sourceType", label: "Origem" },
+  { key: "sourceId", label: "Ref." },
+  { key: "reason", label: "Motivo" },
+  { key: "createdByName", label: "Ator" },
+  { key: "createdAt", label: "Data" },
+];
 
 const entryMap = {
-  earn: 'Ganho',
-  reverse: 'Reversão',
-  reserve: 'Reserva',
-  commit: 'Consumo',
-  release: 'Liberação',
-  refund: 'Estorno',
-}
+  earn: "Ganho",
+  reverse: "Reversão",
+  reserve: "Reserva",
+  commit: "Consumo",
+  release: "Liberação",
+  refund: "Estorno",
+};
 const sourceMap = {
-  idea_evaluation: 'Avaliação de ideia',
-  idea_evaluation_bonus: 'Bonificação de avaliação',
-  manual_adjustment: 'Ajuste manual',
-  marketplace_redemption: 'Resgate no marketplace',
-}
+  idea_evaluation: "Avaliação de ideia",
+  idea_evaluation_bonus: "Bonificação de avaliação",
+  manual_adjustment: "Ajuste manual",
+  marketplace_redemption: "Resgate no marketplace",
+};
 
-const entryLabel = (type) => entryMap[type] || type
-const sourceLabel = (type) => sourceMap[type] || type
-const amountSign = (type) => (['earn', 'release', 'refund'].includes(type) ? '+' : '-')
-const amountClass = (type) => (['earn', 'release', 'refund'].includes(type) ? 'text-green-700' : 'text-red-700')
-const entryClass = (type) => (['earn', 'release', 'refund'].includes(type) ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800')
+const entryLabel = (type) => entryMap[type] || type;
+const sourceLabel = (type) => sourceMap[type] || type;
+const amountSign = (type) => (["earn", "release", "refund"].includes(type) ? "+" : "-");
+const amountClass = (type) => (["earn", "release", "refund"].includes(type) ? "text-green-700" : "text-red-700");
+const entryClass = (type) =>
+  ["earn", "release", "refund"].includes(type) ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800";
 
 const formatDate = (value) => {
-  if (!value) return '-'
-  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))
-}
+  if (!value) return "-";
+  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+};
 
 const loadHistory = async () => {
-  if (!dassOffice.value || !userStore.matricula) return
-  loading.value = true
+  // if (!dassOffice.value || !userStore.matricula) return
+  loading.value = true;
   try {
-    await getUserData(userStore.matricula, userData)
-    history.value = await getUserPointsHistory(userStore.matricula, dassOffice.value)
+    if (Object.keys(userData.value).length === 0) {
+      await getUserData(userStore.matricula, userData);
+    }
+
+    const matricula = matriculaUser.value || userStore.matricula;
+    history.value = await getUserPointsHistory(matricula, dassOffice.value);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
+
+// Busca de dados de colabordaro não autenticado
+const matriculaUser = ref(null);
+const handleUserData = async (e, click) => {
+  try {
+    // Espera input do usuário
+    if ((e.key && e.key === "Enter") || click) {
+      await getUserData(matriculaUser.value, userData, loading, emit);
+    }
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+  }
+};
 
 onMounted(async () => {
-  userStore.carregarUsuario()
-  await userStore.loadSessionContext(dassOffice.value)
-  await loadHistory()
-})
+  userStore.carregarUsuario();
+  await userStore.loadSessionContext(dassOffice.value);
+  await loadHistory();
+});
 </script>
