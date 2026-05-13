@@ -21,6 +21,7 @@ import { CustomError } from "../types/CustomError";
 import { assertDassOffice } from "../utils/dassOffice";
 
 const CLASSIFICATION_PATTERN = /^[A-Z]{1,3}$/;
+const DEFAULT_MAX_EVALUATION_BONUS_POINTS = 2;
 
 const mapScoringRule = (rule: UnitScoringRule): UnitScoringRuleRecord => ({
   id: rule.id,
@@ -200,6 +201,20 @@ export const UnitSettingsService = {
         (rule) => rule.classification === normalizeClassification(classification)
       ) ?? null
     );
+  },
+
+  async getMaxEvaluationBonusPoints(
+    manager: EntityManager,
+    dassOffice: DassOffice
+  ): Promise<number> {
+    const settings = await this.getSettings(dassOffice, manager, true);
+    const configured = Number(settings.metadata?.maxEvaluationBonusPoints);
+
+    if (!Number.isInteger(configured) || configured < 0) {
+      return DEFAULT_MAX_EVALUATION_BONUS_POINTS;
+    }
+
+    return configured;
   },
 
   async upsertSettings(

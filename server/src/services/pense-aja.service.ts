@@ -77,6 +77,14 @@ const normalizeClassification = (classification?: string, legacyValue?: string) 
   return LEGACY_CLASSIFICATION_MAP[String(legacyValue ?? "")] ?? null;
 };
 
+const normalizeBonusPoints = (value?: number) => {
+  const points = Number(value ?? 0);
+  if (!Number.isFinite(points)) {
+    return 0;
+  }
+  return Math.max(0, Math.trunc(points));
+};
+
 const mapIdeaAuditState = (idea: PenseAjaDass) => ({
   id: Number(idea.id),
   matricula: String(idea.matricula),
@@ -196,7 +204,7 @@ export const PenseAjaService = {
               .where("pontos.unidade_dass = :dassOffice", {
                 dassOffice: validDassOffice,
               })
-              .andWhere("pontos.source_type = 'idea_evaluation'")
+              .andWhere("pontos.source_type IN ('idea_evaluation', 'idea_evaluation_bonus')")
               .andWhere("pontos.status = 'confirmed'")
               .groupBy("pontos.source_id"),
           "points",
@@ -575,6 +583,8 @@ export const PenseAjaService = {
       a3Mae = "",
       emEspera,
       replicavel,
+      bonusPoints,
+      bonusJustification,
       actorRegistration,
       permissions,
     } = data;
@@ -637,12 +647,20 @@ export const PenseAjaService = {
         sourceType: "idea_evaluation",
         sourceId: String(currentIdea.id),
       });
+      const currentBonus = await LedgerService.getSourceNetAmount(queryRunner, {
+        registration: String(currentIdea.matricula),
+        dassOffice: validDassOffice,
+        sourceType: "idea_evaluation_bonus",
+        sourceId: String(currentIdea.id),
+      });
 
 	      const now = new Date();
 	      const selectedClassification = normalizeClassification(
 	        classification,
 	        avaliacao
 	      );
+      const normalizedBonusPoints = normalizeBonusPoints(bonusPoints);
+      const normalizedBonusJustification = String(bonusJustification || "").trim();
 	      const updateData: Partial<PenseAjaDass> = {
 	        updatedat: now,
 	      };
@@ -713,6 +731,10 @@ export const PenseAjaService = {
 	            selectedClassification
 	          )
 	        : null;
+      const maxBonusPoints = await UnitSettingsService.getMaxEvaluationBonusPoints(
+        queryRunner.manager,
+        validDassOffice
+      );
 
 	      if (status !== EXCLUDE && status !== REPROVE && !scoringRule) {
 	        throw new CustomError(
@@ -720,6 +742,24 @@ export const PenseAjaService = {
 	          400
 	        );
 	      }
+
+      if ((status === EXCLUDE || status === REPROVE) && normalizedBonusPoints > 0) {
+        throw new CustomError(
+          "Bonificação de pontuação só pode ser aplicada em avaliações aprovadas.",
+          400
+        );
+      }
+
+      if (normalizedBonusPoints > maxBonusPoints) {
+        throw new CustomError(
+          `Bonificação máxima da unidade é de ${maxBonusPoints} ponto(s).`,
+          400
+        );
+      }
+
+      if (normalizedBonusPoints > 0 && !normalizedBonusJustification) {
+        throw new CustomError("Justificativa da bonificação é obrigatória.", 400);
+      }
 
 	      const evaluationScore = scoringRule ? Number(scoringRule.score) : 0;
 
@@ -737,6 +777,23 @@ export const PenseAjaService = {
           createdByRegistration: actorRegistration ?? null,
           createdByName: avaliador,
           metadata: { status },
+        });
+      }
+
+      if (currentBonus.netAmount > 0 && (status === EXCLUDE || status === REPROVE)) {
+        await LedgerService.createEntry(queryRunner, {
+          registration: String(newEvaluation.matricula),
+          dassOffice: validDassOffice,
+          entryType: "reverse",
+          amount: currentBonus.netAmount,
+          sourceType: "idea_evaluation_bonus",
+          sourceId: String(newEvaluation.id),
+          relatedEntryId: currentBonus.latestEarnEntryId,
+          correlationId,
+          reason: justificativa,
+          createdByRegistration: actorRegistration ?? null,
+          createdByName: avaliador,
+          metadata: { status, reason: "bonus_reversal" },
         });
       }
 
@@ -780,6 +837,45 @@ export const PenseAjaService = {
 	            },
 	          });
 	        }
+
+        if (currentBonus.netAmount > 0 && currentBonus.netAmount !== normalizedBonusPoints) {
+          await LedgerService.createEntry(queryRunner, {
+            registration: String(newEvaluation.matricula),
+            dassOffice: validDassOffice,
+            entryType: "reverse",
+            amount: currentBonus.netAmount,
+            sourceType: "idea_evaluation_bonus",
+            sourceId: String(newEvaluation.id),
+            relatedEntryId: currentBonus.latestEarnEntryId,
+            correlationId,
+            reason: "Reavaliação de bonificação.",
+            createdByRegistration: actorRegistration ?? null,
+            createdByName: avaliador,
+            metadata: { previousBonusPoints: currentBonus.netAmount },
+          });
+        }
+
+        if (currentBonus.netAmount !== normalizedBonusPoints && normalizedBonusPoints > 0) {
+          await LedgerService.createEntry(queryRunner, {
+            registration: String(newEvaluation.matricula),
+            dassOffice: validDassOffice,
+            entryType: "earn",
+            amount: normalizedBonusPoints,
+            sourceType: "idea_evaluation_bonus",
+            sourceId: String(newEvaluation.id),
+            correlationId,
+            reason: normalizedBonusJustification,
+            createdByRegistration: actorRegistration ?? null,
+            createdByName: avaliador,
+            metadata: {
+              classification: selectedClassification,
+              role,
+              workflowStep: workflowDecision.stepCode,
+              bonusJustification: normalizedBonusJustification,
+              maxBonusPoints,
+            },
+          });
+        }
       }
 
       await LedgerService.syncBalanceProjection(
@@ -803,6 +899,9 @@ export const PenseAjaService = {
 	          avaliacao: avaliacao ? Number(avaliacao) : null,
 	          classification: selectedClassification,
 	          score: scoringRule ? evaluationScore : null,
+          bonusPoints: normalizedBonusPoints,
+          previousBonusPoints: currentBonus.netAmount,
+          maxBonusPoints,
 	          role,
           workflowStep: workflowDecision.stepCode,
           reviewSlot: workflowDecision.reviewSlot,

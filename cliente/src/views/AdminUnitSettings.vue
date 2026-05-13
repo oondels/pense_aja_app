@@ -25,7 +25,7 @@
       <PermissionGate permission="unit.config.manage">
         <nav class="flex flex-wrap gap-2 rounded-lg border border-gray-200 bg-white p-2 shadow-sm">
           <button
-            v-for="tab in tabs"
+            v-for="tab in visibleTabs"
             :key="tab.key"
             class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold"
             :class="activeTab === tab.key ? 'bg-red-700 text-white' : 'text-gray-700 hover:bg-gray-100'"
@@ -43,6 +43,21 @@
         </section>
 
         <section v-else-if="activeTab === 'scoring'" class="space-y-4">
+          <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+            <h2 class="text-lg font-semibold text-gray-950">Parâmetros da avaliação</h2>
+            <div class="mt-4 grid gap-3 md:grid-cols-3">
+              <label class="text-sm font-medium text-gray-700">
+                Limite de bonificação por avaliação
+                <input
+                  v-model.number="settings.metadata.maxEvaluationBonusPoints"
+                  class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  min="0"
+                  type="number"
+                />
+              </label>
+            </div>
+          </div>
+
           <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
             <div class="flex items-center justify-between gap-3">
               <h2 class="text-lg font-semibold text-gray-950">Classificações e pontos</h2>
@@ -118,6 +133,51 @@
           </div>
         </section>
 
+        <section v-else-if="activeTab === 'adjustments'" class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+          <form class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm" @submit.prevent="submitPointsAdjustment">
+            <h2 class="text-lg font-semibold text-gray-950">Ajustar pontuação</h2>
+            <div class="mt-4 grid gap-3 md:grid-cols-2">
+              <label class="text-sm font-medium text-gray-700">
+                Matrícula
+                <input v-model.trim="adjustmentForm.registration" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" inputmode="numeric" required />
+              </label>
+              <label class="text-sm font-medium text-gray-700">
+                Operação
+                <select v-model="adjustmentForm.direction" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                  <option value="credit">Adicionar pontos</option>
+                  <option value="debit">Subtrair pontos</option>
+                </select>
+              </label>
+              <label class="text-sm font-medium text-gray-700">
+                Pontos
+                <input v-model.number="adjustmentForm.amount" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" min="1" required type="number" />
+              </label>
+              <label class="text-sm font-medium text-gray-700 md:col-span-2">
+                Justificativa
+                <textarea v-model.trim="adjustmentForm.reason" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" required rows="4"></textarea>
+              </label>
+            </div>
+            <button
+              class="mt-4 inline-flex items-center justify-center gap-2 rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800 disabled:bg-gray-300"
+              type="submit"
+              :disabled="adjustmentLoading || !userStore.hasPermission('points.adjust')"
+            >
+              <i :class="adjustmentLoading ? 'mdi mdi-loading mdi-spin' : 'mdi mdi-account-cash-outline'"></i>
+              Registrar ajuste
+            </button>
+          </form>
+          <aside class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+            <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-600">Resultado</h3>
+            <div v-if="adjustmentResult" class="mt-3 space-y-2 text-sm text-gray-700">
+              <p><strong>Matrícula:</strong> {{ adjustmentResult.registration }}</p>
+              <p><strong>Operação:</strong> {{ adjustmentResult.direction === 'credit' ? 'Crédito' : 'Débito' }}</p>
+              <p><strong>Pontos:</strong> {{ adjustmentResult.amount }}</p>
+              <p><strong>Saldo disponível:</strong> {{ adjustmentResult.availableBalance }}</p>
+            </div>
+            <p v-else class="mt-3 text-sm text-gray-500">Nenhum ajuste registrado nesta sessão.</p>
+          </aside>
+        </section>
+
         <section v-else class="grid gap-4 md:grid-cols-2">
           <article class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
             <h2 class="text-lg font-semibold text-gray-950">Catálogo</h2>
@@ -156,6 +216,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import PermissionGate from '@/components/shared/PermissionGate.vue'
 import UnitRequiredState from '@/components/shared/UnitRequiredState.vue'
 import { unitSettingsService } from '@/services/unitSettingsService.js'
+import { createUserPointsAdjustment } from '@/services/userService.js'
 import { useUserStore } from '@/stores/userStore.js'
 
 const userStore = useUserStore()
@@ -163,6 +224,8 @@ const loading = ref(false)
 const saving = ref(false)
 const feedback = ref('')
 const feedbackType = ref('success')
+const adjustmentLoading = ref(false)
+const adjustmentResult = ref(null)
 const activeTab = ref('scoring')
 const settings = reactive({
   active: true,
@@ -176,15 +239,23 @@ const settings = reactive({
     metadata: {},
   },
 })
+const adjustmentForm = reactive({
+  registration: '',
+  direction: 'credit',
+  amount: 1,
+  reason: '',
+})
 
 const tabs = [
   { key: 'scoring', label: 'Avaliação e pontuação', icon: 'mdi mdi-star-settings-outline' },
   { key: 'workflow', label: 'Workflow', icon: 'mdi mdi-source-branch' },
   { key: 'marketplace', label: 'Marketplace', icon: 'mdi mdi-store-cog-outline' },
+  { key: 'adjustments', label: 'Ajustes de pontuação', icon: 'mdi mdi-account-cash-outline', permission: 'points.adjust' },
   { key: 'operations', label: 'Catálogo e RBAC', icon: 'mdi mdi-tune-variant' },
 ]
 
 const dassOffice = computed(() => userStore.dassOffice || localStorage.getItem('unidadeDass') || '')
+const visibleTabs = computed(() => tabs.filter((tab) => !tab.permission || userStore.hasPermission(tab.permission)))
 const feedbackClass = computed(() => (
   feedbackType.value === 'success'
     ? 'border-green-200 bg-green-50 text-green-800'
@@ -193,7 +264,10 @@ const feedbackClass = computed(() => (
 
 const normalizeSettings = (data) => {
   settings.active = data.active ?? true
-  settings.metadata = data.metadata || {}
+  settings.metadata = {
+    ...(data.metadata || {}),
+    maxEvaluationBonusPoints: Number(data.metadata?.maxEvaluationBonusPoints ?? 2),
+  }
   settings.scoringRules = (data.scoringRules || []).map((rule, index) => ({
     ...rule,
     label: rule.label || rule.classification,
@@ -215,6 +289,29 @@ const normalizeSettings = (data) => {
     voucherAdapter: data.marketplacePolicy?.voucherAdapter || 'noop',
     active: data.marketplacePolicy?.active ?? true,
     metadata: data.marketplacePolicy?.metadata || {},
+  }
+}
+
+const submitPointsAdjustment = async () => {
+  if (!userStore.hasPermission('points.adjust')) return
+  adjustmentLoading.value = true
+  feedback.value = ''
+  try {
+    adjustmentResult.value = await createUserPointsAdjustment(adjustmentForm.registration, {
+      dassOffice: dassOffice.value,
+      direction: adjustmentForm.direction,
+      amount: Number(adjustmentForm.amount),
+      reason: adjustmentForm.reason,
+    })
+    feedbackType.value = 'success'
+    feedback.value = 'Ajuste de pontuação registrado com sucesso.'
+    adjustmentForm.amount = 1
+    adjustmentForm.reason = ''
+  } catch (error) {
+    feedbackType.value = 'error'
+    feedback.value = error.response?.data?.message || 'Não foi possível registrar ajuste de pontuação.'
+  } finally {
+    adjustmentLoading.value = false
   }
 }
 

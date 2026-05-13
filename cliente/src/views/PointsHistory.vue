@@ -24,6 +24,9 @@
             {{ amountSign(row.entryType) }}{{ value }}
           </span>
         </template>
+        <template #cell-sourceType="{ value }">
+          {{ sourceLabel(value) }}
+        </template>
         <template #cell-createdAt="{ value }">
           {{ formatDate(value) }}
         </template>
@@ -64,8 +67,15 @@ const entryMap = {
   release: 'Liberação',
   refund: 'Estorno',
 }
+const sourceMap = {
+  idea_evaluation: 'Avaliação de ideia',
+  idea_evaluation_bonus: 'Bonificação de avaliação',
+  manual_adjustment: 'Ajuste manual',
+  marketplace_redemption: 'Resgate no marketplace',
+}
 
 const entryLabel = (type) => entryMap[type] || type
+const sourceLabel = (type) => sourceMap[type] || type
 const amountSign = (type) => (['earn', 'release', 'refund'].includes(type) ? '+' : '-')
 const amountClass = (type) => (['earn', 'release', 'refund'].includes(type) ? 'text-green-700' : 'text-red-700')
 const entryClass = (type) => (['earn', 'release', 'refund'].includes(type) ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800')

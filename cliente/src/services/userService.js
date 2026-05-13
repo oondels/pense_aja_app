@@ -75,6 +75,11 @@ export const getUserPointsHistory = async (registration, dassOffice) => {
   return response.data;
 };
 
+export const createUserPointsAdjustment = async (registration, payload) => {
+  const response = await api.post(`/user/${registration}/points-adjustments`, payload);
+  return response.data;
+};
+
 export const formateName = (name) => {
   const names = name.split(" ");
   if (names.length > 1) {

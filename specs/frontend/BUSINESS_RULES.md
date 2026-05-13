@@ -85,6 +85,9 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 
 - o formulário deve renderizar as classificações de `unitConfig.scoringRules`, carregadas no login por unidade
 - a classificação enviada para o backend deve ser a letra canônica (`classification`)
+- a bonificação extra da avaliação usa `bonusPoints` e `bonusJustification`
+- o limite de bonificação exibido vem de `unitConfig.metadata.maxEvaluationBonusPoints` da unidade
+- quando há bonificação maior que zero, a UI exige justificativa antes de enviar
 - o formulário deve respeitar a etapa atual do workflow e as permissões devolvidas pelo backend
 - a UI precisa estar pronta para exibir histórico e justificativas auditáveis
 - a validação final continua sendo do servidor
@@ -99,7 +102,9 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 
 - saldo deve ser exibido como leitura consolidada do backend
 - a UI não deve assumir soma simples de tabelas legadas
-- histórico futuro de pontos deve refletir eventos do ledger em linguagem compreensível ao usuário
+- histórico de pontos reflete eventos do ledger em linguagem compreensível ao usuário, incluindo avaliação, bonificação, ajuste manual e marketplace
+- ajustes manuais ficam na guia de configurações da unidade e exigem permissão `points.adjust`
+- ajustes de débito não devem ser enviados com valor que deixe saldo negativo; o bloqueio definitivo é do backend
 
 ## Marketplace e recompensas
 

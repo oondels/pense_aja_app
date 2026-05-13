@@ -79,6 +79,9 @@ const mockScoringRule = (score = 3, classification = "A") =>
     metadata: null,
   });
 
+const mockMaxBonus = (points = 2) =>
+  vi.spyOn(UnitSettingsService, "getMaxEvaluationBonusPoints").mockResolvedValue(points);
+
 const buildQueryRunner = (ideaFindOnce: object, ideaFindTwice: object) => {
   const ideaRepo = {
     findOne: vi
@@ -118,10 +121,10 @@ describe("PenseAjaService — ledger entries on evaluation", () => {
     } as any);
     vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
     mockScoringRule(3);
-    vi.spyOn(LedgerService, "getSourceNetAmount").mockResolvedValue({
-      netAmount: 0,
-      latestEarnEntryId: null,
-    });
+    mockMaxBonus(2);
+    vi.spyOn(LedgerService, "getSourceNetAmount")
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null })
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null });
     const createEntry = vi.spyOn(LedgerService, "createEntry").mockResolvedValue({} as any);
     vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
     vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
@@ -139,10 +142,10 @@ describe("PenseAjaService — ledger entries on evaluation", () => {
     } as any);
     vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
     mockScoringRule(3);
-    vi.spyOn(LedgerService, "getSourceNetAmount").mockResolvedValue({
-      netAmount: 50,
-      latestEarnEntryId: 10,
-    });
+    mockMaxBonus(2);
+    vi.spyOn(LedgerService, "getSourceNetAmount")
+      .mockResolvedValueOnce({ netAmount: 50, latestEarnEntryId: 10 })
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null });
     const createEntry = vi.spyOn(LedgerService, "createEntry").mockResolvedValue({} as any);
     vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
     vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
@@ -161,11 +164,11 @@ describe("PenseAjaService — ledger entries on evaluation", () => {
     } as any);
     vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
     mockScoringRule(3);
+    mockMaxBonus(2);
     // netAmount = 3 == score configurado para A.
-    vi.spyOn(LedgerService, "getSourceNetAmount").mockResolvedValue({
-      netAmount: 3,
-      latestEarnEntryId: 10,
-    });
+    vi.spyOn(LedgerService, "getSourceNetAmount")
+      .mockResolvedValueOnce({ netAmount: 3, latestEarnEntryId: 10 })
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null });
     const createEntry = vi.spyOn(LedgerService, "createEntry").mockResolvedValue({} as any);
     vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
     vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
@@ -184,10 +187,10 @@ describe("PenseAjaService — ledger entries on evaluation", () => {
       createQueryRunner: () => queryRunner,
     } as any);
     vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
-    vi.spyOn(LedgerService, "getSourceNetAmount").mockResolvedValue({
-      netAmount: 100,
-      latestEarnEntryId: 5,
-    });
+    mockMaxBonus(2);
+    vi.spyOn(LedgerService, "getSourceNetAmount")
+      .mockResolvedValueOnce({ netAmount: 100, latestEarnEntryId: 5 })
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null });
     const createEntry = vi.spyOn(LedgerService, "createEntry").mockResolvedValue({} as any);
     vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
     vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
@@ -210,10 +213,10 @@ describe("PenseAjaService — ledger entries on evaluation", () => {
       createQueryRunner: () => queryRunner,
     } as any);
     vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
-    vi.spyOn(LedgerService, "getSourceNetAmount").mockResolvedValue({
-      netAmount: 0,
-      latestEarnEntryId: null,
-    });
+    mockMaxBonus(2);
+    vi.spyOn(LedgerService, "getSourceNetAmount")
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null })
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null });
     const createEntry = vi.spyOn(LedgerService, "createEntry").mockResolvedValue({} as any);
     vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
     vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
@@ -232,10 +235,10 @@ describe("PenseAjaService — ledger entries on evaluation", () => {
       createQueryRunner: () => queryRunner,
     } as any);
     vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
-    vi.spyOn(LedgerService, "getSourceNetAmount").mockResolvedValue({
-      netAmount: 75,
-      latestEarnEntryId: 8,
-    });
+    mockMaxBonus(2);
+    vi.spyOn(LedgerService, "getSourceNetAmount")
+      .mockResolvedValueOnce({ netAmount: 75, latestEarnEntryId: 8 })
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null });
     const createEntry = vi.spyOn(LedgerService, "createEntry").mockResolvedValue({} as any);
     vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
     vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
@@ -247,6 +250,113 @@ describe("PenseAjaService — ledger entries on evaluation", () => {
 
     const calls = createEntry.mock.calls.map((c) => c[1].entryType);
     expect(calls).toEqual(["reverse"]);
+  });
+
+  it("approved evaluation can grant configured bonus points", async () => {
+    const queryRunner = buildQueryRunner(BASE_IDEA, { ...BASE_IDEA, classificacao: "A" });
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue({
+      createQueryRunner: () => queryRunner,
+    } as any);
+    vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
+    mockScoringRule(3);
+    mockMaxBonus(2);
+    vi.spyOn(LedgerService, "getSourceNetAmount")
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null })
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null });
+    const createEntry = vi.spyOn(LedgerService, "createEntry").mockResolvedValue({} as any);
+    vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
+    vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
+
+    await PenseAjaService.evaluatePenseAja(
+      "42",
+      buildEvalData({
+        classification: "A",
+        bonusPoints: 2,
+        bonusJustification: "Impacto excepcional.",
+      })
+    );
+
+    const calls = createEntry.mock.calls.map((c) => ({
+      entryType: c[1].entryType,
+      sourceType: c[1].sourceType,
+      amount: c[1].amount,
+    }));
+    expect(calls).toEqual([
+      { entryType: "earn", sourceType: "idea_evaluation", amount: 3 },
+      { entryType: "earn", sourceType: "idea_evaluation_bonus", amount: 2 },
+    ]);
+  });
+
+  it("re-evaluation replaces previous bonus points", async () => {
+    const queryRunner = buildQueryRunner(BASE_IDEA, { ...BASE_IDEA, classificacao: "A" });
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue({
+      createQueryRunner: () => queryRunner,
+    } as any);
+    vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
+    mockScoringRule(3);
+    mockMaxBonus(2);
+    vi.spyOn(LedgerService, "getSourceNetAmount")
+      .mockResolvedValueOnce({ netAmount: 3, latestEarnEntryId: 10 })
+      .mockResolvedValueOnce({ netAmount: 2, latestEarnEntryId: 11 });
+    const createEntry = vi.spyOn(LedgerService, "createEntry").mockResolvedValue({} as any);
+    vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
+    vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
+
+    await PenseAjaService.evaluatePenseAja(
+      "42",
+      buildEvalData({
+        classification: "A",
+        bonusPoints: 1,
+        bonusJustification: "Ajuste da bonificação.",
+      })
+    );
+
+    const calls = createEntry.mock.calls.map((c) => ({
+      entryType: c[1].entryType,
+      sourceType: c[1].sourceType,
+      amount: c[1].amount,
+      relatedEntryId: c[1].relatedEntryId,
+    }));
+    expect(calls).toEqual([
+      {
+        entryType: "reverse",
+        sourceType: "idea_evaluation_bonus",
+        amount: 2,
+        relatedEntryId: 11,
+      },
+      {
+        entryType: "earn",
+        sourceType: "idea_evaluation_bonus",
+        amount: 1,
+        relatedEntryId: undefined,
+      },
+    ]);
+  });
+
+  it("bonus above unit limit throws 400", async () => {
+    const queryRunner = buildQueryRunner(BASE_IDEA, { ...BASE_IDEA, classificacao: "A" });
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue({
+      createQueryRunner: () => queryRunner,
+    } as any);
+    vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
+    mockScoringRule(3);
+    mockMaxBonus(1);
+    vi.spyOn(LedgerService, "getSourceNetAmount")
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null })
+      .mockResolvedValueOnce({ netAmount: 0, latestEarnEntryId: null });
+    vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
+    vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
+
+    await expect(
+      PenseAjaService.evaluatePenseAja(
+        "42",
+        buildEvalData({
+          classification: "A",
+          bonusPoints: 2,
+          bonusJustification: "Impacto excepcional.",
+        })
+      )
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 
   it("reproval with classification throws 400", async () => {

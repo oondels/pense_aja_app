@@ -119,6 +119,8 @@ export interface EvaluationData extends AuthenticatedUserIdentity {
   dassOffice: DassOffice;
   status: string;
   a3Mae?: string;
+  bonusPoints?: number;
+  bonusJustification?: string;
   actorRegistration?: string;
   permissions?: string[];
 }

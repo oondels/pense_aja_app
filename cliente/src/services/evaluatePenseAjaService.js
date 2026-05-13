@@ -21,6 +21,16 @@ export const evaluatePenseAja = async (evaluationData, notification, dialog) => 
     return;
   }
 
+  if (Number(evaluationData.bonusPoints || 0) > 0 && !evaluationData.bonusJustification) {
+    notification.value.showPopup(
+      "warning",
+      "Atenção!",
+      "Campos obrigatórios estão ausentes: Justificativa da bonificação",
+      3500
+    );
+    return;
+  }
+
   try {
     const response = await api.put(
       `/pense-aja/avaliar/${evaluationData.id}`,

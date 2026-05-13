@@ -22,3 +22,20 @@ export interface UserLedgerHistoryItem {
   createdAt: string | Date;
   dassOffice: DassOffice;
 }
+
+export interface CreatePointsAdjustmentInput {
+  dassOffice: DassOffice;
+  direction: "credit" | "debit";
+  amount: number;
+  reason: string;
+}
+
+export interface PointsAdjustmentResponse {
+  id: number;
+  registration: string;
+  dassOffice: DassOffice;
+  direction: "credit" | "debit";
+  amount: number;
+  reason: string;
+  availableBalance: number;
+}

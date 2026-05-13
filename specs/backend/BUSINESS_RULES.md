@@ -159,6 +159,15 @@ escopo da unidade.
 - Compatibilidade temporária converte entradas legadas `3/2/1` para `A/B/C`.
 - Quando não há regra ativa e vigente para a classificação enviada, a
   avaliação retorna `400` e não grava pontuação.
+- Avaliações aprovadas podem receber bonificação extra por `bonusPoints`.
+- Bonificação exige justificativa própria, usa `source_type =
+  idea_evaluation_bonus` e é limitada por
+  `unit_configs.metadata.maxEvaluationBonusPoints` da unidade, com padrão `2`.
+- Em reavaliação, a bonificação anterior é revertida e substituída quando o
+  novo valor for diferente; reprovação e exclusão revertem a bonificação ativa.
+- Ajustes manuais de pontuação usam `source_type = manual_adjustment`, exigem
+  permissão `points.adjust` e justificativa obrigatória.
+- Ajuste manual de débito é bloqueado se deixaria `available_balance` negativo.
 - O saldo funcional é mantido em `points_balance_projection`.
 - O saldo disponível é calculado a partir de ganhos, reversões, consumos,
   reservas ativas e estornos.
@@ -201,6 +210,7 @@ Eventos operacionais atuais incluem:
 - `marketplace.request.rejected`
 - `marketplace.request.completed`
 - `marketplace.request.refunded`
+- `points.adjusted`
 
 Cada evento registra, quando aplicável:
 

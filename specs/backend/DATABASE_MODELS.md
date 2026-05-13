@@ -87,6 +87,7 @@ Novas tabelas criadas a partir do corte direto usam `id uuid DEFAULT uuid_genera
   - `marketplace.request.approve`
   - `marketplace.fulfillment.execute`
   - `catalog.manage`
+  - `points.adjust`
 
 ### `rbac_role_permissions`
 
@@ -156,6 +157,13 @@ Tipos esperados:
 - `commit`
 - `release`
 - `refund`
+
+Origens operacionais usadas no fluxo atual:
+
+- `idea_evaluation`: pontuação base por avaliação de ideia
+- `idea_evaluation_bonus`: bonificação extra na avaliação
+- `manual_adjustment`: ajuste manual auditado por administrador
+- `marketplace_redemption`: reserva, consumo, liberação e estorno de resgate
 
 ### `points_balance_projection`
 
