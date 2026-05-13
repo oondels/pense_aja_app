@@ -425,7 +425,7 @@ export const MarketplaceService = {
       .leftJoin(
         MarketplaceCatalogItemEntity as any,
         "catalog",
-        "catalog.id = request.catalog_item_id AND catalog.unidade_dass = request.unidade_dass"
+        "catalog.id::text = request.catalog_item_id AND catalog.unidade_dass = request.unidade_dass"
       )
       .where("request.unidade_dass = :dassOffice", { dassOffice: validDassOffice })
       .orderBy("request.updatedat", "DESC");
@@ -440,8 +440,8 @@ export const MarketplaceService = {
 
     const total = await query.clone().getCount();
     const rows = await applyRequestSelects(query)
-      .skip((page - 1) * limit)
-      .take(limit)
+      .offset((page - 1) * limit)
+      .limit(limit)
       .getRawMany();
 
     return {
