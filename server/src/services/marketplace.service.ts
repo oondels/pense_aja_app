@@ -423,7 +423,7 @@ export const MarketplaceService = {
       .getRepository(MarketplaceRedemptionRequestEntity)
       .createQueryBuilder("request")
       .leftJoin(
-        "pense_aja.marketplace_catalog_items",
+        MarketplaceCatalogItemEntity as any,
         "catalog",
         "catalog.id = request.catalog_item_id AND catalog.unidade_dass = request.unidade_dass"
       )
@@ -485,7 +485,7 @@ export const MarketplaceService = {
       .getRepository(MarketplaceRedemptionRequestEntity)
       .createQueryBuilder("request")
       .leftJoin(
-        "pense_aja.marketplace_catalog_items",
+        MarketplaceCatalogItemEntity as any,
         "catalog",
         "catalog.id = request.catalog_item_id AND catalog.unidade_dass = request.unidade_dass"
       )
