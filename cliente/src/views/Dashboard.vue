@@ -42,13 +42,13 @@
           <DimensionalAnalysis :startDate="startDate" :endDate="endDate" />
         </div>
 
-        <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.4s">
+        <!-- <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.4s">
           <IdeaHighlights :startDate="startDate" :endDate="endDate" />
         </div>
 
         <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.5s">
           <EngagementPanel :startDate="startDate" :endDate="endDate" />
-        </div>
+        </div> -->
       </div>
     </main>
     <Notification ref="notification" />

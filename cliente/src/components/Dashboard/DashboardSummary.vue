@@ -117,7 +117,7 @@ const formatCurrency = (value: number) => {
       </div>
 
       <!-- Cards adicionais para métricas financeiras -->
-      <div class="summary-card value">
+      <!-- <div class="summary-card value">
         <div class="card-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="1" x2="12" y2="23"></line>
@@ -128,9 +128,9 @@ const formatCurrency = (value: number) => {
           <h3 class="card-title">Valor Total</h3>
           <p class="card-value">{{ formatCurrency(totalValue) }}</p>
         </div>
-      </div>
+      </div> -->
 
-      <div class="summary-card average">
+      <!-- <div class="summary-card average">
         <div class="card-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="20" x2="12" y2="10"></line>
@@ -142,7 +142,7 @@ const formatCurrency = (value: number) => {
           <h3 class="card-title">Valor Médio</h3>
           <p class="card-value">{{ formatCurrency(avgValue) }}</p>
         </div>
-      </div>
+      </div> -->
     </div>
   </section>
 </template>
