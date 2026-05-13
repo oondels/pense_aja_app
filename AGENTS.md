@@ -45,9 +45,8 @@ O aplicativo trata-se de uma plataforma de gamificação de ideias, onde usuario
 - HR-005: Nao altere contrato de rota, payload ou regra de status sem refletir a mudanca nas specs correspondentes.
 - HR-006: Nao comite `.env`, credenciais, artefatos grandes ou dados sensiveis.
 - HR-007: Rotas protegidas no backend devem continuar exigindo token valido quando o fluxo atual usa `verifyToken`.
-- HR-008: A logica de autorizacao por funcao deve continuar respeitando os papeis `analista`, `gerente` e `automacao`, salvo mudanca explicita de requisito.
-- HR-009: O frontend nao deve expor token, segredo, payload sensivel ou PII em logs do browser.
-- HR-010: Antes de concluir trabalho que muda comportamento, atualize a documentacao relevante em `specs/`.
+- HR-008: O frontend nao deve expor token, segredo, payload sensivel ou PII em logs do browser.
+- HR-009: Antes de concluir trabalho que muda comportamento, atualize a documentacao relevante em `specs/`.
 
 ## 2) Arquitetura
 
@@ -58,7 +57,7 @@ O aplicativo trata-se de uma plataforma de gamificação de ideias, onde usuario
 - Frontend: Vue 3 + Vite + Pinia + Vue Router + Vuetify + Tailwind + Axios + Chart.js.
 - Backend: Express + TypeScript + PostgreSQL + Redis + RabbitMQ + Gemini API.
 - Sessao baseada em cookie com `withCredentials`; refresh de token e feito por servico externo de autenticacao.
-- Unidade Dass (`unidadeDass`) e parte central do escopo funcional no frontend e backend.
+- Unidade Dass (`unidadeDass`) e parte central do escopo funcional no frontend e backend para delegação da unidade operacional do sistema.
 - Estados de Pense Aja, avaliacao, pontuacao, notificacao e resgate dependem de regras explicitas ja documentadas em `specs/backend`.
 
 ## 3) Coding Standards

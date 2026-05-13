@@ -1,3 +1,18 @@
+> OBS: Atualmente o aplicativo esta com o marketplace apenas com esse fluxo: solicitar -> aprovar/rejeitar -> estornar se necessário
+
+Mudanças principais:
+
+- PUT /marketplace/requests/:id/approve agora transforma pending_approval direto em completed e cria lançamento
+  commit, descontando os pontos.
+- PUT /marketplace/requests/:id/reject permanece liberando a reserva com release.
+- PUT /marketplace/requests/:id/refund agora aceita marketplace.request.approve ou marketplace.refund.
+- Removi do roteamento público as rotas de fulfillment, complete e cancel.
+- Salvei o plano em server/MARKETPLACE_APP_BRNDE_INTEGRATION.md.
+- Atualizei Swagger/OpenAPI e specs backend para refletir o novo fluxo.
+- Adicionei requireAnyPermission e teste para esse caso.
+
+---
+
 # Estratégia Marketplace Pense Aja + Liberação de Brindes
 
 ## Resumo
