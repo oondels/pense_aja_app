@@ -71,6 +71,7 @@ Tela analítica e de relatório.
 ### Regras de UI
 
 - o período padrão vai de `01/01` do ano atual até hoje
+- o card `Implementadas` exibe a métrica consolidada do backend: ideias fora de espera com aprovação de analista ou gerente
 - o relatório só é gerado se `startDate` e `endDate` forem válidos
 - a exportação monta planilhas no browser usando `xlsx`
 - várias abas previstas no relatório estão comentadas no código

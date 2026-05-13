@@ -45,6 +45,20 @@ const HIGHLIGHT_ROW = {
   status: "Aprovada",
 };
 
+const IMPLEMENTED_EXPRESSION_PARTS = [
+  "(idea.em_espera IS NULL OR idea.em_espera != '1')",
+  "(idea.status_gerente = 'approve' OR idea.status_analista = 'approve')",
+];
+
+const expectImplementedExpression = (sql: string) => {
+  for (const part of IMPLEMENTED_EXPRESSION_PARTS) {
+    expect(sql).toContain(part);
+  }
+  expect(sql).not.toContain(
+    "idea.status_gerente = 'approve' AND idea.status_analista = 'approve'"
+  );
+};
+
 describe("DashboardService — getSummaryData", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -94,10 +108,60 @@ describe("DashboardService — getSummaryData", () => {
     expect(result.marketplaceCompleted).toBe(8);
   });
 
+  it("counts implemented ideas by any approval when not waiting", async () => {
+    const qb = buildQueryBuilder({
+      total_ideas: "3",
+      implemented_ideas: "2",
+      pending_ideas: "1",
+      rejected_ideas: "0",
+      approved_by_manager: "1",
+      in_analysis: "1",
+      total_value: "0",
+      avg_value: "0",
+    });
+    const dataSource = buildDataSource(qb, [
+      [{ total_earned: "0", total_committed: "0", total_refunded: "0", total_reserved: "0" }],
+      [{ pending: "0", completed: "0" }],
+    ]);
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue(dataSource as any);
+
+    await DashboardService.getSummaryData("SEST");
+
+    const implementedCall = qb.addSelect.mock.calls.find(
+      (call) => call[1] === "implemented_ideas"
+    );
+    const pendingCall = qb.addSelect.mock.calls.find(
+      (call) => call[1] === "pending_ideas"
+    );
+
+    expectImplementedExpression(String(implementedCall?.[0] ?? ""));
+    expectImplementedExpression(String(pendingCall?.[0] ?? ""));
+  });
+
   it("throws CustomError 400 for invalid dassOffice", async () => {
     await expect(
       DashboardService.getSummaryData("INVALID")
     ).rejects.toMatchObject({ statusCode: 400 });
+  });
+});
+
+describe("DashboardService — getMonthlyData", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("uses the implemented expression for monthly approved totals", async () => {
+    const qb = buildQueryBuilder({}, []);
+    const dataSource = buildDataSource(qb, []);
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue(dataSource as any);
+
+    await DashboardService.getMonthlyData("SEST");
+
+    const monthlyImplementedCall = qb.addSelect.mock.calls.find(
+      (call) => call[1] === "total_aprovados"
+    );
+
+    expectImplementedExpression(String(monthlyImplementedCall?.[0] ?? ""));
   });
 });
 
@@ -119,6 +183,27 @@ describe("DashboardService — getEngagementData", () => {
 
     expect(Array.isArray(result)).toBe(true);
     expect(result.length).toBe(2);
+  });
+
+  it("uses the implemented expression for contributor implemented totals", async () => {
+    const rows = [
+      { nome: "Ana", setor: "Produção", total_ideas: "5", implemented_ideas: "3" },
+    ];
+    const qb = buildQueryBuilder({}, rows);
+    const dataSource = buildDataSource(qb, []);
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue(dataSource as any);
+
+    await DashboardService.getEngagementData("SEST");
+
+    const implementedCall = qb.addSelect.mock.calls.find(
+      (call) => call[1] === "implemented_ideas"
+    );
+    const orderCall = qb.addOrderBy.mock.calls.find((call) =>
+      String(call[0]).includes("COUNT(CASE WHEN")
+    );
+
+    expectImplementedExpression(String(implementedCall?.[0] ?? ""));
+    expectImplementedExpression(String(orderCall?.[0] ?? ""));
   });
 
   it("throws CustomError 400 for invalid dassOffice", async () => {
@@ -154,6 +239,16 @@ describe("DashboardService — getIdeaHighlights", () => {
       comments: 0,
       syntheticEngagement: false,
     });
+
+    const statusCall = qb.addSelect.mock.calls.find(
+      (call) => call[1] === "status"
+    );
+    const orderCall = qb.orderBy.mock.calls.find((call) =>
+      String(call[0]).includes("valor_amortizado")
+    );
+
+    expectImplementedExpression(String(statusCall?.[0] ?? ""));
+    expectImplementedExpression(String(orderCall?.[0] ?? ""));
   });
 
   it("truncates description longer than 150 characters", async () => {

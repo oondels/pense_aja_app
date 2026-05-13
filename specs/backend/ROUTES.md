@@ -276,12 +276,14 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Não exige autenticação.
 - Aceita `startDate` e `endDate` opcionais.
 - Inclui métricas de ideias, pontuação, ledger e marketplace.
+- Considera ideia implementada quando não está em espera e possui aprovação de analista ou gerente.
 
 ### `GET /dashboard/monthly/:dassOffice`
 
 - Retorna série mensal de ideias e métricas relacionadas.
 - Não exige autenticação.
 - Aceita `startDate` e `endDate` opcionais.
+- A métrica de aprovadas usa a mesma regra de ideia implementada do resumo.
 
 ### `GET /dashboard/dimensional/:dassOffice`
 
@@ -294,6 +296,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Retorna ideias em destaque da unidade.
 - Não exige autenticação.
 - Aceita `startDate` e `endDate` opcionais.
+- Rotula como `Aprovada` quando a ideia atende à regra de implementada.
 - Não usa likes ou comentários aleatórios como dado canônico.
 
 ### `GET /dashboard/engagement/:dassOffice`
@@ -301,6 +304,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Retorna dados de engajamento dos colaboradores.
 - Não exige autenticação.
 - Aceita `startDate` e `endDate` opcionais.
+- Conta implementadas por colaborador quando a ideia não está em espera e possui aprovação de analista ou gerente.
 
 ## Módulo `/ai`
 

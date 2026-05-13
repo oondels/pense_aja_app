@@ -134,6 +134,7 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 ### Modelo-alvo
 
 - continua como camada de leitura
+- a métrica `Implementadas` vem do backend e significa ideia fora de espera com aprovação de analista ou gerente
 - métricas de pontuação e resgate devem consumir projeções do backend baseadas em ledger e marketplace
 - dados heurísticos ou simulados precisam ficar claramente separados de dados canônicos
 

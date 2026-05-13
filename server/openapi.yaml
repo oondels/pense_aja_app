@@ -1279,7 +1279,8 @@ paths:
       summary: Obter resumo do dashboard
       description: >
         Retorna métricas consolidadas da unidade, incluindo ideias, valores,
-        ledger e marketplace. Acesso público no código atual.
+        ledger e marketplace. Ideias implementadas são ideias fora de espera
+        com aprovação de analista ou gerente. Acesso público no código atual.
       security: []
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
@@ -1319,7 +1320,9 @@ paths:
       summary: Obter série mensal do dashboard
       description: >
         Retorna quantidade e valor agregado de ideias por mês para a unidade.
-        Acesso público no código atual.
+        A métrica mensal de aprovadas usa a regra de ideias implementadas:
+        fora de espera e com aprovação de analista ou gerente. Acesso público
+        no código atual.
       security: []
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
@@ -1385,7 +1388,8 @@ paths:
       summary: Obter ideias em destaque
       description: >
         Retorna ideias destacadas para exibição no dashboard. Acesso público no
-        código atual.
+        código atual. O status `Aprovada` segue a regra de ideias
+        implementadas: fora de espera e com aprovação de analista ou gerente.
       security: []
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
@@ -1425,7 +1429,8 @@ paths:
       summary: Obter engajamento de colaboradores
       description: >
         Retorna ranking de colaboradores por participação e implementação de
-        ideias. Acesso público no código atual.
+        ideias. Implementadas são ideias fora de espera com aprovação de
+        analista ou gerente. Acesso público no código atual.
       security: []
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
