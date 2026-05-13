@@ -57,7 +57,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Lista ideias por unidade.
 - Não exige autenticação.
 - Filtra `excluido = false`.
-- Retorna `pontuacao` como saldo líquido de lançamentos `idea_evaluation` confirmados no ledger.
+- Retorna `pontuacao` como saldo líquido de lançamentos `idea_evaluation` e `idea_evaluation_bonus` confirmados no ledger.
 - Aceita filtros opcionais `startDate`, `endDate`, `name`, `sector`, `manager`, `project`, `turno` e `status`.
 - `startDate` e `endDate` são opcionais; quando omitidos, a listagem não aplica recorte temporal.
 - `endDate` é tratado como data inclusiva até o fim do dia informado.
@@ -93,10 +93,31 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Reprovação com avaliação preenchida retorna `400`.
 - Reprovação, exclusão e reavaliação revertem pontuação anterior com lançamento `reverse` quando há saldo líquido da avaliação anterior.
 - Aprovação com nota gera lançamento `earn` em `points_ledger_entries`.
-- Pontuação usa regra ativa de `unit_scoring_rules` quando disponível; caso contrário, usa o valor recebido na avaliação.
+- Avaliação aprovada pode enviar `bonusPoints` e `bonusJustification` para bonificação extra.
+- A bonificação é limitada por `unit_configs.metadata.maxEvaluationBonusPoints` por unidade, com padrão `2`.
+- Bonificação anterior é substituída na reavaliação e revertida quando a ideia é reprovada ou excluída.
+- Payload novo deve enviar `classification` com letra canônica configurada na unidade (`A`, `B`, `C`, `D`...).
+- `avaliacao` numérica permanece aceito apenas como compatibilidade temporária (`3 -> A`, `2 -> B`, `1 -> C`).
+- Pontuação exige regra ativa e vigente em `unit_scoring_rules`; quando não há regra para a classificação, retorna `400`.
 - Sincroniza `points_balance_projection` após mudança de pontuação.
 - Registra auditoria `idea.evaluated` com estados antes/depois.
 - Tenta notificar o usuário avaliado; falhas de notificação não bloqueiam a avaliação.
+
+## Módulo `/unit-settings`
+
+### `GET /unit-settings/:dassOffice`
+
+- Exige `verifyToken` e permissão `unit.config.manage`.
+- Retorna configuração editável da unidade: metadata geral, regras de pontuação, workflow e política de marketplace.
+- Regras de pontuação usam letras canônicas, rótulo, descrição, pontos, ordem, vigência e flag ativa.
+
+### `PUT /unit-settings/:dassOffice`
+
+- Exige `verifyToken` e permissão `unit.config.manage`.
+- Atualiza configurações da unidade em transação.
+- Valida classificações por letras maiúsculas, pontuação positiva e ordem única entre regras ativas.
+- Valida etapas de workflow com código, ordem, permissão exigida e metadata de slot.
+- Desativa regras/etapas omitidas em vez de apagar fisicamente histórico de configuração.
 
 ## Módulo `/user`
 
@@ -105,7 +126,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Exige `verifyToken`.
 - Resolve permissões efetivas do usuário para a unidade.
 - Persiste snapshot curto em `rbac_session_snapshots`.
-- Retorna matrícula, unidade, permissões, versão e expiração do snapshot.
+- Retorna matrícula, unidade, permissões, configuração efetiva da unidade, versão e expiração do snapshot.
 
 ### `GET /user/rbac/roles`
 
@@ -161,6 +182,17 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Permite leitura própria quando a matrícula autenticada é igual à matrícula da URL.
 - Leitura de terceiros exige permissão `marketplace.request.approve`.
 - Exige `dassOffice` válido em query string.
+
+### `POST /user/:registration/points-adjustments`
+
+- Registra ajuste manual de pontuação da matrícula informada.
+- Exige `verifyToken` e permissão `points.adjust` no `dassOffice` enviado no corpo.
+- Permissão é atribuída a `unit_admin` e `admin_master`.
+- Payload: `dassOffice`, `direction` (`credit` ou `debit`), `amount` inteiro positivo e `reason`.
+- Crédito cria lançamento `earn` com `source_type = manual_adjustment`.
+- Débito cria lançamento `reverse` com `source_type = manual_adjustment`.
+- Débito é bloqueado quando deixaria o saldo disponível negativo.
+- Registra auditoria `points.adjusted`.
 
 ### `GET /user/:registration`
 

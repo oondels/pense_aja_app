@@ -110,6 +110,7 @@ export interface SubmitPenseAjaResponse {
 
 export interface EvaluationData extends AuthenticatedUserIdentity {
   avaliacao?: string;
+  classification?: string;
   emEspera: boolean;
   replicavel: boolean;
   justificativa?: string;
@@ -118,6 +119,8 @@ export interface EvaluationData extends AuthenticatedUserIdentity {
   dassOffice: DassOffice;
   status: string;
   a3Mae?: string;
+  bonusPoints?: number;
+  bonusJustification?: string;
   actorRegistration?: string;
   permissions?: string[];
 }

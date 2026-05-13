@@ -1,12 +1,18 @@
+import { randomUUID } from "crypto";
 import { QueryRunner } from "typeorm";
 import { initializeDatabase } from "../config/database";
 import PointsBalanceProjectionEntity from "../models/PointsBalanceProjection";
 import PointsLedgerEntryEntity from "../models/PointsLedgerEntry";
 import {
+  AuthenticatedSessionContext,
+  CreatePointsAdjustmentInput,
   DassOffice,
   LedgerEntryType,
+  PointsAdjustmentResponse,
   UserLedgerHistoryItem,
 } from "../types/contracts";
+import { CustomError } from "../types/CustomError";
+import { AuditService } from "./audit.service";
 
 interface CreateLedgerEntryInput {
   registration: string;
@@ -185,6 +191,122 @@ export const LedgerService = {
         unidade_dass: dassOffice,
       },
     });
+  },
+
+  async createManualAdjustment(
+    registration: string,
+    input: CreatePointsAdjustmentInput,
+    actor: AuthenticatedSessionContext
+  ): Promise<PointsAdjustmentResponse> {
+    const amount = toPositiveInteger(Number(input.amount));
+    const reason = String(input.reason || "").trim();
+
+    if (!amount) {
+      throw new CustomError("Ajuste de pontuação deve possuir valor positivo.", 400);
+    }
+
+    if (!reason) {
+      throw new CustomError("Justificativa do ajuste de pontuação é obrigatória.", 400);
+    }
+
+    if (input.direction !== "credit" && input.direction !== "debit") {
+      throw new CustomError("Direção do ajuste de pontuação inválida.", 400);
+    }
+
+    const dataSource = await initializeDatabase();
+    const queryRunner = dataSource.createQueryRunner();
+    const correlationId = randomUUID();
+
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      await this.syncBalanceProjection(queryRunner, registration, input.dassOffice);
+
+      const projectionRepository = queryRunner.manager.getRepository(
+        PointsBalanceProjectionEntity
+      );
+      const projection = await projectionRepository.findOne({
+        where: {
+          matricula: registration,
+          unidade_dass: input.dassOffice,
+        },
+      });
+      const availableBalance = Number(projection?.available_balance ?? 0);
+
+      if (input.direction === "debit" && amount > availableBalance) {
+        throw new CustomError(
+          "Ajuste de subtração não pode deixar saldo disponível negativo.",
+          400
+        );
+      }
+
+      const entry = await this.createEntry(queryRunner, {
+        registration,
+        dassOffice: input.dassOffice,
+        entryType: input.direction === "credit" ? "earn" : "reverse",
+        amount,
+        sourceType: "manual_adjustment",
+        sourceId: correlationId,
+        correlationId,
+        reason,
+        createdByRegistration: actor.registration,
+        createdByName: actor.username,
+        metadata: {
+          direction: input.direction,
+          adjustedRegistration: registration,
+        },
+      });
+
+      await this.syncBalanceProjection(queryRunner, registration, input.dassOffice);
+      const updatedProjection = await projectionRepository.findOne({
+        where: {
+          matricula: registration,
+          unidade_dass: input.dassOffice,
+        },
+      });
+
+      await AuditService.recordEvent(queryRunner, {
+        eventType: "points.adjusted",
+        aggregateType: "user_points",
+        aggregateId: registration,
+        dassOffice: input.dassOffice,
+        actorRegistration: actor.registration,
+        actorRole: "points.adjust",
+        reason,
+        beforeState: {
+          availableBalance,
+        },
+        afterState: {
+          availableBalance: Number(updatedProjection?.available_balance ?? 0),
+        },
+        metadata: {
+          direction: input.direction,
+          amount,
+          ledgerEntryId: Number(entry.id),
+        },
+        correlationId,
+      });
+
+      await queryRunner.commitTransaction();
+      return {
+        id: Number(entry.id),
+        registration,
+        dassOffice: input.dassOffice,
+        direction: input.direction,
+        amount,
+        reason,
+        availableBalance: Number(updatedProjection?.available_balance ?? 0),
+      };
+    } catch (error) {
+      if (queryRunner.isTransactionActive) {
+        await queryRunner.rollbackTransaction();
+      }
+      throw error;
+    } finally {
+      if (!queryRunner.isReleased) {
+        await queryRunner.release();
+      }
+    }
   },
 
   async getSourceNetAmount(

@@ -5,6 +5,7 @@ import { RbacAdminService } from "../services/rbac-admin.service";
 import { UserPenseaja } from "../services/user-penseaja.service";
 import {
   CreateRbacAssignmentInput,
+  CreatePointsAdjustmentInput,
   DassOffice,
   UpdateRbacAssignmentInput,
   UpdateUserProfileInput,
@@ -73,6 +74,39 @@ export const UserPenseajaController = {
         dassOffice
       );
       res.status(200).json(history);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async createPointsAdjustment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { registration } = req.params;
+      const payload = req.body as CreatePointsAdjustmentInput;
+
+      if (Number.isNaN(Number(registration))) {
+        res.status(400).json({ message: "Matrícula inválida." });
+        return;
+      }
+
+      if (!payload?.dassOffice || !isDassOffice(payload.dassOffice)) {
+        res.status(400).json({ message: "Unidade Dass inválida." });
+        return;
+      }
+
+      if (!req.authContext) {
+        res.status(401).json({ message: "Contexto autenticado não encontrado." });
+        return;
+      }
+
+      await UserPenseaja.getUserData(Number(registration), payload.dassOffice);
+      const adjustment = await LedgerService.createManualAdjustment(
+        String(registration),
+        payload,
+        req.authContext
+      );
+
+      res.status(201).json(adjustment);
     } catch (error) {
       next(error);
     }
@@ -165,6 +199,7 @@ export const UserPenseajaController = {
         registration: context.registration,
         dassOffice: context.dassOffice,
         permissions: context.permissions,
+        unitConfig: context.unitConfig,
         snapshotVersion: context.snapshotVersion,
         snapshotExpiresAt: context.snapshotExpiresAt.toISOString(),
       });

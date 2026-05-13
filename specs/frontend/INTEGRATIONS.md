@@ -76,6 +76,7 @@ Usado pelo módulo de loja.
 ### localStorage
 
 - unidade Dass
+- `unitConfig:<unidadeDass>` retornado por `/user/session-context/:dassOffice`
 - preferências de onboarding/news/email popup
 
 ## PWA

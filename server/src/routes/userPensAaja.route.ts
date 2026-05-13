@@ -66,6 +66,12 @@ router.get(
   UserPenseajaController.getSessionContext
 );
 router.get("/unidade/:registration", UserPenseajaController.getUserOffice);
+router.post(
+  "/:registration/points-adjustments",
+  verifyToken,
+  requirePermission("points.adjust", (req) => req.body?.dassOffice),
+  UserPenseajaController.createPointsAdjustment
+);
 router.get(
   "/:registration/points-history",
   verifyToken,

@@ -87,6 +87,7 @@ Novas tabelas criadas a partir do corte direto usam `id uuid DEFAULT uuid_genera
   - `marketplace.request.approve`
   - `marketplace.fulfillment.execute`
   - `catalog.manage`
+  - `points.adjust`
 
 ### `rbac_role_permissions`
 
@@ -112,7 +113,10 @@ Novas tabelas criadas a partir do corte direto usam `id uuid DEFAULT uuid_genera
 ### `unit_scoring_rules`
 
 - regras de pontuação por unidade e vigência
-- suporta matriz A/B/C ou variações futuras
+- usa `classification` como letra canônica (`A`, `B`, `C`, `D`...)
+- `label`, `description`, `score`, `display_order`, `metadata`, `active_from`
+  e `active_until` definem a exibição e a validade da regra
+- suporta quantidade variável de classificações por unidade
 
 ### `unit_workflow_steps`
 
@@ -153,6 +157,13 @@ Tipos esperados:
 - `commit`
 - `release`
 - `refund`
+
+Origens operacionais usadas no fluxo atual:
+
+- `idea_evaluation`: pontuação base por avaliação de ideia
+- `idea_evaluation_bonus`: bonificação extra na avaliação
+- `manual_adjustment`: ajuste manual auditado por administrador
+- `marketplace_redemption`: reserva, consumo, liberação e estorno de resgate
 
 ### `points_balance_projection`
 

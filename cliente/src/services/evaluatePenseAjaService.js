@@ -1,11 +1,11 @@
 import { api } from "./httpClient"
 
 export const evaluatePenseAja = async (evaluationData, notification, dialog) => {
-  if (!evaluationData.avaliacao && evaluationData.status !== "exclude" && evaluationData.status !== "reprove") {
+  if (!evaluationData.classification && !evaluationData.avaliacao && evaluationData.status !== "exclude" && evaluationData.status !== "reprove") {
     notification.value.showPopup(
       "warning",
       "Atenção!",
-      "Campos obrigatórios estão ausentes: Avaliação",
+      "Campos obrigatórios estão ausentes: Classificação",
       3500
     );
     return;
@@ -16,6 +16,16 @@ export const evaluatePenseAja = async (evaluationData, notification, dialog) => 
       "warning",
       "Atenção!",
       "Campos obrigatórios estão ausentes: Justificativa",
+      3500
+    );
+    return;
+  }
+
+  if (Number(evaluationData.bonusPoints || 0) > 0 && !evaluationData.bonusJustification) {
+    notification.value.showPopup(
+      "warning",
+      "Atenção!",
+      "Campos obrigatórios estão ausentes: Justificativa da bonificação",
       3500
     );
     return;

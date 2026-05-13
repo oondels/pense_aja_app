@@ -31,13 +31,14 @@ O frontend é uma SPA em Vue 3 com Vite. A aplicação combina:
   - `expirationTime`
 - `localStorage` guarda contexto mais durável:
   - `unidadeDass`
+  - `unitConfig:<unidadeDass>` com configuração efetiva da unidade
   - `hasSeenNews`
   - `emailProvided`
   - `emailSkipUntil`
 
 ### Pinia
 
-`userStore` apenas hidrata e expõe o usuário a partir do `sessionStorage`. Ele não busca dados remotos sozinho e não centraliza toda a lógica de sessão.
+`userStore` hidrata o usuário a partir do `sessionStorage` e carrega o contexto de sessão por unidade, incluindo permissões e `unitConfig`.
 
 ## API Layer
 

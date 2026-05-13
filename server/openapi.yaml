@@ -406,8 +406,10 @@ paths:
               $ref: "#/components/schemas/EvaluateIdeaPayload"
             example:
               dassOffice: "SEST"
-              status: "concluido"
-              avaliacao: "A"
+              status: "approve"
+              classification: "A"
+              bonusPoints: 2
+              bonusJustification: "Ganho adicional comprovado na avaliação."
               emEspera: false
               replicavel: true
               justificativa: "Ideia implementada com ganho de qualidade comprovado."
@@ -718,6 +720,56 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
+  /unit-settings/{dassOffice}:
+    get:
+      tags: [Unit Settings]
+      summary: Obter configurações da unidade
+      description: Retorna regras editáveis de pontuação, workflow e marketplace da unidade.
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Configuração da unidade.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnitSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      tags: [Unit Settings]
+      summary: Atualizar configurações da unidade
+      description: Atualiza pontuação, workflow e política de marketplace em transação.
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnitSettingsUpdate"
+      responses:
+        "200":
+          description: Configuração atualizada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnitSettings"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
   /user/session-context/{dassOffice}:
     get:
       tags: [User]
@@ -743,6 +795,16 @@ paths:
                 permissions:
                   - "idea.submit"
                   - "marketplace.request.create"
+                unitConfig:
+                  dassOffice: "SEST"
+                  active: true
+                  scoringRules:
+                    - classification: "A"
+                      label: "A"
+                      description: "Avançada"
+                      score: 4
+                      displayOrder: 1
+                      active: true
                 snapshotVersion: 3
                 snapshotExpiresAt: "2026-04-22T13:00:00.000Z"
         "400":
@@ -1103,8 +1165,10 @@ paths:
       summary: Consultar histórico de pontos
       description: >
         Retorna o histórico append-only do ledger para a matrícula e unidade.
-        Acesso público no código atual, com `dassOffice` obrigatório na query.
-      security: []
+        Exige token válido. A matrícula autenticada pode consultar o próprio
+        histórico; consulta de terceiros exige permissão operacional.
+      security:
+        - cookieAuth: []
       parameters:
         - $ref: "#/components/parameters/RegistrationPath"
         - $ref: "#/components/parameters/DassOfficeQueryRequired"
@@ -1129,6 +1193,58 @@ paths:
                   createdAt: "2026-04-22T12:00:00.000Z"
         "400":
           $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /user/{registration}/points-adjustments:
+    post:
+      tags: [User]
+      summary: Registrar ajuste manual de pontuação
+      description: >
+        Cria um lançamento append-only para corrigir saldo de pontuação por
+        matrícula e unidade. Exige token válido e permissão `points.adjust`.
+        Débitos não podem deixar saldo disponível negativo.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RegistrationPath"
+        - $ref: "#/components/parameters/CookieHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePointsAdjustmentPayload"
+            example:
+              dassOffice: "SEST"
+              direction: "credit"
+              amount: 2
+              reason: "Correção auditada de saldo."
+      responses:
+        "201":
+          description: Ajuste registrado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PointsAdjustmentResponse"
+              example:
+                id: 901
+                registration: "1234567"
+                dassOffice: "SEST"
+                direction: "credit"
+                amount: 2
+                reason: "Correção auditada de saldo."
+                availableBalance: 12
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -1823,6 +1939,18 @@ components:
           type: string
         avaliacao:
           type: string
+          deprecated: true
+          description: Campo legado numérico; use `classification`.
+        classification:
+          type: string
+          description: Letra canônica configurada na unidade, como A, B, C ou D.
+        bonusPoints:
+          type: integer
+          minimum: 0
+          description: Pontos extras opcionais, limitados pela configuração da unidade.
+        bonusJustification:
+          type: string
+          description: Obrigatória quando `bonusPoints` for maior que zero.
         emEspera:
           type: boolean
         replicavel:
@@ -2024,11 +2152,97 @@ components:
           type: array
           items:
             type: string
+        unitConfig:
+          $ref: "#/components/schemas/UnitSettings"
         snapshotVersion:
           type: integer
         snapshotExpiresAt:
           type: string
           format: date-time
+    UnitScoringRule:
+      type: object
+      properties:
+        id:
+          type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        classification:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+          nullable: true
+        score:
+          type: integer
+        displayOrder:
+          type: integer
+        active:
+          type: boolean
+        activeFrom:
+          type: string
+          format: date-time
+          nullable: true
+        activeUntil:
+          type: string
+          format: date-time
+          nullable: true
+    UnitWorkflowStep:
+      type: object
+      properties:
+        id:
+          type: string
+        stepCode:
+          type: string
+        stepOrder:
+          type: integer
+        requiredPermission:
+          type: string
+        terminalStatus:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+        metadata:
+          type: object
+          nullable: true
+    UnitMarketplacePolicy:
+      type: object
+      properties:
+        id:
+          type: string
+        allowRefundAfterCommit:
+          type: boolean
+        voucherAdapter:
+          type: string
+        active:
+          type: boolean
+        metadata:
+          type: object
+          nullable: true
+    UnitSettings:
+      type: object
+      properties:
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        active:
+          type: boolean
+        metadata:
+          type: object
+          nullable: true
+        scoringRules:
+          type: array
+          items:
+            $ref: "#/components/schemas/UnitScoringRule"
+        workflowSteps:
+          type: array
+          items:
+            $ref: "#/components/schemas/UnitWorkflowStep"
+        marketplacePolicy:
+          $ref: "#/components/schemas/UnitMarketplacePolicy"
+    UnitSettingsUpdate:
+      type: object
+      additionalProperties: true
     RbacRole:
       type: object
       properties:
@@ -2178,6 +2392,38 @@ components:
         createdAt:
           type: string
           format: date-time
+    CreatePointsAdjustmentPayload:
+      type: object
+      required: [dassOffice, direction, amount, reason]
+      properties:
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        direction:
+          type: string
+          enum: [credit, debit]
+        amount:
+          type: integer
+          minimum: 1
+        reason:
+          type: string
+    PointsAdjustmentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        registration:
+          type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        direction:
+          type: string
+          enum: [credit, debit]
+        amount:
+          type: integer
+        reason:
+          type: string
+        availableBalance:
+          type: integer
     UserOfficeResponse:
       type: object
       properties:

@@ -695,7 +695,7 @@
                                 class="avaliar-rating-display"
                               >
                                 <span class="avaliar-rating-value">
-                                  {{ key }}
+                                  {{ classification.classification }}
                                 </span>
                                 <span class="avaliar-rating-icon">
                                   <i class="bi bi-star-fill"></i>
@@ -716,6 +716,37 @@
                             id="justificativa-avaliacao"
                             v-model="justification"
                           ></textarea>
+                        </div>
+
+                        <div
+                          v-if="evaluationValue && maxBonusPoints > 0"
+                          class="rounded-md border border-amber-200 bg-amber-50 p-3"
+                        >
+                          <div class="row g-3 align-items-end">
+                            <label class="col-md-4 text-sm fw-semibold text-gray-700">
+                              Bonificação
+                              <input
+                                v-model.number="bonusPoints"
+                                class="form-control mt-1"
+                                type="number"
+                                min="0"
+                                :max="maxBonusPoints"
+                              />
+                            </label>
+                            <label class="col-md-8 text-sm fw-semibold text-gray-700">
+                              Justificativa da bonificação
+                              <textarea
+                                v-model="bonusJustification"
+                                class="form-control mt-1"
+                                rows="2"
+                                :disabled="!bonusPoints"
+                                placeholder="Explique a bonificação extra."
+                              ></textarea>
+                            </label>
+                          </div>
+                          <p class="mb-0 mt-2 text-xs text-amber-800">
+                            Limite configurado para a unidade: {{ maxBonusPoints }} ponto(s).
+                          </p>
                         </div>
                       </div>
 
@@ -1110,13 +1141,29 @@ function computeStatusData(penseAja) {
 }
 
 // Avaliação
-const classifications = {
-  A: { name: "Avançada", value: 3 },
-  B: { name: "Intermediária", value: 2 },
-  C: { name: "Básica", value: 1 },
-};
+const classifications = computed(() => {
+  const configuredRules = user.unitConfig?.scoringRules || [];
+  return configuredRules
+    .filter((rule) => rule.active)
+    .sort((a, b) => Number(a.displayOrder || 0) - Number(b.displayOrder || 0))
+    .reduce((acc, rule) => {
+      acc[rule.classification] = {
+        classification: rule.classification,
+        name: rule.description || rule.label || rule.classification,
+        value: rule.classification,
+        score: rule.score,
+      };
+      return acc;
+    }, {});
+});
+const maxBonusPoints = computed(() => {
+  const configured = Number(user.unitConfig?.metadata?.maxEvaluationBonusPoints ?? 2);
+  return Number.isInteger(configured) && configured > 0 ? configured : 0;
+});
 
 const evaluationValue = ref(null);
+const bonusPoints = ref(0);
+const bonusJustification = ref("");
 const emEspera = ref(false);
 const replicavel = ref(false);
 const a3PenseAja = ref(null);
@@ -1133,7 +1180,7 @@ const opcoesA3 = [
 ];
 const justification = ref("");
 const setEvaluationValue = (value) => {
-  if (evaluationValue.value) {
+  if (evaluationValue.value === value) {
     evaluationValue.value = null;
     return;
   }
@@ -1186,7 +1233,10 @@ const handleEvaluationValue = async (action, penseAja, dialog) => {
     replicavel: replicavel.value ? "1" : "0",
     a3Mae: a3PenseAja.value?.value,
     avaliacao: evaluationValue?.value,
+    classification: evaluationValue?.value,
     justificativa: justification.value,
+    bonusPoints: Number(bonusPoints.value || 0),
+    bonusJustification: bonusJustification.value,
     dassOffice: dassOffice,
     avaliadoAnteriormente: avaliadoAnteriormente,
   };
@@ -1197,6 +1247,8 @@ const handleEvaluationValue = async (action, penseAja, dialog) => {
     evaluationValue.value = null;
     emEspera.value = false;
     replicavel.value = false;
+    bonusPoints.value = 0;
+    bonusJustification.value = "";
     a3PenseAja.value = null;
     justification.value = null;
     reprove.value = false;
