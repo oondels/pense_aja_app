@@ -941,7 +941,7 @@ const loadContent = async () => {
 
   try {
     loading.value = true;
-    const { data } = await commonApi.get(`${ip}:2512/pense-aja/${dassOffice}`, {
+    const { data } = await commonApi.get(`/pense-aja/${dassOffice}`, {
       params,
     });
 
