@@ -53,8 +53,6 @@ const normalizeTurno = (turno?: string) => {
   return turno;
 };
 
-const toFlag = (value?: boolean) => (value ? "1" : "0");
-
 const releaseQueryRunner = async (queryRunner: QueryRunner) => {
   if (!queryRunner.isReleased) {
     await queryRunner.release();
@@ -687,9 +685,9 @@ export const PenseAjaService = {
 	        Object.assign(updateData, {
 	          classificacao: selectedClassification,
 	          a3_mae: a3Mae,
-	          em_espera: toFlag(emEspera),
-	          replicavel: toFlag(replicavel),
-        });
+	          em_espera: emEspera,
+	          replicavel: replicavel,
+        });        
       }
 
       const updateResult = await ideaRepository.update(
