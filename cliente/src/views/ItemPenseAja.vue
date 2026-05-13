@@ -377,7 +377,7 @@ const loadPenseAja = async () => {
   
   try {
     loading.value = true;
-    const { data } = await commonApi.get(`${ip}:2512/pense-aja/${dassOffice}/${penseAjaId}`);
+    const { data } = await commonApi.get(`/pense-aja/${dassOffice}/${penseAjaId}`);
     
     if (data && Object.keys(data).length > 0) {
       penseAja.value = data;

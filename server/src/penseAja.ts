@@ -1,33 +1,53 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from "path";
+import swaggerUi from "swagger-ui-express";
+import { initializeDatabase } from "./config/database";
 import dotenv from "./config/dotenv";
 import { CustomError } from "./types/CustomError";
 import PenseAjaRoutes from "./routes/penseAja.route";
 import UserPenseajaRoute from "./routes/userPensAaja.route";
-import { startUploadListener } from "./workers/uploadListener";
-startUploadListener()
 import AiTools from "./routes/aiTools.route";
 import DashboardRoutes from "./routes/dashboard.route";
-
+import MarketplaceRoutes from "./routes/marketplace.route";
+import { startUploadListener } from "./workers/uploadListener";
 
 const app = express();
-const port = 2512;
+const port = Number(dotenv.PORT) || 2512;
+const openApiPath = path.resolve(process.cwd(), "openapi.yaml");
 
-app.use(cors({ origin: ["http://10.100.1.43:5050", "http://127.0.0.1:5173", "http://localhost:5173", "http://localhost:5175", "http://localhost:3000", "http://localhost:5050", "http://localhost:5174"], credentials: true }));
+const allowedOrigins = dotenv.ALLOWED_ORIGINS
+  ? dotenv.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : ["http://10.100.1.43:5050", "http://localhost:5050", "http://localhost:5173/"];
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
+app.get("/docs/openapi.yaml", (req: Request, res: Response) => {
+  res.sendFile(openApiPath);
+});
+app.use(
+  "/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(undefined, {
+    customSiteTitle: "Pense Aja API Docs",
+    swaggerOptions: {
+      url: "/docs/openapi.yaml",
+    },
+  })
+);
 app.use("/pense-aja/", PenseAjaRoutes);
 app.use("/user/", UserPenseajaRoute);
 app.use("/ai/", AiTools);
 app.use("/dashboard/", DashboardRoutes);
+app.use("/marketplace/", MarketplaceRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Pense Aja API");
 });
 
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
-
   const statusCode = error instanceof CustomError ? error.statusCode : 500;
   const message = error.message || "Erro interno no servidor.";
   const details = error.details || null;
@@ -38,14 +58,26 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   }
 
   res.status(statusCode).json({
-    message: message + " Contate a equipe de automação!",
-    ...(process.env.DEV_ENV === "development" && details && { details }),
+    message: message + " - Contate a equipe de automação!",
+    ...(dotenv.DEV_ENV && details && { details }),
   });
   return;
 });
 
-app.listen(port, () => {
-  console.log(
-    `Pense Aja API is running at port: ${port} on ${dotenv.DEV_ENV} mode!`
-  );
-});
+const bootstrap = async () => {
+  try {
+    await initializeDatabase();
+    await startUploadListener();
+
+    app.listen(port, () => {
+      console.log(
+        `Pense Aja API is running at port: ${port} on ${dotenv.DEV_ENV} mode!`
+      );
+    });
+  } catch (error) {
+    console.error("Erro ao inicializar a API Pense Aja:", error);
+    process.exit(1);
+  }
+};
+
+bootstrap();

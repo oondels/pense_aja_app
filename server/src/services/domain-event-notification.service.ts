@@ -1,0 +1,191 @@
+import logger from "../utils/logger";
+import {
+  DassOffice,
+  EvaluatePenseAjaResult,
+  UserManagerNotificationTarget,
+} from "../types/contracts";
+import { NotificationService } from "./notification.service";
+import { UserPenseaja } from "./user-penseaja.service";
+
+interface IdeaCreatedEvent {
+  type: "idea.created";
+  idea: {
+    id: number;
+    nome: string;
+    nome_projeto: string;
+  };
+  registration: string | number;
+  dassOffice: DassOffice;
+}
+
+interface IdeaEvaluatedEvent {
+  type: "idea.evaluated";
+  ideaId: string;
+  evaluation: EvaluatePenseAjaResult["newEvaluation"];
+  role: string;
+  dassOffice: DassOffice;
+}
+
+type DomainNotificationEvent = IdeaCreatedEvent | IdeaEvaluatedEvent;
+
+interface NotificationDispatchResult {
+  notificationTargetFound: boolean;
+}
+
+const appBaseUrl =
+  process.env.DEV_ENV === "development"
+    ? "http://localhost:5173"
+    : "http://10.100.1.43:5050";
+
+const formatUserName = (name: string) => {
+  const splitedName = name.split(" ");
+  return `${splitedName[0]} ${splitedName[splitedName.length - 1]}`;
+};
+
+const formatEvaluatorName = (
+  evaluation: EvaluatePenseAjaResult["newEvaluation"],
+  role: string
+) => {
+  const rawName = role.includes("gerente")
+    ? evaluation.gerente_aprovador
+    : evaluation.analista_avaliador;
+
+  return (rawName ?? "")
+    .split(".")
+    .map(
+      (part: string) =>
+        part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+    )
+    .join(" ");
+};
+
+const logNotificationSideEffectError = (
+  flow: string,
+  error: unknown,
+  metadata: Record<string, unknown>
+) => {
+  const message = error instanceof Error ? error.message : "Erro desconhecido";
+  logger.error(
+    "Pense-aja",
+    `Falha não bloqueante em notificação (${flow}): ${message} - ${JSON.stringify(
+      metadata
+    )}`
+  );
+};
+
+const findManagerByUserSafely = async (
+  registration: string | number,
+  dassOffice: DassOffice
+): Promise<UserManagerNotificationTarget | null> => {
+  try {
+    return await UserPenseaja.getManagerByUser(registration, dassOffice);
+  } catch (error) {
+    logNotificationSideEffectError("buscar-gerente", error, {
+      registration,
+      dassOffice,
+    });
+    return null;
+  }
+};
+
+const notifyIdeaCreated = async (
+  event: IdeaCreatedEvent
+): Promise<NotificationDispatchResult> => {
+  const manager = await findManagerByUserSafely(
+    event.registration,
+    event.dassOffice
+  );
+
+  if (!manager) {
+    return { notificationTargetFound: false };
+  }
+
+  try {
+    const notificationEnabled = await NotificationService.isNotificationEnabled(
+      manager.matricula,
+      event.dassOffice
+    );
+
+    if (!notificationEnabled) {
+      return { notificationTargetFound: true };
+    }
+
+    await NotificationService.sendNotification({
+      to: String(manager.matricula),
+      subject: "Aplicativo Pense Aja",
+      title: "Novo Pense Aja Cadastrado.",
+      message: `Um novo registro de Pense Aja foi cadastrado pelo usuário ${formatUserName(
+        event.idea.nome
+      )}. Projeto: ${event.idea.nome_projeto}.`,
+      application: "Pense e Aja",
+      link: `${appBaseUrl}/pense-aja/${event.idea.id}`,
+    });
+  } catch (error) {
+    logNotificationSideEffectError("cadastro", error, {
+      ideaId: event.idea.id,
+      managerRegistration: manager.matricula,
+      dassOffice: event.dassOffice,
+    });
+  }
+
+  return { notificationTargetFound: true };
+};
+
+const notifyIdeaEvaluated = async (
+  event: IdeaEvaluatedEvent
+): Promise<NotificationDispatchResult> => {
+  try {
+    const userEmail = await UserPenseaja.getUserEmail(
+      event.evaluation.matricula,
+      event.dassOffice
+    );
+
+    if (!userEmail) {
+      return { notificationTargetFound: false };
+    }
+
+    const notificationEnabled = await NotificationService.isNotificationEnabled(
+      event.evaluation.matricula,
+      event.dassOffice
+    );
+
+    if (!notificationEnabled) {
+      return { notificationTargetFound: true };
+    }
+
+    const evaluatorName = formatEvaluatorName(event.evaluation, event.role);
+
+    await NotificationService.sendNotification({
+      to: userEmail.email,
+      subject: "Aplicativo Pense Aja",
+      title: "Pense Aja Avaliado.",
+      message: `Seu registro de Pense Aja foi avaliado${
+        evaluatorName ? ` pelo usuário ${evaluatorName}` : "!"
+      }.
+        Abra o aplicativo e veja sua pontuação e feedbacks!`,
+      application: "Pense e Aja",
+      link: `${appBaseUrl}/pense-aja/${event.ideaId}`,
+    });
+
+    return { notificationTargetFound: true };
+  } catch (error) {
+    logNotificationSideEffectError("avaliacao", error, {
+      ideaId: event.ideaId,
+      registration: event.evaluation.matricula,
+      dassOffice: event.dassOffice,
+    });
+    return { notificationTargetFound: false };
+  }
+};
+
+export const DomainEventNotificationService = {
+  async dispatch(
+    event: DomainNotificationEvent
+  ): Promise<NotificationDispatchResult> {
+    if (event.type === "idea.created") {
+      return notifyIdeaCreated(event);
+    }
+
+    return notifyIdeaEvaluated(event);
+  },
+};

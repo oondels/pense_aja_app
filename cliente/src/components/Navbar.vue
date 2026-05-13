@@ -56,11 +56,53 @@
 
       <!-- Banner Right -->
       <div class="hidden lg:flex items-center gap-3 min-w-[200px]">
-        <Store ref="storeRef" @notify="handleNotify" />
+        <router-link
+          class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-red-800 shadow hover:bg-red-50"
+          to="/marketplace"
+        >
+          <i class="mdi mdi-store-outline text-lg"></i>
+          Marketplace
+        </router-link>
         <RegisterPenseAja ref="registerRef" @notify="handleNotify" />
         <Login ref="loginRef" @notify="handleNotify" />
       </div>
     </div>
+
+    <nav class="relative z-10 flex flex-wrap items-center gap-2 px-4 pb-2">
+      <router-link class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white" to="/pense-aja">
+        Ideias
+      </router-link>
+      <router-link class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white" to="/dashboard">
+        Dashboard
+      </router-link>
+      <router-link class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white" to="/marketplace">
+        Marketplace
+      </router-link>
+      <router-link class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white" to="/user/points-history">
+        Pontos
+      </router-link>
+      <router-link
+        v-if="user.hasPermission('marketplace.request.approve')"
+        class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white"
+        to="/admin/marketplace"
+      >
+        Resgates
+      </router-link>
+      <router-link
+        v-if="user.hasPermission('catalog.manage')"
+        class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white"
+        to="/admin/catalog"
+      >
+        Catálogo
+      </router-link>
+      <router-link
+        v-if="user.hasPermission('rbac.manage')"
+        class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white"
+        to="/admin/rbac"
+      >
+        RBAC
+      </router-link>
+    </nav>
 
     <!-- Mobile Navigation -->
     <v-layout class="z-10 overflow-visible" v-if="isMobile" style="height: 56px">
@@ -89,13 +131,11 @@ import { useUserStore } from "@/stores/userStore";
 import Notification from "./Notification.vue";
 
 import { defineAsyncComponent } from "vue";
-const Store = defineAsyncComponent(() => import("./Store/Store.vue"));
 const RegisterPenseAja = defineAsyncComponent(() => import("./RegisterPenseAja.vue"));
 import Login from "./Auth/Login.vue";
 
 const notification = ref(null);
 const user = useUserStore();
-const storeRef = ref(null);
 const registerRef = ref(null);
 const loginRef = ref(null);
 const isMenuOpen = ref(false);
@@ -121,7 +161,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
 });
 
-const handleStoreClick = () => storeRef.value?.openStoreBottomNav();
+const handleStoreClick = () => router.push("/marketplace");
 const handleRegisterClick = () => registerRef.value?.openRegisterBottomNav();
 const handleLoginClick = () => loginRef.value?.openLoginBottomNav();
 

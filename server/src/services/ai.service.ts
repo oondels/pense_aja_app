@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "../config/dotenv"
+import { ImproveTextResult } from "../types/contracts";
 
 const genAI = new GoogleGenerativeAI(dotenv.GEMINI_API_KEY)
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
@@ -13,7 +14,7 @@ const AIService = {
     return entry.replace(/[`$\\]/g, '')
   },
 
-  parseAIResponse(response: string): { before: string; after: string } {
+  parseAIResponse(response: string): ImproveTextResult {
     const [beforePart, afterPart] = response?.replace(/^Antes:\s*/i, '').split(/-\s*\n?\n?Depois:\s*/i);
 
     return {
@@ -22,7 +23,11 @@ const AIService = {
     };
   },
 
-  async improveText(projectName: string, situationBefore: string, situationNow: string) {
+  async improveText(
+    projectName: string,
+    situationBefore: string,
+    situationNow: string
+  ): Promise<ImproveTextResult> {
     let prompt = `Descreva a situação antes e depois da melhoria, de forma clara e objetiva, 
     para facilitar o entendimento dos avaliadores.`
 
@@ -46,7 +51,11 @@ const AIService = {
     return this.parseAIResponse(response)
   },
 
-  async resumeText(projectName: string, situationBefore: string, situationNow: string) {
+  async resumeText(
+    projectName: string,
+    situationBefore: string,
+    situationNow: string
+  ): Promise<ImproveTextResult> {
     let prompt = `Resuma a situação antes e depois da melhoria, de forma clara e objetiva, 
     para facilitar o entendimento dos avaliadores.`
 
