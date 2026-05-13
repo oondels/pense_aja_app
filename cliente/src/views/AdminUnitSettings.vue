@@ -59,28 +59,76 @@
           </div>
 
           <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <div class="flex items-center justify-between gap-3">
-              <h2 class="text-lg font-semibold text-gray-950">Classificações e pontos</h2>
-              <button class="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50" type="button" @click="addScoringRule">
-                <i class="mdi mdi-plus"></i>
-                Adicionar
-              </button>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-950">Classificação de pontos</h2>
+                <p class="mt-1 text-sm text-gray-600">A letra A representa a maior pontuação e as próximas letras seguem em ordem decrescente.</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button class="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50" type="button" @click="addScoringRule">
+                  <i class="mdi mdi-plus"></i>
+                  Adicionar pontuação
+                </button>
+                <button
+                  class="inline-flex items-center gap-2 rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:border-gray-200 disabled:text-gray-300"
+                  type="button"
+                  :disabled="activeScoringRules.length <= 1"
+                  @click="removeLastScoringRule"
+                >
+                  <i class="mdi mdi-minus"></i>
+                  Remover última
+                </button>
+              </div>
             </div>
 
-            <div class="mt-4 space-y-3">
-              <article v-for="(rule, index) in settings.scoringRules" :key="rule.id || index" class="grid gap-3 rounded-md border border-gray-200 p-3 md:grid-cols-7">
-                <input v-model="rule.classification" class="rounded-md border border-gray-300 px-3 py-2 text-sm uppercase" maxlength="3" placeholder="A" />
-                <input v-model="rule.label" class="rounded-md border border-gray-300 px-3 py-2 text-sm md:col-span-2" placeholder="Rótulo" />
-                <input v-model="rule.description" class="rounded-md border border-gray-300 px-3 py-2 text-sm md:col-span-2" placeholder="Descrição" />
-                <input v-model.number="rule.score" class="rounded-md border border-gray-300 px-3 py-2 text-sm" min="1" type="number" />
-                <input v-model.number="rule.displayOrder" class="rounded-md border border-gray-300 px-3 py-2 text-sm" min="1" type="number" />
-                <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <article
+                v-for="rule in activeScoringRules"
+                :key="rule.id || rule.classification"
+                class="rounded-lg border border-gray-200 bg-gray-50 p-4"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-red-700 text-lg font-bold text-white">
+                    {{ rule.classification }}
+                  </span>
+                  <span class="text-2xl font-bold text-gray-950">{{ Number(rule.score || 0) }} pts</span>
+                </div>
+                <h3 class="mt-3 text-sm font-semibold text-gray-900">{{ rule.label || `Classificação ${rule.classification}` }}</h3>
+                <p class="mt-1 line-clamp-2 text-xs text-gray-500">{{ rule.description || 'Sem descrição configurada.' }}</p>
+              </article>
+            </div>
+
+            <div class="mt-5 space-y-3">
+              <article
+                v-for="(rule, index) in orderedScoringRules"
+                :key="rule.id || `${rule.classification}-${index}`"
+                class="grid gap-3 rounded-md border border-gray-200 p-3 md:grid-cols-8"
+                :class="{ 'bg-gray-50 opacity-70': !rule.active }"
+              >
+                <label class="text-sm font-medium text-gray-700">
+                  Letra
+                  <input v-model="rule.classification" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase" maxlength="3" />
+                </label>
+                <label class="text-sm font-medium text-gray-700 md:col-span-2">
+                  Nome
+                  <input v-model="rule.label" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+                </label>
+                <label class="text-sm font-medium text-gray-700 md:col-span-2">
+                  Descrição
+                  <input v-model="rule.description" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+                </label>
+                <label class="text-sm font-medium text-gray-700">
+                  Pontos
+                  <input v-model.number="rule.score" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" min="1" type="number" />
+                </label>
+                <label class="text-sm font-medium text-gray-700">
+                  Ordem
+                  <input v-model.number="rule.displayOrder" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" min="1" type="number" />
+                </label>
+                <label class="mt-6 inline-flex items-center gap-2 text-sm text-gray-700">
                   <input v-model="rule.active" class="h-4 w-4 rounded border-gray-300 text-red-700" type="checkbox" />
                   Ativa
                 </label>
-                <button class="justify-self-start rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 md:col-span-2" type="button" @click="deactivateRule(rule)">
-                  Desativar
-                </button>
               </article>
             </div>
           </div>
@@ -256,6 +304,13 @@ const tabs = [
 
 const dassOffice = computed(() => userStore.dassOffice || localStorage.getItem('unidadeDass') || '')
 const visibleTabs = computed(() => tabs.filter((tab) => !tab.permission || userStore.hasPermission(tab.permission)))
+const orderedScoringRules = computed(() => [...settings.scoringRules].sort((left, right) => {
+  const leftOrder = Number(left.displayOrder || 0)
+  const rightOrder = Number(right.displayOrder || 0)
+  if (leftOrder !== rightOrder) return leftOrder - rightOrder
+  return String(left.classification || '').localeCompare(String(right.classification || ''))
+}))
+const activeScoringRules = computed(() => orderedScoringRules.value.filter((rule) => rule.active !== false))
 const feedbackClass = computed(() => (
   feedbackType.value === 'success'
     ? 'border-green-200 bg-green-50 text-green-800'
@@ -330,20 +385,43 @@ const loadSettings = async () => {
 }
 
 const addScoringRule = () => {
-  const nextIndex = settings.scoringRules.length
+  const nextIndex = activeScoringRules.value.length
+  const nextLetter = String.fromCharCode(65 + nextIndex)
+  const lastScore = Number(activeScoringRules.value[nextIndex - 1]?.score || nextIndex + 1)
   settings.scoringRules.push({
-    classification: String.fromCharCode(65 + nextIndex),
-    label: String.fromCharCode(65 + nextIndex),
+    classification: nextLetter,
+    label: nextLetter,
     description: '',
-    score: Math.max(1, settings.scoringRules.length + 1),
+    score: Math.max(1, lastScore - 1),
     displayOrder: nextIndex + 1,
     active: true,
     metadata: {},
   })
 }
 
-const deactivateRule = (rule) => {
-  rule.active = false
+const removeLastScoringRule = () => {
+  const lastActiveRule = activeScoringRules.value.at(-1)
+  if (!lastActiveRule || activeScoringRules.value.length <= 1) return
+  lastActiveRule.active = false
+}
+
+const normalizeScoringRulesForSave = () => {
+  const activeRules = activeScoringRules.value
+  const inactiveRules = orderedScoringRules.value.filter((rule) => rule.active === false)
+
+  activeRules.forEach((rule, index) => {
+    const letter = String.fromCharCode(65 + index)
+    rule.classification = letter
+    rule.label = rule.label || letter
+    rule.displayOrder = index + 1
+    rule.score = Math.max(1, Number(rule.score || activeRules.length - index))
+    rule.active = true
+  })
+
+  inactiveRules.forEach((rule, index) => {
+    rule.displayOrder = activeRules.length + index + 1
+    rule.active = false
+  })
 }
 
 const addWorkflowStep = () => {
@@ -361,6 +439,7 @@ const saveSettings = async () => {
   saving.value = true
   feedback.value = ''
   try {
+    normalizeScoringRulesForSave()
     const updated = await unitSettingsService.updateSettings(dassOffice.value, settings)
     normalizeSettings(updated)
     userStore.unitConfig = updated

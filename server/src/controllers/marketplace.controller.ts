@@ -51,9 +51,54 @@ export const MarketplaceController = {
 
   async listRequests(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await MarketplaceService.listRequests(
-        String(req.query.dassOffice)
+      const result = await MarketplaceService.listRequests({
+        dassOffice: String(req.query.dassOffice),
+        registration:
+          typeof req.query.registration === "string"
+            ? req.query.registration
+            : undefined,
+        status:
+          typeof req.query.status === "string" ? req.query.status : undefined,
+        page: typeof req.query.page === "string" ? req.query.page : undefined,
+        limit: typeof req.query.limit === "string" ? req.query.limit : undefined,
+      });
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async listOwnRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await MarketplaceService.listOwnRequests(
+        {
+          dassOffice: String(req.query.dassOffice),
+          status:
+            typeof req.query.status === "string" ? req.query.status : undefined,
+          page: typeof req.query.page === "string" ? req.query.page : undefined,
+          limit: typeof req.query.limit === "string" ? req.query.limit : undefined,
+        },
+        req.user?.matricula
       );
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async listPublicRequests(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await MarketplaceService.listPublicRequests({
+        dassOffice: String(req.query.dassOffice),
+        registration:
+          typeof req.query.registration === "string"
+            ? req.query.registration
+            : undefined,
+        status:
+          typeof req.query.status === "string" ? req.query.status : undefined,
+        page: typeof req.query.page === "string" ? req.query.page : undefined,
+        limit: typeof req.query.limit === "string" ? req.query.limit : undefined,
+      });
       res.status(200).json(result);
     } catch (error) {
       next(error);

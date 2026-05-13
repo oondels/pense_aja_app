@@ -26,7 +26,13 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 bg-white">
-          <tr v-for="row in rows" :key="row.id || JSON.stringify(row)" class="hover:bg-gray-50">
+          <tr
+            v-for="row in rows"
+            :key="row.id || JSON.stringify(row)"
+            class="hover:bg-gray-50"
+            :class="{ 'cursor-pointer': clickableRows }"
+            @click="$emit('row-click', row)"
+          >
             <td v-for="column in columns" :key="column.key" class="whitespace-nowrap px-4 py-3 text-gray-700">
               <slot :name="`cell-${column.key}`" :row="row" :value="row[column.key]">
                 {{ formatValue(row[column.key]) }}
@@ -60,7 +66,13 @@ defineProps({
     type: String,
     default: 'Nenhum registro encontrado.',
   },
+  clickableRows: {
+    type: Boolean,
+    default: false,
+  },
 })
+
+defineEmits(['row-click'])
 
 const formatValue = (value) => {
   if (value === null || value === undefined || value === '') return '-'

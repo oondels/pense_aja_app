@@ -242,7 +242,27 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Lista solicitações de resgate da unidade.
 - Exige `verifyToken` e permissão `marketplace.request.approve`.
 - Exige `dassOffice` em query string.
+- Aceita filtros `status` e `registration`.
+- Aceita `page` e `limit`; o frontend usa `limit=5`.
+- Retorna `{ data, pagination }`.
+- Cada item pode incluir nome, custo em pontos e tipo do item de catálogo.
 - Ordena por atualização mais recente.
+
+### `GET /marketplace/requests/me`
+
+- Lista solicitações da matrícula autenticada.
+- Exige `verifyToken`.
+- Exige `dassOffice` em query string.
+- Aceita filtro `status`, `page` e `limit`.
+- Retorna `{ data, pagination }`.
+
+### `GET /marketplace/requests/public`
+
+- Consulta pública de solicitações por matrícula e unidade.
+- Não exige autenticação.
+- Exige `dassOffice` e `registration` em query string.
+- Aceita filtro `status`, `page` e `limit`.
+- Retorna `{ data, pagination }`.
 
 ### `PUT /marketplace/requests/:id/approve`
 

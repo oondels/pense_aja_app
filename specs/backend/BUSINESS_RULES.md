@@ -193,6 +193,11 @@ escopo da unidade.
   `rejected`.
 - Estorno exige `marketplace.request.approve` ou `marketplace.refund`, cria
   `refund` e marca `refunded`.
+- Listagem administrativa de solicitações aceita filtros por status e matrícula
+  e retorna paginação.
+- Consulta própria exige token e sempre usa a matrícula autenticada.
+- Consulta pública permite leitura por unidade e matrícula, sem permitir
+  transições de status.
 - O endpoint legado de compra direta cria `reserve`, `commit` e uma solicitação
   já concluída para preservar compatibilidade.
 - O fluxo público atual não executa voucher, separação ou fulfillment no Pense Aja.

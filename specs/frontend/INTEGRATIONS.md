@@ -50,10 +50,11 @@ Consumido por `api` e `commonApi`.
 ### Evolução esperada
 
 - respostas do backend devem poder incluir snapshot de permissões, saldo consolidado e estado de resgate sem depender de cálculo local
+- marketplace expõe listagens paginadas para administração, consulta autenticada do próprio usuário e consulta pública por matrícula/unidade
 
 ## Upload Service
 
-Usado pelo módulo de loja.
+Usado pelo módulo de loja e pelo cadastro administrativo de novos itens do catálogo.
 
 - endpoint hardcoded: `http://10.100.1.43:3020/`
 - headers usados:
@@ -77,6 +78,7 @@ Usado pelo módulo de loja.
 
 - unidade Dass
 - `unitConfig:<unidadeDass>` retornado por `/user/session-context/:dassOffice`
+- `viewMode:*` para preferência local de cards/lista por tela
 - preferências de onboarding/news/email popup
 
 ## PWA
