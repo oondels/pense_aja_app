@@ -695,7 +695,7 @@
                                 class="avaliar-rating-display"
                               >
                                 <span class="avaliar-rating-value">
-                                  {{ key }}
+                                  {{ classification.classification }}
                                 </span>
                                 <span class="avaliar-rating-icon">
                                   <i class="bi bi-star-fill"></i>
@@ -1110,11 +1110,21 @@ function computeStatusData(penseAja) {
 }
 
 // Avaliação
-const classifications = {
-  A: { name: "Avançada", value: 3 },
-  B: { name: "Intermediária", value: 2 },
-  C: { name: "Básica", value: 1 },
-};
+const classifications = computed(() => {
+  const configuredRules = user.unitConfig?.scoringRules || [];
+  return configuredRules
+    .filter((rule) => rule.active)
+    .sort((a, b) => Number(a.displayOrder || 0) - Number(b.displayOrder || 0))
+    .reduce((acc, rule) => {
+      acc[rule.classification] = {
+        classification: rule.classification,
+        name: rule.description || rule.label || rule.classification,
+        value: rule.classification,
+        score: rule.score,
+      };
+      return acc;
+    }, {});
+});
 
 const evaluationValue = ref(null);
 const emEspera = ref(false);
@@ -1133,7 +1143,7 @@ const opcoesA3 = [
 ];
 const justification = ref("");
 const setEvaluationValue = (value) => {
-  if (evaluationValue.value) {
+  if (evaluationValue.value === value) {
     evaluationValue.value = null;
     return;
   }
@@ -1185,7 +1195,8 @@ const handleEvaluationValue = async (action, penseAja, dialog) => {
     emEspera: emEspera.value ? "1" : "0",
     replicavel: replicavel.value ? "1" : "0",
     a3Mae: a3PenseAja.value?.value,
-    avaliacao: evaluationValue?.value,
+	    avaliacao: evaluationValue?.value,
+	    classification: evaluationValue?.value,
     justificativa: justification.value,
     dassOffice: dassOffice,
     avaliadoAnteriormente: avaliadoAnteriormente,

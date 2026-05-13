@@ -78,11 +78,13 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 
 ### Estado atual
 
-- o formulário exige `avaliacao` na maior parte dos casos
+- o formulário exige uma classificação configurada para a unidade na maior parte dos casos
 - exige `justificativa` em quase todos os casos
 
 ### Modelo-alvo
 
+- o formulário deve renderizar as classificações de `unitConfig.scoringRules`, carregadas no login por unidade
+- a classificação enviada para o backend deve ser a letra canônica (`classification`)
 - o formulário deve respeitar a etapa atual do workflow e as permissões devolvidas pelo backend
 - a UI precisa estar pronta para exibir histórico e justificativas auditáveis
 - a validação final continua sendo do servidor

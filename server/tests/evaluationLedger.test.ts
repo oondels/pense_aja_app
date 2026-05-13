@@ -9,6 +9,7 @@ import { AuditService } from "../src/services/audit.service";
 import { EvaluationWorkflowService } from "../src/services/evaluation-workflow.service";
 import { LedgerService } from "../src/services/ledger.service";
 import { PenseAjaService } from "../src/services/pense-aja.service";
+import { UnitSettingsService } from "../src/services/unit-settings.service";
 
 const WORKFLOW_ANALYST = {
   stepCode: "analyst_review",
@@ -63,6 +64,21 @@ const buildEvalData = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+const mockScoringRule = (score = 3, classification = "A") =>
+  vi.spyOn(UnitSettingsService, "getScoringRule").mockResolvedValue({
+    id: "rule-id",
+    dassOffice: "SEST",
+    classification,
+    label: classification,
+    description: null,
+    score,
+    displayOrder: 1,
+    active: true,
+    activeFrom: null,
+    activeUntil: null,
+    metadata: null,
+  });
+
 const buildQueryRunner = (ideaFindOnce: object, ideaFindTwice: object) => {
   const ideaRepo = {
     findOne: vi
@@ -101,6 +117,7 @@ describe("PenseAjaService — ledger entries on evaluation", () => {
       createQueryRunner: () => queryRunner,
     } as any);
     vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
+    mockScoringRule(3);
     vi.spyOn(LedgerService, "getSourceNetAmount").mockResolvedValue({
       netAmount: 0,
       latestEarnEntryId: null,
@@ -121,6 +138,7 @@ describe("PenseAjaService — ledger entries on evaluation", () => {
       createQueryRunner: () => queryRunner,
     } as any);
     vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
+    mockScoringRule(3);
     vi.spyOn(LedgerService, "getSourceNetAmount").mockResolvedValue({
       netAmount: 50,
       latestEarnEntryId: 10,
@@ -129,7 +147,7 @@ describe("PenseAjaService — ledger entries on evaluation", () => {
     vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
     vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
 
-    // avaliacao "3" sem scoring rule → evaluationScore = 3, netAmount = 50, 50 !== 3
+    // avaliacao "3" resolve classificação A; regra configurada retorna 3.
     await PenseAjaService.evaluatePenseAja("42", buildEvalData({ avaliacao: "3" }));
 
     const calls = createEntry.mock.calls.map((c) => c[1].entryType);
@@ -142,7 +160,8 @@ describe("PenseAjaService — ledger entries on evaluation", () => {
       createQueryRunner: () => queryRunner,
     } as any);
     vi.spyOn(EvaluationWorkflowService, "resolveDecision").mockResolvedValue(WORKFLOW_ANALYST);
-    // netAmount = 3 == evaluationScore (sem scoring rule, avaliacao "3" → score 3)
+    mockScoringRule(3);
+    // netAmount = 3 == score configurado para A.
     vi.spyOn(LedgerService, "getSourceNetAmount").mockResolvedValue({
       netAmount: 3,
       latestEarnEntryId: 10,

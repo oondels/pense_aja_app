@@ -93,10 +93,28 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Reprovação com avaliação preenchida retorna `400`.
 - Reprovação, exclusão e reavaliação revertem pontuação anterior com lançamento `reverse` quando há saldo líquido da avaliação anterior.
 - Aprovação com nota gera lançamento `earn` em `points_ledger_entries`.
-- Pontuação usa regra ativa de `unit_scoring_rules` quando disponível; caso contrário, usa o valor recebido na avaliação.
+- Payload novo deve enviar `classification` com letra canônica configurada na unidade (`A`, `B`, `C`, `D`...).
+- `avaliacao` numérica permanece aceito apenas como compatibilidade temporária (`3 -> A`, `2 -> B`, `1 -> C`).
+- Pontuação exige regra ativa e vigente em `unit_scoring_rules`; quando não há regra para a classificação, retorna `400`.
 - Sincroniza `points_balance_projection` após mudança de pontuação.
 - Registra auditoria `idea.evaluated` com estados antes/depois.
 - Tenta notificar o usuário avaliado; falhas de notificação não bloqueiam a avaliação.
+
+## Módulo `/unit-settings`
+
+### `GET /unit-settings/:dassOffice`
+
+- Exige `verifyToken` e permissão `unit.config.manage`.
+- Retorna configuração editável da unidade: metadata geral, regras de pontuação, workflow e política de marketplace.
+- Regras de pontuação usam letras canônicas, rótulo, descrição, pontos, ordem, vigência e flag ativa.
+
+### `PUT /unit-settings/:dassOffice`
+
+- Exige `verifyToken` e permissão `unit.config.manage`.
+- Atualiza configurações da unidade em transação.
+- Valida classificações por letras maiúsculas, pontuação positiva e ordem única entre regras ativas.
+- Valida etapas de workflow com código, ordem, permissão exigida e metadata de slot.
+- Desativa regras/etapas omitidas em vez de apagar fisicamente histórico de configuração.
 
 ## Módulo `/user`
 
@@ -105,7 +123,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Exige `verifyToken`.
 - Resolve permissões efetivas do usuário para a unidade.
 - Persiste snapshot curto em `rbac_session_snapshots`.
-- Retorna matrícula, unidade, permissões, versão e expiração do snapshot.
+- Retorna matrícula, unidade, permissões, configuração efetiva da unidade, versão e expiração do snapshot.
 
 ### `GET /user/rbac/roles`
 

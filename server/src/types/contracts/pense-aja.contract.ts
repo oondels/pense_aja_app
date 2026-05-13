@@ -110,6 +110,7 @@ export interface SubmitPenseAjaResponse {
 
 export interface EvaluationData extends AuthenticatedUserIdentity {
   avaliacao?: string;
+  classification?: string;
   emEspera: boolean;
   replicavel: boolean;
   justificativa?: string;

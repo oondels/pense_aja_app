@@ -165,6 +165,7 @@ export const UserPenseajaController = {
         registration: context.registration,
         dassOffice: context.dassOffice,
         permissions: context.permissions,
+        unitConfig: context.unitConfig,
         snapshotVersion: context.snapshotVersion,
         snapshotExpiresAt: context.snapshotExpiresAt.toISOString(),
       });

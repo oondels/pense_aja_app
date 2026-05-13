@@ -75,6 +75,23 @@ Tela analítica e de relatório.
 - a exportação monta planilhas no browser usando `xlsx`
 - várias abas previstas no relatório estão comentadas no código
 
+## `/admin/unit-settings`
+
+Página de configurações operacionais da unidade.
+
+- View: `cliente/src/views/AdminUnitSettings.vue`
+- Objetivo:
+  - configurar classificações e pontuação por unidade
+  - configurar etapas de workflow de avaliação
+  - configurar política de marketplace
+  - centralizar acesso às gestões de catálogo e RBAC
+- Permissão visual:
+  - exige `unit.config.manage`
+- Integração:
+  - usa `GET /unit-settings/:dassOffice`
+  - usa `PUT /unit-settings/:dassOffice`
+  - a sessão também carrega `unitConfig` por `GET /user/session-context/:dassOffice`
+
 ## `/user`
 
 Tela de perfil e preferências.

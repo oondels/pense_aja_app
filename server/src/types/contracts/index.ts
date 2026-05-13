@@ -7,4 +7,5 @@ export * from "./ledger.contract";
 export * from "./marketplace.contract";
 export * from "./pense-aja.contract";
 export * from "./rbac.contract";
+export * from "./unit-settings.contract";
 export * from "./user.contract";

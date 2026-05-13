@@ -11,6 +11,7 @@ import UserPenseajaRoute from "./routes/userPensAaja.route";
 import AiTools from "./routes/aiTools.route";
 import DashboardRoutes from "./routes/dashboard.route";
 import MarketplaceRoutes from "./routes/marketplace.route";
+import UnitSettingsRoutes from "./routes/unitSettings.route";
 import { startUploadListener } from "./workers/uploadListener";
 
 const app = express();
@@ -42,6 +43,7 @@ app.use("/user/", UserPenseajaRoute);
 app.use("/ai/", AiTools);
 app.use("/dashboard/", DashboardRoutes);
 app.use("/marketplace/", MarketplaceRoutes);
+app.use("/unit-settings/", UnitSettingsRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Pense Aja API");

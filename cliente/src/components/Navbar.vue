@@ -96,6 +96,13 @@
         Catálogo
       </router-link>
       <router-link
+        v-if="user.hasPermission('unit.config.manage')"
+        class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white"
+        to="/admin/unit-settings"
+      >
+        Configurações
+      </router-link>
+      <router-link
         v-if="user.hasPermission('rbac.manage')"
         class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white"
         to="/admin/rbac"

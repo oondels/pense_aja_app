@@ -3,6 +3,7 @@ import { EntityManager } from "typeorm";
 import { initializeDatabase } from "../config/database";
 import { DecodedToken } from "../middlewares/auth";
 import RbacSessionSnapshotEntity from "../models/RbacSessionSnapshot";
+import { UnitSettingsService } from "./unit-settings.service";
 import {
   AuthenticatedSessionContext,
   DassOffice,
@@ -91,6 +92,11 @@ export const AuthorizationService = {
         username: identity.usuario,
         dassOffice: validDassOffice,
         permissions,
+        unitConfig: await UnitSettingsService.getSettings(
+          validDassOffice,
+          dataSource.manager,
+          true
+        ),
         snapshotVersion: Number(existingSnapshot.version),
         snapshotExpiresAt: existingSnapshot.expires_at,
       };
@@ -146,6 +152,11 @@ export const AuthorizationService = {
       username: identity.usuario,
       dassOffice: validDassOffice,
       permissions,
+      unitConfig: await UnitSettingsService.getSettings(
+        validDassOffice,
+        dataSource.manager,
+        true
+      ),
       snapshotVersion: version,
       snapshotExpiresAt: expiresAt,
     };

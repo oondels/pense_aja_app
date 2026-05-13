@@ -154,7 +154,11 @@ escopo da unidade.
 
 - Pontuação de avaliação usa `unit_scoring_rules` ativa por unidade e
   classificação.
-- Quando não há regra ativa, o backend usa o valor de avaliação recebido.
+- Classificações são letras canônicas configuráveis por unidade (`A`, `B`,
+  `C`, `D`...), com rótulo, descrição, ordem e pontuação definidos no banco.
+- Compatibilidade temporária converte entradas legadas `3/2/1` para `A/B/C`.
+- Quando não há regra ativa e vigente para a classificação enviada, a
+  avaliação retorna `400` e não grava pontuação.
 - O saldo funcional é mantido em `points_balance_projection`.
 - O saldo disponível é calculado a partir de ganhos, reversões, consumos,
   reservas ativas e estornos.

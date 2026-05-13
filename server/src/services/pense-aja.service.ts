@@ -4,7 +4,6 @@ import { initializeDatabase } from "../config/database";
 import MarketplaceRedemptionRequestEntity from "../models/MarketplaceRedemptionRequest";
 import PenseAjaDassEntity, { PenseAjaDass } from "../models/PenseAjaDass";
 import MarketplaceCatalogItemEntity from "../models/MarketplaceCatalogItem";
-import UnitScoringRuleEntity from "../models/UnitScoringRule";
 import logger from "../utils/logger";
 import { assertDassOffice } from "../utils/dassOffice";
 import { CustomError } from "../types/CustomError";
@@ -13,6 +12,7 @@ import { AuditService } from "./audit.service";
 import { LedgerService } from "./ledger.service";
 import { DomainEventNotificationService } from "./domain-event-notification.service";
 import { EvaluationWorkflowService } from "./evaluation-workflow.service";
+import { UnitSettingsService } from "./unit-settings.service";
 import {
   CreatePenseAjaResult,
   DassOffice,
@@ -63,6 +63,19 @@ const releaseQueryRunner = async (queryRunner: QueryRunner) => {
 
 const hasPermission = (permissions: string[] | undefined, permission: string) =>
   Array.isArray(permissions) && permissions.includes(permission);
+
+const LEGACY_CLASSIFICATION_MAP: Record<string, string> = {
+  "1": "C",
+  "2": "B",
+  "3": "A",
+};
+
+const normalizeClassification = (classification?: string, legacyValue?: string) => {
+  if (classification) {
+    return classification.trim().toUpperCase();
+  }
+  return LEGACY_CLASSIFICATION_MAP[String(legacyValue ?? "")] ?? null;
+};
 
 const mapIdeaAuditState = (idea: PenseAjaDass) => ({
   id: Number(idea.id),
@@ -557,7 +570,8 @@ export const PenseAjaService = {
       usuario: avaliador,
       funcao,
       justificativa = "Sem justificativa.",
-      avaliacao,
+	      avaliacao,
+	      classification,
       a3Mae = "",
       emEspera,
       replicavel,
@@ -570,11 +584,6 @@ export const PenseAjaService = {
 
     const EXCLUDE = "exclude";
     const REPROVE = "reprove";
-    const CLASSIFICATION_MAP: Record<string, string> = {
-      "1": "C",
-      "2": "B",
-      "3": "A",
-    };
 
     try {
       await queryRunner.connect();
@@ -595,9 +604,9 @@ export const PenseAjaService = {
         );
       }
 
-      if (status === REPROVE && avaliacao) {
-        throw new CustomError(
-          "Não é possível reprovar um Pense Aja com uma avaliação (A, B ou C).",
+	      if (status === REPROVE && (avaliacao || classification)) {
+	        throw new CustomError(
+	          "Não é possível reprovar um Pense Aja com uma avaliação (A, B ou C).",
           400,
           "Não é possível reprovar um Pense Aja com uma avaliação (A, B ou C)."
         );
@@ -629,10 +638,14 @@ export const PenseAjaService = {
         sourceId: String(currentIdea.id),
       });
 
-      const now = new Date();
-      const updateData: Partial<PenseAjaDass> = {
-        updatedat: now,
-      };
+	      const now = new Date();
+	      const selectedClassification = normalizeClassification(
+	        classification,
+	        avaliacao
+	      );
+	      const updateData: Partial<PenseAjaDass> = {
+	        updatedat: now,
+	      };
 
       if (role !== "gerente") {
         Object.assign(updateData, {
@@ -652,12 +665,12 @@ export const PenseAjaService = {
 
       if (status === EXCLUDE) {
         updateData.excluido = true;
-      } else {
-        Object.assign(updateData, {
-          classificacao: avaliacao ?? null,
-          a3_mae: a3Mae,
-          em_espera: toFlag(emEspera),
-          replicavel: toFlag(replicavel),
+	      } else {
+	        Object.assign(updateData, {
+	          classificacao: selectedClassification,
+	          a3_mae: a3Mae,
+	          em_espera: toFlag(emEspera),
+	          replicavel: toFlag(replicavel),
         });
       }
 
@@ -693,19 +706,22 @@ export const PenseAjaService = {
         );
       }
 
-      const classificacao = CLASSIFICATION_MAP[String(avaliacao ?? "")] ?? "C";
-      const scoringRule = avaliacao
-        ? await queryRunner.manager.getRepository(UnitScoringRuleEntity).findOne({
-            where: {
-              unidade_dass: validDassOffice,
-              classification: classificacao,
-              active: true,
-            },
-          })
-        : null;
-      const evaluationScore = scoringRule
-        ? Number(scoringRule.score)
-        : Number(avaliacao ?? 0);
+	      const scoringRule = selectedClassification
+	        ? await UnitSettingsService.getScoringRule(
+	            queryRunner.manager,
+	            validDassOffice,
+	            selectedClassification
+	          )
+	        : null;
+
+	      if (status !== EXCLUDE && status !== REPROVE && !scoringRule) {
+	        throw new CustomError(
+	          "Classificação de pontuação não configurada para esta unidade.",
+	          400
+	        );
+	      }
+
+	      const evaluationScore = scoringRule ? Number(scoringRule.score) : 0;
 
       if (currentPoints.netAmount > 0 && (status === EXCLUDE || status === REPROVE)) {
         await LedgerService.createEntry(queryRunner, {
@@ -724,7 +740,7 @@ export const PenseAjaService = {
         });
       }
 
-      if (status !== EXCLUDE && status !== REPROVE && avaliacao) {
+	      if (status !== EXCLUDE && status !== REPROVE && scoringRule) {
         if (currentPoints.netAmount > 0 && currentPoints.netAmount !== evaluationScore) {
           await LedgerService.createEntry(queryRunner, {
             registration: String(newEvaluation.matricula),
@@ -754,15 +770,16 @@ export const PenseAjaService = {
             reason: justificativa,
             createdByRegistration: actorRegistration ?? null,
             createdByName: avaliador,
-            metadata: {
-              classificacao,
-              role,
-              workflowStep: workflowDecision.stepCode,
-              requiredPermission: workflowDecision.requiredPermission,
-              scoringRuleId: scoringRule ? Number(scoringRule.id) : null,
-            },
-          });
-        }
+	            metadata: {
+	              classification: selectedClassification,
+	              role,
+	              workflowStep: workflowDecision.stepCode,
+	              requiredPermission: workflowDecision.requiredPermission,
+	              scoringRuleId: scoringRule.id,
+	              score: evaluationScore,
+	            },
+	          });
+	        }
       }
 
       await LedgerService.syncBalanceProjection(
@@ -782,9 +799,11 @@ export const PenseAjaService = {
         beforeState: mapIdeaAuditState(currentIdea),
         afterState: mapIdeaAuditState(newEvaluation),
         metadata: {
-          status,
-          avaliacao: avaliacao ? Number(avaliacao) : null,
-          role,
+	          status,
+	          avaliacao: avaliacao ? Number(avaliacao) : null,
+	          classification: selectedClassification,
+	          score: scoringRule ? evaluationScore : null,
+	          role,
           workflowStep: workflowDecision.stepCode,
           reviewSlot: workflowDecision.reviewSlot,
           requiredPermission: workflowDecision.requiredPermission,

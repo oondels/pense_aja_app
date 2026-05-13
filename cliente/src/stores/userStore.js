@@ -11,6 +11,16 @@ const readPermissions = () => {
   }
 }
 
+const readUnitConfig = (unit = localStorage.getItem('unidadeDass')) => {
+  if (!unit) return null
+  try {
+    const stored = localStorage.getItem(`unitConfig:${unit}`)
+    return stored ? JSON.parse(stored) : null
+  } catch {
+    return null
+  }
+}
+
 export const useUserStore = defineStore('user', () => {
   const matricula = ref('')
   const nome = ref('')
@@ -26,6 +36,7 @@ export const useUserStore = defineStore('user', () => {
   const snapshotExpiresAt = ref(sessionStorage.getItem('snapshotExpiresAt') || '')
   const sessionContextLoading = ref(false)
   const sessionContextError = ref('')
+  const unitConfig = ref(readUnitConfig(dassOffice.value))
 
   const userData = computed(() => ({
     matricula: matricula.value,
@@ -36,6 +47,7 @@ export const useUserStore = defineStore('user', () => {
     gerente: gerente.value,
     unidade: dassOffice.value,
     permissions: permissions.value,
+    unitConfig: unitConfig.value,
   }))
 
   function carregarUsuario() {
@@ -50,6 +62,7 @@ export const useUserStore = defineStore('user', () => {
     permissions.value = readPermissions()
     snapshotVersion.value = Number(sessionStorage.getItem('snapshotVersion') || 0)
     snapshotExpiresAt.value = sessionStorage.getItem('snapshotExpiresAt') || ''
+    unitConfig.value = readUnitConfig(dassOffice.value)
     formattedUserName.value = formateUserName();
   }
 
@@ -65,6 +78,10 @@ export const useUserStore = defineStore('user', () => {
     sessionStorage.removeItem('permissions')
     sessionStorage.removeItem('snapshotVersion')
     sessionStorage.removeItem('snapshotExpiresAt')
+    if (dassOffice.value) {
+      localStorage.removeItem(`unitConfig:${dassOffice.value}`)
+    }
+    unitConfig.value = null
   }
 
   function formateUserName() {
@@ -100,9 +117,13 @@ export const useUserStore = defineStore('user', () => {
       permissions.value = context.permissions || []
       snapshotVersion.value = context.snapshotVersion || 0
       snapshotExpiresAt.value = context.snapshotExpiresAt || ''
+      unitConfig.value = context.unitConfig || null
       sessionStorage.setItem('permissions', JSON.stringify(permissions.value))
       sessionStorage.setItem('snapshotVersion', String(snapshotVersion.value))
       sessionStorage.setItem('snapshotExpiresAt', snapshotExpiresAt.value)
+      if (unitConfig.value) {
+        localStorage.setItem(`unitConfig:${dassOffice.value}`, JSON.stringify(unitConfig.value))
+      }
       return context
     } catch (error) {
       sessionContextError.value =
@@ -129,6 +150,7 @@ export const useUserStore = defineStore('user', () => {
     snapshotExpiresAt,
     sessionContextLoading,
     sessionContextError,
+    unitConfig,
     userData,
     carregarUsuario,
     limparUsuario,

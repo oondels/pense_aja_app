@@ -406,8 +406,8 @@ paths:
               $ref: "#/components/schemas/EvaluateIdeaPayload"
             example:
               dassOffice: "SEST"
-              status: "concluido"
-              avaliacao: "A"
+              status: "approve"
+              classification: "A"
               emEspera: false
               replicavel: true
               justificativa: "Ideia implementada com ganho de qualidade comprovado."
@@ -718,6 +718,56 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
+  /unit-settings/{dassOffice}:
+    get:
+      tags: [Unit Settings]
+      summary: Obter configurações da unidade
+      description: Retorna regras editáveis de pontuação, workflow e marketplace da unidade.
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Configuração da unidade.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnitSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      tags: [Unit Settings]
+      summary: Atualizar configurações da unidade
+      description: Atualiza pontuação, workflow e política de marketplace em transação.
+      parameters:
+        - $ref: "#/components/parameters/DassOfficePath"
+        - $ref: "#/components/parameters/CookieHeader"
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnitSettingsUpdate"
+      responses:
+        "200":
+          description: Configuração atualizada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnitSettings"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
   /user/session-context/{dassOffice}:
     get:
       tags: [User]
@@ -743,6 +793,16 @@ paths:
                 permissions:
                   - "idea.submit"
                   - "marketplace.request.create"
+                unitConfig:
+                  dassOffice: "SEST"
+                  active: true
+                  scoringRules:
+                    - classification: "A"
+                      label: "A"
+                      description: "Avançada"
+                      score: 4
+                      displayOrder: 1
+                      active: true
                 snapshotVersion: 3
                 snapshotExpiresAt: "2026-04-22T13:00:00.000Z"
         "400":
@@ -1823,6 +1883,11 @@ components:
           type: string
         avaliacao:
           type: string
+          deprecated: true
+          description: Campo legado numérico; use `classification`.
+        classification:
+          type: string
+          description: Letra canônica configurada na unidade, como A, B, C ou D.
         emEspera:
           type: boolean
         replicavel:
@@ -2024,11 +2089,97 @@ components:
           type: array
           items:
             type: string
+        unitConfig:
+          $ref: "#/components/schemas/UnitSettings"
         snapshotVersion:
           type: integer
         snapshotExpiresAt:
           type: string
           format: date-time
+    UnitScoringRule:
+      type: object
+      properties:
+        id:
+          type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        classification:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+          nullable: true
+        score:
+          type: integer
+        displayOrder:
+          type: integer
+        active:
+          type: boolean
+        activeFrom:
+          type: string
+          format: date-time
+          nullable: true
+        activeUntil:
+          type: string
+          format: date-time
+          nullable: true
+    UnitWorkflowStep:
+      type: object
+      properties:
+        id:
+          type: string
+        stepCode:
+          type: string
+        stepOrder:
+          type: integer
+        requiredPermission:
+          type: string
+        terminalStatus:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+        metadata:
+          type: object
+          nullable: true
+    UnitMarketplacePolicy:
+      type: object
+      properties:
+        id:
+          type: string
+        allowRefundAfterCommit:
+          type: boolean
+        voucherAdapter:
+          type: string
+        active:
+          type: boolean
+        metadata:
+          type: object
+          nullable: true
+    UnitSettings:
+      type: object
+      properties:
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
+        active:
+          type: boolean
+        metadata:
+          type: object
+          nullable: true
+        scoringRules:
+          type: array
+          items:
+            $ref: "#/components/schemas/UnitScoringRule"
+        workflowSteps:
+          type: array
+          items:
+            $ref: "#/components/schemas/UnitWorkflowStep"
+        marketplacePolicy:
+          $ref: "#/components/schemas/UnitMarketplacePolicy"
+    UnitSettingsUpdate:
+      type: object
+      additionalProperties: true
     RbacRole:
       type: object
       properties:

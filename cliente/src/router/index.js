@@ -11,6 +11,7 @@ const MarketplaceRequests = () => import('../views/MarketplaceRequests.vue')
 const AdminMarketplace = () => import('../views/AdminMarketplace.vue')
 const AdminCatalog = () => import('../views/AdminCatalog.vue')
 const AdminRbac = () => import('../views/AdminRbac.vue')
+const AdminUnitSettings = () => import('../views/AdminUnitSettings.vue')
 const IdeaAudit = () => import('../views/IdeaAudit.vue')
 const PointsHistory = () => import('../views/PointsHistory.vue')
 
@@ -29,6 +30,7 @@ const routes = [
   { path: '/admin/marketplace', name: 'Admin Marketplace', component: AdminMarketplace },
   { path: '/admin/catalog', name: 'Admin Catálogo', component: AdminCatalog },
   { path: '/admin/rbac', name: 'Admin RBAC', component: AdminRbac },
+  { path: '/admin/unit-settings', name: 'Configurações da Unidade', component: AdminUnitSettings },
 ]
 
 const router = createRouter({
