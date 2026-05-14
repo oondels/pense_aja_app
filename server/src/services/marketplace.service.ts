@@ -333,7 +333,7 @@ export const MarketplaceService = {
       }
 
       const availableBalance = Number(balanceRows[0]?.available_balance ?? 0);
-      
+
       if (availableBalance < Number(item.points_cost)) {
         throw new CustomError("Pontos insuficientes para solicitar resgate.", 400);
       }

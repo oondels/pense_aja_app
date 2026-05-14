@@ -94,23 +94,40 @@
                 <i v-else class="mdi mdi-cart-arrow-down"></i>
                 Solicitar Resgate
               </button>
+
+              <!-- Popup de confirmação de Resgate -->
+              <v-dialog v-model="popupResgate" max-width="450">
+                <v-card class="border-0 rounded-4 shadow-lg">
+                  <!-- Header customizado com classes Bootstrap -->
+                  <div class="d-flex align-items-center p-4 border-bottom bg-light rounded-top-4">
+                    <h5 class="mb-0 fw-bold text-dark">Confirmação de Resgate</h5>
+                  </div>
+
+                  <!-- Corpo com tipografia Bootstrap -->
+                  <v-card-text class="p-4">
+                    <p class="fs-5 text-secondary mb-1">Você tem certeza?</p>
+                    <p class="text-muted small">
+                      Ao confirmar, os pontos serão debitados da sua conta e a solicitação será processada.
+                    </p>
+                  </v-card-text>
+
+                  <!-- Ações com botões estilizados -->
+                  <v-card-actions class="p-4 pt-0 d-flex justify-content-end gap-2">
+                    <v-btn
+                      @click="popupResgate = false"
+                      variant="outlined"
+                      color="red"
+                    >
+                      Cancelar
+                    </v-btn>
+
+                    <v-btn variant="outlined" color="success" @click="requestReward(item)">
+                      Sim, Resgatar
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </div>
-
-            <!-- Popup de confirmação de Resgate -->
-            <v-dialog v-model="popupResgate" max-width="500">
-              <v-card title="Confirmação de Resgate">
-                <v-card-text>
-                  <p>Tem certeza que deseja solicitar o resgate deste item?</p>
-                </v-card-text>
-
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-
-                  <v-btn text="Não" @click="popupResgate = false"></v-btn>
-                  <v-btn text="Sim" @click="requestReward(item)"></v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
           </div>
         </article>
       </section>
@@ -211,16 +228,16 @@ const handleRequestReward = (item) => {
     return;
   }
 
+  requestingId.value = item.id;
   popupResgate.value = true;
 };
 
-const requestReward = async (item) => {
-  requestingId.value = item.id;
+const requestReward = async () => {
   try {
     await marketplaceService.createRequest({
       dassOffice: dassOffice.value,
-      catalogItemId: item.id,
-      reason: `Resgate solicitado para ${item.name}`,
+      catalogItemId: requestingId.value,
+      reason: `Resgate solicitado`,
     });
 
     notification.value.showPopup(
@@ -230,15 +247,12 @@ const requestReward = async (item) => {
     );
     await loadMarketplace();
   } catch (error) {
-    notification.value.showPopup(
-    "error",
-    "Erro!",
-    "Não foi possível criar a solicitação.",
-  );
+    notification.value.showPopup("error", "Erro!", "Não foi possível criar a solicitação.");
 
-  console.error("Error creating request:", error);
+    console.error("Error creating request:", error);
   } finally {
     requestingId.value = "";
+    popupResgate.value = false;
   }
 };
 
@@ -248,8 +262,6 @@ onMounted(async () => {
   await loadMarketplace();
 
   if (userData.value) {
-    console.log(userData.value);
-
     matriculaUser.value = userData.value.matricula;
   }
 });
