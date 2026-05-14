@@ -333,6 +333,7 @@ export const MarketplaceService = {
       }
 
       const availableBalance = Number(balanceRows[0]?.available_balance ?? 0);
+      
       if (availableBalance < Number(item.points_cost)) {
         throw new CustomError("Pontos insuficientes para solicitar resgate.", 400);
       }
@@ -487,7 +488,7 @@ export const MarketplaceService = {
       .leftJoin(
         MarketplaceCatalogItemEntity as any,
         "catalog",
-        "catalog.id = request.catalog_item_id AND catalog.unidade_dass = request.unidade_dass"
+        "catalog.id::text = request.catalog_item_id AND catalog.unidade_dass = request.unidade_dass"
       )
       .where("request.id = :id", { id: Number(id) })
       .andWhere("request.unidade_dass = :dassOffice", { dassOffice });
@@ -688,7 +689,7 @@ export const MarketplaceService = {
       const request = await requestRepository.findOne({
         where: { id: Number(id), unidade_dass: validDassOffice },
       });
-
+      
       if (!request) {
         throw new CustomError("Solicitação de marketplace não encontrada.", 404);
       }

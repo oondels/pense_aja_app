@@ -20,20 +20,30 @@
         </router-link>
       </header>
 
-      <div>
+      <div class="container">
         <span>Matrícula:</span>
-        <v-text-field placeholder="Digite sua matrícula" v-model="matriculaUser" @keyup.enter="handleUserData($event, false)"></v-text-field>
-        <v-btn v-if="Object.keys(userData).length <= 0" @click="handleUserData($event, true)">Buscar</v-btn>
 
-        <!-- User Info -->
-        <div v-if="Object.keys(userData).length > 0" class="mb-6">
-          <div class="flex items-center bg-white rounded-lg shadow p-4 space-x-4">
-            <i class="bi bi-person-circle text-primary text-4xl"></i>
-            <div class="space-y-1">
-              <p id="nomeLoja" class="text-sm text-gray-700">Nome: {{ userData?.nome }}</p>
-              <p id="setorLoja" class="text-sm text-gray-700">Setor: {{ userData?.setor }}</p>
-              <p id="gerenteLoja" class="text-sm text-gray-700">Gerente: {{ userData?.gerente }}</p>
-            </div>
+        <div class="row">
+          <v-text-field
+            placeholder="Digite sua matrícula"
+            variant="outlined"
+            v-model="matriculaUser"
+            @keyup.enter="handleUserData($event, false)"
+            class="col-md-8"
+          ></v-text-field>
+
+          <v-btn class="col-md-4" variant="outlined" @click="handleUserData($event, true)">Buscar</v-btn>
+        </div>
+      </div>
+
+      <!-- User Info -->
+      <div v-if="Object.keys(userData).length > 0" class="mb-6">
+        <div class="flex items-center bg-white rounded-lg shadow p-4 space-x-4">
+          <i class="bi bi-person-circle text-primary text-4xl"></i>
+          <div class="space-y-1">
+            <p id="nomeLoja" class="text-sm text-gray-700">Nome: {{ userData?.nome }}</p>
+            <p id="setorLoja" class="text-sm text-gray-700">Setor: {{ userData?.setor }}</p>
+            <p id="gerenteLoja" class="text-sm text-gray-700">Gerente: {{ userData?.gerente }}</p>
           </div>
         </div>
       </div>
@@ -78,13 +88,29 @@
                 class="inline-flex items-center justify-center gap-2 rounded-md bg-red-700 px-3 py-2 text-sm font-semibold text-white hover:bg-red-800 disabled:cursor-not-allowed disabled:bg-gray-300"
                 type="button"
                 :disabled="requestingId === item.id || !canRequest(item)"
-                @click="requestReward(item)"
+                @click="handleRequestReward(item)"
               >
                 <i v-if="requestingId === item.id" class="mdi mdi-loading mdi-spin"></i>
                 <i v-else class="mdi mdi-cart-arrow-down"></i>
                 Solicitar Resgate
               </button>
             </div>
+
+            <!-- Popup de confirmação de Resgate -->
+            <v-dialog v-model="popupResgate" max-width="500">
+              <v-card title="Confirmação de Resgate">
+                <v-card-text>
+                  <p>Tem certeza que deseja solicitar o resgate deste item?</p>
+                </v-card-text>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+
+                  <v-btn text="Não" @click="popupResgate = false"></v-btn>
+                  <v-btn text="Sim" @click="requestReward(item)"></v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </div>
         </article>
       </section>
@@ -140,8 +166,6 @@ const feedbackClass = computed(() =>
 const matriculaUser = ref(null);
 const handleUserData = async (e, click) => {
   try {
-    console.log(matriculaUser.value);
-    
     // Espera input do usuário
     if ((e.key && e.key === "Enter") || click) {
       await getUserData(matriculaUser.value, userData, loading, emit);
@@ -180,21 +204,39 @@ const canRequest = (item) => {
   );
 };
 
+const popupResgate = ref(false);
+const handleRequestReward = (item) => {
+  if (!canRequest(item)) {
+    notification.value.showPopup("error", "Erro!", "Você não tem pontos suficientes ou o item está sem estoque.");
+    return;
+  }
+
+  popupResgate.value = true;
+};
+
 const requestReward = async (item) => {
   requestingId.value = item.id;
-  feedback.value = "";
   try {
     await marketplaceService.createRequest({
       dassOffice: dassOffice.value,
       catalogItemId: item.id,
-      reason: `Resgate solicitado pelo frontend para ${item.name}`,
+      reason: `Resgate solicitado para ${item.name}`,
     });
-    feedbackType.value = "success";
-    feedback.value = "Solicitação criada. Os pontos foram reservados até a decisão operacional.";
+
+    notification.value.showPopup(
+      "success",
+      "Sucesso!",
+      "Solicitação de resgate enviada. Acompanhe o status no histórico de pontos.",
+    );
     await loadMarketplace();
   } catch (error) {
-    feedbackType.value = "error";
-    feedback.value = error.response?.data?.message || "Não foi possível criar a solicitação.";
+    notification.value.showPopup(
+    "error",
+    "Erro!",
+    "Não foi possível criar a solicitação.",
+  );
+
+  console.error("Error creating request:", error);
   } finally {
     requestingId.value = "";
   }

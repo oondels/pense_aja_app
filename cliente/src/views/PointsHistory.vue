@@ -21,7 +21,7 @@
           v-model="matriculaUser"
           @keyup.enter="handleUserData($event, false)"
         ></v-text-field>
-        <v-btn v-if="Object.keys(userData).length <= 0" @click="handleUserData($event, true)">Buscar</v-btn>
+        <v-btn v-if="Object.keys(userData).length <= 0" variant="outlined" @click="handleUserData($event, true)">Buscar</v-btn>
 
         <!-- User Info -->
         <div v-if="Object.keys(userData).length > 0" class="mb-6">
@@ -201,5 +201,6 @@ onMounted(async () => {
   userStore.carregarUsuario();
   await userStore.loadSessionContext(dassOffice.value);
   await loadHistory();
+  matriculaUser.value = userData.value.matricula;
 });
 </script>
