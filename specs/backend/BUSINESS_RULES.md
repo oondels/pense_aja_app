@@ -110,7 +110,7 @@ escopo da unidade.
 
 - JWT representa identidade e sessão.
 - Permissões de negócio são resolvidas por RBAC no contexto da unidade.
-- A mesma matrícula pode ter papéis diferentes em unidades diferentes.
+- A mesma matrícula pode ter múltiplos papéis ativos na mesma unidade e papéis diferentes em unidades diferentes.
 - `admin_master` ativo em qualquer unidade tem escopo administrativo global.
 - `unit_admin` gerencia apenas papéis abaixo dele dentro de sua unidade.
 - `idea_admin` gerencia apenas `idea_submitter` dentro de sua unidade.
@@ -129,7 +129,7 @@ escopo da unidade.
   público de ideias não exige essa permissão.
 - `marketplace.request.create` pode existir no modelo RBAC por compatibilidade,
   mas a criação de solicitação de resgate exige apenas usuário autenticado.
-- O backend resolve papéis e permissões a cada request autenticado, sem snapshot persistido.
+- O backend resolve papéis e permissões agregados a cada request autenticado, sem snapshot persistido.
 - `funcao` permanece no JWT e em dados de perfil como atributo legado de
   identidade, não como fonte autorizadora principal.
 

@@ -31,13 +31,26 @@ describe("AuthorizationService", () => {
   });
 
   it("resolves permissions from all active roles in the requested unit", async () => {
-    const query = vi
-      .fn()
-      .mockResolvedValueOnce([{ code: "idea.evaluate" }, { code: "catalog.manage" }])
-      .mockResolvedValueOnce([
-        { code: "idea_reviewer", nome: "Avaliador de ideias", dassOffice: "SEST" },
-        { code: "marketplace_admin", nome: "Administrador de loja", dassOffice: "SEST" },
-      ]);
+    const query = vi.fn().mockResolvedValueOnce([
+      {
+        roleCode: "idea_reviewer",
+        roleName: "Avaliador de ideias",
+        dassOffice: "SEST",
+        permissionCode: "idea.evaluate",
+      },
+      {
+        roleCode: "marketplace_admin",
+        roleName: "Administrador de loja",
+        dassOffice: "SEST",
+        permissionCode: "catalog.manage",
+      },
+      {
+        roleCode: "marketplace_admin",
+        roleName: "Administrador de loja",
+        dassOffice: "SEST",
+        permissionCode: "marketplace.request.approve",
+      },
+    ]);
 
     vi.spyOn(database, "initializeDatabase").mockResolvedValue({
       manager: { query },
@@ -59,10 +72,47 @@ describe("AuthorizationService", () => {
       "SEST"
     );
 
-    expect(context.permissions).toEqual(["idea.evaluate", "catalog.manage"]);
+    expect(context.permissions).toEqual([
+      "idea.evaluate",
+      "catalog.manage",
+      "marketplace.request.approve",
+    ]);
     expect(context.roles.map((role) => role.code)).toEqual([
       "idea_reviewer",
       "marketplace_admin",
     ]);
+    expect(query).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects session context when active roles have no mapped permissions", async () => {
+    const query = vi.fn().mockResolvedValueOnce([
+      {
+        roleCode: "idea_submitter",
+        roleName: "Colaborador que cadastra ideias",
+        dassOffice: "SEST",
+        permissionCode: null,
+      },
+    ]);
+
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue({
+      manager: { query },
+    } as any);
+
+    await expect(
+      AuthorizationService.resolveSessionContext(
+        {
+          id: "1",
+          usuario: "user@grupodass.com.br",
+          codbarras: "",
+          rfid: "",
+          matricula: "1234567",
+          setor: "",
+          nivel: "",
+          unidade: "SEST",
+          funcao: "operador",
+        },
+        "SEST"
+      )
+    ).rejects.toMatchObject({ statusCode: 403 });
   });
 });

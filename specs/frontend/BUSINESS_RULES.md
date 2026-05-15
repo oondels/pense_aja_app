@@ -32,14 +32,10 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 
 ## Permissões na UI
 
-### Estado atual
-
-- a UI infere permissões quando `funcao` contém `analista`, `gerente` ou `automacao`
-
-### Modelo-alvo
-
 - permissões devem ser tratadas como dados derivados do backend
 - papéis e ações podem variar por unidade
+- a mesma sessão pode conter múltiplos papéis e permissões agregadas
+- `funcao` é atributo legado de identidade e não deve autorizar ações
 - a UI pode ocultar ou exibir ações com base no contexto da sessão, mas a decisão final permanece no backend
 - na tela RBAC, filtros de pesquisa são assistivos; escopo de unidade e hierarquia de papéis são sempre impostos pelo backend
 

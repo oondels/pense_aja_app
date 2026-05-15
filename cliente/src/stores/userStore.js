@@ -20,6 +20,20 @@ const readRoles = () => {
   }
 }
 
+const normalizeList = (value) => [...new Set(Array.isArray(value) ? value.filter(Boolean) : [])]
+
+const normalizeRoles = (value) => {
+  if (!Array.isArray(value)) return []
+  const rolesByKey = new Map()
+  value.filter(Boolean).forEach((role) => {
+    const key = `${role.code || ''}:${role.dassOffice || ''}`
+    if (role.code && !rolesByKey.has(key)) {
+      rolesByKey.set(key, role)
+    }
+  })
+  return [...rolesByKey.values()]
+}
+
 const readUnitConfig = (unit = localStorage.getItem('unidadeDass')) => {
   if (!unit) return null
   try {
@@ -121,8 +135,8 @@ export const useUserStore = defineStore('user', () => {
     try {
       const context = await getSessionContext(unit)
       dassOffice.value = context.dassOffice
-      permissions.value = context.permissions || []
-      roles.value = context.roles || []
+      permissions.value = normalizeList(context.permissions)
+      roles.value = normalizeRoles(context.roles)
       unitConfig.value = context.unitConfig || null
       sessionStorage.setItem('permissions', JSON.stringify(permissions.value))
       sessionStorage.setItem('roles', JSON.stringify(roles.value))

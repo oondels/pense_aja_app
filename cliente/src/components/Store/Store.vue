@@ -469,7 +469,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, defineExpose, computed, nextTick } from "vue";
-import { getUserData, setUserRole } from "@/services/userService";
+import { getUserData } from "@/services/userService";
 import { useUserStore } from "@/stores/userStore";
 import BuyItem from "@/components/Store/BuyItem.vue";
 import Notification from "../Notification.vue";
@@ -526,11 +526,7 @@ onBeforeUnmount(() => {
 const user = useUserStore();
 
 const checkRoleAndEvaluation = () => {
-  if (setUserRole(user) === "analista" || setUserRole(user) === "automacao" || setUserRole(user) === "gerente") {
-    return true;
-  }
-
-  return false;
+  return user.hasAnyPermission(["catalog.manage", "reward.legacy.redeem"]);
 };
 
 const userData = ref(null);

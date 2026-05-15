@@ -1004,6 +1004,7 @@ function setupWatchers() {
 // Carrega dados do usuario se estiver logado
 const user = useUserStore();
 const canEvaluateIdeas = computed(() => user.hasPermission("idea.evaluate"));
+const canExcludeIdeas = computed(() => user.hasPermission("idea.exclude"));
 
 const filters = reactive({
   name: [],
@@ -1175,10 +1176,10 @@ const setButtonPermission = (penseAja, _ = false) => {
     return "";
   }
 
-  if (penseAja.status_analista && user.funcao?.toLowerCase().includes("analista")) {
+  if (penseAja.status_analista && canEvaluateIdeas.value && !canExcludeIdeas.value) {
     return "disabled";
   }
-  if (penseAja.status_gerente && user.funcao?.toLowerCase().includes("gerente") && !_) {
+  if (penseAja.status_gerente && canExcludeIdeas.value && !_) {
     return "disabled";
   }
   return "";

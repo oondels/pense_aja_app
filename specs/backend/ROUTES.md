@@ -125,7 +125,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 ### `GET /user/session-context/:dassOffice`
 
 - Exige `verifyToken`.
-- Resolve permissões e papéis efetivos do usuário para a unidade diretamente pelo RBAC vigente.
+- Resolve permissões e papéis efetivos agregados de todos os papéis ativos do usuário para a unidade diretamente pelo RBAC vigente.
 - `admin_master` ativo em qualquer unidade recebe escopo global de autorização.
 - Retorna matrícula, unidade, permissões, papéis e configuração efetiva da unidade.
 

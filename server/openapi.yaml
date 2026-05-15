@@ -765,8 +765,9 @@ paths:
       tags: [User]
       summary: Obter contexto de sessão por unidade
       description: >
-        Resolve permissões e papéis efetivos do usuário autenticado na unidade,
-        sem snapshot persistido. Exige token válido.
+        Resolve permissões e papéis efetivos agregados de todos os papéis
+        ativos do usuário autenticado na unidade, sem snapshot persistido.
+        Exige token válido.
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
         - $ref: "#/components/parameters/CookieHeader"
@@ -783,8 +784,12 @@ paths:
                 registration: "1234567"
                 dassOffice: "SEST"
                 permissions:
+                  - "catalog.manage"
                   - "marketplace.request.approve"
                 roles:
+                  - code: "marketplace_admin"
+                    nome: "Administrador do marketplace"
+                    dassOffice: "SEST"
                   - code: "marketplace_operator"
                     nome: "Operador do marketplace"
                     dassOffice: "SEST"

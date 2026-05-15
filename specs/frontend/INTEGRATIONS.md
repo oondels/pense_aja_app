@@ -73,7 +73,7 @@ Usado pelo módulo de loja e pelo cadastro administrativo de novos itens do cat�
 
 ### Modelo-alvo
 
-- pode armazenar permissões e papéis retornados pelo backend para UX
+- pode armazenar permissões e papéis agregados retornados pelo backend para UX
 - não substitui a verificação do backend
 
 ### localStorage

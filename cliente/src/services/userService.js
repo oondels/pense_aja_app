@@ -32,37 +32,21 @@ export const setUserRole = (user) => {
   if (permissions.includes("rbac.manage")) return "automacao";
   if (permissions.includes("idea.exclude")) return "gerente";
   if (permissions.includes("idea.evaluate")) return "analista";
-
-  if (!user.matricula) {
-    return "common-user";
-  }
-  if (user.funcao?.toLowerCase().includes("analista")) {
-    return "analista";
-  }
-  if (user.funcao?.toLowerCase().includes("gerente")) {
-    return "gerente";
-  }
-  if (user.funcao?.toLowerCase().includes("automacao")) {
-    return "automacao";
-  }
+  return user.matricula ? "common-user" : "anonymous";
 };
 
 export const getUserPermission = () => {
   const matricula = sessionStorage.getItem("matricula");
-  const funcao = sessionStorage.getItem("funcao");
   if (!matricula) {
     return false;
   }
-  if (hasAnyPermission(["idea.evaluate", "idea.exclude", "catalog.manage", "marketplace.request.approve"])) {
-    return true;
-  }
-  if (
-    funcao?.toLowerCase().includes("analista") ||
-    funcao?.toLowerCase().includes("gerente") ||
-    funcao?.toLowerCase().includes("automacao")
-  ) {
-    return true;
-  }
+  return hasAnyPermission([
+    "idea.evaluate",
+    "idea.exclude",
+    "catalog.manage",
+    "marketplace.request.approve",
+    "reward.legacy.redeem",
+  ]);
 };
 
 export const can = (permission) => hasPermission(permission);

@@ -10,31 +10,30 @@ import {
 import { CustomError } from "../types/CustomError";
 import { assertDassOffice } from "../utils/dassOffice";
 
-const mapPermissions = (rows: Array<{ code: string }>) =>
-  rows.map((row) => row.code).filter(Boolean);
+interface SessionScopeRow {
+  roleCode: string;
+  roleName: string;
+  dassOffice: DassOffice;
+  permissionCode: string | null;
+}
 
-const mapRoles = (
-  rows: Array<{ code: string; nome: string; dassOffice: DassOffice }>
-): AuthenticatedRoleContext[] =>
-  rows.map((row) => ({
-    code: row.code,
-    nome: row.nome,
-    dassOffice: row.dassOffice,
-  }));
-
-const getPermissionRows = async (
+const getSessionScopeRows = async (
   manager: EntityManager,
   registration: string,
   dassOffice: DassOffice
 ) =>
   manager.query(
     `
-      SELECT DISTINCT permissions.code
+      SELECT DISTINCT
+        roles.code AS "roleCode",
+        roles.nome AS "roleName",
+        uur.unidade_dass AS "dassOffice",
+        permissions.code AS "permissionCode"
       FROM pense_aja.rbac_user_unit_roles uur
       INNER JOIN pense_aja.rbac_roles roles ON roles.id = uur.role_id
-      INNER JOIN pense_aja.rbac_role_permissions role_permissions
+      LEFT JOIN pense_aja.rbac_role_permissions role_permissions
         ON role_permissions.role_id = roles.id
-      INNER JOIN pense_aja.rbac_permissions permissions
+      LEFT JOIN pense_aja.rbac_permissions permissions
         ON permissions.id = role_permissions.permission_id
       WHERE uur.matricula = $1
         AND (uur.unidade_dass = $2 OR roles.code = 'admin_master')
@@ -45,24 +44,29 @@ const getPermissionRows = async (
     [registration, dassOffice]
   );
 
-const getRoleRows = async (
-  manager: EntityManager,
-  registration: string,
-  dassOffice: DassOffice
-) =>
-  manager.query(
-    `
-      SELECT DISTINCT roles.code, roles.nome, uur.unidade_dass AS "dassOffice"
-      FROM pense_aja.rbac_user_unit_roles uur
-      INNER JOIN pense_aja.rbac_roles roles ON roles.id = uur.role_id
-      WHERE uur.matricula = $1
-        AND (uur.unidade_dass = $2 OR roles.code = 'admin_master')
-        AND uur.active = true
-        AND (uur.active_from IS NULL OR uur.active_from <= CURRENT_TIMESTAMP)
-        AND (uur.active_until IS NULL OR uur.active_until >= CURRENT_TIMESTAMP)
-    `,
-    [registration, dassOffice]
-  );
+const mapSessionScope = (rows: SessionScopeRow[]) => {
+  const permissions = [
+    ...new Set(rows.map((row) => row.permissionCode).filter(Boolean)),
+  ] as string[];
+  const rolesByKey = new Map<string, AuthenticatedRoleContext>();
+
+  rows.forEach((row) => {
+    if (!row.roleCode) return;
+    const key = `${row.roleCode}:${row.dassOffice}`;
+    if (!rolesByKey.has(key)) {
+      rolesByKey.set(key, {
+        code: row.roleCode,
+        nome: row.roleName,
+        dassOffice: row.dassOffice,
+      });
+    }
+  });
+
+  return {
+    permissions,
+    roles: [...rolesByKey.values()],
+  };
+};
 
 export const AuthorizationService = {
   async resolveSessionContext(
@@ -76,12 +80,12 @@ export const AuthorizationService = {
     }
 
     const dataSource = await initializeDatabase();
-    const permissions = mapPermissions(
-      (await getPermissionRows(
+    const { permissions, roles } = mapSessionScope(
+      (await getSessionScopeRows(
         dataSource.manager,
         registration,
         validDassOffice
-      )) as Array<{ code: string }>
+      )) as SessionScopeRow[]
     );
 
     if (!permissions.length) {
@@ -90,14 +94,6 @@ export const AuthorizationService = {
         403
       );
     }
-
-    const roles = mapRoles(
-      (await getRoleRows(
-        dataSource.manager,
-        registration,
-        validDassOffice
-      )) as Array<{ code: string; nome: string; dassOffice: DassOffice }>
-    );
 
     return {
       registration,
