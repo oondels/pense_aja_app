@@ -38,7 +38,7 @@
             :items="roles"
             v-model="form.roleCode"
             item-title="nome"
-            item-value="id"
+            item-value="code"
             variant="outlined"
             required
             label="Nível de Permissão"
@@ -49,7 +49,7 @@
             :items="roles"
             v-model="form.roleCodes"
             item-title="nome"
-            item-value="id"
+            item-value="code"
             multiple
             variant="outlined"
             label="Nível de Permissão"
@@ -230,6 +230,8 @@
         </template>
       </PermissionGate>
     </div>
+
+    <Notification ref="notification" />
   </main>
 </template>
 
@@ -242,6 +244,9 @@ import ViewModeToggle from "@/components/shared/ViewModeToggle.vue";
 import { usePersistedViewMode } from "@/composables/usePersistedViewMode.js";
 import { rbacService } from "@/services/rbacService.js";
 import { useUserStore } from "@/stores/userStore.js";
+import Notification from "@/components/Notification.vue";
+
+const notification = ref(null);
 
 const userStore = useUserStore();
 const roles = ref([]);
@@ -319,6 +324,8 @@ const loadRbac = async () => {
     ]);
     roles.value = roleList;
     assignments.value = assignmentList;
+  } catch (error) {
+    notification.value.showPopup("error", "Erro", "Erro ao listar papeis e níveis de acesso, entre em contato com o suporte!");
   } finally {
     loading.value = false;
   }
