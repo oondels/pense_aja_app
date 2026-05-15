@@ -70,6 +70,7 @@ escopo da unidade.
 ## Cadastro de Ideia
 
 - O cadastro é a origem do ciclo operacional da ideia.
+- A submissão de ideias é pública e não depende de sessão autenticada.
 - A unidade vinculada ao registro define o escopo funcional do cadastro.
 - O backend valida campos essenciais, unidade e duplicidade.
 - As oito perdas lean são convertidas para colunas binárias.
@@ -116,7 +117,6 @@ escopo da unidade.
 - `marketplace_admin` gerencia apenas `marketplace_operator` dentro de sua unidade.
 - Operações de RBAC validam a hierarquia no backend para listar, criar, editar e remover vínculos.
 - Rotas sensíveis usam permissões atômicas como:
-  - `idea.submit`
   - `idea.view`
   - `idea.evaluate`
   - `idea.exclude`
@@ -126,6 +126,8 @@ escopo da unidade.
   - `marketplace.refund`
   - `rbac.manage`
   - `reward.legacy.redeem` _(fluxo legado: `PUT /pense-aja/purchase/:registration`)_
+- `idea.submit` pode existir no modelo RBAC por compatibilidade, mas o cadastro
+  público de ideias não exige essa permissão.
 - O backend resolve papéis e permissões a cada request autenticado, sem snapshot persistido.
 - `funcao` permanece no JWT e em dados de perfil como atributo legado de
   identidade, não como fonte autorizadora principal.

@@ -54,6 +54,7 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 ### Modelo-alvo
 
 - continua sendo o ponto de entrada do fluxo
+- o envio de ideia é público e não depende de sessão autenticada
 - a UI deve apresentar feedback claro para sucesso, duplicidade ou rejeição
 - a integridade final do cadastro continua sendo do backend
 

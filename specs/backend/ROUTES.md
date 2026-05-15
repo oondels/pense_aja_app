@@ -65,8 +65,9 @@ Ele deve ser lido como referência operacional do que está implementado em
 ### `POST /pense-aja/:dassOffice`
 
 - Cria uma ideia Pense Aja na unidade informada.
-- Exige `verifyToken` e permissão `idea.submit`.
+- Não exige autenticação.
 - Valida campos obrigatórios do cadastro.
+- Valida unidade, payload e dados do colaborador no backend.
 - Usa lock transacional para reduzir duplicidade por matrícula, projeto, data realizada e unidade.
 - Quando encontra duplicidade, retorna a ideia existente sem criar novo registro.
 - Registra evento `idea.created` para novos cadastros.

@@ -250,14 +250,12 @@ paths:
       tags: [Pense Aja]
       summary: Criar ideia
       description: >
-        Cadastra uma nova ideia na unidade Dass. Exige token válido e permissão
-        `idea.submit` para a unidade. O backend gera auditoria e notificação ao
-        gerente quando aplicável.
+        Cadastra uma nova ideia na unidade Dass. A rota é pública e não exige
+        autenticação. O backend valida unidade, payload, colaborador e
+        duplicidade, além de gerar auditoria e notificação ao gerente quando
+        aplicável.
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
-        - $ref: "#/components/parameters/CookieHeader"
-      security:
-        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -290,10 +288,6 @@ paths:
                 id: 101
         "400":
           $ref: "#/components/responses/ValidationError"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -793,7 +787,6 @@ paths:
                 registration: "1234567"
                 dassOffice: "SEST"
                 permissions:
-                  - "idea.submit"
                   - "marketplace.request.create"
                 roles:
                   - code: "idea_submitter"
