@@ -20,7 +20,6 @@ import PenseAjaPremiosEntity from "./PenseAjaPremios";
 import RbacPermissionEntity from "./RbacPermission";
 import RbacRoleEntity from "./RbacRole";
 import RbacRolePermissionEntity from "./RbacRolePermission";
-import RbacSessionSnapshotEntity from "./RbacSessionSnapshot";
 import RbacUserUnitRoleEntity from "./RbacUserUnitRole";
 import RbacUserEntity from "./RbacUser";
 import UnitConfigEntity from "./UnitConfig";
@@ -51,7 +50,6 @@ export {
   RbacPermissionEntity,
   RbacRoleEntity,
   RbacRolePermissionEntity,
-  RbacSessionSnapshotEntity,
   RbacUserUnitRoleEntity,
   RbacUserEntity,
   UnitConfigEntity,
@@ -80,7 +78,6 @@ export const entities = [
   RbacPermissionEntity,
   RbacRolePermissionEntity,
   RbacUserUnitRoleEntity,
-  RbacSessionSnapshotEntity,
   RbacUserEntity,
   UnitConfigEntity,
   UnitMarketplacePolicyEntity,

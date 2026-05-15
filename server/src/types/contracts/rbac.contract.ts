@@ -23,7 +23,8 @@ export interface RbacAssignmentRecord {
 export interface CreateRbacAssignmentInput {
   registration: string;
   dassOffice: DassOffice;
-  roleCode: string;
+  roleCode?: string;
+  roleCodes?: string[];
   active?: boolean;
   activeFrom?: string | Date | null;
   activeUntil?: string | Date | null;
@@ -34,4 +35,12 @@ export interface UpdateRbacAssignmentInput {
   active?: boolean;
   activeFrom?: string | Date | null;
   activeUntil?: string | Date | null;
+}
+
+export interface RbacAssignmentFilters {
+  registration?: string;
+  dassOffice?: string;
+  roleCode?: string;
+  active?: string;
+  search?: string;
 }

@@ -26,8 +26,6 @@ export const rbacService = {
   },
 
   async deleteAssignment(id, dassOffice) {
-    await api.delete(`/user/rbac/assignments/${id}`, {
-      params: { dassOffice },
-    })
+    await api.delete(`/user/rbac/assignments/${id}`)
   },
 }

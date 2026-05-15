@@ -19,13 +19,12 @@ describe("requirePermission", () => {
   it("should attach authContext and call next when permission is granted", async () => {
     const middleware = requirePermission("idea.evaluate", () => "SEST");
     const context = {
-      sessionKey: "session",
       registration: "123",
       username: "tester",
       dassOffice: "SEST" as const,
       permissions: ["idea.evaluate"],
-      snapshotVersion: 1,
-      snapshotExpiresAt: new Date(),
+      roles: [],
+      unitConfig: {} as any,
     };
 
     vi.spyOn(AuthorizationService, "resolveSessionContext").mockResolvedValue(context);
@@ -80,13 +79,12 @@ describe("requirePermission", () => {
       () => "SEST"
     );
     const context = {
-      sessionKey: "session",
       registration: "123",
       username: "tester",
       dassOffice: "SEST" as const,
       permissions: ["marketplace.request.approve"],
-      snapshotVersion: 1,
-      snapshotExpiresAt: new Date(),
+      roles: [],
+      unitConfig: {} as any,
     };
 
     vi.spyOn(AuthorizationService, "resolveSessionContext").mockResolvedValue(context);
@@ -147,13 +145,12 @@ describe("requirePermission", () => {
       () => "456"
     );
     const context = {
-      sessionKey: "session",
       registration: "123",
       username: "tester",
       dassOffice: "SEST" as const,
       permissions: ["marketplace.request.approve"],
-      snapshotVersion: 1,
-      snapshotExpiresAt: new Date(),
+      roles: [],
+      unitConfig: {} as any,
     };
 
     vi.spyOn(AuthorizationService, "resolveSessionContext").mockResolvedValue(context);

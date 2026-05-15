@@ -11,53 +11,31 @@ const router = Router();
 router.get(
   "/rbac/roles",
   verifyToken,
-  requirePermission("rbac.manage", (req) => {
-    const office = req.query.dassOffice;
-    return typeof office === "string" ? office : undefined;
-  }),
   UserPenseajaController.listRbacRoles
 );
 router.get(
   "/rbac/assignments",
   verifyToken,
-  requirePermission("rbac.manage", (req) => {
-    const office = req.query.dassOffice;
-    return typeof office === "string" ? office : undefined;
-  }),
   UserPenseajaController.listRbacAssignments
 );
 router.get(
   "/rbac/assignments/:id",
   verifyToken,
-  requirePermission("rbac.manage", (req) => {
-    const office = req.query.dassOffice;
-    return typeof office === "string" ? office : undefined;
-  }),
   UserPenseajaController.getRbacAssignmentById
 );
 router.post(
   "/rbac/assignments",
   verifyToken,
-  requirePermission("rbac.manage", (req) => req.body?.dassOffice),
   UserPenseajaController.createRbacAssignment
 );
 router.put(
   "/rbac/assignments/:id",
   verifyToken,
-  requirePermission("rbac.manage", (req) => {
-    const office =
-      req.body?.dassOffice ?? req.query.dassOffice;
-    return typeof office === "string" ? office : undefined;
-  }),
   UserPenseajaController.updateRbacAssignment
 );
 router.delete(
   "/rbac/assignments/:id",
   verifyToken,
-  requirePermission("rbac.manage", (req) => {
-    const office = req.query.dassOffice;
-    return typeof office === "string" ? office : undefined;
-  }),
   UserPenseajaController.deleteRbacAssignment
 );
 router.get(
