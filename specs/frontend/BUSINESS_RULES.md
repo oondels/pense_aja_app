@@ -107,7 +107,8 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 
 ## Marketplace e recompensas
 
-- resgate usa uma rota autenticada de compra
+- resgate exige usuário logado, mas não depende de permissão RBAC específica
+- solicitação de resgate deve usar a matrícula autenticada e não permitir resgate em nome de terceiros
 - criação e edição de produto já existem em módulos próprios
 - catálogo administrativo usa cards ou lista editável e modal de cadastro com upload de imagem
 - feedback de cadastro e edição do catálogo usa `Notification.vue`

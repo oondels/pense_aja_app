@@ -18,7 +18,6 @@ router.put(
 router.post(
   "/requests",
   verifyToken,
-  requirePermission("marketplace.request.create", (req) => req.body?.dassOffice),
   MarketplaceController.createRequest
 );
 router.get("/requests/public", MarketplaceController.listPublicRequests);

@@ -545,8 +545,8 @@ paths:
       summary: Solicitar resgate no marketplace
       description: >
         Cria solicitação de resgate, reserva pontos no ledger e deixa a
-        solicitação em `pending_approval`. Exige token válido e permissão
-        `marketplace.request.create` na unidade.
+        solicitação em `pending_approval`. Exige token válido; qualquer usuário
+        autenticado pode solicitar resgate para a própria matrícula.
       parameters:
         - $ref: "#/components/parameters/CookieHeader"
       security:
@@ -560,8 +560,6 @@ paths:
             example:
               dassOffice: "SEST"
               catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
-              registration: 1234567
-              requesterName: "Maria Souza"
               reason: "Resgate de premiação por pontos acumulados."
       responses:
         "201":
@@ -587,8 +585,6 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
     get:
@@ -787,10 +783,10 @@ paths:
                 registration: "1234567"
                 dassOffice: "SEST"
                 permissions:
-                  - "marketplace.request.create"
+                  - "marketplace.request.approve"
                 roles:
-                  - code: "idea_submitter"
-                    nome: "Colaborador que cadastra ideias"
+                  - code: "marketplace_operator"
+                    nome: "Operador do marketplace"
                     dassOffice: "SEST"
                 unitConfig:
                   dassOffice: "SEST"
@@ -2092,8 +2088,12 @@ components:
           oneOf:
             - type: string
             - type: integer
+          deprecated: true
+          description: Ignorado na criação de solicitação; o backend usa a matrícula do token autenticado.
         requesterName:
           type: string
+          deprecated: true
+          description: Ignorado na criação de solicitação; o backend usa a identidade autenticada.
         reason:
           type: string
     MarketplaceTransitionInput:

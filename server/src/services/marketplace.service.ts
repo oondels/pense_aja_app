@@ -23,6 +23,11 @@ import { AuditService } from "./audit.service";
 import { LedgerService } from "./ledger.service";
 import { VoucherAdapterService } from "./voucher-adapter.service";
 
+interface MarketplaceRequestActor {
+  registration: string;
+  username: string;
+}
+
 const mapCatalogRow = (
   row: Record<string, unknown>
 ): MarketplaceCatalogItemRecord => ({
@@ -282,10 +287,10 @@ export const MarketplaceService = {
 
   async createRequest(
     input: CreateMarketplaceRequestInput,
-    actor: AuthenticatedSessionContext
+    actor: MarketplaceRequestActor
   ): Promise<MarketplaceRequestRecord> {
     const validDassOffice = assertDassOffice(input.dassOffice);
-    const registration = String(input.registration ?? actor.registration);
+    const registration = String(actor.registration);
     const dataSource = await initializeDatabase();
     const queryRunner = dataSource.createQueryRunner();
 
@@ -383,7 +388,7 @@ export const MarketplaceService = {
         aggregateId: request.id,
         dassOffice: validDassOffice,
         actorRegistration: actor.registration,
-        actorRole: "marketplace.request.create",
+        actorRole: "authenticated_user",
         reason: input.reason ?? null,
         afterState: {
           request_status: "pending_approval",

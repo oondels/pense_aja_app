@@ -14,6 +14,17 @@ const getAuthContext = (req: Request) => {
   return req.authContext;
 };
 
+const getAuthenticatedActor = (req: Request) => {
+  if (!req.user?.matricula) {
+    throw new Error("Usuário autenticado não encontrado.");
+  }
+
+  return {
+    registration: String(req.user.matricula),
+    username: req.user.usuario,
+  };
+};
+
 export const MarketplaceController = {
   async listCatalog(req: Request, res: Response, next: NextFunction) {
     try {
@@ -41,7 +52,7 @@ export const MarketplaceController = {
     try {
       const result = await MarketplaceService.createRequest(
         req.body as CreateMarketplaceRequestInput,
-        getAuthContext(req)
+        getAuthenticatedActor(req)
       );
       res.status(201).json(result);
     } catch (error) {

@@ -84,13 +84,19 @@ describe("MarketplaceService", () => {
       {
         registration: "operator",
         username: "Operador",
-        dassOffice: "SEST",
-        permissions: ["marketplace.request.create"],
-        roles: [],
-        unitConfig: {} as any,
       }
     );
 
     expect(calls.slice(0, 2)).toEqual(["sync-projection", "lock-balance"]);
+    expect(LedgerService.syncBalanceProjection).toHaveBeenCalledWith(
+      queryRunner,
+      "operator",
+      "SEST"
+    );
+    expect(requestRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        matricula: "operator",
+      })
+    );
   });
 });

@@ -46,7 +46,8 @@ Consumido por `api` e `commonApi`.
 
 - `api` é reservado para chamadas autenticadas que devem participar da lógica de refresh
 - `commonApi` faz chamadas sem esse interceptor
-- o cadastro de ideia usa `commonApi` e endpoint público; avaliação, perfil, marketplace autenticado e administração continuam usando permissões
+- o cadastro de ideia usa `commonApi` e endpoint público; avaliação, perfil e administração continuam usando permissões
+- solicitação de resgate no marketplace usa `api` por exigir login, mas não exige permissão RBAC específica
 
 ### Evolução esperada
 

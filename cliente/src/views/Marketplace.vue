@@ -20,22 +20,6 @@
         </router-link>
       </header>
 
-      <div class="container">
-        <span>Matrícula:</span>
-
-        <div class="row">
-          <v-text-field
-            placeholder="Digite sua matrícula"
-            variant="outlined"
-            v-model="matriculaUser"
-            @keyup.enter="handleUserData($event, false)"
-            class="col-md-8"
-          ></v-text-field>
-
-          <v-btn class="col-md-4" variant="outlined" @click="handleUserData($event, true)">Buscar</v-btn>
-        </div>
-      </div>
-
       <!-- User Info -->
       <div v-if="Object.keys(userData).length > 0" class="mb-6">
         <div class="flex items-center bg-white rounded-lg shadow p-4 space-x-4">
@@ -48,7 +32,7 @@
         </div>
       </div>
 
-      <PointBalanceSummary :user-data="userData" />
+      <PointBalanceSummary v-if="Object.keys(userData).length > 0" :user-data="userData" />
 
       <div v-if="loading" class="flex items-center justify-center gap-2 rounded-lg bg-white py-12 text-gray-600">
         <i class="mdi mdi-loading mdi-spin text-xl"></i>
@@ -173,6 +157,8 @@ const dassOffice = computed(() => userStore.dassOffice || localStorage.getItem("
 const availableBalance = computed(() =>
   Number(userData.value.saldo_disponivel ?? userData.value.availableBalance ?? 0),
 );
+const authenticatedRegistration = computed(() => String(userStore.matricula || ""));
+const displayedRegistration = computed(() => String(userData.value?.matricula || ""));
 const feedbackClass = computed(() =>
   feedbackType.value === "success"
     ? "border-green-200 bg-green-50 text-green-800"
@@ -215,7 +201,8 @@ const canRequest = (item) => {
   const hasStock =
     item.availableQuantity === null || item.availableQuantity === undefined || Number(item.availableQuantity) > 0;
   return (
-    userStore.hasPermission("marketplace.request.create") &&
+    Boolean(authenticatedRegistration.value) &&
+    displayedRegistration.value === authenticatedRegistration.value &&
     hasStock &&
     availableBalance.value >= Number(item.pointsCost || 0)
   );
@@ -224,6 +211,16 @@ const canRequest = (item) => {
 const popupResgate = ref(false);
 const handleRequestReward = (item) => {
   if (!canRequest(item)) {
+    if (!authenticatedRegistration.value) {
+      notification.value.showPopup("error", "Erro!", "Faça login para solicitar um resgate.");
+      return;
+    }
+
+    if (displayedRegistration.value !== authenticatedRegistration.value) {
+      notification.value.showPopup("error", "Erro!", "O resgate só pode ser solicitado para o usuário autenticado.");
+      return;
+    }
+
     notification.value.showPopup("error", "Erro!", "Você não tem pontos suficientes ou o item está sem estoque.");
     return;
   }

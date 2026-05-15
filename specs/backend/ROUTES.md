@@ -230,8 +230,9 @@ Ele deve ser lido como referência operacional do que está implementado em
 ### `POST /marketplace/requests`
 
 - Cria solicitação de resgate.
-- Exige `verifyToken` e permissão `marketplace.request.create`.
-- Usa `registration` do corpo quando enviado; caso contrário, usa a matrícula do ator autenticado.
+- Exige `verifyToken`.
+- Qualquer usuário autenticado pode criar solicitação para a própria matrícula.
+- Ignora `registration` e `requesterName` enviados no corpo para evitar solicitação em nome de terceiros.
 - Valida item ativo, disponibilidade e saldo disponível.
 - Bloqueia `points_balance_projection` com `FOR UPDATE`.
 - Cria lançamento `reserve` no ledger.

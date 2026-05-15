@@ -121,13 +121,14 @@ escopo da unidade.
   - `idea.evaluate`
   - `idea.exclude`
   - `catalog.manage`
-  - `marketplace.request.create`
   - `marketplace.request.approve`
   - `marketplace.refund`
   - `rbac.manage`
   - `reward.legacy.redeem` _(fluxo legado: `PUT /pense-aja/purchase/:registration`)_
 - `idea.submit` pode existir no modelo RBAC por compatibilidade, mas o cadastro
   público de ideias não exige essa permissão.
+- `marketplace.request.create` pode existir no modelo RBAC por compatibilidade,
+  mas a criação de solicitação de resgate exige apenas usuário autenticado.
 - O backend resolve papéis e permissões a cada request autenticado, sem snapshot persistido.
 - `funcao` permanece no JWT e em dados de perfil como atributo legado de
   identidade, não como fonte autorizadora principal.
@@ -189,6 +190,10 @@ escopo da unidade.
 - `pense_aja.pense_aja_premios` permanece como histórico/backfill.
 - Antes de validar saldo, o backend sincroniza `points_balance_projection` e
   bloqueia o registro com `FOR UPDATE`.
+- Qualquer usuário autenticado pode criar solicitação de resgate para a própria
+  matrícula; `marketplace.request.create` não é exigida nesse fluxo.
+- A criação de solicitação ignora matrícula enviada no corpo e usa a matrícula
+  do token autenticado.
 - Solicitação valida item ativo, disponibilidade e saldo disponível.
 - Solicitação cria `reserve` e entra como `pending_approval`.
 - Aprovação exige `marketplace.request.approve`, cria `commit` e conclui a
