@@ -122,8 +122,8 @@
         >
         <v-btn @click="handleRegisterClick"><i class="mdi mdi-lightbulb-on-outline text-xl"></i> Registrar</v-btn>
         <v-btn @click="handleLoginClick">
-          <i :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'" class="text-xl"></i>
-          {{ user?.matricula ? "Sair" : "Entrar" }}
+          <i :class="user?.matricula ? 'mdi mdi-account-circle' : 'mdi mdi-account-circle'" class="text-xl"></i>
+          {{ user?.matricula ? "Perfil" : "Entrar" }}
         </v-btn>
       </v-bottom-navigation>
     </v-layout>

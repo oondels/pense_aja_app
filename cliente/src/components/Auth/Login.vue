@@ -8,8 +8,8 @@
           id="openUser"
           class="flex items-center space-x-2 px-4 py-2 rounded-lg shadow transition bg-white text-gray-800 hover:bg-gray-100"
         >
-          <i :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'" class="icon fs-4"></i>
-          <span class="">{{ user?.matricula ? "Sair" : "Login" }}</span>
+          <i :class="user?.matricula ? 'mdi mdi-account-circle' : 'mdi mdi-account-circle'" class="icon fs-4"></i>
+          <span class="">{{ user?.matricula ? "Perfil" : "Login" }}</span>
         </button>
 
         <button v-else @click="handleUserData" v-bind="activatorProps" class="mobile-action-button">
