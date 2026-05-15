@@ -63,7 +63,7 @@ Tabelas atuais:
 
 ## Modelo-alvo implementado no corte direto
 
-Novas tabelas criadas a partir do corte direto usam `id uuid DEFAULT uuid_generate_v4()` como chave primária. Tabelas legadas ou fundações já aplicadas com `bigint` mantêm seus tipos para evitar migração destrutiva.
+Novas tabelas criadas a partir do corte direto usam `id uuid DEFAULT gen_random_uuid()` como chave primária. Tabelas legadas ou fundações já aplicadas com `bigint` mantêm seus tipos para evitar migração destrutiva.
 
 ## 1. Autorização por unidade
 
@@ -97,11 +97,6 @@ Novas tabelas criadas a partir do corte direto usam `id uuid DEFAULT uuid_genera
 
 - atribui papel ao usuário dentro de uma unidade
 - permite vigência e ativação
-
-### `rbac_session_snapshots`
-
-- snapshot curto de permissões por sessão
-- inclui versão, escopo de unidade e expiração
 
 ## 2. Workflow e configuração por unidade
 
