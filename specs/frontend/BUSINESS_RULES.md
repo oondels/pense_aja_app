@@ -14,8 +14,8 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 ### Modelo-alvo
 
 - a sessão continua vindo do auth externo
-- o frontend deve consumir snapshot de permissões e contexto já resolvidos pelo backend
-- esse snapshot serve para UX, nunca para substituir validação do servidor
+- o frontend deve consumir permissões, papéis e contexto já resolvidos pelo backend
+- esse contexto serve para UX, nunca para substituir validação do servidor
 
 ## Unidade Dass
 
@@ -40,7 +40,8 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 
 - permissões devem ser tratadas como dados derivados do backend
 - papéis e ações podem variar por unidade
-- a UI pode ocultar ou exibir ações com base no snapshot da sessão, mas a decisão final permanece no backend
+- a UI pode ocultar ou exibir ações com base no contexto da sessão, mas a decisão final permanece no backend
+- na tela RBAC, filtros de pesquisa são assistivos; escopo de unidade e hierarquia de papéis são sempre impostos pelo backend
 
 ## Cadastro de ideia
 

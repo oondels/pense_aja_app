@@ -82,13 +82,12 @@ describe("MarketplaceService", () => {
         catalogItemId: "catalog-1",
       },
       {
-        sessionKey: "session",
         registration: "operator",
         username: "Operador",
         dassOffice: "SEST",
         permissions: ["marketplace.request.create"],
-        snapshotVersion: 1,
-        snapshotExpiresAt: new Date(),
+        roles: [],
+        unitConfig: {} as any,
       }
     );
 

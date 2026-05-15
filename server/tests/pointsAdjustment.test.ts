@@ -9,13 +9,12 @@ import { AuditService } from "../src/services/audit.service";
 import { LedgerService } from "../src/services/ledger.service";
 
 const ACTOR = {
-  sessionKey: "key",
   registration: "9999999",
   username: "Admin",
   dassOffice: "SEST" as const,
   permissions: ["points.adjust"],
-  snapshotVersion: 1,
-  snapshotExpiresAt: new Date(),
+  roles: [],
+  unitConfig: {} as any,
 };
 
 const buildQueryRunner = (projectionRepo: object) =>

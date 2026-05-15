@@ -105,7 +105,9 @@ const canManageRole = (
   scope: RbacAdminScope,
   dassOffice: DassOffice,
   roleCode: string
-) => getAllowedRolesForOffice(scope, dassOffice).has(roleCode);
+) => {
+  return getAllowedRolesForOffice(scope, dassOffice).has(roleCode);
+}
 
 const assertCanManageRole = (
   scope: RbacAdminScope,

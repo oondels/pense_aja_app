@@ -191,17 +191,15 @@ export const UserPenseajaController = {
 
       const context = await AuthorizationService.resolveSessionContext(
         req.user,
-        dassOffice,
-        req.cookies.token
+        dassOffice
       );
 
       res.status(200).json({
         registration: context.registration,
         dassOffice: context.dassOffice,
         permissions: context.permissions,
+        roles: context.roles,
         unitConfig: context.unitConfig,
-        snapshotVersion: context.snapshotVersion,
-        snapshotExpiresAt: context.snapshotExpiresAt.toISOString(),
       });
     } catch (error) {
       next(error);
@@ -210,7 +208,12 @@ export const UserPenseajaController = {
 
   async listRbacRoles(req: Request, res: Response, next: NextFunction) {
     try {
-      const roles = await RbacAdminService.listRoles();
+      if (!req.user) {
+        res.status(401).json({ message: "Usuário não autenticado." });
+        return;
+      }
+
+      const roles = await RbacAdminService.listRoles(req.user);
       res.status(200).json(roles);
     } catch (error) {
       next(error);
@@ -219,12 +222,19 @@ export const UserPenseajaController = {
 
   async listRbacAssignments(req: Request, res: Response, next: NextFunction) {
     try {
-      const { registration, dassOffice, active } = req.query;
-      const assignments = await RbacAdminService.listAssignments({
+      if (!req.user) {
+        res.status(401).json({ message: "Usuário não autenticado." });
+        return;
+      }
+
+      const { registration, dassOffice, roleCode, active, search } = req.query;
+      const assignments = await RbacAdminService.listAssignments(req.user, {
         registration:
           typeof registration === "string" ? registration : undefined,
         dassOffice: typeof dassOffice === "string" ? dassOffice : undefined,
+        roleCode: typeof roleCode === "string" ? roleCode : undefined,
         active: typeof active === "string" ? active : undefined,
+        search: typeof search === "string" ? search : undefined,
       });
 
       res.status(200).json(assignments);
@@ -235,8 +245,13 @@ export const UserPenseajaController = {
 
   async getRbacAssignmentById(req: Request, res: Response, next: NextFunction) {
     try {
+      if (!req.user) {
+        res.status(401).json({ message: "Usuário não autenticado." });
+        return;
+      }
+
       const { id } = req.params;
-      const assignment = await RbacAdminService.getAssignmentById(id);
+      const assignment = await RbacAdminService.getAssignmentById(req.user, id);
       res.status(200).json(assignment);
     } catch (error) {
       next(error);
@@ -245,9 +260,15 @@ export const UserPenseajaController = {
 
   async createRbacAssignment(req: Request, res: Response, next: NextFunction) {
     try {
+      if (!req.user) {
+        res.status(401).json({ message: "Usuário não autenticado." });
+        return;
+      }
+
       const payload = req.body as CreateRbacAssignmentInput;
-      const assignment = await RbacAdminService.createAssignment(payload);
-      res.status(201).json(assignment);
+
+      const assignments = await RbacAdminService.createAssignment(req.user, payload);
+      res.status(201).json(assignments);
     } catch (error) {
       next(error);
     }
@@ -255,9 +276,14 @@ export const UserPenseajaController = {
 
   async updateRbacAssignment(req: Request, res: Response, next: NextFunction) {
     try {
+      if (!req.user) {
+        res.status(401).json({ message: "Usuário não autenticado." });
+        return;
+      }
+
       const { id } = req.params;
       const payload = req.body as UpdateRbacAssignmentInput;
-      const assignment = await RbacAdminService.updateAssignment(id, payload);
+      const assignment = await RbacAdminService.updateAssignment(req.user, id, payload);
       res.status(200).json(assignment);
     } catch (error) {
       next(error);
@@ -266,8 +292,13 @@ export const UserPenseajaController = {
 
   async deleteRbacAssignment(req: Request, res: Response, next: NextFunction) {
     try {
+      if (!req.user) {
+        res.status(401).json({ message: "Usuário não autenticado." });
+        return;
+      }
+
       const { id } = req.params;
-      await RbacAdminService.deleteAssignment(id);
+      await RbacAdminService.deleteAssignment(req.user, id);
       res.status(204).send();
     } catch (error) {
       next(error);

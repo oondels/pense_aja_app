@@ -42,7 +42,7 @@ Use este arquivo como mapa de alto nível. Para detalhes operacionais:
 
 ### Autorização
 
-- papéis, permissões, escopo por unidade e snapshot curto por sessão
+- papéis, permissões e escopo por unidade resolvidos pelo backend
 
 ### Ledger de pontuação
 
@@ -85,7 +85,7 @@ O frontend continua como consumidor da API e camada de experiência. Ele não de
 
 - capturar entrada do usuário
 - exibir status e histórico já resolvidos pelo backend
-- consumir snapshot de sessão e permissões derivadas
+- consumir contexto de sessão e permissões derivadas
 - apresentar saldo disponível e andamento de resgates
 
 ### Restrições
@@ -129,7 +129,7 @@ O backend é o ponto central de consistência do produto.
 ### Redis
 
 - blacklist de token
-- pode apoiar snapshot curto de permissões por sessão
+- apoia blacklist de token e revogação de sessão
 
 ### RabbitMQ
 

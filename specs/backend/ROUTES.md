@@ -124,49 +124,49 @@ Ele deve ser lido como referência operacional do que está implementado em
 ### `GET /user/session-context/:dassOffice`
 
 - Exige `verifyToken`.
-- Resolve permissões efetivas do usuário para a unidade.
-- Persiste snapshot curto em `rbac_session_snapshots`.
-- Retorna matrícula, unidade, permissões, configuração efetiva da unidade, versão e expiração do snapshot.
+- Resolve permissões e papéis efetivos do usuário para a unidade diretamente pelo RBAC vigente.
+- `admin_master` ativo em qualquer unidade recebe escopo global de autorização.
+- Retorna matrícula, unidade, permissões, papéis e configuração efetiva da unidade.
 
 ### `GET /user/rbac/roles`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
-- Lista papéis RBAC disponíveis.
-- Usa `dassOffice` em query string para escopo de autorização.
+- Exige `verifyToken`.
+- Lista apenas papéis RBAC que o ator autenticado pode atribuir.
+- Escopo é resolvido pelo backend a partir da matrícula do JWT e dos vínculos RBAC ativos.
 
 ### `GET /user/rbac/assignments`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
-- Lista vínculos usuário/unidade/papel.
-- Aceita filtros opcionais `registration`, `dassOffice` e `active`.
+- Exige `verifyToken`.
+- Lista apenas vínculos usuário/unidade/papel dentro do escopo administrativo do ator.
+- Aceita filtros opcionais `registration`, `dassOffice`, `roleCode`, `active` e `search`.
+- `admin_master` pode listar todas as unidades; demais admins ficam restritos às suas unidades e papéis gerenciáveis.
 
 ### `GET /user/rbac/assignments/:id`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
+- Exige `verifyToken`.
 - Retorna um vínculo RBAC pelo identificador.
-- Usa `dassOffice` em query string para escopo de autorização.
+- Autoriza usando a unidade e o papel reais do vínculo carregado do banco.
 
 ### `POST /user/rbac/assignments`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
-- Cria vínculo de usuário, unidade e papel.
+- Exige `verifyToken`.
+- Cria um ou mais vínculos de usuário, unidade e papel.
+- Aceita `roleCodes` para cadastro batch e `roleCode` como compatibilidade.
 - Valida usuário de autenticação e papel RBAC.
-- Impede vínculo duplicado para a mesma matrícula, unidade e papel.
-- Invalida snapshots de sessão da matrícula na unidade afetada.
+- Ignora vínculos duplicados já existentes para a mesma matrícula, unidade e papel.
+- Rejeita o lote inteiro quando qualquer papel estiver fora do escopo administrativo do ator.
 
 ### `PUT /user/rbac/assignments/:id`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
+- Exige `verifyToken`.
 - Atualiza papel, status ativo e janela de vigência do vínculo.
-- Usa `dassOffice` do corpo ou da query string para escopo de autorização.
-- Invalida snapshots de sessão da matrícula na unidade afetada.
+- Autoriza pelo vínculo atual no banco e pelo novo papel solicitado, quando houver troca.
 
 ### `DELETE /user/rbac/assignments/:id`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
+- Exige `verifyToken`.
 - Remove vínculo RBAC.
-- Usa `dassOffice` em query string para escopo de autorização.
-- Invalida snapshots de sessão da matrícula na unidade afetada.
+- Autoriza pelo vínculo atual no banco; admins escopados não podem remover papéis fora de sua hierarquia.
 
 ### `GET /user/unidade/:registration`
 

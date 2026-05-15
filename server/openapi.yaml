@@ -775,8 +775,8 @@ paths:
       tags: [User]
       summary: Obter contexto de sessão por unidade
       description: >
-        Resolve permissões efetivas do usuário autenticado na unidade e persiste
-        snapshot curto de autorização. Exige token válido.
+        Resolve permissões e papéis efetivos do usuário autenticado na unidade,
+        sem snapshot persistido. Exige token válido.
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
         - $ref: "#/components/parameters/CookieHeader"
@@ -795,6 +795,10 @@ paths:
                 permissions:
                   - "idea.submit"
                   - "marketplace.request.create"
+                roles:
+                  - code: "idea_submitter"
+                    nome: "Colaborador que cadastra ideias"
+                    dassOffice: "SEST"
                 unitConfig:
                   dassOffice: "SEST"
                   active: true
@@ -805,8 +809,6 @@ paths:
                       score: 4
                       displayOrder: 1
                       active: true
-                snapshotVersion: 3
-                snapshotExpiresAt: "2026-04-22T13:00:00.000Z"
         "400":
           $ref: "#/components/responses/ValidationError"
         "401":
@@ -821,10 +823,9 @@ paths:
       tags: [RBAC]
       summary: Listar papéis RBAC
       description: >
-        Lista papéis disponíveis para administração de permissões. Exige token
-        válido e permissão `rbac.manage`.
+        Lista apenas papéis disponíveis no escopo administrativo do ator
+        autenticado. Exige token válido.
       parameters:
-        - $ref: "#/components/parameters/DassOfficeQueryOptional"
         - $ref: "#/components/parameters/CookieHeader"
       security:
         - cookieAuth: []
@@ -855,8 +856,8 @@ paths:
       tags: [RBAC]
       summary: Listar vínculos RBAC
       description: >
-        Lista vínculos usuário/unidade/papel com filtros opcionais. Exige token
-        válido e permissão `rbac.manage`.
+        Lista vínculos usuário/unidade/papel dentro do escopo administrativo do
+        ator autenticado, com filtros opcionais. Exige token válido.
       parameters:
         - $ref: "#/components/parameters/DassOfficeQueryOptional"
         - name: registration
@@ -872,6 +873,18 @@ paths:
             type: string
             enum: ["true", "false"]
           description: Filtra vínculos ativos ou inativos.
+        - name: roleCode
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Código do papel para filtro.
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Busca livre por matrícula, unidade, código ou nome do papel.
         - $ref: "#/components/parameters/CookieHeader"
       security:
         - cookieAuth: []
@@ -908,8 +921,8 @@ paths:
       tags: [RBAC]
       summary: Criar vínculo RBAC
       description: >
-        Cria vínculo usuário/unidade/papel. Exige token válido e permissão
-        `rbac.manage` na unidade enviada no payload.
+        Cria um ou mais vínculos usuário/unidade/papel dentro do escopo
+        administrativo do ator. Exige token válido.
       parameters:
         - $ref: "#/components/parameters/CookieHeader"
       security:
@@ -923,29 +936,31 @@ paths:
             example:
               registration: "1234567"
               dassOffice: "SEST"
-              roleCode: "analista"
+              roleCodes: ["idea_submitter", "marketplace_operator"]
               active: true
               activeFrom: "2026-04-22T12:00:00.000Z"
               activeUntil: null
       responses:
         "201":
-          description: Vínculo criado.
+          description: Vínculos criados ou já existentes.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RbacAssignment"
+                type: array
+                items:
+                  $ref: "#/components/schemas/RbacAssignment"
               example:
-                id: 11
-                registration: "1234567"
-                dassOffice: "SEST"
-                roleId: 2
-                roleCode: "analista"
-                roleName: "Analista"
-                active: true
-                activeFrom: "2026-04-22T12:00:00.000Z"
-                activeUntil: null
-                createdAt: "2026-04-22T12:00:00.000Z"
-                updatedAt: "2026-04-22T12:00:00.000Z"
+                - id: 11
+                  registration: "1234567"
+                  dassOffice: "SEST"
+                  roleId: 2
+                  roleCode: "idea_submitter"
+                  roleName: "Colaborador que cadastra ideias"
+                  active: true
+                  activeFrom: "2026-04-22T12:00:00.000Z"
+                  activeUntil: null
+                  createdAt: "2026-04-22T12:00:00.000Z"
+                  updatedAt: "2026-04-22T12:00:00.000Z"
         "400":
           $ref: "#/components/responses/ValidationError"
         "401":
@@ -960,11 +975,10 @@ paths:
       tags: [RBAC]
       summary: Consultar vínculo RBAC
       description: >
-        Retorna um vínculo RBAC por identificador. Exige token válido e permissão
-        `rbac.manage`.
+        Retorna um vínculo RBAC por identificador quando o vínculo está no
+        escopo administrativo do ator. Exige token válido.
       parameters:
         - $ref: "#/components/parameters/AssignmentIdPath"
-        - $ref: "#/components/parameters/DassOfficeQueryOptional"
         - $ref: "#/components/parameters/CookieHeader"
       security:
         - cookieAuth: []
@@ -999,11 +1013,10 @@ paths:
       tags: [RBAC]
       summary: Atualizar vínculo RBAC
       description: >
-        Atualiza papel, vigência ou status de um vínculo. Exige token válido e
-        permissão `rbac.manage`.
+        Atualiza papel, vigência ou status de um vínculo dentro do escopo
+        administrativo do ator. Exige token válido.
       parameters:
         - $ref: "#/components/parameters/AssignmentIdPath"
-        - $ref: "#/components/parameters/DassOfficeQueryOptional"
         - $ref: "#/components/parameters/CookieHeader"
       security:
         - cookieAuth: []
@@ -1049,11 +1062,10 @@ paths:
       tags: [RBAC]
       summary: Remover vínculo RBAC
       description: >
-        Remove ou inativa vínculo RBAC e invalida snapshots relacionados. Exige
-        token válido e permissão `rbac.manage`.
+        Remove vínculo RBAC dentro do escopo administrativo do ator. Exige
+        token válido.
       parameters:
         - $ref: "#/components/parameters/AssignmentIdPath"
-        - $ref: "#/components/parameters/DassOfficeQueryOptional"
         - $ref: "#/components/parameters/CookieHeader"
       security:
         - cookieAuth: []
@@ -2157,13 +2169,21 @@ components:
           type: array
           items:
             type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/SessionRole"
         unitConfig:
           $ref: "#/components/schemas/UnitSettings"
-        snapshotVersion:
-          type: integer
-        snapshotExpiresAt:
+    SessionRole:
+      type: object
+      properties:
+        code:
           type: string
-          format: date-time
+        nome:
+          type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
     UnitScoringRule:
       type: object
       properties:
@@ -2290,7 +2310,7 @@ components:
           format: date-time
     CreateRbacAssignmentInput:
       type: object
-      required: [registration, dassOffice, roleCode]
+      required: [registration, dassOffice]
       properties:
         registration:
           type: string
@@ -2298,6 +2318,11 @@ components:
           $ref: "#/components/schemas/DassOffice"
         roleCode:
           type: string
+          description: Compatibilidade legada para cadastro de um único papel.
+        roleCodes:
+          type: array
+          items:
+            type: string
         active:
           type: boolean
         activeFrom:

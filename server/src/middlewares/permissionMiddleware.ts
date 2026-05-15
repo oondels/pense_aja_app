@@ -21,8 +21,7 @@ export const requirePermission =
 
       const context = await AuthorizationService.resolveSessionContext(
         req.user,
-        dassOffice,
-        req.cookies.token
+        dassOffice
       );
 
       AuthorizationService.assertPermission(context, permission);
@@ -50,8 +49,7 @@ export const requireAnyPermission =
 
       const context = await AuthorizationService.resolveSessionContext(
         req.user,
-        dassOffice,
-        req.cookies.token
+        dassOffice
       );
 
       AuthorizationService.assertAnyPermission(context, permissions);
@@ -94,8 +92,7 @@ export const requireSelfOrPermission =
 
       const context = await AuthorizationService.resolveSessionContext(
         req.user,
-        dassOffice,
-        req.cookies.token
+        dassOffice
       );
 
       AuthorizationService.assertPermission(context, permission);

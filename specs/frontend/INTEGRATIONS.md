@@ -49,7 +49,7 @@ Consumido por `api` e `commonApi`.
 
 ### Evolução esperada
 
-- respostas do backend devem poder incluir snapshot de permissões, saldo consolidado e estado de resgate sem depender de cálculo local
+- respostas do backend devem poder incluir permissões, papéis, saldo consolidado e estado de resgate sem depender de cálculo local
 - marketplace expõe listagens paginadas para administração, consulta autenticada do próprio usuário e consulta pública por matrícula/unidade
 
 ## Upload Service
@@ -71,7 +71,7 @@ Usado pelo módulo de loja e pelo cadastro administrativo de novos itens do cat�
 
 ### Modelo-alvo
 
-- pode armazenar snapshot curto de permissões para UX
+- pode armazenar permissões e papéis retornados pelo backend para UX
 - não substitui a verificação do backend
 
 ### localStorage
