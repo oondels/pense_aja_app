@@ -450,7 +450,7 @@
                                 {{ item.gerente_aprovador ?? "Não avaliado" }}
                               </span>
 
-                              <span v-if="getUserPermission() && item.gerente_aprovador">
+                              <span v-if="canEvaluateIdeas && item.gerente_aprovador">
                                 Classificação: {{ item.classificacao || "Reprovado" }}
                               </span>
                             </div>
@@ -465,7 +465,7 @@
                                 {{ item.analista_avaliador ?? "Não avaliado" }}
                               </span>
 
-                              <span v-if="getUserPermission() && item.analista_avaliador">
+                              <span v-if="canEvaluateIdeas && item.analista_avaliador">
                                 Classificação:
                                 {{ item.classificacao || "Reprovado" }}
                               </span>
@@ -615,7 +615,7 @@
                       </div>
 
                       <!-- Avaliação -->
-                      <div class="avaliar-card-nivel" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
+                      <div class="avaliar-card-nivel" v-if="canEvaluateIdeas">
                         <div class="avaliar-card-header">
                           <i class="bi bi-trophy"></i>
                           <h3>Classificação do Pense<span class="avaliar-highlight">&</span>Aja</h3>
@@ -751,7 +751,7 @@
                       </div>
 
                       <!-- Flags -->
-                      <div class="avaliar-card-flags" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
+                      <div class="avaliar-card-flags" v-if="canEvaluateIdeas">
                         <div class="row p-3 d-flex justify-content-around align-items-center">
                           <label class="avaliar-toggle col-md-4">
                             <input type="checkbox" id="em-espera" v-model="emEspera" />
@@ -789,7 +789,7 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="avaliar-footer" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
+                    <div class="avaliar-footer" v-if="canEvaluateIdeas">
                       <div class="avaliar-actions">
                         <button
                           @click="handleEvaluationValue('approve', item, isActive)"
@@ -854,8 +854,6 @@ import { RecycleScroller } from "vue-virtual-scroller";
 import { useUserStore } from "@/stores/userStore";
 import { evaluatePenseAja } from "@/services/evaluatePenseAjaService";
 import Notification from "./Notification.vue";
-import { getUserPermission } from "@/services/userService";
-import { setUserRole } from "@/services/userService";
 import { formateName } from "@/services/userService";
 import { commonApi } from "@/services/httpClient.js";
 import Loading from "@/components/Loading.vue";
@@ -1005,22 +1003,7 @@ function setupWatchers() {
 
 // Carrega dados do usuario se estiver logado
 const user = useUserStore();
-
-const checkRoleAndEvaluation = (penseAja) => {
-  if (penseAja.em_espera === "1") {
-    return true;
-  }
-
-  if (setUserRole(user) === "analista" && penseAja.analista_avaliador) {
-    return false;
-  }
-
-  if (setUserRole(user) === "analista" && penseAja.status_gerente === "reprove") {
-    return false;
-  }
-
-  return true;
-};
+const canEvaluateIdeas = computed(() => user.hasPermission("idea.evaluate"));
 
 const filters = reactive({
   name: [],
