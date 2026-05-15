@@ -160,8 +160,11 @@ Ele deve ser lido como referência operacional do que está implementado em
 ### `PUT /user/rbac/assignments/:id`
 
 - Exige `verifyToken`.
-- Atualiza papel, status ativo e janela de vigência do vínculo.
-- Autoriza pelo vínculo atual no banco e pelo novo papel solicitado, quando houver troca.
+- Atualiza status ativo e janela de vigência do vínculo.
+- Aceita `roleCodes` para adicionar/atualizar múltiplos papéis da mesma matrícula/unidade identificada pelo vínculo informado.
+- Aceita `roleCode` como compatibilidade para troca de um único vínculo.
+- Não remove nem desativa papéis omitidos em `roleCodes`.
+- Autoriza pelo vínculo atual no banco e por todos os papéis solicitados.
 
 ### `DELETE /user/rbac/assignments/:id`
 

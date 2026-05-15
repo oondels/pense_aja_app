@@ -93,6 +93,18 @@ const normalizeRoleCodes = (input: CreateRbacAssignmentInput) => {
   return [...new Set(roleCodes.map((roleCode) => String(roleCode).trim()).filter(Boolean))];
 };
 
+const normalizeUpdateRoleCodes = (input: UpdateRbacAssignmentInput) => {
+  if (Array.isArray(input.roleCodes)) {
+    return [
+      ...new Set(
+        input.roleCodes.map((roleCode) => String(roleCode).trim()).filter(Boolean)
+      ),
+    ];
+  }
+
+  return input.roleCode ? [String(input.roleCode).trim()].filter(Boolean) : [];
+};
+
 const getAllowedRolesForOffice = (scope: RbacAdminScope, dassOffice: DassOffice) => {
   if (scope.isMaster) {
     return new Set(MANAGEABLE_ROLES_BY_ADMIN_ROLE.admin_master);
@@ -106,8 +118,12 @@ const canManageRole = (
   dassOffice: DassOffice,
   roleCode: string
 ) => {
+  if (scope.isMaster) {
+    return true;
+  }
+
   return getAllowedRolesForOffice(scope, dassOffice).has(roleCode);
-}
+};
 
 const assertCanManageRole = (
   scope: RbacAdminScope,
@@ -205,19 +221,23 @@ export const RbacAdminService = {
   async listRoles(actor: DecodedToken): Promise<RbacRoleRecord[]> {
     const dataSource = await initializeDatabase();
     const scope = await this.resolveAdminScope(actor);
-    const allowedRoles = scope.isMaster
-      ? MANAGEABLE_ROLES_BY_ADMIN_ROLE.admin_master
-      : [...new Set([...scope.rolesByOffice.values()].flatMap((roles) => [...roles]))];
 
-    const roles = await dataSource
+    const query = dataSource
       .getRepository(RbacRoleEntity)
       .createQueryBuilder("role")
       .select("role.id", "id")
       .addSelect("role.code", "code")
       .addSelect("role.nome", "nome")
-      .where("role.code IN (:...allowedRoles)", { allowedRoles })
-      .orderBy("role.code", "ASC")
-      .getRawMany<RbacRoleRecord>();
+      .orderBy("role.code", "ASC");
+
+    if (!scope.isMaster) {
+      const allowedRoles = [
+        ...new Set([...scope.rolesByOffice.values()].flatMap((roles) => [...roles])),
+      ];
+      query.where("role.code IN (:...allowedRoles)", { allowedRoles });
+    }
+
+    const roles = await query.getRawMany<RbacRoleRecord>();
 
     return roles.map((role) => ({ ...role, id: Number(role.id) }));
   },
@@ -411,7 +431,7 @@ export const RbacAdminService = {
     actor: DecodedToken,
     id: string,
     input: UpdateRbacAssignmentInput
-  ): Promise<RbacAssignmentRecord> {
+  ): Promise<RbacAssignmentRecord | RbacAssignmentRecord[]> {
     const dataSource = await initializeDatabase();
     const queryRunner = dataSource.createQueryRunner();
 
@@ -422,6 +442,75 @@ export const RbacAdminService = {
       const scope = await this.resolveAdminScope(actor);
       const current = await findAssignmentEntityWithRole(queryRunner.manager, id);
       assertCanManageRole(scope, current.unidade_dass, current.role_code);
+
+      const activeFrom = parseOptionalDate(input.activeFrom);
+      const activeUntil = parseOptionalDate(input.activeUntil);
+
+      if (Array.isArray(input.roleCodes)) {
+        const roleCodes = normalizeUpdateRoleCodes(input);
+        if (!roleCodes.length) {
+          throw new CustomError("Informe ao menos um papel RBAC.", 400);
+        }
+
+        roleCodes.forEach((roleCode) =>
+          assertCanManageRole(scope, current.unidade_dass, roleCode)
+        );
+
+        const roles = await queryRunner.manager
+          .getRepository(RbacRoleEntity)
+          .createQueryBuilder("role")
+          .where("role.code IN (:...roleCodes)", { roleCodes })
+          .getMany();
+
+        if (roles.length !== roleCodes.length) {
+          throw new CustomError("Papel RBAC não encontrado.", 404);
+        }
+
+        const repository = queryRunner.manager.getRepository(RbacUserUnitRoleEntity);
+        const now = new Date();
+        for (const role of roles) {
+          const existing = await repository.findOne({
+            where: {
+              matricula: current.matricula,
+              unidade_dass: current.unidade_dass,
+              role_id: String(role.id),
+            },
+          });
+
+          if (existing) {
+            await repository.update(
+              { id: existing.id },
+              {
+                active: input.active ?? existing.active,
+                active_from: activeFrom === undefined ? existing.active_from : activeFrom,
+                active_until: activeUntil === undefined ? existing.active_until : activeUntil,
+                updatedat: now,
+              }
+            );
+            continue;
+          }
+
+          await repository.save({
+            matricula: current.matricula,
+            unidade_dass: current.unidade_dass,
+            role_id: String(role.id),
+            active: input.active ?? true,
+            active_from: activeFrom === undefined ? now : activeFrom,
+            active_until: activeUntil === undefined ? null : activeUntil,
+            createdat: now,
+            updatedat: now,
+          });
+        }
+
+        await queryRunner.commitTransaction();
+
+        const updated = await this.listAssignments(actor, {
+          registration: current.matricula,
+          dassOffice: current.unidade_dass,
+        });
+
+        return updated.filter((item) => roleCodes.includes(item.roleCode));
+      }
 
       let roleId = current.role_id;
       if (input.roleCode) {
@@ -452,8 +541,6 @@ export const RbacAdminService = {
         throw new CustomError("Vínculo RBAC não encontrado.", 404);
       }
 
-      const activeFrom = parseOptionalDate(input.activeFrom);
-      const activeUntil = parseOptionalDate(input.activeUntil);
       await repository.update(
         { id: Number(id) },
         {

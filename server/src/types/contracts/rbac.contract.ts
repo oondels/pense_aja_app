@@ -32,6 +32,7 @@ export interface CreateRbacAssignmentInput {
 
 export interface UpdateRbacAssignmentInput {
   roleCode?: string;
+  roleCodes?: string[];
   active?: boolean;
   activeFrom?: string | Date | null;
   activeUntil?: string | Date | null;

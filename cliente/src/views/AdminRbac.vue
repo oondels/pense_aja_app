@@ -34,11 +34,11 @@
 
           <v-select
             v-if="form.id"
-            multiple
             :items="roles"
-            v-model="form.roleCode"
+            v-model="form.roleCodes"
             item-title="nome"
             item-value="code"
+            multiple
             variant="outlined"
             required
             label="Nível de Permissão"
@@ -331,13 +331,26 @@ const loadRbac = async () => {
   }
 };
 
-const editAssignment = (assignment) => {
+const editAssignment = async (assignment) => {
+  let relatedAssignments = assignments.value.filter(
+    (item) => item.registration === assignment.registration && item.dassOffice === assignment.dassOffice,
+  );
+
+  try {
+    relatedAssignments = await rbacService.listAssignments({
+      registration: assignment.registration,
+      dassOffice: assignment.dassOffice,
+    });
+  } catch {
+    // Mantem a edição disponível mesmo se a recarga específica falhar.
+  }
+
   Object.assign(form, {
     id: assignment.id,
     registration: assignment.registration,
     dassOffice: assignment.dassOffice,
     roleCode: assignment.roleCode,
-    roleCodes: [assignment.roleCode],
+    roleCodes: relatedAssignments.map((item) => item.roleCode),
     active: assignment.active,
     activeFrom: toInputDate(assignment.activeFrom),
     activeUntil: toInputDate(assignment.activeUntil),
@@ -355,12 +368,14 @@ const saveAssignment = async () => {
   };
 
   if (form.id) {
-    await rbacService.updateAssignment(form.id, {
-      roleCode: form.roleCode,
+    const updatePayload = {
+      roleCodes: form.roleCodes,
       active: form.active,
       activeFrom: form.activeFrom || null,
       activeUntil: form.activeUntil || null,
-    });
+    };
+
+    await rbacService.updateAssignment(form.id, updatePayload);
   } else {
     await rbacService.createAssignment(payload);
   }

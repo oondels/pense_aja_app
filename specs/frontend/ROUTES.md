@@ -171,7 +171,8 @@ Tela administrativa de permissões e papéis.
   - exige `rbac.manage`
 - Regras de UI:
   - lista e formulário usam apenas papéis retornados pelo backend para o escopo do admin
-  - permite cadastrar múltiplos papéis para a mesma matrícula em uma ação
+  - permite cadastrar e editar múltiplos papéis para a mesma matrícula em uma ação
+  - editar papéis adiciona/atualiza os papéis selecionados e não remove papéis omitidos
   - possui filtros por busca, matrícula, papel e status
   - somente `admin_master` vê o filtro por unidade e pode listar todas as unidades
   - alterna entre cards e lista, com preferência persistida em `localStorage`

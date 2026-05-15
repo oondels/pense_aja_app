@@ -983,8 +983,8 @@ paths:
                 registration: "1234567"
                 dassOffice: "SEST"
                 roleId: 2
-                roleCode: "analista"
-                roleName: "Analista"
+                roleCode: "idea_reviewer"
+                roleName: "Avaliador de ideias"
                 active: true
                 activeFrom: "2026-04-22T12:00:00.000Z"
                 activeUntil: null
@@ -1002,8 +1002,11 @@ paths:
       tags: [RBAC]
       summary: Atualizar vínculo RBAC
       description: >
-        Atualiza papel, vigência ou status de um vínculo dentro do escopo
-        administrativo do ator. Exige token válido.
+        Atualiza vigência ou status de vínculos dentro do escopo
+        administrativo do ator. Aceita roleCode para compatibilidade com
+        atualização de um vínculo único e roleCodes para adicionar ou atualizar
+        múltiplos papéis da mesma matrícula/unidade identificada pelo vínculo
+        informado, sem remover papéis omitidos. Exige token válido.
       parameters:
         - $ref: "#/components/parameters/AssignmentIdPath"
         - $ref: "#/components/parameters/CookieHeader"
@@ -1016,29 +1019,44 @@ paths:
             schema:
               $ref: "#/components/schemas/UpdateRbacAssignmentInput"
             example:
-              roleCode: "gerente"
+              roleCodes: ["idea_admin", "marketplace_operator"]
               active: true
               activeFrom: "2026-04-22T12:00:00.000Z"
               activeUntil: null
       responses:
         "200":
-          description: Vínculo atualizado.
+          description: Vínculo atualizado ou vínculos afetados quando roleCodes é enviado.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RbacAssignment"
+                oneOf:
+                  - $ref: "#/components/schemas/RbacAssignment"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/RbacAssignment"
               example:
-                id: 11
-                registration: "1234567"
-                dassOffice: "SEST"
-                roleId: 3
-                roleCode: "gerente"
-                roleName: "Gerente"
-                active: true
-                activeFrom: "2026-04-22T12:00:00.000Z"
-                activeUntil: null
-                createdAt: "2026-04-22T12:00:00.000Z"
-                updatedAt: "2026-04-23T12:00:00.000Z"
+                - id: 11
+                  registration: "1234567"
+                  dassOffice: "SEST"
+                  roleId: 3
+                  roleCode: "idea_admin"
+                  roleName: "Administrador de avaliação"
+                  active: true
+                  activeFrom: "2026-04-22T12:00:00.000Z"
+                  activeUntil: null
+                  createdAt: "2026-04-22T12:00:00.000Z"
+                  updatedAt: "2026-04-23T12:00:00.000Z"
+                - id: 12
+                  registration: "1234567"
+                  dassOffice: "SEST"
+                  roleId: 6
+                  roleCode: "marketplace_operator"
+                  roleName: "Operador de loja"
+                  active: true
+                  activeFrom: "2026-04-22T12:00:00.000Z"
+                  activeUntil: null
+                  createdAt: "2026-04-23T12:00:00.000Z"
+                  updatedAt: "2026-04-23T12:00:00.000Z"
         "400":
           $ref: "#/components/responses/ValidationError"
         "401":
@@ -2331,6 +2349,12 @@ components:
       properties:
         roleCode:
           type: string
+          description: Compatibilidade legada para atualizar um único vínculo.
+        roleCodes:
+          type: array
+          description: Papéis que serão adicionados ou atualizados para a matrícula/unidade do vínculo informado.
+          items:
+            type: string
         active:
           type: boolean
         activeFrom:
