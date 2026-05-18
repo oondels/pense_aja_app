@@ -80,6 +80,7 @@ describe("MarketplaceService — workflow transitions and ledger entries", () =>
     vi.spyOn(MarketplaceService, "getRequestById").mockResolvedValue({
       id: 10,
       registration: "1234567",
+      requesterName: "Usuario Teste",
       dassOffice: "SEST",
       catalogItemId: "catalog-uuid",
       requestStatus: "completed",

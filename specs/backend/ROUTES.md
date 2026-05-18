@@ -141,6 +141,8 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Exige `verifyToken`.
 - Lista apenas vínculos usuário/unidade/papel dentro do escopo administrativo do ator.
 - Aceita filtros opcionais `registration`, `dassOffice`, `roleCode`, `active` e `search`.
+- Cada vínculo inclui `userName` quando a matrícula existe em `autenticacao.usuarios`.
+- O filtro `search` considera matrícula, nome do usuário, papel e unidade.
 - `admin_master` pode listar todas as unidades; demais admins ficam restritos às suas unidades e papéis gerenciáveis.
 
 ### `GET /user/rbac/assignments/:id`
@@ -252,7 +254,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Aceita filtros `status` e `registration`.
 - Aceita `page` e `limit`; o frontend usa `limit=5`.
 - Retorna `{ data, pagination }`.
-- Cada item pode incluir nome, custo em pontos e tipo do item de catálogo.
+- Cada item pode incluir nome do solicitante, nome, custo em pontos e tipo do item de catálogo.
 - Ordena por atualização mais recente.
 
 ### `GET /marketplace/requests/me`

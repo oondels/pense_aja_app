@@ -4,6 +4,7 @@ import MarketplaceCatalogItemEntity from "../models/MarketplaceCatalogItem";
 import MarketplaceFulfillmentStepEntity from "../models/MarketplaceFulfillmentStep";
 import MarketplaceRedemptionRequestEntity from "../models/MarketplaceRedemptionRequest";
 import UnitMarketplacePolicyEntity from "../models/UnitMarketplacePolicy";
+import UsuarioEntity from "../models/Usuario";
 import { CustomError } from "../types/CustomError";
 import {
   AuthenticatedSessionContext,
@@ -49,6 +50,7 @@ const mapCatalogRow = (
 const mapRequestRow = (row: Record<string, unknown>): MarketplaceRequestRecord => ({
   id: Number(row.id),
   registration: String(row.registration),
+  requesterName: (row.requesterName as string | null) ?? null,
   dassOffice: row.dassOffice as DassOffice,
   catalogItemId: String(row.catalogItemId),
   catalogItemName: row.catalogItemName ? String(row.catalogItemName) : null,
@@ -121,6 +123,7 @@ const applyRequestSelects = (query: any) =>
   query
     .select("request.id", "id")
     .addSelect("request.matricula", "registration")
+    .addSelect("usuario.nome", "requesterName")
     .addSelect("request.unidade_dass", "dassOffice")
     .addSelect("request.catalog_item_id", "catalogItemId")
     .addSelect("catalog.name", "catalogItemName")
@@ -438,6 +441,11 @@ export const MarketplaceService = {
         "catalog",
         "catalog.id::text = request.catalog_item_id AND catalog.unidade_dass = request.unidade_dass"
       )
+      .leftJoin(
+        UsuarioEntity as any,
+        "usuario",
+        "usuario.matricula = request.matricula"
+      )
       .where("request.unidade_dass = :dassOffice", { dassOffice: validDassOffice })
       .orderBy("request.updatedat", "DESC");
 
@@ -499,6 +507,11 @@ export const MarketplaceService = {
         MarketplaceCatalogItemEntity as any,
         "catalog",
         "catalog.id::text = request.catalog_item_id AND catalog.unidade_dass = request.unidade_dass"
+      )
+      .leftJoin(
+        UsuarioEntity as any,
+        "usuario",
+        "usuario.matricula = request.matricula"
       )
       .where("request.id = :id", { id: Number(id) })
       .andWhere("request.unidade_dass = :dassOffice", { dassOffice });

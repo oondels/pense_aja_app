@@ -132,6 +132,7 @@ Tela administrativa de solicitações de marketplace.
   - paginar em 5 solicitações por página
   - aprovar, rejeitar ou estornar quando autorizado
   - exibir acompanhamento em popup ao clicar na solicitação
+  - exibir nome do solicitante quando retornado pelo backend
 - Permissão visual:
   - exige `marketplace.request.approve`
 - Integração:
@@ -167,6 +168,7 @@ Tela administrativa de permissões e papéis.
 - Objetivo:
   - listar vínculos RBAC por matrícula, papel, unidade e vigência
   - criar, editar e remover vínculos quando autorizado
+  - exibir nome do usuário vinculado quando retornado pelo backend
 - Permissão visual:
   - exige `rbac.manage`
 - Regras de UI:

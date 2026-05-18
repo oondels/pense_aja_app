@@ -14,6 +14,62 @@ describe("MarketplaceService", () => {
     vi.restoreAllMocks();
   });
 
+  it("lists requests with requester names from user table", async () => {
+    const leftJoin = vi.fn().mockReturnThis();
+    const queryBuilder = {
+      leftJoin,
+      where: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockReturnThis(),
+      andWhere: vi.fn().mockReturnThis(),
+      clone: vi.fn().mockReturnValue({ getCount: vi.fn().mockResolvedValue(1) }),
+      select: vi.fn().mockReturnThis(),
+      addSelect: vi.fn().mockReturnThis(),
+      offset: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      getRawMany: vi.fn().mockResolvedValue([
+        {
+          id: "77",
+          registration: "1234567",
+          requesterName: "Usuario Teste",
+          dassOffice: "SEST",
+          catalogItemId: "catalog-1",
+          catalogItemName: "Caneca",
+          catalogItemPointsCost: "25",
+          catalogItemType: "physical",
+          requestStatus: "pending_approval",
+          reservedLedgerEntryId: "10",
+          approvalActorRegistration: null,
+          approvalActorName: null,
+          fulfillmentType: "physical_delivery",
+          legacyPrizeId: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]),
+    };
+
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue({
+      getRepository: () => ({
+        createQueryBuilder: () => queryBuilder,
+      }),
+    } as any);
+
+    const result = await MarketplaceService.listRequests({
+      dassOffice: "SEST",
+      registration: "1234567",
+    });
+
+    expect(result.data[0]).toMatchObject({
+      registration: "1234567",
+      requesterName: "Usuario Teste",
+    });
+    expect(leftJoin).toHaveBeenCalledWith(
+      expect.anything(),
+      "usuario",
+      "usuario.matricula = request.matricula"
+    );
+  });
+
   it("should sync balance projection before locking available balance", async () => {
     const calls: string[] = [];
     const catalogRepository = {
@@ -64,6 +120,7 @@ describe("MarketplaceService", () => {
     vi.spyOn(MarketplaceService, "getRequestById").mockResolvedValue({
       id: 77,
       registration: "1234567",
+      requesterName: "Usuario Teste",
       dassOffice: "SEST",
       catalogItemId: "catalog-1",
       requestStatus: "pending_approval",

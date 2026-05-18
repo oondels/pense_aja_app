@@ -116,6 +116,8 @@ escopo da unidade.
 - `idea_admin` gerencia apenas `idea_submitter` dentro de sua unidade.
 - `marketplace_admin` gerencia apenas `marketplace_operator` dentro de sua unidade.
 - Operações de RBAC validam a hierarquia no backend para listar, criar, editar e remover vínculos.
+- Migrations de backfill RBAC devem ser idempotentes e recompor vínculos
+  `role -> permission` sem remover permissões existentes.
 - Rotas sensíveis usam permissões atômicas como:
   - `idea.view`
   - `idea.evaluate`

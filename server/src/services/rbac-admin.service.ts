@@ -55,6 +55,7 @@ const mapAssignmentRow = (
 ): RbacAssignmentRecord => ({
   id: Number(row.id),
   registration: String(row.registration),
+  userName: (row.userName as string | null) ?? null,
   dassOffice: row.dassOffice as DassOffice,
   roleId: Number(row.roleId),
   roleCode: String(row.roleCode),
@@ -261,8 +262,14 @@ export const RbacAdminService = {
         "role",
         "role.id = assignment.role_id"
       )
+      .leftJoin(
+        UsuarioEntity as any,
+        "usuario",
+        "usuario.matricula = assignment.matricula"
+      )
       .select("assignment.id", "id")
       .addSelect("assignment.matricula", "registration")
+      .addSelect("usuario.nome", "userName")
       .addSelect("assignment.unidade_dass", "dassOffice")
       .addSelect("assignment.role_id", "roleId")
       .addSelect("role.code", "roleCode")
@@ -307,7 +314,7 @@ export const RbacAdminService = {
 
     if (filters?.search) {
       query.andWhere(
-        "(CAST(assignment.matricula AS TEXT) ILIKE :search OR role.code ILIKE :search OR role.nome ILIKE :search OR assignment.unidade_dass ILIKE :search)",
+        "(CAST(assignment.matricula AS TEXT) ILIKE :search OR usuario.nome ILIKE :search OR role.code ILIKE :search OR role.nome ILIKE :search OR assignment.unidade_dass ILIKE :search)",
         { search: `%${filters.search}%` }
       );
     }
@@ -616,8 +623,14 @@ export const RbacAdminService = {
         "role",
         "role.id = assignment.role_id"
       )
+      .leftJoin(
+        UsuarioEntity as any,
+        "usuario",
+        "usuario.matricula = assignment.matricula"
+      )
       .select("assignment.id", "id")
       .addSelect("assignment.matricula", "registration")
+      .addSelect("usuario.nome", "userName")
       .addSelect("assignment.unidade_dass", "dassOffice")
       .addSelect("assignment.role_id", "roleId")
       .addSelect("role.code", "roleCode")

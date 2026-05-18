@@ -9,6 +9,7 @@ export interface RbacRoleRecord {
 export interface RbacAssignmentRecord {
   id: number;
   registration: string;
+  userName: string | null;
   dassOffice: DassOffice;
   roleId: number;
   roleCode: string;

@@ -102,6 +102,10 @@
                 <dd class="font-semibold text-gray-800">{{ request.registration }}</dd>
               </div>
               <div>
+                <dt class="text-xs font-medium text-gray-500">Solicitante</dt>
+                <dd class="font-semibold text-gray-800">{{ request.requesterName || '-' }}</dd>
+              </div>
+              <div>
                 <dt class="text-xs font-medium text-gray-500">Pontos</dt>
                 <dd class="font-semibold text-gray-800">{{ request.catalogItemPointsCost ?? '-' }}</dd>
               </div>
@@ -140,6 +144,9 @@
               <div>
                 <p class="text-sm font-semibold uppercase tracking-wide text-red-700">Acompanhamento da solicitação</p>
                 <h2 class="mt-1 text-xl font-bold text-gray-950">#{{ selectedRequest.id }} - {{ selectedRequest.catalogItemName || selectedRequest.catalogItemId }}</h2>
+                <p class="mt-1 text-sm text-gray-600">
+                  {{ selectedRequest.requesterName || 'Solicitante não localizado' }} · {{ selectedRequest.registration }}
+                </p>
               </div>
               <button class="rounded-full p-2 text-gray-500 hover:bg-gray-100" type="button" @click="selectedRequest = null">
                 <i class="mdi mdi-close text-xl"></i>
@@ -195,6 +202,7 @@ const dassOffice = computed(() => userStore.dassOffice || localStorage.getItem('
 const columns = [
   { key: 'id', label: '#' },
   { key: 'registration', label: 'Matrícula' },
+  { key: 'requesterName', label: 'Solicitante' },
   { key: 'catalogItemName', label: 'Item' },
   { key: 'requestStatus', label: 'Status' },
   { key: 'catalogItemPointsCost', label: 'Pontos' },

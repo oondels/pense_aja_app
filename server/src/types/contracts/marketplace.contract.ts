@@ -32,6 +32,7 @@ export interface MarketplaceCatalogItemRecord {
 export interface MarketplaceRequestRecord {
   id: number;
   registration: string;
+  requesterName: string | null;
   dassOffice: DassOffice;
   catalogItemId: string;
   catalogItemName: string | null;

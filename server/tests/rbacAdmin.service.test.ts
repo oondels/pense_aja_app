@@ -114,8 +114,8 @@ describe("RbacAdminService", () => {
     } as any);
     vi.spyOn(RbacAdminService, "resolveAdminScope").mockResolvedValue(unitAdminScope as any);
     vi.spyOn(RbacAdminService, "listAssignments").mockResolvedValue([
-      { id: 1, registration: "1234567", dassOffice: "SEST", roleId: 1, roleCode: "idea_submitter", roleName: "Submitter", active: true, activeFrom: null, activeUntil: null, createdAt: new Date(), updatedAt: new Date() },
-      { id: 2, registration: "1234567", dassOffice: "SEST", roleId: 2, roleCode: "marketplace_operator", roleName: "Operator", active: true, activeFrom: null, activeUntil: null, createdAt: new Date(), updatedAt: new Date() },
+      { id: 1, registration: "1234567", userName: "Usuario Teste", dassOffice: "SEST", roleId: 1, roleCode: "idea_submitter", roleName: "Submitter", active: true, activeFrom: null, activeUntil: null, createdAt: new Date(), updatedAt: new Date() },
+      { id: 2, registration: "1234567", userName: "Usuario Teste", dassOffice: "SEST", roleId: 2, roleCode: "marketplace_operator", roleName: "Operator", active: true, activeFrom: null, activeUntil: null, createdAt: new Date(), updatedAt: new Date() },
     ]);
 
     const result = await RbacAdminService.createAssignment(ACTOR, {
@@ -279,8 +279,8 @@ describe("RbacAdminService", () => {
     } as any);
     vi.spyOn(RbacAdminService, "resolveAdminScope").mockResolvedValue(unitAdminScope as any);
     vi.spyOn(RbacAdminService, "listAssignments").mockResolvedValue([
-      { id: 10, registration: "1234567", dassOffice: "SEST", roleId: 1, roleCode: "idea_submitter", roleName: "Submitter", active: true, activeFrom: null, activeUntil: null, createdAt: new Date(), updatedAt: new Date() },
-      { id: 11, registration: "1234567", dassOffice: "SEST", roleId: 2, roleCode: "marketplace_operator", roleName: "Operator", active: true, activeFrom: null, activeUntil: null, createdAt: new Date(), updatedAt: new Date() },
+      { id: 10, registration: "1234567", userName: "Usuario Teste", dassOffice: "SEST", roleId: 1, roleCode: "idea_submitter", roleName: "Submitter", active: true, activeFrom: null, activeUntil: null, createdAt: new Date(), updatedAt: new Date() },
+      { id: 11, registration: "1234567", userName: "Usuario Teste", dassOffice: "SEST", roleId: 2, roleCode: "marketplace_operator", roleName: "Operator", active: true, activeFrom: null, activeUntil: null, createdAt: new Date(), updatedAt: new Date() },
     ]);
 
     const result = await RbacAdminService.updateAssignment(ACTOR, "10", {
@@ -415,6 +415,7 @@ describe("RbacAdminService", () => {
     const andWhere = vi.fn().mockReturnThis();
     const queryBuilder = {
       innerJoin: vi.fn().mockReturnThis(),
+      leftJoin: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),
       addSelect: vi.fn().mockReturnThis(),
       orderBy: vi.fn().mockReturnThis(),
@@ -446,5 +447,58 @@ describe("RbacAdminService", () => {
     expect(andWhere).toHaveBeenCalledWith("assignment.unidade_dass = :dassOffice", {
       dassOffice: "VDC",
     });
+  });
+
+  it("lists assignments with user name and searches by user name", async () => {
+    const andWhere = vi.fn().mockReturnThis();
+    const leftJoin = vi.fn().mockReturnThis();
+    const queryBuilder = {
+      innerJoin: vi.fn().mockReturnThis(),
+      leftJoin,
+      select: vi.fn().mockReturnThis(),
+      addSelect: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockReturnThis(),
+      andWhere,
+      getRawMany: vi.fn().mockResolvedValue([
+        {
+          id: "10",
+          registration: "1234567",
+          userName: "Usuario Teste",
+          dassOffice: "SEST",
+          roleId: "1",
+          roleCode: "idea_submitter",
+          roleName: "Submitter",
+          active: true,
+          activeFrom: null,
+          activeUntil: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]),
+    };
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue({
+      getRepository: () => ({
+        createQueryBuilder: () => queryBuilder,
+      }),
+    } as any);
+    vi.spyOn(RbacAdminService, "resolveAdminScope").mockResolvedValue(masterScope as any);
+
+    const result = await RbacAdminService.listAssignments(ACTOR, {
+      search: "Usuario",
+    });
+
+    expect(result[0]).toMatchObject({
+      registration: "1234567",
+      userName: "Usuario Teste",
+    });
+    expect(leftJoin).toHaveBeenCalledWith(
+      expect.anything(),
+      "usuario",
+      "usuario.matricula = assignment.matricula"
+    );
+    expect(andWhere).toHaveBeenCalledWith(
+      "(CAST(assignment.matricula AS TEXT) ILIKE :search OR usuario.nome ILIKE :search OR role.code ILIKE :search OR role.nome ILIKE :search OR assignment.unidade_dass ILIKE :search)",
+      { search: "%Usuario%" }
+    );
   });
 });

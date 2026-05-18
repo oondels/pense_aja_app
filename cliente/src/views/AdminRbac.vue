@@ -172,8 +172,8 @@
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   {{ assignment.registration }} · {{ assignment.dassOffice }}
                 </p>
-                <h2 class="mt-1 text-base font-semibold text-gray-950">{{ assignment.roleName }}</h2>
-                <p class="mt-1 text-sm text-gray-600">{{ assignment.roleCode }}</p>
+                <h2 class="mt-1 text-base font-semibold text-gray-950">{{ assignment.userName || "Usuário não localizado" }}</h2>
+                <p class="mt-1 text-sm text-gray-600">{{ assignment.roleName }} · {{ assignment.roleCode }}</p>
               </div>
               <span
                 class="rounded-full px-2.5 py-1 text-xs font-semibold"
@@ -275,6 +275,7 @@ const filters = reactive({
 const dassOffice = computed(() => userStore.dassOffice || localStorage.getItem("unidadeDass") || "");
 const columns = [
   { key: "registration", label: "Matrícula" },
+  { key: "userName", label: "Usuário" },
   { key: "dassOffice", label: "Unidade" },
   { key: "roleName", label: "Papel" },
   { key: "roleCode", label: "Código" },
