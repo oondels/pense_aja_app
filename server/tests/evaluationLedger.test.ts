@@ -40,13 +40,12 @@ const BASE_IDEA = {
 };
 
 const ACTOR = {
-  sessionKey: "key",
   registration: "9999999",
   username: "Analista",
   dassOffice: "SEST" as const,
   permissions: ["idea.evaluate"],
-  snapshotVersion: 1,
-  snapshotExpiresAt: new Date(),
+  roles: [],
+  unitConfig: {} as any,
 };
 
 const buildEvalData = (overrides: Record<string, unknown> = {}) => ({

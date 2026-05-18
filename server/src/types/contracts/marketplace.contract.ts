@@ -32,8 +32,12 @@ export interface MarketplaceCatalogItemRecord {
 export interface MarketplaceRequestRecord {
   id: number;
   registration: string;
+  requesterName: string | null;
   dassOffice: DassOffice;
   catalogItemId: string;
+  catalogItemName: string | null;
+  catalogItemPointsCost: number | null;
+  catalogItemType: MarketplaceItemType | null;
   requestStatus: MarketplaceRequestStatus;
   reservedLedgerEntryId: number | null;
   approvalActorRegistration: string | null;
@@ -42,6 +46,24 @@ export interface MarketplaceRequestRecord {
   legacyPrizeId: number | null;
   createdAt: string | Date;
   updatedAt: string | Date;
+}
+
+export interface MarketplaceRequestListFilters {
+  dassOffice: DassOffice | string;
+  registration?: string | number;
+  status?: MarketplaceRequestStatus | string;
+  page?: string | number;
+  limit?: string | number;
+}
+
+export interface MarketplaceRequestListResponse {
+  data: MarketplaceRequestRecord[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface CreateMarketplaceRequestInput {

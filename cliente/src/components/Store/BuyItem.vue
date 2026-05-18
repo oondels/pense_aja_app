@@ -3,7 +3,7 @@
     <template v-slot:activator="{ props: activatorProps }">
       <button v-bind="activatorProps" class="product-button">
         <span>
-          {{ getUserPermission() ? "Resgatar" : "Solicitar Para Analista" }}
+          {{ canRedeemLegacyReward ? "Resgatar" : "Solicitar Para Analista" }}
         </span>
         <i class="bi bi-bag-plus"></i>
       </button>
@@ -59,7 +59,7 @@
           </div>
 
           <AnalistaConfirmation
-          v-if="getUserPermission()"
+          v-if="canRedeemLegacyReward"
             :product="props.PenseAjaProduct"
             :colaboradorData="props.colaboradorData"
             @updatePoints="updatePoints"
@@ -77,9 +77,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import Notification from "@/components/Notification.vue";
-import { getUserPermission } from "@/services/userService.js";
+import { useUserStore } from "@/stores/userStore.js";
 import AnalistaConfirmation from "../AnalistaConfirmation.vue";
 
 const emit = defineEmits(["updatePoints"]);
@@ -88,6 +88,8 @@ const updatePoints = (update) => {
 };
 
 const notification = ref(null);
+const userStore = useUserStore();
+const canRedeemLegacyReward = computed(() => userStore.hasPermission("reward.legacy.redeem"));
 const props = defineProps({
   PenseAjaProduct: {
     type: Object,

@@ -39,8 +39,9 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Valida matrícula da URL, usuário, produto ativo e unidade Dass.
 - Usa `marketplace_catalog_items` para localizar produto por `id` ou `legacy_product_id`.
 - Recalcula e bloqueia `points_balance_projection` dentro da transação antes de validar saldo.
-- Cria lançamento `reserve` e `commit` em `points_ledger_entries`.
 - Cria solicitação concluída em `marketplace_redemption_requests`.
+- Cria lançamento `reserve` e `commit` em `points_ledger_entries` com
+  `source_id` igual ao id da solicitação.
 - Registra auditoria `marketplace.request.completed`.
 - Não grava novos resgates na tabela legada `pense_aja.pense_aja_premios`.
 
@@ -65,8 +66,9 @@ Ele deve ser lido como referência operacional do que está implementado em
 ### `POST /pense-aja/:dassOffice`
 
 - Cria uma ideia Pense Aja na unidade informada.
-- Exige `verifyToken` e permissão `idea.submit`.
+- Não exige autenticação.
 - Valida campos obrigatórios do cadastro.
+- Valida unidade, payload e dados do colaborador no backend.
 - Usa lock transacional para reduzir duplicidade por matrícula, projeto, data realizada e unidade.
 - Quando encontra duplicidade, retorna a ideia existente sem criar novo registro.
 - Registra evento `idea.created` para novos cadastros.
@@ -124,49 +126,54 @@ Ele deve ser lido como referência operacional do que está implementado em
 ### `GET /user/session-context/:dassOffice`
 
 - Exige `verifyToken`.
-- Resolve permissões efetivas do usuário para a unidade.
-- Persiste snapshot curto em `rbac_session_snapshots`.
-- Retorna matrícula, unidade, permissões, configuração efetiva da unidade, versão e expiração do snapshot.
+- Resolve permissões e papéis efetivos agregados de todos os papéis ativos do usuário para a unidade diretamente pelo RBAC vigente.
+- `admin_master` ativo em qualquer unidade recebe escopo global de autorização.
+- Retorna matrícula, unidade, permissões, papéis e configuração efetiva da unidade.
 
 ### `GET /user/rbac/roles`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
-- Lista papéis RBAC disponíveis.
-- Usa `dassOffice` em query string para escopo de autorização.
+- Exige `verifyToken`.
+- Lista apenas papéis RBAC que o ator autenticado pode atribuir.
+- Escopo é resolvido pelo backend a partir da matrícula do JWT e dos vínculos RBAC ativos.
 
 ### `GET /user/rbac/assignments`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
-- Lista vínculos usuário/unidade/papel.
-- Aceita filtros opcionais `registration`, `dassOffice` e `active`.
+- Exige `verifyToken`.
+- Lista apenas vínculos usuário/unidade/papel dentro do escopo administrativo do ator.
+- Aceita filtros opcionais `registration`, `dassOffice`, `roleCode`, `active` e `search`.
+- Cada vínculo inclui `userName` quando a matrícula existe em `autenticacao.usuarios`.
+- O filtro `search` considera matrícula, nome do usuário, papel e unidade.
+- `admin_master` pode listar todas as unidades; demais admins ficam restritos às suas unidades e papéis gerenciáveis.
 
 ### `GET /user/rbac/assignments/:id`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
+- Exige `verifyToken`.
 - Retorna um vínculo RBAC pelo identificador.
-- Usa `dassOffice` em query string para escopo de autorização.
+- Autoriza usando a unidade e o papel reais do vínculo carregado do banco.
 
 ### `POST /user/rbac/assignments`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
-- Cria vínculo de usuário, unidade e papel.
+- Exige `verifyToken`.
+- Cria um ou mais vínculos de usuário, unidade e papel.
+- Aceita `roleCodes` para cadastro batch e `roleCode` como compatibilidade.
 - Valida usuário de autenticação e papel RBAC.
-- Impede vínculo duplicado para a mesma matrícula, unidade e papel.
-- Invalida snapshots de sessão da matrícula na unidade afetada.
+- Ignora vínculos duplicados já existentes para a mesma matrícula, unidade e papel.
+- Rejeita o lote inteiro quando qualquer papel estiver fora do escopo administrativo do ator.
 
 ### `PUT /user/rbac/assignments/:id`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
-- Atualiza papel, status ativo e janela de vigência do vínculo.
-- Usa `dassOffice` do corpo ou da query string para escopo de autorização.
-- Invalida snapshots de sessão da matrícula na unidade afetada.
+- Exige `verifyToken`.
+- Atualiza status ativo e janela de vigência do vínculo.
+- Aceita `roleCodes` para adicionar/atualizar múltiplos papéis da mesma matrícula/unidade identificada pelo vínculo informado.
+- Aceita `roleCode` como compatibilidade para troca de um único vínculo.
+- Não remove nem desativa papéis omitidos em `roleCodes`.
+- Autoriza pelo vínculo atual no banco e por todos os papéis solicitados.
 
 ### `DELETE /user/rbac/assignments/:id`
 
-- Exige `verifyToken` e permissão `rbac.manage`.
+- Exige `verifyToken`.
 - Remove vínculo RBAC.
-- Usa `dassOffice` em query string para escopo de autorização.
-- Invalida snapshots de sessão da matrícula na unidade afetada.
+- Autoriza pelo vínculo atual no banco; admins escopados não podem remover papéis fora de sua hierarquia.
 
 ### `GET /user/unidade/:registration`
 
@@ -229,11 +236,13 @@ Ele deve ser lido como referência operacional do que está implementado em
 ### `POST /marketplace/requests`
 
 - Cria solicitação de resgate.
-- Exige `verifyToken` e permissão `marketplace.request.create`.
-- Usa `registration` do corpo quando enviado; caso contrário, usa a matrícula do ator autenticado.
+- Exige `verifyToken`.
+- Qualquer usuário autenticado pode criar solicitação para a própria matrícula.
+- Ignora `registration` e `requesterName` enviados no corpo para evitar solicitação em nome de terceiros.
 - Valida item ativo, disponibilidade e saldo disponível.
 - Bloqueia `points_balance_projection` com `FOR UPDATE`.
-- Cria lançamento `reserve` no ledger.
+- Cria lançamento `reserve` no ledger com `source_id` igual ao id da
+  solicitação.
 - Cria solicitação `pending_approval` em `marketplace_redemption_requests`.
 - Registra auditoria `marketplace.request.created`.
 
@@ -242,7 +251,27 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Lista solicitações de resgate da unidade.
 - Exige `verifyToken` e permissão `marketplace.request.approve`.
 - Exige `dassOffice` em query string.
+- Aceita filtros `status` e `registration`.
+- Aceita `page` e `limit`; o frontend usa `limit=5`.
+- Retorna `{ data, pagination }`.
+- Cada item pode incluir nome do solicitante, nome, custo em pontos e tipo do item de catálogo.
 - Ordena por atualização mais recente.
+
+### `GET /marketplace/requests/me`
+
+- Lista solicitações da matrícula autenticada.
+- Exige `verifyToken`.
+- Exige `dassOffice` em query string.
+- Aceita filtro `status`, `page` e `limit`.
+- Retorna `{ data, pagination }`.
+
+### `GET /marketplace/requests/public`
+
+- Consulta pública de solicitações por matrícula e unidade.
+- Não exige autenticação.
+- Exige `dassOffice` e `registration` em query string.
+- Aceita filtro `status`, `page` e `limit`.
+- Retorna `{ data, pagination }`.
 
 ### `PUT /marketplace/requests/:id/approve`
 
@@ -274,14 +303,19 @@ Ele deve ser lido como referência operacional do que está implementado em
 
 - Retorna resumo agregado da unidade.
 - Não exige autenticação.
-- Aceita `startDate` e `endDate` opcionais.
+- Aceita `startDate`, `endDate` e `includeReport` opcionais.
 - Inclui métricas de ideias, pontuação, ledger e marketplace.
+- Considera ideia implementada quando não está em espera e possui aprovação de analista ou gerente.
+- Com `includeReport=true`, inclui bloco `report` com detalhes para XLSX:
+  metadados, KPIs, ideias detalhadas, dimensões, série mensal, marketplace e
+  métricas separadas de avaliação por Admin e Avaliador de ideias.
 
 ### `GET /dashboard/monthly/:dassOffice`
 
 - Retorna série mensal de ideias e métricas relacionadas.
 - Não exige autenticação.
 - Aceita `startDate` e `endDate` opcionais.
+- A métrica de aprovadas usa a mesma regra de ideia implementada do resumo.
 
 ### `GET /dashboard/dimensional/:dassOffice`
 
@@ -294,6 +328,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Retorna ideias em destaque da unidade.
 - Não exige autenticação.
 - Aceita `startDate` e `endDate` opcionais.
+- Rotula como `Aprovada` quando a ideia atende à regra de implementada.
 - Não usa likes ou comentários aleatórios como dado canônico.
 
 ### `GET /dashboard/engagement/:dassOffice`
@@ -301,6 +336,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Retorna dados de engajamento dos colaboradores.
 - Não exige autenticação.
 - Aceita `startDate` e `endDate` opcionais.
+- Conta implementadas por colaborador quando a ideia não está em espera e possui aprovação de analista ou gerente.
 
 ## Módulo `/ai`
 

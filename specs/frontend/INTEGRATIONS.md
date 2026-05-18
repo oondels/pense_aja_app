@@ -46,14 +46,17 @@ Consumido por `api` e `commonApi`.
 
 - `api` é reservado para chamadas autenticadas que devem participar da lógica de refresh
 - `commonApi` faz chamadas sem esse interceptor
+- o cadastro de ideia usa `commonApi` e endpoint público; avaliação, perfil e administração continuam usando permissões
+- solicitação de resgate no marketplace usa `api` por exigir login, mas não exige permissão RBAC específica
 
 ### Evolução esperada
 
-- respostas do backend devem poder incluir snapshot de permissões, saldo consolidado e estado de resgate sem depender de cálculo local
+- respostas do backend devem poder incluir permissões, papéis, saldo consolidado e estado de resgate sem depender de cálculo local
+- marketplace expõe listagens paginadas para administração, consulta autenticada do próprio usuário e consulta pública por matrícula/unidade
 
 ## Upload Service
 
-Usado pelo módulo de loja.
+Usado pelo módulo de loja e pelo cadastro administrativo de novos itens do catálogo.
 
 - endpoint hardcoded: `http://10.100.1.43:3020/`
 - headers usados:
@@ -70,13 +73,14 @@ Usado pelo módulo de loja.
 
 ### Modelo-alvo
 
-- pode armazenar snapshot curto de permissões para UX
+- pode armazenar permissões e papéis agregados retornados pelo backend para UX
 - não substitui a verificação do backend
 
 ### localStorage
 
 - unidade Dass
 - `unitConfig:<unidadeDass>` retornado por `/user/session-context/:dassOffice`
+- `viewMode:*` para preferência local de cards/lista por tela
 - preferências de onboarding/news/email popup
 
 ## PWA

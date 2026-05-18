@@ -122,6 +122,173 @@ export const reportService = {
     return formatter(data);
   },
 
+  formatDate(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('pt-BR').format(date);
+  },
+
+  formatDateTime(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    }).format(date);
+  },
+
+  formatPercent(value) {
+    return `${Number(value || 0).toFixed(2)}%`;
+  },
+
+  formatGains(value) {
+    if (!value) return '';
+    if (Array.isArray(value)) return value.join(', ');
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  },
+
+  buildReportFileName(report) {
+    const metadata = report?.metadata || {};
+    const unit = metadata.dassOffice || 'unidade';
+    const start = metadata.startDate ? this.formatDate(metadata.startDate).replace(/\//g, '-') : 'inicio';
+    const end = metadata.endDate ? this.formatDate(metadata.endDate).replace(/\//g, '-') : 'fim';
+    return `relatorio-pense-aja-${unit}-${start}_a_${end}.xlsx`;
+  },
+
+  appendJsonSheet(XLSX, workBook, sheetName, rows, widths = []) {
+    const sheet = XLSX.utils.json_to_sheet(rows.length ? rows : [{}]);
+    if (widths.length) {
+      sheet['!cols'] = widths.map((width) => ({ wch: width }));
+    }
+    XLSX.utils.book_append_sheet(workBook, sheet, sheetName);
+  },
+
+  buildDashboardWorkbook(XLSX, report) {
+    const workBook = XLSX.utils.book_new();
+    const metadata = report.metadata || {};
+    const kpis = report.kpis || {};
+    const evaluation = report.evaluationMetrics || {};
+    const dimensions = report.dimensions || {};
+    const marketplace = report.marketplace || {};
+
+    this.appendJsonSheet(XLSX, workBook, 'Resumo', [
+      { Métrica: 'Unidade', Valor: metadata.dassOffice || '' },
+      { Métrica: 'Período inicial', Valor: this.formatDate(metadata.startDate) },
+      { Métrica: 'Período final', Valor: this.formatDate(metadata.endDate) },
+      { Métrica: 'Gerado em', Valor: this.formatDateTime(metadata.generatedAt) },
+      { Métrica: 'Total de ideias', Valor: kpis.totalIdeas || 0 },
+      { Métrica: 'Ideias implementadas', Valor: kpis.implementedIdeas || 0 },
+      { Métrica: 'Ideias pendentes', Valor: kpis.pendingIdeas || 0 },
+      { Métrica: 'Ideias reprovadas', Valor: kpis.rejectedIdeas || 0 },
+      { Métrica: 'Ideias em espera', Valor: kpis.inAnalysis || 0 },
+      { Métrica: 'Taxa de implementação', Valor: this.formatPercent(kpis.implementationRate) },
+      { Métrica: 'Pontos gerados', Valor: kpis.totalPointsEarned || 0 },
+      { Métrica: 'Pontos resgatados', Valor: kpis.totalPointsRedeemed || 0 },
+      { Métrica: 'Pontos reservados', Valor: kpis.totalPointsReserved || 0 },
+      { Métrica: 'Resgates pendentes', Valor: kpis.marketplacePending || 0 },
+      { Métrica: 'Resgates concluídos', Valor: kpis.marketplaceCompleted || 0 },
+    ], [32, 24]);
+
+    const evaluationSummaryRows = [
+      { Grupo: 'Admin', ...(evaluation.adminReview || {}) },
+      { Grupo: 'Avaliador de ideias', ...(evaluation.ideaEvaluatorReview || {}) },
+    ].map(({ Grupo, totalReviewed, approved, rejected, pending, waiting, reviewRate, approvalRate }) => ({
+      Grupo,
+      'Total avaliadas': totalReviewed || 0,
+      Aprovadas: approved || 0,
+      Reprovadas: rejected || 0,
+      Pendentes: pending || 0,
+      'Em espera': waiting || 0,
+      'Taxa de avaliação': this.formatPercent(reviewRate),
+      'Taxa de aprovação': this.formatPercent(approvalRate),
+    }));
+    this.appendJsonSheet(XLSX, workBook, 'Resumo Avaliações', evaluationSummaryRows);
+
+    const rankingRows = (rows = []) => rows.map((item) => ({
+      Avaliador: item.evaluatorName,
+      'Total avaliadas': item.totalReviewed || 0,
+      Aprovadas: item.approved || 0,
+      Reprovadas: item.rejected || 0,
+      Pendentes: item.pending || 0,
+      'Taxa de aprovação': this.formatPercent(item.approvalRate),
+    }));
+    this.appendJsonSheet(XLSX, workBook, 'Avaliações Admin', rankingRows(evaluation.adminReview?.ranking));
+    this.appendJsonSheet(XLSX, workBook, 'Avaliações Ideias', rankingRows(evaluation.ideaEvaluatorReview?.ranking));
+
+    this.appendJsonSheet(XLSX, workBook, 'Ideias', (report.ideas || []).map((idea) => ({
+      ID: idea.id,
+      Matrícula: idea.registration,
+      Colaborador: idea.collaboratorName,
+      Setor: idea.sector,
+      Gerente: idea.manager,
+      Fábrica: idea.factory,
+      Turno: idea.shift,
+      Projeto: idea.projectName,
+      'Data criação': this.formatDate(idea.createdAt),
+      'Data realizada': this.formatDate(idea.realizedAt),
+      Status: idea.canonicalStatus,
+      Classificação: idea.classification || '',
+      Pontos: idea.points || 0,
+      'Situação anterior': idea.previousSituation,
+      'Situação atual': idea.currentSituation,
+      Ganhos: this.formatGains(idea.gains),
+      'Admin Avaliador': idea.adminEvaluator || '',
+      'Status Admin': idea.adminStatus || '',
+      'Data Avaliação Admin': this.formatDateTime(idea.adminReviewedAt),
+      'Justificativa Admin': idea.adminJustification || '',
+      'Avaliador de Ideias': idea.ideaEvaluator || '',
+      'Status Avaliador': idea.ideaEvaluatorStatus || '',
+      'Data Avaliação Avaliador': this.formatDateTime(idea.ideaEvaluatorReviewedAt),
+      'Justificativa Avaliador': idea.ideaEvaluatorJustification || '',
+    })));
+
+    const dimensionRows = (rows = [], labelName) => rows.map((row) => ({
+      [labelName]: row.label,
+      Total: row.total || 0,
+      Implementadas: row.implemented || 0,
+      Reprovadas: row.rejected || 0,
+      Pendentes: row.pending || 0,
+      'Em espera': row.waiting || 0,
+      'Avaliações Admin': row.adminReviewed || 0,
+      'Avaliações Ideias': row.ideaEvaluatorReviewed || 0,
+      'Taxa implementação': this.formatPercent(row.implementationRate),
+    }));
+    this.appendJsonSheet(XLSX, workBook, 'Por Setor', dimensionRows(dimensions.sector, 'Setor'));
+    this.appendJsonSheet(XLSX, workBook, 'Por Gerente', dimensionRows(dimensions.manager, 'Gerente'));
+    this.appendJsonSheet(XLSX, workBook, 'Por Fábrica', dimensionRows(dimensions.factory, 'Fábrica'));
+    this.appendJsonSheet(XLSX, workBook, 'Por Turno', dimensionRows(dimensions.shift, 'Turno'));
+    this.appendJsonSheet(XLSX, workBook, 'Por Status', dimensionRows(dimensions.status, 'Status'));
+
+    this.appendJsonSheet(XLSX, workBook, 'Mensal', (report.monthly || []).map((row) => ({
+      Mês: row.month,
+      Total: row.total || 0,
+      Implementadas: row.implemented || 0,
+      Reprovadas: row.rejected || 0,
+      Pendentes: row.pending || 0,
+      'Em espera': row.waiting || 0,
+      'Avaliações Admin': row.adminReviewed || 0,
+      'Avaliações Ideias': row.ideaEvaluatorReviewed || 0,
+      Pontos: row.points || 0,
+      'Taxa implementação': this.formatPercent(row.implementationRate),
+    })));
+
+    this.appendJsonSheet(XLSX, workBook, 'Marketplace', [
+      { Métrica: 'Pendentes', Valor: marketplace.pending || 0 },
+      { Métrica: 'Concluídos', Valor: marketplace.completed || 0 },
+      { Métrica: 'Estornados', Valor: marketplace.refunded || 0 },
+      { Métrica: 'Rejeitados', Valor: marketplace.rejected || 0 },
+      { Métrica: 'Cancelados', Valor: marketplace.cancelled || 0 },
+      { Métrica: 'Pontos consumidos', Valor: marketplace.pointsCommitted || 0 },
+      { Métrica: 'Pontos reservados', Valor: marketplace.pointsReserved || 0 },
+      { Métrica: 'Pontos estornados', Valor: marketplace.pointsRefunded || 0 },
+    ]);
+
+    return workBook;
+  },
+
   formatForXLSX(data) {
     return {
       sheets: {

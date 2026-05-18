@@ -10,13 +10,12 @@ import { LedgerService } from "../src/services/ledger.service";
 import { MarketplaceService } from "../src/services/marketplace.service";
 
 const ACTOR = {
-  sessionKey: "key",
   registration: "9999999",
   username: "Operador",
   dassOffice: "SEST" as const,
   permissions: ["marketplace.request.approve"],
-  snapshotVersion: 1,
-  snapshotExpiresAt: new Date(),
+  roles: [],
+  unitConfig: {} as any,
 };
 
 const BASE_REQUEST = {
@@ -81,6 +80,7 @@ describe("MarketplaceService — workflow transitions and ledger entries", () =>
     vi.spyOn(MarketplaceService, "getRequestById").mockResolvedValue({
       id: 10,
       registration: "1234567",
+      requesterName: "Usuario Teste",
       dassOffice: "SEST",
       catalogItemId: "catalog-uuid",
       requestStatus: "completed",

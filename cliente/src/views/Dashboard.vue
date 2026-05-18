@@ -42,13 +42,13 @@
           <DimensionalAnalysis :startDate="startDate" :endDate="endDate" />
         </div>
 
-        <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.4s">
+        <!-- <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.4s">
           <IdeaHighlights :startDate="startDate" :endDate="endDate" />
         </div>
 
         <div class="dashboard-section" :class="{ 'animate-in': isLoaded }" style="--delay: 0.5s">
           <EngagementPanel :startDate="startDate" :endDate="endDate" />
-        </div>
+        </div> -->
       </div>
     </main>
     <Notification ref="notification" />
@@ -115,211 +115,37 @@ const downloadReport = async () => {
 
   try {
     isGeneratingReport.value = true;
-    console.log("Iniciando download do relatório...");
 
     const dassOffice = userStore.userData?.unidade || localStorage.getItem("unidadeDass") || "SEST";
 
     if (!startDate.value || !endDate.value) {
-      alert("Por favor, selecione as datas de início e fim para gerar o relatório.");
+      notification.value.showPopup("error", "Período obrigatório.", "Selecione as datas de início e fim para gerar o relatório.", 4000);
       return;
     }
     if (new Date(startDate.value) > new Date(endDate.value)) {
-      alert("A data de início deve ser anterior à data de fim.");
+      notification.value.showPopup("error", "Período inválido.", "A data de início deve ser anterior à data de fim.", 4000);
       return;
     }
 
-    const reportData = await reportService.getAggregatedData(dassOffice, startDate.value, endDate.value);
-    const penseAjaData = reportData.rawData;
-    const aggregations = reportData.aggregations;
-
-    const [summaryData, monthlyData, ideaHighlights, engagementData] = await Promise.all([
-      dashboardService.getSummaryData(dassOffice, startDate.value, endDate.value).catch(() => ({})),
-      dashboardService.getMonthlyData(dassOffice, startDate.value, endDate.value).catch(() => []),
-      dashboardService.getIdeaHighlights(dassOffice, startDate.value, endDate.value).catch(() => []),
-      dashboardService.getEngagementData(dassOffice, startDate.value, endDate.value).catch(() => []),
-    ]);
-
-    // Aba 1: Resumo Geral
-    const resumoData = [
-      { Métrica: "Total de Ideias", Valor: aggregations.totalMetrics.total },
-      { Métrica: "Ideias Aprovadas", Valor: aggregations.totalMetrics.aprovados },
-      { Métrica: "Ideias Reprovadas", Valor: aggregations.totalMetrics.reprovados },
-      { Métrica: "Ideias Pendentes", Valor: aggregations.totalMetrics.pendentes },
-      { Métrica: "Ideias em Espera", Valor: aggregations.totalMetrics.emEspera },
-      {
-        Métrica: "Taxa de Aprovação (%)",
-        Valor:
-          aggregations.totalMetrics.total > 0
-            ? ((aggregations.totalMetrics.aprovados / aggregations.totalMetrics.total) * 100).toFixed(2)
-            : "0.00",
-      },
-      { Métrica: "Período do Relatório", Valor: `${formatDate(startDate.value)} até ${formatDate(endDate.value)}` },
-      { Métrica: "Unidade", Valor: dassOffice },
-    ];
-
-    // Aba 2: Detalhes dos Pense&Aja (otimizada)
-    const penseAjaDetalhado = penseAjaData.map((item) => ({
-      ID: item.id,
-      "Nome do Colaborador": item.nome,
-      Matrícula: item.matricula,
-      Setor: item.setor,
-      Gerente: item.gerente,
-      Fábrica: item.fabrica,
-      "Nome do Projeto": item.nome_projeto,
-      Turno:
-        item.turno === "A"
-          ? "1° Turno"
-          : item.turno === "B"
-          ? "2° Turno"
-          : item.turno === "C"
-          ? "3° Turno"
-          : "Comercial",
-      "Data de Criação": formatDate(item.createdat),
-      "Situação Anterior": item.situacao_anterior,
-      "Situação Atual": item.situacao_atual,
-      "Gerente Avaliador": item.gerente_aprovador || "Não avaliado",
-      "Analista Avaliador": item.analista_avaliador || "Não avaliado",
-      "Pontuação": item.pontuacao ?? "",
-      "Em Espera": item.em_espera === "1" ? "Sim" : "Não"
-    }));
-
-    // Aba 3: Análise por Setor (usando agregações)
-    const setorData = Object.entries(aggregations.bySetor).map(([setor, dados]) => ({
-      Setor: setor,
-      "Total de Ideias": dados.total,
-      "Ideias Aprovadas": dados.aprovados,
-      "Ideias Reprovadas": dados.reprovados,
-      "Ideias Pendentes": dados.pendentes,
-      "Ideias em Espera": dados.emEspera,
-      "Taxa de Aprovação (%)": dados.total > 0 ? ((dados.aprovados / dados.total) * 100).toFixed(2) : "0.00",
-    }));
-
-    // Aba 4: Análise por Gerente (usando agregações)
-    const gerenteData = Object.entries(aggregations.byGerente).map(([gerente, dados]) => ({
-      Gerente: gerente,
-      "Total de Ideias": dados.total,
-      "Ideias Aprovadas": dados.aprovados,
-      "Ideias Reprovadas": dados.reprovados,
-      "Ideias em Espera": dados.emEspera,
-      "Visto Pela Melhoria Continua": dados.visto_analista || 0,
-      "Visto Pelo Gerente": dados.visto_gerente || 0,
-      "Ideias Pendentes": dados.pendentes,
-      "Taxa de Aprovação (%)": dados.total > 0 ? ((dados.aprovados / dados.total) * 100).toFixed(2) : "0.00",
-    }));
-
-    // Aba 5: Análise por Fábrica (usando agregações)
-    const fabricaData = Object.entries(aggregations.byFabrica).map(([fabrica, dados]) => ({
-      Fábrica: fabrica,
-      "Total de Ideias": dados.total,
-      "Ideias Aprovadas": dados.aprovados,
-      "Ideias Reprovadas": dados.reprovados,
-      "Ideias Pendentes": dados.pendentes,
-      "Ideias em Espera": dados.emEspera,
-      "Visto Pela Melhoria Continua": dados.visto_analista || 0,
-      "Visto Pelo Gerente": dados.visto_gerente || 0,
-      "Taxa de Aprovação (%)": dados.total > 0 ? ((dados.aprovados / dados.total) * 100).toFixed(2) : "0.00",
-    }));
-
-    // Aba 6: Análise por Turno (usando agregações)
-    const turnoData = Object.entries(aggregations.byTurno).map(([turno, dados]) => ({
-      Turno: turno === "A" ? "1° Turno" : turno === "B" ? "2° Turno" : turno === "C" ? "3° Turno" : turno,
-      "Total de Ideias": dados.total,
-      "Ideias Aprovadas": dados.aprovados,
-      "Ideias Reprovadas": dados.reprovados,
-      "Ideias Pendentes": dados.pendentes,
-      "Ideias em Espera": dados.emEspera,
-      "Visto Pela Melhoria Continua": dados.visto_analista || 0,
-      "Visto Pelo Gerente": dados.visto_gerente || 0,
-      "Taxa de Aprovação (%)": dados.total > 0 ? ((dados.aprovados / dados.total) * 100).toFixed(2) : "0.00",
-    }));
-
-    // // Aba 7: Engajamento por Colaborador
-    // const engajamentoData = engagementData.map((item) => ({
-    //   "Nome do Colaborador": item.nome,
-    //   Setor: item.setor,
-    //   "Total de Ideias": item.total_ideas,
-    //   "Ideias Implementadas": item.implemented_ideas,
-    //   "Taxa de Implementação (%)":
-    //     item.total_ideas > 0 ? ((item.implemented_ideas / item.total_ideas) * 100).toFixed(2) : "0.00",
-    // }));
-
-    // // Aba 8: Ideias em Destaque
-    // const destaquesData = ideaHighlights.map((item) => ({
-    //   "Nome do Projeto": item.nome_projeto,
-    //   "Nome do Colaborador": item.nome,
-    //   Setor: item.setor,
-    //   Gerente: item.gerente,
-    //   "Data de Criação": formatDate(item.criado),
-    //   "Situação Anterior": item.situacao_anterior,
-    //   "Situação Atual": item.situacao_atual,
-    //   Classificação: item.classificacao || "Não classificado",
-    //   "Valor Estimado": item.valor_estimado
-    //     ? `R$ ${item.valor_estimado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-    //     : "Não informado",
-    // }));
-
-    // Aba 9: Dados Mensais
-    // const mensalData = monthlyData.map((item) => ({
-    //   "Mês/Ano": `${item.month}/${item.year}`,
-    //   "Total de Ideias": item.total_ideas,
-    //   "Ideias Aprovadas": item.approved_ideas,
-    //   "Valor Estimado": `R$ ${(item.estimated_value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
-    // }));
-
-    const workBook = XLSX.utils.book_new();
-    if (resumoData.length > 0) {
-      const resumoSheet = XLSX.utils.json_to_sheet(resumoData);
-      XLSX.utils.book_append_sheet(workBook, resumoSheet, "Resumo Geral");
+    const summaryData = await dashboardService.getSummaryData(
+      dassOffice,
+      startDate.value,
+      endDate.value,
+      { includeReport: true }
+    );
+    const report = summaryData.report;
+    if (!report) {
+      throw new Error("Relatório não retornado pelo backend.");
     }
 
-    if (penseAjaDetalhado.length > 0) {
-      const penseAjaSheet = XLSX.utils.json_to_sheet(penseAjaDetalhado);
-      XLSX.utils.book_append_sheet(workBook, penseAjaSheet, "Detalhes Pense&Aja");
-    }
+    const workBook = reportService.buildDashboardWorkbook(XLSX, report);
 
-    if (setorData.length > 0) {
-      const setorSheet = XLSX.utils.json_to_sheet(setorData);
-      XLSX.utils.book_append_sheet(workBook, setorSheet, "Análise por Setor");
-    }
-
-    if (gerenteData.length > 0) {
-      const gerenteSheet = XLSX.utils.json_to_sheet(gerenteData);
-      XLSX.utils.book_append_sheet(workBook, gerenteSheet, "Análise por Gerente");
-    }
-
-    if (fabricaData.length > 0) {
-      const fabricaSheet = XLSX.utils.json_to_sheet(fabricaData);
-      XLSX.utils.book_append_sheet(workBook, fabricaSheet, "Análise por Fábrica");
-    }
-
-    if (turnoData.length > 0) {
-      const turnoSheet = XLSX.utils.json_to_sheet(turnoData);
-      XLSX.utils.book_append_sheet(workBook, turnoSheet, "Análise por Turno");
-    }
-
-    // if (engajamentoData.length > 0) {
-    //   const engajamentoSheet = XLSX.utils.json_to_sheet(engajamentoData);
-    //   XLSX.utils.book_append_sheet(workBook, engajamentoSheet, "Engajamento");
-    // }
-
-    // if (destaquesData.length > 0) {
-    //   const destaquesSheet = XLSX.utils.json_to_sheet(destaquesData);
-    //   XLSX.utils.book_append_sheet(workBook, destaquesSheet, "Ideias em Destaque");
-    // }
-
-    // if (mensalData.length > 0) {
-    //   const mensalSheet = XLSX.utils.json_to_sheet(mensalData);
-    //   XLSX.utils.book_append_sheet(workBook, mensalSheet, "Dados Mensais");
-    // }
-
-    // Gerar arquivo
     const xlsxBuffer = XLSX.write(workBook, {
       bookType: "xlsx",
       type: "array",
     });
 
-    const currentDate = new Date();
-    const fileName = `relatorio-dashboard-penseaja-${formatDate(currentDate).replace(/\//g, "-")}.xlsx`;
+    const fileName = reportService.buildReportFileName(report);
 
     saveAs(
       new Blob([xlsxBuffer], {

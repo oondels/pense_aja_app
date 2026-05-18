@@ -45,6 +45,20 @@ const HIGHLIGHT_ROW = {
   status: "Aprovada",
 };
 
+const IMPLEMENTED_EXPRESSION_PARTS = [
+  "(idea.em_espera IS NULL OR idea.em_espera != '1')",
+  "(idea.status_gerente = 'approve' OR idea.status_analista = 'approve')",
+];
+
+const expectImplementedExpression = (sql: string) => {
+  for (const part of IMPLEMENTED_EXPRESSION_PARTS) {
+    expect(sql).toContain(part);
+  }
+  expect(sql).not.toContain(
+    "idea.status_gerente = 'approve' AND idea.status_analista = 'approve'"
+  );
+};
+
 describe("DashboardService — getSummaryData", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -94,10 +108,170 @@ describe("DashboardService — getSummaryData", () => {
     expect(result.marketplaceCompleted).toBe(8);
   });
 
+  it("counts implemented ideas by any approval when not waiting", async () => {
+    const qb = buildQueryBuilder({
+      total_ideas: "3",
+      implemented_ideas: "2",
+      pending_ideas: "1",
+      rejected_ideas: "0",
+      approved_by_manager: "1",
+      in_analysis: "1",
+      total_value: "0",
+      avg_value: "0",
+    });
+    const dataSource = buildDataSource(qb, [
+      [{ total_earned: "0", total_committed: "0", total_refunded: "0", total_reserved: "0" }],
+      [{ pending: "0", completed: "0" }],
+    ]);
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue(dataSource as any);
+
+    await DashboardService.getSummaryData("SEST");
+
+    const implementedCall = qb.addSelect.mock.calls.find(
+      (call) => call[1] === "implemented_ideas"
+    );
+    const pendingCall = qb.addSelect.mock.calls.find(
+      (call) => call[1] === "pending_ideas"
+    );
+
+    expectImplementedExpression(String(implementedCall?.[0] ?? ""));
+    expectImplementedExpression(String(pendingCall?.[0] ?? ""));
+  });
+
+  it("includes report data with separated admin and idea evaluator metrics", async () => {
+    const qb = buildQueryBuilder({
+      total_ideas: "2",
+      implemented_ideas: "1",
+      pending_ideas: "1",
+      rejected_ideas: "0",
+      approved_by_manager: "1",
+      in_analysis: "0",
+      total_value: "100",
+      avg_value: "50",
+    });
+    const dataSource = {
+      getRepository: vi.fn(() => ({
+        createQueryBuilder: vi.fn(() => qb),
+      })),
+      query: vi
+        .fn()
+        .mockResolvedValueOnce([
+          { total_earned: "10", total_committed: "5", total_refunded: "0", total_reserved: "2" },
+        ])
+        .mockResolvedValueOnce([{ pending: "1", completed: "1" }])
+        .mockResolvedValueOnce([
+          {
+            id: "1",
+            matricula: "123",
+            nome: "Ana",
+            setor: "Produção",
+            gerente: "Maria",
+            fabrica: "F1",
+            turno: "A",
+            nome_projeto: "Projeto A",
+            createdat: new Date("2024-01-10"),
+            data_realizada: new Date("2024-01-09"),
+            status_gerente: "approve",
+            status_analista: "approve",
+            classificacao: "A",
+            em_espera: "0",
+            situacao_anterior: "Antes",
+            situacao_atual: "Depois",
+            ganhos: null,
+            gerente_aprovador: "Admin Maria",
+            data_aprogerente: new Date("2024-01-11"),
+            justificativa_gerente: "Ok admin",
+            analista_avaliador: "Avaliador João",
+            data_avaanalista: new Date("2024-01-12"),
+            justificativa_analista: "Ok avaliador",
+            pontuacao: "10",
+          },
+          {
+            id: "2",
+            matricula: "456",
+            nome: "Bruno",
+            setor: "Qualidade",
+            gerente: "Maria",
+            fabrica: "F1",
+            turno: "B",
+            nome_projeto: "Projeto B",
+            createdat: new Date("2024-01-15"),
+            data_realizada: new Date("2024-01-14"),
+            status_gerente: null,
+            status_analista: null,
+            classificacao: null,
+            em_espera: "0",
+            situacao_anterior: "Antes",
+            situacao_atual: "Depois",
+            ganhos: null,
+            gerente_aprovador: null,
+            data_aprogerente: null,
+            justificativa_gerente: null,
+            analista_avaliador: null,
+            data_avaanalista: null,
+            justificativa_analista: null,
+            pontuacao: "0",
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            pending: "1",
+            completed: "1",
+            refunded: "0",
+            rejected: "0",
+            cancelled: "0",
+            points_committed: "5",
+            points_reserved: "2",
+            points_refunded: "0",
+          },
+        ]),
+    };
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue(dataSource as any);
+
+    const result = await DashboardService.getSummaryData("SEST", undefined, undefined, {
+      includeReport: true,
+    });
+
+    expect(result.report?.evaluationMetrics.adminReview).toMatchObject({
+      totalReviewed: 1,
+      approved: 1,
+      pending: 1,
+    });
+    expect(result.report?.evaluationMetrics.ideaEvaluatorReview).toMatchObject({
+      totalReviewed: 1,
+      approved: 1,
+      pending: 1,
+    });
+    expect(result.report?.ideas[0]).toMatchObject({
+      adminEvaluator: "Admin Maria",
+      ideaEvaluator: "Avaliador João",
+    });
+  });
+
   it("throws CustomError 400 for invalid dassOffice", async () => {
     await expect(
       DashboardService.getSummaryData("INVALID")
     ).rejects.toMatchObject({ statusCode: 400 });
+  });
+});
+
+describe("DashboardService — getMonthlyData", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("uses the implemented expression for monthly approved totals", async () => {
+    const qb = buildQueryBuilder({}, []);
+    const dataSource = buildDataSource(qb, []);
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue(dataSource as any);
+
+    await DashboardService.getMonthlyData("SEST");
+
+    const monthlyImplementedCall = qb.addSelect.mock.calls.find(
+      (call) => call[1] === "total_aprovados"
+    );
+
+    expectImplementedExpression(String(monthlyImplementedCall?.[0] ?? ""));
   });
 });
 
@@ -119,6 +293,27 @@ describe("DashboardService — getEngagementData", () => {
 
     expect(Array.isArray(result)).toBe(true);
     expect(result.length).toBe(2);
+  });
+
+  it("uses the implemented expression for contributor implemented totals", async () => {
+    const rows = [
+      { nome: "Ana", setor: "Produção", total_ideas: "5", implemented_ideas: "3" },
+    ];
+    const qb = buildQueryBuilder({}, rows);
+    const dataSource = buildDataSource(qb, []);
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue(dataSource as any);
+
+    await DashboardService.getEngagementData("SEST");
+
+    const implementedCall = qb.addSelect.mock.calls.find(
+      (call) => call[1] === "implemented_ideas"
+    );
+    const orderCall = qb.addOrderBy.mock.calls.find((call) =>
+      String(call[0]).includes("COUNT(CASE WHEN")
+    );
+
+    expectImplementedExpression(String(implementedCall?.[0] ?? ""));
+    expectImplementedExpression(String(orderCall?.[0] ?? ""));
   });
 
   it("throws CustomError 400 for invalid dassOffice", async () => {
@@ -154,6 +349,16 @@ describe("DashboardService — getIdeaHighlights", () => {
       comments: 0,
       syntheticEngagement: false,
     });
+
+    const statusCall = qb.addSelect.mock.calls.find(
+      (call) => call[1] === "status"
+    );
+    const orderCall = qb.orderBy.mock.calls.find((call) =>
+      String(call[0]).includes("valor_amortizado")
+    );
+
+    expectImplementedExpression(String(statusCall?.[0] ?? ""));
+    expectImplementedExpression(String(orderCall?.[0] ?? ""));
   });
 
   it("truncates description longer than 150 characters", async () => {

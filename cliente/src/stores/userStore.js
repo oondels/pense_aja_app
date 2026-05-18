@@ -11,6 +11,29 @@ const readPermissions = () => {
   }
 }
 
+const readRoles = () => {
+  try {
+    const stored = sessionStorage.getItem('roles')
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+const normalizeList = (value) => [...new Set(Array.isArray(value) ? value.filter(Boolean) : [])]
+
+const normalizeRoles = (value) => {
+  if (!Array.isArray(value)) return []
+  const rolesByKey = new Map()
+  value.filter(Boolean).forEach((role) => {
+    const key = `${role.code || ''}:${role.dassOffice || ''}`
+    if (role.code && !rolesByKey.has(key)) {
+      rolesByKey.set(key, role)
+    }
+  })
+  return [...rolesByKey.values()]
+}
+
 const readUnitConfig = (unit = localStorage.getItem('unidadeDass')) => {
   if (!unit) return null
   try {
@@ -32,11 +55,11 @@ export const useUserStore = defineStore('user', () => {
   const formattedUserName = ref('')
   const dassOffice = ref(localStorage.getItem('unidadeDass') || '')
   const permissions = ref(readPermissions())
-  const snapshotVersion = ref(Number(sessionStorage.getItem('snapshotVersion') || 0))
-  const snapshotExpiresAt = ref(sessionStorage.getItem('snapshotExpiresAt') || '')
+  const roles = ref(readRoles())
   const sessionContextLoading = ref(false)
   const sessionContextError = ref('')
   const unitConfig = ref(readUnitConfig(dassOffice.value))
+  const isAdminMaster = computed(() => roles.value.some((role) => role.code === 'admin_master'))
 
   const userData = computed(() => ({
     matricula: matricula.value,
@@ -47,6 +70,7 @@ export const useUserStore = defineStore('user', () => {
     gerente: gerente.value,
     unidade: dassOffice.value,
     permissions: permissions.value,
+    roles: roles.value,
     unitConfig: unitConfig.value,
   }))
 
@@ -60,8 +84,7 @@ export const useUserStore = defineStore('user', () => {
     haveEmail.value = sessionStorage.getItem('haveEmail') === 'true'
     dassOffice.value = localStorage.getItem('unidadeDass') || ''
     permissions.value = readPermissions()
-    snapshotVersion.value = Number(sessionStorage.getItem('snapshotVersion') || 0)
-    snapshotExpiresAt.value = sessionStorage.getItem('snapshotExpiresAt') || ''
+    roles.value = readRoles()
     unitConfig.value = readUnitConfig(dassOffice.value)
     formattedUserName.value = formateUserName();
   }
@@ -73,11 +96,9 @@ export const useUserStore = defineStore('user', () => {
     usuario.value = ''
     haveEmail.value = false
     permissions.value = []
-    snapshotVersion.value = 0
-    snapshotExpiresAt.value = ''
+    roles.value = []
     sessionStorage.removeItem('permissions')
-    sessionStorage.removeItem('snapshotVersion')
-    sessionStorage.removeItem('snapshotExpiresAt')
+    sessionStorage.removeItem('roles')
     if (dassOffice.value) {
       localStorage.removeItem(`unitConfig:${dassOffice.value}`)
     }
@@ -114,13 +135,11 @@ export const useUserStore = defineStore('user', () => {
     try {
       const context = await getSessionContext(unit)
       dassOffice.value = context.dassOffice
-      permissions.value = context.permissions || []
-      snapshotVersion.value = context.snapshotVersion || 0
-      snapshotExpiresAt.value = context.snapshotExpiresAt || ''
+      permissions.value = normalizeList(context.permissions)
+      roles.value = normalizeRoles(context.roles)
       unitConfig.value = context.unitConfig || null
       sessionStorage.setItem('permissions', JSON.stringify(permissions.value))
-      sessionStorage.setItem('snapshotVersion', String(snapshotVersion.value))
-      sessionStorage.setItem('snapshotExpiresAt', snapshotExpiresAt.value)
+      sessionStorage.setItem('roles', JSON.stringify(roles.value))
       if (unitConfig.value) {
         localStorage.setItem(`unitConfig:${dassOffice.value}`, JSON.stringify(unitConfig.value))
       }
@@ -129,7 +148,9 @@ export const useUserStore = defineStore('user', () => {
       sessionContextError.value =
         error.response?.data?.message || 'Não foi possível carregar permissões.'
       permissions.value = []
+      roles.value = []
       sessionStorage.removeItem('permissions')
+      sessionStorage.removeItem('roles')
       return null
     } finally {
       sessionContextLoading.value = false
@@ -146,8 +167,8 @@ export const useUserStore = defineStore('user', () => {
     haveEmail,
     dassOffice,
     permissions,
-    snapshotVersion,
-    snapshotExpiresAt,
+    roles,
+    isAdminMaster,
     sessionContextLoading,
     sessionContextError,
     unitConfig,

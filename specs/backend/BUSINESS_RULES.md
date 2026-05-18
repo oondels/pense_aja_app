@@ -70,6 +70,7 @@ escopo da unidade.
 ## Cadastro de Ideia
 
 - O cadastro é a origem do ciclo operacional da ideia.
+- A submissão de ideias é pública e não depende de sessão autenticada.
 - A unidade vinculada ao registro define o escopo funcional do cadastro.
 - O backend valida campos essenciais, unidade e duplicidade.
 - As oito perdas lean são convertidas para colunas binárias.
@@ -109,22 +110,28 @@ escopo da unidade.
 
 - JWT representa identidade e sessão.
 - Permissões de negócio são resolvidas por RBAC no contexto da unidade.
-- A mesma matrícula pode ter papéis diferentes em unidades diferentes.
+- A mesma matrícula pode ter múltiplos papéis ativos na mesma unidade e papéis diferentes em unidades diferentes.
+- `admin_master` ativo em qualquer unidade tem escopo administrativo global.
+- `unit_admin` gerencia apenas papéis abaixo dele dentro de sua unidade.
+- `idea_admin` gerencia apenas `idea_submitter` dentro de sua unidade.
+- `marketplace_admin` gerencia apenas `marketplace_operator` dentro de sua unidade.
+- Operações de RBAC validam a hierarquia no backend para listar, criar, editar e remover vínculos.
+- Migrations de backfill RBAC devem ser idempotentes e recompor vínculos
+  `role -> permission` sem remover permissões existentes.
 - Rotas sensíveis usam permissões atômicas como:
-  - `idea.submit`
   - `idea.view`
   - `idea.evaluate`
   - `idea.exclude`
   - `catalog.manage`
-  - `marketplace.request.create`
   - `marketplace.request.approve`
   - `marketplace.refund`
   - `rbac.manage`
   - `reward.legacy.redeem` _(fluxo legado: `PUT /pense-aja/purchase/:registration`)_
-- O backend cria snapshots curtos de sessão em `rbac_session_snapshots`.
-- Snapshots possuem TTL e versão.
-- Criação, alteração ou remoção de vínculo RBAC invalida snapshots da matrícula
-  na unidade afetada.
+- `idea.submit` pode existir no modelo RBAC por compatibilidade, mas o cadastro
+  público de ideias não exige essa permissão.
+- `marketplace.request.create` pode existir no modelo RBAC por compatibilidade,
+  mas a criação de solicitação de resgate exige apenas usuário autenticado.
+- O backend resolve papéis e permissões agregados a cada request autenticado, sem snapshot persistido.
 - `funcao` permanece no JWT e em dados de perfil como atributo legado de
   identidade, não como fonte autorizadora principal.
 
@@ -147,6 +154,8 @@ escopo da unidade.
 - Aprovação ou conclusão de resgate gera `commit`.
 - Rejeição ou cancelamento elegível gera `release`.
 - Estorno posterior gera `refund`.
+- Lançamentos de `marketplace_redemption` usam `source_id` igual ao id da
+  solicitação de resgate; o item de catálogo fica em `metadata.catalogItemId`.
 - Reversões e transições relacionadas referenciam lançamento anterior quando
   aplicável.
 
@@ -185,6 +194,10 @@ escopo da unidade.
 - `pense_aja.pense_aja_premios` permanece como histórico/backfill.
 - Antes de validar saldo, o backend sincroniza `points_balance_projection` e
   bloqueia o registro com `FOR UPDATE`.
+- Qualquer usuário autenticado pode criar solicitação de resgate para a própria
+  matrícula; `marketplace.request.create` não é exigida nesse fluxo.
+- A criação de solicitação ignora matrícula enviada no corpo e usa a matrícula
+  do token autenticado.
 - Solicitação valida item ativo, disponibilidade e saldo disponível.
 - Solicitação cria `reserve` e entra como `pending_approval`.
 - Aprovação exige `marketplace.request.approve`, cria `commit` e conclui a
@@ -193,6 +206,11 @@ escopo da unidade.
   `rejected`.
 - Estorno exige `marketplace.request.approve` ou `marketplace.refund`, cria
   `refund` e marca `refunded`.
+- Listagem administrativa de solicitações aceita filtros por status e matrícula
+  e retorna paginação.
+- Consulta própria exige token e sempre usa a matrícula autenticada.
+- Consulta pública permite leitura por unidade e matrícula, sem permitir
+  transições de status.
 - O endpoint legado de compra direta cria `reserve`, `commit` e uma solicitação
   já concluída para preservar compatibilidade.
 - O fluxo público atual não executa voucher, separação ou fulfillment no Pense Aja.
@@ -243,7 +261,11 @@ e mutação relevante.
 
 - Dashboard é projeção de leitura do domínio.
 - Dashboard não cria regra de negócio nova.
+- Ideia implementada no dashboard é uma ideia fora de espera (`em_espera != '1'`)
+  com aprovação de analista ou gerente.
 - Indicadores de pontuação e resgate derivam de ledger e marketplace.
+- Relatórios analíticos separam avaliações de Admin e Avaliador de ideias para
+  acompanhar cobertura, aprovação e pendências de cada grupo avaliador.
 - Destaques de ideias não devem tratar dados sintéticos como métrica canônica.
 - Métricas devem refletir estados consolidados do backend.
 

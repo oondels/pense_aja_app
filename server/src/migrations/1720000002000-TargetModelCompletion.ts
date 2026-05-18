@@ -14,8 +14,6 @@ export class TargetModelCompletion1720000002000
   name = "TargetModelCompletion1720000002000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
-
     const hasRefunded = await queryRunner.hasColumn(
       "pense_aja.points_balance_projection",
       "total_refunded"
@@ -56,7 +54,7 @@ export class TargetModelCompletion1720000002000
             name: "id",
             type: "uuid",
             isPrimary: true,
-            default: "uuid_generate_v4()",
+            default: "gen_random_uuid()",
           },
           { name: "matricula", type: "bigint", isUnique: true },
           { name: "nome", type: "varchar", isNullable: true },
@@ -77,7 +75,7 @@ export class TargetModelCompletion1720000002000
             name: "id",
             type: "uuid",
             isPrimary: true,
-            default: "uuid_generate_v4()",
+            default: "gen_random_uuid()",
           },
           { name: "unidade_dass", type: "varchar", isUnique: true },
           { name: "active", type: "boolean", default: "true" },
@@ -98,7 +96,7 @@ export class TargetModelCompletion1720000002000
             name: "id",
             type: "uuid",
             isPrimary: true,
-            default: "uuid_generate_v4()",
+            default: "gen_random_uuid()",
           },
           { name: "unidade_dass", type: "varchar" },
           { name: "classification", type: "varchar" },
@@ -130,7 +128,7 @@ export class TargetModelCompletion1720000002000
             name: "id",
             type: "uuid",
             isPrimary: true,
-            default: "uuid_generate_v4()",
+            default: "gen_random_uuid()",
           },
           { name: "unidade_dass", type: "varchar" },
           { name: "step_code", type: "varchar" },
@@ -164,7 +162,7 @@ export class TargetModelCompletion1720000002000
             name: "id",
             type: "uuid",
             isPrimary: true,
-            default: "uuid_generate_v4()",
+            default: "gen_random_uuid()",
           },
           { name: "unidade_dass", type: "varchar", isUnique: true },
           { name: "allow_refund_after_commit", type: "boolean", default: "true" },
@@ -187,7 +185,7 @@ export class TargetModelCompletion1720000002000
             name: "id",
             type: "uuid",
             isPrimary: true,
-            default: "uuid_generate_v4()",
+            default: "gen_random_uuid()",
           },
           { name: "legacy_product_id", type: "varchar", isNullable: true },
           { name: "unidade_dass", type: "varchar" },
@@ -224,7 +222,7 @@ export class TargetModelCompletion1720000002000
             name: "id",
             type: "uuid",
             isPrimary: true,
-            default: "uuid_generate_v4()",
+            default: "gen_random_uuid()",
           },
           { name: "redemption_request_id", type: "bigint" },
           { name: "step_type", type: "varchar" },
@@ -257,7 +255,7 @@ export class TargetModelCompletion1720000002000
             name: "id",
             type: "uuid",
             isPrimary: true,
-            default: "uuid_generate_v4()",
+            default: "gen_random_uuid()",
           },
           { name: "redemption_request_id", type: "bigint" },
           { name: "adapter", type: "varchar" },

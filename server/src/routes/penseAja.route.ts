@@ -24,8 +24,6 @@ router.put(
 router.get("/:dassOffice", PenseAjaController.listIdeas);
 router.post(
   "/:dassOffice",
-  verifyToken,
-  requirePermission("idea.submit", (req) => req.params.dassOffice),
   PenseAjaController.createIdea
 );
 router.get(

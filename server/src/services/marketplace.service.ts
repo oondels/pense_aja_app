@@ -4,6 +4,7 @@ import MarketplaceCatalogItemEntity from "../models/MarketplaceCatalogItem";
 import MarketplaceFulfillmentStepEntity from "../models/MarketplaceFulfillmentStep";
 import MarketplaceRedemptionRequestEntity from "../models/MarketplaceRedemptionRequest";
 import UnitMarketplacePolicyEntity from "../models/UnitMarketplacePolicy";
+import UsuarioEntity from "../models/Usuario";
 import { CustomError } from "../types/CustomError";
 import {
   AuthenticatedSessionContext,
@@ -11,7 +12,10 @@ import {
   DassOffice,
   ExecuteFulfillmentInput,
   MarketplaceCatalogItemRecord,
+  MarketplaceRequestListFilters,
+  MarketplaceRequestListResponse,
   MarketplaceRequestRecord,
+  MarketplaceRequestStatus,
   MarketplaceTransitionInput,
   UpsertCatalogItemInput,
 } from "../types/contracts";
@@ -19,6 +23,11 @@ import { assertDassOffice } from "../utils/dassOffice";
 import { AuditService } from "./audit.service";
 import { LedgerService } from "./ledger.service";
 import { VoucherAdapterService } from "./voucher-adapter.service";
+
+interface MarketplaceRequestActor {
+  registration: string;
+  username: string;
+}
 
 const mapCatalogRow = (
   row: Record<string, unknown>
@@ -41,8 +50,17 @@ const mapCatalogRow = (
 const mapRequestRow = (row: Record<string, unknown>): MarketplaceRequestRecord => ({
   id: Number(row.id),
   registration: String(row.registration),
+  requesterName: (row.requesterName as string | null) ?? null,
   dassOffice: row.dassOffice as DassOffice,
   catalogItemId: String(row.catalogItemId),
+  catalogItemName: row.catalogItemName ? String(row.catalogItemName) : null,
+  catalogItemPointsCost:
+    row.catalogItemPointsCost === null || row.catalogItemPointsCost === undefined
+      ? null
+      : Number(row.catalogItemPointsCost),
+  catalogItemType: row.catalogItemType
+    ? (row.catalogItemType as MarketplaceCatalogItemRecord["itemType"])
+    : null,
   requestStatus: row.requestStatus as MarketplaceRequestRecord["requestStatus"],
   reservedLedgerEntryId: row.reservedLedgerEntryId
     ? Number(row.reservedLedgerEntryId)
@@ -62,6 +80,63 @@ const releaseQueryRunner = async (queryRunner: any) => {
     await queryRunner.release();
   }
 };
+
+const requestStatuses: MarketplaceRequestStatus[] = [
+  "pending_approval",
+  "approved",
+  "rejected",
+  "fulfillment_in_progress",
+  "completed",
+  "cancelled",
+  "refunded",
+];
+
+const normalizePage = (value?: string | number) => {
+  const page = Number(value ?? 1);
+  return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+};
+
+const normalizeLimit = (value?: string | number) => {
+  const limit = Number(value ?? 5);
+  if (!Number.isFinite(limit) || limit <= 0) return 5;
+  return Math.min(Math.floor(limit), 50);
+};
+
+const normalizeStatus = (status?: string) => {
+  if (!status) return undefined;
+  if (!requestStatuses.includes(status as MarketplaceRequestStatus)) {
+    throw new CustomError("Status de solicitação inválido.", 400);
+  }
+  return status as MarketplaceRequestStatus;
+};
+
+const normalizeRegistration = (value?: string | number) => {
+  if (value === undefined || value === null || value === "") return "";
+  const registration = String(value).trim();
+  if (!/^\d+$/.test(registration)) {
+    throw new CustomError("Matrícula inválida para consulta de marketplace.", 400);
+  }
+  return registration;
+};
+
+const applyRequestSelects = (query: any) =>
+  query
+    .select("request.id", "id")
+    .addSelect("request.matricula", "registration")
+    .addSelect("usuario.nome", "requesterName")
+    .addSelect("request.unidade_dass", "dassOffice")
+    .addSelect("request.catalog_item_id", "catalogItemId")
+    .addSelect("catalog.name", "catalogItemName")
+    .addSelect("catalog.points_cost", "catalogItemPointsCost")
+    .addSelect("catalog.item_type", "catalogItemType")
+    .addSelect("request.request_status", "requestStatus")
+    .addSelect("request.reserved_ledger_entry_id", "reservedLedgerEntryId")
+    .addSelect("request.approval_actor_registration", "approvalActorRegistration")
+    .addSelect("request.approval_actor_name", "approvalActorName")
+    .addSelect("request.fulfillment_type", "fulfillmentType")
+    .addSelect("request.legacy_prize_id", "legacyPrizeId")
+    .addSelect("request.createdat", "createdAt")
+    .addSelect("request.updatedat", "updatedAt");
 
 export const MarketplaceService = {
   async listCatalog(dassOffice: string): Promise<MarketplaceCatalogItemRecord[]> {
@@ -215,10 +290,10 @@ export const MarketplaceService = {
 
   async createRequest(
     input: CreateMarketplaceRequestInput,
-    actor: AuthenticatedSessionContext
+    actor: MarketplaceRequestActor
   ): Promise<MarketplaceRequestRecord> {
     const validDassOffice = assertDassOffice(input.dassOffice);
-    const registration = String(input.registration ?? actor.registration);
+    const registration = String(actor.registration);
     const dataSource = await initializeDatabase();
     const queryRunner = dataSource.createQueryRunner();
 
@@ -266,29 +341,13 @@ export const MarketplaceService = {
       }
 
       const availableBalance = Number(balanceRows[0]?.available_balance ?? 0);
+
       if (availableBalance < Number(item.points_cost)) {
         throw new CustomError("Pontos insuficientes para solicitar resgate.", 400);
       }
 
       const now = new Date();
       const correlationId = randomUUID();
-      const reserveEntry = await LedgerService.createEntry(queryRunner, {
-        registration,
-        dassOffice: validDassOffice,
-        entryType: "reserve",
-        amount: Number(item.points_cost),
-        sourceType: "marketplace_redemption",
-        sourceId: `catalog:${item.id}`,
-        correlationId,
-        reason: input.reason ?? "Reserva de saldo para solicitação de resgate.",
-        createdByRegistration: actor.registration,
-        createdByName: actor.username,
-        metadata: {
-          catalogItemId: String(item.id),
-          itemType: item.item_type,
-        },
-      });
-
       const requestRepository = queryRunner.manager.getRepository(
         MarketplaceRedemptionRequestEntity
       );
@@ -298,7 +357,7 @@ export const MarketplaceService = {
           unidade_dass: validDassOffice,
           catalog_item_id: String(item.id),
           request_status: "pending_approval",
-          reserved_ledger_entry_id: String(reserveEntry.id),
+          reserved_ledger_entry_id: null,
           approval_actor_registration: null,
           approval_actor_name: null,
           fulfillment_type:
@@ -309,13 +368,35 @@ export const MarketplaceService = {
         })
       );
 
+      const reserveEntry = await LedgerService.createEntry(queryRunner, {
+        registration,
+        dassOffice: validDassOffice,
+        entryType: "reserve",
+        amount: Number(item.points_cost),
+        sourceType: "marketplace_redemption",
+        sourceId: String(request.id),
+        correlationId,
+        reason: input.reason ?? "Reserva de saldo para solicitação de resgate.",
+        createdByRegistration: actor.registration,
+        createdByName: actor.username,
+        metadata: {
+          catalogItemId: String(item.id),
+          itemType: item.item_type,
+        },
+      });
+
+      await requestRepository.update(
+        { id: request.id },
+        { reserved_ledger_entry_id: String(reserveEntry.id), updatedat: now }
+      );
+
       await AuditService.recordEvent(queryRunner, {
         eventType: "marketplace.request.created",
         aggregateType: "marketplace_redemption",
         aggregateId: request.id,
         dassOffice: validDassOffice,
         actorRegistration: actor.registration,
-        actorRole: "marketplace.request.create",
+        actorRole: "authenticated_user",
         reason: input.reason ?? null,
         afterState: {
           request_status: "pending_approval",
@@ -343,51 +424,100 @@ export const MarketplaceService = {
     }
   },
 
-  async listRequests(dassOffice: string): Promise<MarketplaceRequestRecord[]> {
-    const validDassOffice = assertDassOffice(dassOffice);
+  async listRequests(
+    filters: MarketplaceRequestListFilters
+  ): Promise<MarketplaceRequestListResponse> {
+    const validDassOffice = assertDassOffice(filters.dassOffice);
+    const page = normalizePage(filters.page);
+    const limit = normalizeLimit(filters.limit);
+    const status = normalizeStatus(filters.status ? String(filters.status) : undefined);
+    const registration = normalizeRegistration(filters.registration);
     const dataSource = await initializeDatabase();
-    const rows = await dataSource
+    const query = dataSource
       .getRepository(MarketplaceRedemptionRequestEntity)
       .createQueryBuilder("request")
-      .select("request.id", "id")
-      .addSelect("request.matricula", "registration")
-      .addSelect("request.unidade_dass", "dassOffice")
-      .addSelect("request.catalog_item_id", "catalogItemId")
-      .addSelect("request.request_status", "requestStatus")
-      .addSelect("request.reserved_ledger_entry_id", "reservedLedgerEntryId")
-      .addSelect("request.approval_actor_registration", "approvalActorRegistration")
-      .addSelect("request.approval_actor_name", "approvalActorName")
-      .addSelect("request.fulfillment_type", "fulfillmentType")
-      .addSelect("request.legacy_prize_id", "legacyPrizeId")
-      .addSelect("request.createdat", "createdAt")
-      .addSelect("request.updatedat", "updatedAt")
+      .leftJoin(
+        MarketplaceCatalogItemEntity as any,
+        "catalog",
+        "catalog.id::text = request.catalog_item_id AND catalog.unidade_dass = request.unidade_dass"
+      )
+      .leftJoin(
+        UsuarioEntity as any,
+        "usuario",
+        "usuario.matricula = request.matricula"
+      )
       .where("request.unidade_dass = :dassOffice", { dassOffice: validDassOffice })
-      .orderBy("request.updatedat", "DESC")
-      .getRawMany<Record<string, unknown>>();
+      .orderBy("request.updatedat", "DESC");
 
-    return rows.map(mapRequestRow);
+    if (status) {
+      query.andWhere("request.request_status = :status", { status });
+    }
+
+    if (registration) {
+      query.andWhere("request.matricula = :registration", { registration });
+    }
+
+    const total = await query.clone().getCount();
+    const rows = await applyRequestSelects(query)
+      .offset((page - 1) * limit)
+      .limit(limit)
+      .getRawMany();
+
+    return {
+      data: rows.map(mapRequestRow),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+    };
+  },
+
+  async listPublicRequests(
+    filters: MarketplaceRequestListFilters
+  ): Promise<MarketplaceRequestListResponse> {
+    if (!filters.registration) {
+      throw new CustomError("Matrícula obrigatória para consulta pública.", 400);
+    }
+
+    return this.listRequests(filters);
+  },
+
+  async listOwnRequests(
+    filters: MarketplaceRequestListFilters,
+    registration: string | number | undefined
+  ): Promise<MarketplaceRequestListResponse> {
+    if (!registration) {
+      throw new CustomError("Matrícula autenticada obrigatória.", 400);
+    }
+
+    return this.listRequests({
+      ...filters,
+      registration,
+    });
   },
 
   async getRequestById(id: string, dassOffice: DassOffice): Promise<MarketplaceRequestRecord> {
     const dataSource = await initializeDatabase();
-    const row = await dataSource
+    const query = dataSource
       .getRepository(MarketplaceRedemptionRequestEntity)
       .createQueryBuilder("request")
-      .select("request.id", "id")
-      .addSelect("request.matricula", "registration")
-      .addSelect("request.unidade_dass", "dassOffice")
-      .addSelect("request.catalog_item_id", "catalogItemId")
-      .addSelect("request.request_status", "requestStatus")
-      .addSelect("request.reserved_ledger_entry_id", "reservedLedgerEntryId")
-      .addSelect("request.approval_actor_registration", "approvalActorRegistration")
-      .addSelect("request.approval_actor_name", "approvalActorName")
-      .addSelect("request.fulfillment_type", "fulfillmentType")
-      .addSelect("request.legacy_prize_id", "legacyPrizeId")
-      .addSelect("request.createdat", "createdAt")
-      .addSelect("request.updatedat", "updatedAt")
+      .leftJoin(
+        MarketplaceCatalogItemEntity as any,
+        "catalog",
+        "catalog.id::text = request.catalog_item_id AND catalog.unidade_dass = request.unidade_dass"
+      )
+      .leftJoin(
+        UsuarioEntity as any,
+        "usuario",
+        "usuario.matricula = request.matricula"
+      )
       .where("request.id = :id", { id: Number(id) })
-      .andWhere("request.unidade_dass = :dassOffice", { dassOffice })
-      .getRawOne<Record<string, unknown>>();
+      .andWhere("request.unidade_dass = :dassOffice", { dassOffice });
+
+    const row = await applyRequestSelects(query)
+      .getRawOne();
 
     if (!row) {
       throw new CustomError("Solicitação de marketplace não encontrada.", 404);
@@ -441,6 +571,7 @@ export const MarketplaceService = {
       );
       const request = await requestRepository.findOne({
         where: { id: Number(id), unidade_dass: validDassOffice },
+        lock: { mode: "pessimistic_write" },
       });
 
       if (!request) {
@@ -582,7 +713,7 @@ export const MarketplaceService = {
       const request = await requestRepository.findOne({
         where: { id: Number(id), unidade_dass: validDassOffice },
       });
-
+      
       if (!request) {
         throw new CustomError("Solicitação de marketplace não encontrada.", 404);
       }

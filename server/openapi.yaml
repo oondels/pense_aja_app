@@ -175,6 +175,11 @@ paths:
         - $ref: "#/components/parameters/DassOfficePath"
         - $ref: "#/components/parameters/StartDateQuery"
         - $ref: "#/components/parameters/EndDateQuery"
+        - in: query
+          name: includeReport
+          schema:
+            type: boolean
+          description: Quando true, inclui dados canônicos para geração do relatório XLSX.
         - name: name
           in: query
           required: false
@@ -250,14 +255,12 @@ paths:
       tags: [Pense Aja]
       summary: Criar ideia
       description: >
-        Cadastra uma nova ideia na unidade Dass. Exige token válido e permissão
-        `idea.submit` para a unidade. O backend gera auditoria e notificação ao
-        gerente quando aplicável.
+        Cadastra uma nova ideia na unidade Dass. A rota é pública e não exige
+        autenticação. O backend valida unidade, payload, colaborador e
+        duplicidade, além de gerar auditoria e notificação ao gerente quando
+        aplicável.
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
-        - $ref: "#/components/parameters/CookieHeader"
-      security:
-        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -290,10 +293,6 @@ paths:
                 id: 101
         "400":
           $ref: "#/components/responses/ValidationError"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -551,8 +550,8 @@ paths:
       summary: Solicitar resgate no marketplace
       description: >
         Cria solicitação de resgate, reserva pontos no ledger e deixa a
-        solicitação em `pending_approval`. Exige token válido e permissão
-        `marketplace.request.create` na unidade.
+        solicitação em `pending_approval`. Exige token válido; qualquer usuário
+        autenticado pode solicitar resgate para a própria matrícula.
       parameters:
         - $ref: "#/components/parameters/CookieHeader"
       security:
@@ -566,8 +565,6 @@ paths:
             example:
               dassOffice: "SEST"
               catalogItemId: "6f60f952-ea22-49b9-a1dd-f346f42f38f2"
-              registration: 1234567
-              requesterName: "Maria Souza"
               reason: "Resgate de premiação por pontos acumulados."
       responses:
         "201":
@@ -593,8 +590,6 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
     get:
@@ -775,8 +770,9 @@ paths:
       tags: [User]
       summary: Obter contexto de sessão por unidade
       description: >
-        Resolve permissões efetivas do usuário autenticado na unidade e persiste
-        snapshot curto de autorização. Exige token válido.
+        Resolve permissões e papéis efetivos agregados de todos os papéis
+        ativos do usuário autenticado na unidade, sem snapshot persistido.
+        Exige token válido.
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
         - $ref: "#/components/parameters/CookieHeader"
@@ -793,8 +789,15 @@ paths:
                 registration: "1234567"
                 dassOffice: "SEST"
                 permissions:
-                  - "idea.submit"
-                  - "marketplace.request.create"
+                  - "catalog.manage"
+                  - "marketplace.request.approve"
+                roles:
+                  - code: "marketplace_admin"
+                    nome: "Administrador do marketplace"
+                    dassOffice: "SEST"
+                  - code: "marketplace_operator"
+                    nome: "Operador do marketplace"
+                    dassOffice: "SEST"
                 unitConfig:
                   dassOffice: "SEST"
                   active: true
@@ -805,8 +808,6 @@ paths:
                       score: 4
                       displayOrder: 1
                       active: true
-                snapshotVersion: 3
-                snapshotExpiresAt: "2026-04-22T13:00:00.000Z"
         "400":
           $ref: "#/components/responses/ValidationError"
         "401":
@@ -821,10 +822,9 @@ paths:
       tags: [RBAC]
       summary: Listar papéis RBAC
       description: >
-        Lista papéis disponíveis para administração de permissões. Exige token
-        válido e permissão `rbac.manage`.
+        Lista apenas papéis disponíveis no escopo administrativo do ator
+        autenticado. Exige token válido.
       parameters:
-        - $ref: "#/components/parameters/DassOfficeQueryOptional"
         - $ref: "#/components/parameters/CookieHeader"
       security:
         - cookieAuth: []
@@ -855,8 +855,8 @@ paths:
       tags: [RBAC]
       summary: Listar vínculos RBAC
       description: >
-        Lista vínculos usuário/unidade/papel com filtros opcionais. Exige token
-        válido e permissão `rbac.manage`.
+        Lista vínculos usuário/unidade/papel dentro do escopo administrativo do
+        ator autenticado, com filtros opcionais. Exige token válido.
       parameters:
         - $ref: "#/components/parameters/DassOfficeQueryOptional"
         - name: registration
@@ -872,6 +872,18 @@ paths:
             type: string
             enum: ["true", "false"]
           description: Filtra vínculos ativos ou inativos.
+        - name: roleCode
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Código do papel para filtro.
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Busca livre por matrícula, unidade, código ou nome do papel.
         - $ref: "#/components/parameters/CookieHeader"
       security:
         - cookieAuth: []
@@ -908,8 +920,8 @@ paths:
       tags: [RBAC]
       summary: Criar vínculo RBAC
       description: >
-        Cria vínculo usuário/unidade/papel. Exige token válido e permissão
-        `rbac.manage` na unidade enviada no payload.
+        Cria um ou mais vínculos usuário/unidade/papel dentro do escopo
+        administrativo do ator. Exige token válido.
       parameters:
         - $ref: "#/components/parameters/CookieHeader"
       security:
@@ -923,29 +935,31 @@ paths:
             example:
               registration: "1234567"
               dassOffice: "SEST"
-              roleCode: "analista"
+              roleCodes: ["idea_submitter", "marketplace_operator"]
               active: true
               activeFrom: "2026-04-22T12:00:00.000Z"
               activeUntil: null
       responses:
         "201":
-          description: Vínculo criado.
+          description: Vínculos criados ou já existentes.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RbacAssignment"
+                type: array
+                items:
+                  $ref: "#/components/schemas/RbacAssignment"
               example:
-                id: 11
-                registration: "1234567"
-                dassOffice: "SEST"
-                roleId: 2
-                roleCode: "analista"
-                roleName: "Analista"
-                active: true
-                activeFrom: "2026-04-22T12:00:00.000Z"
-                activeUntil: null
-                createdAt: "2026-04-22T12:00:00.000Z"
-                updatedAt: "2026-04-22T12:00:00.000Z"
+                - id: 11
+                  registration: "1234567"
+                  dassOffice: "SEST"
+                  roleId: 2
+                  roleCode: "idea_submitter"
+                  roleName: "Colaborador que cadastra ideias"
+                  active: true
+                  activeFrom: "2026-04-22T12:00:00.000Z"
+                  activeUntil: null
+                  createdAt: "2026-04-22T12:00:00.000Z"
+                  updatedAt: "2026-04-22T12:00:00.000Z"
         "400":
           $ref: "#/components/responses/ValidationError"
         "401":
@@ -960,11 +974,10 @@ paths:
       tags: [RBAC]
       summary: Consultar vínculo RBAC
       description: >
-        Retorna um vínculo RBAC por identificador. Exige token válido e permissão
-        `rbac.manage`.
+        Retorna um vínculo RBAC por identificador quando o vínculo está no
+        escopo administrativo do ator. Exige token válido.
       parameters:
         - $ref: "#/components/parameters/AssignmentIdPath"
-        - $ref: "#/components/parameters/DassOfficeQueryOptional"
         - $ref: "#/components/parameters/CookieHeader"
       security:
         - cookieAuth: []
@@ -980,8 +993,8 @@ paths:
                 registration: "1234567"
                 dassOffice: "SEST"
                 roleId: 2
-                roleCode: "analista"
-                roleName: "Analista"
+                roleCode: "idea_reviewer"
+                roleName: "Avaliador de ideias"
                 active: true
                 activeFrom: "2026-04-22T12:00:00.000Z"
                 activeUntil: null
@@ -999,11 +1012,13 @@ paths:
       tags: [RBAC]
       summary: Atualizar vínculo RBAC
       description: >
-        Atualiza papel, vigência ou status de um vínculo. Exige token válido e
-        permissão `rbac.manage`.
+        Atualiza vigência ou status de vínculos dentro do escopo
+        administrativo do ator. Aceita roleCode para compatibilidade com
+        atualização de um vínculo único e roleCodes para adicionar ou atualizar
+        múltiplos papéis da mesma matrícula/unidade identificada pelo vínculo
+        informado, sem remover papéis omitidos. Exige token válido.
       parameters:
         - $ref: "#/components/parameters/AssignmentIdPath"
-        - $ref: "#/components/parameters/DassOfficeQueryOptional"
         - $ref: "#/components/parameters/CookieHeader"
       security:
         - cookieAuth: []
@@ -1014,29 +1029,44 @@ paths:
             schema:
               $ref: "#/components/schemas/UpdateRbacAssignmentInput"
             example:
-              roleCode: "gerente"
+              roleCodes: ["idea_admin", "marketplace_operator"]
               active: true
               activeFrom: "2026-04-22T12:00:00.000Z"
               activeUntil: null
       responses:
         "200":
-          description: Vínculo atualizado.
+          description: Vínculo atualizado ou vínculos afetados quando roleCodes é enviado.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RbacAssignment"
+                oneOf:
+                  - $ref: "#/components/schemas/RbacAssignment"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/RbacAssignment"
               example:
-                id: 11
-                registration: "1234567"
-                dassOffice: "SEST"
-                roleId: 3
-                roleCode: "gerente"
-                roleName: "Gerente"
-                active: true
-                activeFrom: "2026-04-22T12:00:00.000Z"
-                activeUntil: null
-                createdAt: "2026-04-22T12:00:00.000Z"
-                updatedAt: "2026-04-23T12:00:00.000Z"
+                - id: 11
+                  registration: "1234567"
+                  dassOffice: "SEST"
+                  roleId: 3
+                  roleCode: "idea_admin"
+                  roleName: "Administrador de avaliação"
+                  active: true
+                  activeFrom: "2026-04-22T12:00:00.000Z"
+                  activeUntil: null
+                  createdAt: "2026-04-22T12:00:00.000Z"
+                  updatedAt: "2026-04-23T12:00:00.000Z"
+                - id: 12
+                  registration: "1234567"
+                  dassOffice: "SEST"
+                  roleId: 6
+                  roleCode: "marketplace_operator"
+                  roleName: "Operador de loja"
+                  active: true
+                  activeFrom: "2026-04-22T12:00:00.000Z"
+                  activeUntil: null
+                  createdAt: "2026-04-23T12:00:00.000Z"
+                  updatedAt: "2026-04-23T12:00:00.000Z"
         "400":
           $ref: "#/components/responses/ValidationError"
         "401":
@@ -1049,11 +1079,10 @@ paths:
       tags: [RBAC]
       summary: Remover vínculo RBAC
       description: >
-        Remove ou inativa vínculo RBAC e invalida snapshots relacionados. Exige
-        token válido e permissão `rbac.manage`.
+        Remove vínculo RBAC dentro do escopo administrativo do ator. Exige
+        token válido.
       parameters:
         - $ref: "#/components/parameters/AssignmentIdPath"
-        - $ref: "#/components/parameters/DassOfficeQueryOptional"
         - $ref: "#/components/parameters/CookieHeader"
       security:
         - cookieAuth: []
@@ -1279,7 +1308,8 @@ paths:
       summary: Obter resumo do dashboard
       description: >
         Retorna métricas consolidadas da unidade, incluindo ideias, valores,
-        ledger e marketplace. Acesso público no código atual.
+        ledger e marketplace. Ideias implementadas são ideias fora de espera
+        com aprovação de analista ou gerente. Acesso público no código atual.
       security: []
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
@@ -1319,7 +1349,9 @@ paths:
       summary: Obter série mensal do dashboard
       description: >
         Retorna quantidade e valor agregado de ideias por mês para a unidade.
-        Acesso público no código atual.
+        A métrica mensal de aprovadas usa a regra de ideias implementadas:
+        fora de espera e com aprovação de analista ou gerente. Acesso público
+        no código atual.
       security: []
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
@@ -1385,7 +1417,8 @@ paths:
       summary: Obter ideias em destaque
       description: >
         Retorna ideias destacadas para exibição no dashboard. Acesso público no
-        código atual.
+        código atual. O status `Aprovada` segue a regra de ideias
+        implementadas: fora de espera e com aprovação de analista ou gerente.
       security: []
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
@@ -1425,7 +1458,8 @@ paths:
       summary: Obter engajamento de colaboradores
       description: >
         Retorna ranking de colaboradores por participação e implementação de
-        ideias. Acesso público no código atual.
+        ideias. Implementadas são ideias fora de espera com aprovação de
+        analista ou gerente. Acesso público no código atual.
       security: []
       parameters:
         - $ref: "#/components/parameters/DassOfficePath"
@@ -2082,8 +2116,12 @@ components:
           oneOf:
             - type: string
             - type: integer
+          deprecated: true
+          description: Ignorado na criação de solicitação; o backend usa a matrícula do token autenticado.
         requesterName:
           type: string
+          deprecated: true
+          description: Ignorado na criação de solicitação; o backend usa a identidade autenticada.
         reason:
           type: string
     MarketplaceTransitionInput:
@@ -2114,6 +2152,9 @@ components:
           type: integer
         registration:
           type: string
+        requesterName:
+          type: string
+          nullable: true
         dassOffice:
           $ref: "#/components/schemas/DassOffice"
         catalogItemId:
@@ -2146,19 +2187,30 @@ components:
       properties:
         registration:
           type: string
+        userName:
+          type: string
+          nullable: true
         dassOffice:
           $ref: "#/components/schemas/DassOffice"
         permissions:
           type: array
           items:
             type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/SessionRole"
         unitConfig:
           $ref: "#/components/schemas/UnitSettings"
-        snapshotVersion:
-          type: integer
-        snapshotExpiresAt:
+    SessionRole:
+      type: object
+      properties:
+        code:
           type: string
-          format: date-time
+        nome:
+          type: string
+        dassOffice:
+          $ref: "#/components/schemas/DassOffice"
     UnitScoringRule:
       type: object
       properties:
@@ -2285,7 +2337,7 @@ components:
           format: date-time
     CreateRbacAssignmentInput:
       type: object
-      required: [registration, dassOffice, roleCode]
+      required: [registration, dassOffice]
       properties:
         registration:
           type: string
@@ -2293,6 +2345,11 @@ components:
           $ref: "#/components/schemas/DassOffice"
         roleCode:
           type: string
+          description: Compatibilidade legada para cadastro de um único papel.
+        roleCodes:
+          type: array
+          items:
+            type: string
         active:
           type: boolean
         activeFrom:
@@ -2308,6 +2365,12 @@ components:
       properties:
         roleCode:
           type: string
+          description: Compatibilidade legada para atualizar um único vínculo.
+        roleCodes:
+          type: array
+          description: Papéis que serão adicionados ou atualizados para a matrícula/unidade do vínculo informado.
+          items:
+            type: string
         active:
           type: boolean
         activeFrom:
@@ -2476,6 +2539,10 @@ components:
           type: integer
         marketplaceCompleted:
           type: integer
+        report:
+          type: object
+          nullable: true
+          additionalProperties: true
     DashboardMonthlyEnvelope:
       allOf:
         - $ref: "#/components/schemas/DashboardEnvelope"

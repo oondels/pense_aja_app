@@ -450,7 +450,7 @@
                                 {{ item.gerente_aprovador ?? "Não avaliado" }}
                               </span>
 
-                              <span v-if="getUserPermission() && item.gerente_aprovador">
+                              <span v-if="canEvaluateIdeas && item.gerente_aprovador">
                                 Classificação: {{ item.classificacao || "Reprovado" }}
                               </span>
                             </div>
@@ -465,7 +465,7 @@
                                 {{ item.analista_avaliador ?? "Não avaliado" }}
                               </span>
 
-                              <span v-if="getUserPermission() && item.analista_avaliador">
+                              <span v-if="canEvaluateIdeas && item.analista_avaliador">
                                 Classificação:
                                 {{ item.classificacao || "Reprovado" }}
                               </span>
@@ -615,7 +615,7 @@
                       </div>
 
                       <!-- Avaliação -->
-                      <div class="avaliar-card-nivel" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
+                      <div class="avaliar-card-nivel" v-if="canEvaluateIdeas">
                         <div class="avaliar-card-header">
                           <i class="bi bi-trophy"></i>
                           <h3>Classificação do Pense<span class="avaliar-highlight">&</span>Aja</h3>
@@ -630,13 +630,13 @@
                                 evaluationValue === 3
                                   ? 'text-green-500'
                                   : evaluationValue === 2
-                                  ? 'text-blue-500'
-                                  : 'text-yellow-500',
+                                    ? 'text-blue-500'
+                                    : 'text-yellow-500',
                               ]"
                             >
                               {{
                                 Object.keys(classifications).find(
-                                  (key) => classifications[key].value === evaluationValue
+                                  (key) => classifications[key].value === evaluationValue,
                                 )
                               }}
                             </span>
@@ -645,7 +645,7 @@
                                 evaluationValue
                                   ? classifications[
                                       Object.keys(classifications).find(
-                                        (key) => classifications[key].value === evaluationValue
+                                        (key) => classifications[key].value === evaluationValue,
                                       )
                                     ].name
                                   : "Não avaliado"
@@ -718,40 +718,55 @@
                           ></textarea>
                         </div>
 
-                        <div
+                        <v-card
                           v-if="evaluationValue && maxBonusPoints > 0"
-                          class="rounded-md border border-amber-200 bg-amber-50 p-3"
+                          variant="tonal"
+                          color="warning"
+                          class="pa-4 mb-4 border rounded-lg"
                         >
-                          <div class="row g-3 align-items-end">
-                            <label class="col-md-4 text-sm fw-semibold text-gray-700">
-                              Bonificação
-                              <input
+                          <v-row dense>
+                            <v-col cols="12" md="4">
+                              <v-text-field
                                 v-model.number="bonusPoints"
-                                class="form-control mt-1"
                                 type="number"
-                                min="0"
+                                label="Bonificação"
+                                suffix="pt(s)"
+                                :min="0"
                                 :max="maxBonusPoints"
-                              />
-                            </label>
-                            <label class="col-md-8 text-sm fw-semibold text-gray-700">
-                              Justificativa da bonificação
-                              <textarea
+                                variant="outlined"
+                                density="comfortable"
+                                bg-color="surface"
+                                hide-details
+                              ></v-text-field>
+                            </v-col>
+
+                            <v-col cols="12" md="8">
+                              <v-textarea
                                 v-model="bonusJustification"
-                                class="form-control mt-1"
+                                label="Justificativa da bonificação"
+                                placeholder="Explique o motivo da bonificação extra..."
                                 rows="2"
+                                auto-grow
+                                variant="outlined"
+                                density="comfortable"
+                                bg-color="surface"
                                 :disabled="!bonusPoints"
-                                placeholder="Explique a bonificação extra."
-                              ></textarea>
-                            </label>
+                                hide-details
+                              ></v-textarea>
+                            </v-col>
+                          </v-row>
+
+                          <div class="mt-3 d-flex align-center text-caption text-medium-emphasis">
+                            <v-icon size="small" class="me-2" color="warning">mdi-information-outline</v-icon>
+                            <span>
+                              Limite configurado para a unidade: <strong>{{ maxBonusPoints }} ponto(s)</strong>.
+                            </span>
                           </div>
-                          <p class="mb-0 mt-2 text-xs text-amber-800">
-                            Limite configurado para a unidade: {{ maxBonusPoints }} ponto(s).
-                          </p>
-                        </div>
+                        </v-card>
                       </div>
 
                       <!-- Flags -->
-                      <div class="avaliar-card-flags" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
+                      <div class="avaliar-card-flags" v-if="canEvaluateIdeas">
                         <div class="row p-3 d-flex justify-content-around align-items-center">
                           <label class="avaliar-toggle col-md-4">
                             <input type="checkbox" id="em-espera" v-model="emEspera" />
@@ -789,7 +804,7 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="avaliar-footer" v-if="getUserPermission() && checkRoleAndEvaluation(item)">
+                    <div class="avaliar-footer" v-if="canEvaluateIdeas">
                       <div class="avaliar-actions">
                         <button
                           @click="handleEvaluationValue('approve', item, isActive)"
@@ -854,8 +869,6 @@ import { RecycleScroller } from "vue-virtual-scroller";
 import { useUserStore } from "@/stores/userStore";
 import { evaluatePenseAja } from "@/services/evaluatePenseAjaService";
 import Notification from "./Notification.vue";
-import { getUserPermission } from "@/services/userService";
-import { setUserRole } from "@/services/userService";
 import { formateName } from "@/services/userService";
 import { commonApi } from "@/services/httpClient.js";
 import Loading from "@/components/Loading.vue";
@@ -961,7 +974,7 @@ const loadContent = async () => {
       "error",
       "Unidade do colaborador não encontrada.",
       "Entre em contato com a equipe de automação",
-      10000
+      10000,
     );
     return;
   }
@@ -1005,22 +1018,8 @@ function setupWatchers() {
 
 // Carrega dados do usuario se estiver logado
 const user = useUserStore();
-
-const checkRoleAndEvaluation = (penseAja) => {
-  if (penseAja.em_espera === "1") {
-    return true;
-  }
-
-  if (setUserRole(user) === "analista" && penseAja.analista_avaliador) {
-    return false;
-  }
-
-  if (setUserRole(user) === "analista" && penseAja.status_gerente === "reprove") {
-    return false;
-  }
-
-  return true;
-};
+const canEvaluateIdeas = computed(() => user.hasPermission("idea.evaluate"));
+const canExcludeIdeas = computed(() => user.hasPermission("idea.exclude"));
 
 const filters = reactive({
   name: [],
@@ -1192,10 +1191,10 @@ const setButtonPermission = (penseAja, _ = false) => {
     return "";
   }
 
-  if (penseAja.status_analista && user.funcao?.toLowerCase().includes("analista")) {
+  if (penseAja.status_analista && canEvaluateIdeas.value && !canExcludeIdeas.value) {
     return "disabled";
   }
-  if (penseAja.status_gerente && user.funcao?.toLowerCase().includes("gerente") && !_) {
+  if (penseAja.status_gerente && canExcludeIdeas.value && !_) {
     return "disabled";
   }
   return "";
@@ -1949,7 +1948,9 @@ onBeforeUnmount(() => {
   background: #f5f5f5;
   margin-bottom: 20px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .rating-badge:hover {

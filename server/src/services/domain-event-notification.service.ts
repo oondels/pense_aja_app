@@ -182,6 +182,8 @@ export const DomainEventNotificationService = {
   async dispatch(
     event: DomainNotificationEvent
   ): Promise<NotificationDispatchResult> {
+    console.log('Notificando evento do tipo: ', event.type);
+    
     if (event.type === "idea.created") {
       return notifyIdeaCreated(event);
     }

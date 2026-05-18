@@ -14,7 +14,8 @@ export const AppDataSource = new DataSource({
   entities,
   migrations,
   synchronize: false,
-  logging: dotenv.DEV_ENV === "development",
+  // logging: dotenv.DEV_ENV === "development",
+  logging: false,
 });
 
 let initializationPromise: Promise<DataSource> | null = null;

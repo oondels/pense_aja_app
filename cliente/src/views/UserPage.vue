@@ -1,799 +1,252 @@
 <template>
-  <div class="user-page">
-    <div class="container">
-      <h1 class="page-title">Perfil do Usuário</h1>
+  <main class="min-h-screen bg-gray-50 px-4 py-6 sm:px-6 lg:px-8">
+    <Notification ref="notification" />
 
-      <div class="profile-card">
-        <div class="profile-header">
-          <div class="profile-avatar">
-            <span class="avatar-initials">{{ getUserInitials }}</span>
+    <div class="mx-auto max-w-7xl space-y-6">
+      <header class="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-red-700 text-xl font-bold text-white">
+            {{ userInitials }}
           </div>
-          <div class="profile-info">
-            <h2>{{ userData?.nome || "Nome do Usuário" }}</h2>
-            <p class="user-role" v-if="dassOffice">
-              {{ userData?.setor || "Setor" }} -
-              {{ dassOffice }}
-            </p>
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-wide text-red-700">Perfil</p>
+            <h1 class="mt-1 text-2xl font-bold text-gray-950">{{ userData?.nome || 'Usuário' }}</h1>
+            <p class="mt-1 text-sm text-gray-600">{{ userData?.setor || 'Setor não informado' }} · {{ dassOffice || 'Unidade não informada' }}</p>
           </div>
         </div>
+        <router-link class="inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50" to="/user/points-history">
+          <i class="mdi mdi-history"></i>
+          Histórico de pontos
+        </router-link>
+      </header>
 
-        <div class="profile-stats">
-          <div class="stat-card">
-            <div class="stat-value">
-              {{ userData?.pontos - userData?.pontos_resgatados || 0 }}
-            </div>
-            <div class="stat-label">Pontuação</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" v-if="userData?.classificacoes_pense_aja">
-              {{
-                Object.values(userData.classificacoes_pense_aja).reduce(
-                  (a, b) => a + b
-                )
-              }}
-            </div>
-            <div class="stat-label">Pense Aja Registrados</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">
-              {{ userData?.classificacoes_pense_aja.A || 0 }}
-            </div>
-            <div class="stat-label">Aprovados A</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">
-              {{ userData?.classificacoes_pense_aja.B || 0 }}
-            </div>
-            <div class="stat-label">Aprovados B</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">
-              {{ userData?.classificacoes_pense_aja.C || 0 }}
-            </div>
-            <div class="stat-label">Aprovados C</div>
-          </div>
-        </div>
+      <PointBalanceSummary :user-data="userData || {}" />
 
-        <div class="profile-edit-section">
-          <h3>Informações Pessoais</h3>
-
-          <div class="info-display">
-            <div class="info-group">
-              <label>Nome</label>
-              <div class="info-value">
-                {{ userData?.nome || "Não informado" }}
+      <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
+        <div class="space-y-6">
+          <section class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+            <h2 class="text-lg font-semibold text-gray-950">Registros do colaborador</h2>
+            <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+              <div v-for="item in profileItems" :key="item.label" class="rounded-md bg-gray-50 p-3">
+                <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ item.label }}</dt>
+                <dd class="mt-1 text-sm font-semibold text-gray-900">{{ item.value || '-' }}</dd>
               </div>
-            </div>
+            </dl>
+          </section>
 
-            <div class="info-group">
-              <label>Unidade DASS</label>
-              <div class="info-value">
-                {{ dassOffice || "Não informada" }}
+          <section class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="text-lg font-semibold text-gray-950">Classificações recebidas</h2>
+              <span class="rounded-full bg-gray-100 px-3 py-1 text-sm font-semibold text-gray-700">{{ totalIdeas }} registro(s)</span>
+            </div>
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <article v-for="item in classifications" :key="item.label" class="rounded-lg border border-gray-200 p-4">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-red-700 font-bold text-white">{{ item.label }}</span>
+                  <span class="text-2xl font-bold text-gray-950">{{ item.value }}</span>
+                </div>
+                <p class="mt-2 text-xs font-medium text-gray-500">Ideias nesta classificação</p>
+              </article>
+              <p v-if="classifications.length === 0" class="rounded-md border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 sm:col-span-2 lg:col-span-4">
+                Nenhuma classificação registrada.
+              </p>
+            </div>
+          </section>
+
+          <section class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-950">Solicitações de resgate</h2>
+                <p class="mt-1 text-sm text-gray-600">Acompanhe os resgates feitos no marketplace.</p>
               </div>
+              <button class="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50" type="button" @click="loadRequests">
+                <i :class="requestsLoading ? 'mdi mdi-loading mdi-spin' : 'mdi mdi-refresh'"></i>
+                Atualizar
+              </button>
             </div>
 
-            <div class="info-group">
-              <label>Setor</label>
-              <div class="info-value">
-                {{ userData?.setor || "Não informado" }}
-              </div>
-            </div>
-          </div>
-
-          <h3>Configurações de Email e Notificações</h3>
-          <form @submit.prevent="updateUserInfo">
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                v-model="formData.email"
-                placeholder="Seu email"
-                required
-              />
-            </div>
-
-            <div class="notification-settings">
-              <div class="form-check">
-                <input
-                  type="checkbox"
-                  id="emailNotifications"
-                  v-model="formData.notificacaoEmail"
-                />
-                <label for="emailNotifications">
-                  Receber notificações por email
-                </label>
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button
-                type="submit"
-                class="primary-button"
-                :disabled="isSubmitting || !formChanged"
+            <div class="mt-4 space-y-3">
+              <article
+                v-for="request in marketplaceRequests"
+                :key="request.id"
+                class="cursor-pointer rounded-lg border border-gray-200 p-4 transition hover:border-red-200 hover:bg-red-50/20"
+                @click="selectedRequest = request"
               >
-                {{ isSubmitting ? "Salvando..." : "Salvar Alterações" }}
-              </button>
-              <button type="button" class="secondary-button" @click="resetForm">
-                Resetar
-              </button>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Solicitação #{{ request.id }}</p>
+                    <h3 class="mt-1 text-base font-semibold text-gray-950">{{ request.catalogItemName || request.catalogItemId }}</h3>
+                    <p class="mt-1 text-sm text-gray-600">{{ request.catalogItemPointsCost ?? '-' }} pontos · {{ formatDate(request.createdAt) }}</p>
+                  </div>
+                  <StatusBadge :status="request.requestStatus" />
+                </div>
+              </article>
+              <p v-if="!requestsLoading && marketplaceRequests.length === 0" class="rounded-md border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
+                Nenhuma solicitação de resgate encontrada.
+              </p>
             </div>
-          </form>
+          </section>
         </div>
+
+        <form class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm" @submit.prevent="updateUserInfo">
+          <h2 class="text-lg font-semibold text-gray-950">Email e notificações</h2>
+          <div class="mt-4 space-y-4">
+            <label class="block text-sm font-medium text-gray-700">
+              Email
+              <input v-model.trim="formData.email" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" required type="email" />
+            </label>
+            <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+              <input v-model="formData.notificacaoEmail" class="h-4 w-4 rounded border-gray-300 text-red-700" type="checkbox" />
+              Receber notificações por email
+            </label>
+          </div>
+          <div class="mt-5 flex flex-wrap gap-2">
+            <button
+              class="inline-flex items-center justify-center gap-2 rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800 disabled:bg-gray-300"
+              type="submit"
+              :disabled="isSubmitting || !formChanged"
+            >
+              <i :class="isSubmitting ? 'mdi mdi-loading mdi-spin' : 'mdi mdi-content-save-outline'"></i>
+              Salvar alterações
+            </button>
+            <button class="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50" type="button" @click="resetForm">
+              Resetar
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <div v-if="selectedRequest" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/60 p-4" @click.self="selectedRequest = null">
+        <section class="w-full max-w-4xl rounded-lg bg-white p-5 shadow-xl">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-wide text-red-700">Acompanhamento da solicitação</p>
+              <h2 class="mt-1 text-xl font-bold text-gray-950">#{{ selectedRequest.id }} - {{ selectedRequest.catalogItemName || selectedRequest.catalogItemId }}</h2>
+            </div>
+            <button class="rounded-full p-2 text-gray-500 hover:bg-gray-100" type="button" @click="selectedRequest = null">
+              <i class="mdi mdi-close text-xl"></i>
+            </button>
+          </div>
+          <RequestTimeline class="mt-4" :request="selectedRequest" />
+        </section>
       </div>
     </div>
-  </div>
-
-  <Notification ref="notification" />
+  </main>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive, watch } from "vue";
-import { getUserData, updateUserData } from "../services/userService";
-import Notification from "../components/Notification.vue";
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import Notification from '@/components/Notification.vue'
+import PointBalanceSummary from '@/components/shared/PointBalanceSummary.vue'
+import RequestTimeline from '@/components/shared/RequestTimeline.vue'
+import StatusBadge from '@/components/shared/StatusBadge.vue'
+import { marketplaceService } from '@/services/marketplaceService.js'
+import { getUserData, updateUserData } from '@/services/userService.js'
+import { useUserStore } from '@/stores/userStore.js'
 
-const isSubmitting = ref(false);
-const userData = ref(null);
-const notification = ref(null);
-const dassOffice = localStorage.getItem("unidadeDass");
-const initialFormData = ref({});
-
+const userStore = useUserStore()
+const isSubmitting = ref(false)
+const userData = ref(null)
+const notification = ref(null)
+const initialFormData = ref({})
+const marketplaceRequests = ref([])
+const requestsLoading = ref(false)
+const selectedRequest = ref(null)
 const formData = reactive({
-  email: "",
+  email: '',
   notificacaoEmail: false,
-  authorized_notifications_apps: []
-});
+  authorized_notifications_apps: [],
+})
 
-// Watch para atualizar authorized_notifications_apps quando notificacaoEmail mudar
-watch(() => formData.notificacaoEmail, (newValue) => {
-  if (newValue) {
-    if (!formData.authorized_notifications_apps.includes('pense_aja')) {
-      formData.authorized_notifications_apps.push('pense_aja');
-    }
-  } else {
-    const index = formData.authorized_notifications_apps.indexOf('pense_aja');
-    if (index !== -1) {
-      formData.authorized_notifications_apps.splice(index, 1);
-    }
-  }
-});
-
+const dassOffice = computed(() => userStore.dassOffice || localStorage.getItem('unidadeDass') || '')
+const registration = computed(() => userStore.matricula || sessionStorage.getItem('matricula') || '')
+const userInitials = computed(() => {
+  if (!userData.value?.nome) return '?'
+  return userData.value.nome.split(' ').map((name) => name.charAt(0).toUpperCase()).slice(0, 2).join('')
+})
+const profileItems = computed(() => [
+  { label: 'Matrícula', value: userData.value?.matricula },
+  { label: 'Unidade Dass', value: dassOffice.value },
+  { label: 'Setor', value: userData.value?.setor },
+  { label: 'Função', value: userData.value?.funcao },
+  { label: 'Gerente', value: userData.value?.gerente },
+  { label: 'Email', value: userData.value?.email },
+])
+const classifications = computed(() => Object.entries(userData.value?.classificacoes_pense_aja || {})
+  .sort(([left], [right]) => left.localeCompare(right))
+  .map(([label, value]) => ({ label, value })))
+const totalIdeas = computed(() => classifications.value.reduce((total, item) => total + Number(item.value || 0), 0))
 const formChanged = computed(() => {
-  if (!initialFormData.value) return false;
-  
-  return formData.email !== initialFormData.value.email || 
-         formData.notificacaoEmail !== initialFormData.value.notificacaoEmail ||
-         !areArraysEqual(formData.authorized_notifications_apps, initialFormData.value.authorized_notifications_apps);
-});
+  if (!initialFormData.value) return false
+  return formData.email !== initialFormData.value.email ||
+    formData.notificacaoEmail !== initialFormData.value.notificacaoEmail ||
+    !areArraysEqual(formData.authorized_notifications_apps, initialFormData.value.authorized_notifications_apps)
+})
 
-// Função auxiliar para comparar arrays
-const areArraysEqual = (arr1, arr2) => {
-  if (!arr1 || !arr2) return false;
-  if (arr1.length !== arr2.length) return false;
-  return arr1.every((item, index) => item === arr2[index]);
-};
+watch(() => formData.notificacaoEmail, (enabled) => {
+  const hasApp = formData.authorized_notifications_apps.includes('pense_aja')
+  if (enabled && !hasApp) formData.authorized_notifications_apps.push('pense_aja')
+  if (!enabled && hasApp) {
+    formData.authorized_notifications_apps.splice(formData.authorized_notifications_apps.indexOf('pense_aja'), 1)
+  }
+})
 
-const getUserInitials = computed(() => {
-  if (!userData?.value?.nome) return "?";
-  return userData?.value?.nome
-    .split(" ")
-    .map((name) => name.charAt(0).toUpperCase())
-    .slice(0, 2)
-    .join("");
-});
+const areArraysEqual = (left = [], right = []) => left.length === right.length && left.every((item, index) => item === right[index])
+
+const formatDate = (value) => {
+  if (!value) return '-'
+  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))
+}
+
+const syncForm = () => {
+  formData.email = userData.value?.email || ''
+  formData.notificacaoEmail = userData.value?.authorized_notifications_apps?.includes('pense_aja') || false
+  formData.authorized_notifications_apps = [...(userData.value?.authorized_notifications_apps || [])]
+  initialFormData.value = {
+    email: formData.email,
+    notificacaoEmail: formData.notificacaoEmail,
+    authorized_notifications_apps: [...formData.authorized_notifications_apps],
+  }
+}
 
 const loadUserData = async () => {
-  try {
-    const registration = sessionStorage.getItem("matricula");
-    if (!registration) {
-      notification.value.showPopup(
-        "error",
-        "Erro",
-        "Você não está logado. Por favor, faça login novamente.",
-        4000
-      );
-
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 4100);
-      return;
-    }
-
-    await getUserData(registration, userData, null, notification);
-    formData.email = userData.value.email || "";
-    
-    // if (!Array.isArray(userData.value.authorized_notifications_apps)) {
-    //   userData.value.authorized_notifications_apps = [];
-    // }
-    formData.notificacaoEmail = userData?.value?.authorized_notifications_apps?.includes("pense_aja") || false;
-    formData.authorized_notifications_apps = [...(userData.value.authorized_notifications_apps || [])];
-
-    // Armazenar os valores iniciais para comparação
-    initialFormData.value = {
-      email: formData.email,
-      notificacaoEmail: formData.notificacaoEmail,
-      authorized_notifications_apps: [...formData.authorized_notifications_apps]
-    };
-  } catch (error) {
-    console.error("Erro ao carregar dados do usuário:", error);
+  if (!registration.value) {
+    notification.value?.showPopup('error', 'Erro', 'Você não está logado. Por favor, faça login novamente.', 4000)
+    setTimeout(() => {
+      window.location.href = '/'
+    }, 4100)
+    return
   }
-};
+
+  await getUserData(registration.value, userData, null, notification)
+  syncForm()
+}
+
+const loadRequests = async () => {
+  if (!registration.value || !dassOffice.value) return
+  requestsLoading.value = true
+  try {
+    const response = await marketplaceService.listMyRequests(dassOffice.value, { page: 1, limit: 5 })
+    marketplaceRequests.value = response.data || []
+  } catch (error) {
+    notification.value?.showPopup('error', 'Erro', error.response?.data?.message || 'Não foi possível carregar solicitações de resgate.', 4000)
+  } finally {
+    requestsLoading.value = false
+  }
+}
 
 const updateUserInfo = async () => {
-  await updateUserData(userData.value, isSubmitting, notification, formData, dassOffice);
-};
+  await updateUserData(userData.value, isSubmitting, notification, formData, dassOffice.value)
+}
 
 const resetForm = () => {
-  loadUserData();
-};
+  syncForm()
+}
 
 onMounted(async () => {
-  await loadUserData();
-});
+  userStore.carregarUsuario()
+  await userStore.loadSessionContext(dassOffice.value)
+  await loadUserData()
+  await loadRequests()
+})
 </script>
-
-<style scoped>
-.user-page {
-  background-color: #f8f9fc;
-  background-image: radial-gradient(circle at 50% 0, rgba(255, 255, 255, 0.8), transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(176, 6, 43, 0.05), transparent 40%);
-  min-height: 100vh;
-  padding: 1.5rem 0;
-  font-family: 'Poppins', sans-serif;
-}
-
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 1.2rem;
-}
-
-.page-title {
-  font-size: 1.8rem;
-  color: #2c3e50;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  font-weight: 700;
-  position: relative;
-  padding-bottom: 1rem;
-}
-
-.page-title::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(to right, #c62828, #ef5350);
-  border-radius: 3px;
-}
-
-.profile-card {
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-  padding: 2rem;
-  margin-bottom: 2rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.03);
-  overflow: hidden;
-}
-
-.profile-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.profile-avatar {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ef5350, #c62828);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 1.5rem;
-  box-shadow: 0 4px 15px rgba(239, 83, 80, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.profile-avatar::after {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom right, transparent 0%, rgba(255, 255, 255, 0.1) 100%);
-  top: 0;
-  left: 0;
-}
-
-.avatar-initials {
-  font-size: 2.2rem;
-  color: white;
-  font-weight: bold;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.profile-info h2 {
-  font-size: 1.6rem;
-  margin-bottom: 0.5rem;
-  color: #333;
-  font-weight: 600;
-}
-
-.user-role {
-  color: #666;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.user-role::before {
-  content: "";
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background-color: #4caf50;
-  border-radius: 50%;
-}
-
-.profile-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1.2rem;
-  margin-bottom: 2.5rem;
-}
-
-.stat-card {
-  background: #fafbfd;
-  border-radius: 12px;
-  padding: 1.2rem 0.8rem;
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.03);
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
-}
-
-.stat-value {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #c62828;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(to right, #ef5350, #c62828);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  color: #546e7a;
-  font-weight: 500;
-}
-
-.profile-edit-section {
-  padding-top: 2rem;
-  border-top: 1px solid #eee;
-}
-
-.profile-edit-section h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
-  color: #2c3e50;
-  font-weight: 600;
-  position: relative;
-  padding-left: 1rem;
-}
-
-.profile-edit-section h3::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(to bottom, #ef5350, #c62828);
-  border-radius: 3px;
-}
-
-/* Novo estilo para exibição de informações */
-.info-display {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.info-group {
-  margin-bottom: 1rem;
-  background-color: #fafbfd;
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.info-group:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
-}
-
-.info-group label {
-  display: block;
-  font-weight: 600;
-  color: #666;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.info-value {
-  font-size: 1.1rem;
-  color: #333;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-  width: 100%;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #333;
-  font-size: 0.95rem;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.85rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background-color: #fdfdfd;
-  color: #333;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.form-group input:focus {
-  border-color: #ef5350;
-  outline: none;
-  background-color: #fff;
-  box-shadow: 0 0 0 3px rgba(239, 83, 80, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.notification-settings {
-  margin-bottom: 2rem;
-  background-color: #f8f9fc;
-  padding: 1.2rem;
-  border-radius: 12px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.03);
-}
-
-.form-check {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.form-check input[type="checkbox"] {
-  position: relative;
-  width: 20px;
-  height: 20px;
-  margin-right: 0.7rem;
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-  background-color: white;
-  border: 2px solid #b0b9c0;
-  border-radius: 5px;
-  transition: all 0.25s;
-  flex-shrink: 0;
-}
-
-.form-check input[type="checkbox"]:checked {
-  background-color: #c62828;
-  border-color: #c62828;
-}
-
-.form-check input[type="checkbox"]:checked::after {
-  content: "\2713";
-  position: absolute;
-  left: 5px;
-  top: -1px;
-  font-size: 13px;
-  color: white;
-  font-weight: bold;
-}
-
-.form-check label {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #546e7a;
-  cursor: pointer;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.primary-button {
-  background: linear-gradient(145deg, #ef5350, #c62828);
-  color: white;
-  padding: 0.7rem 1.8rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(198, 40, 40, 0.3);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.primary-button:hover {
-  background: linear-gradient(145deg, #d32f2f, #b71c1c);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 15px rgba(198, 40, 40, 0.35);
-}
-
-.primary-button:active {
-  transform: translateY(-1px);
-}
-
-.primary-button:disabled {
-  background: linear-gradient(145deg, #9e9e9e, #bdbdbd);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.secondary-button {
-  background-color: #f8f9fa;
-  color: #333;
-  padding: 0.7rem 1.8rem;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border: 1px solid #ddd;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.secondary-button:hover {
-  background-color: #eee;
-  transform: translateY(-3px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.08);
-}
-
-/* Tablets */
-@media (max-width: 1024px) {
-  .page-title {
-    font-size: 1.75rem;
-    margin-bottom: 1.2rem;
-    padding-bottom: 0.8rem;
-  }
-  
-  .profile-card {
-    padding: 1.5rem;
-  }
-  
-  .profile-stats {
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  
-  .stat-card {
-    padding: 1.2rem 0.8rem;
-  }
-  
-  .stat-value {
-    font-size: 1.7rem;
-  }
-  
-  .stat-label {
-    font-size: 0.85rem;
-  }
-  
-  .profile-edit-section h3 {
-    font-size: 1.3rem;
-    margin-bottom: 1.2rem;
-  }
-  
-  .info-group {
-    padding: 0.8rem;
-  }
-  
-  .info-value {
-    font-size: 1rem;
-  }
-}
-
-/* Medium devices (tablets, less than 768px) */
-@media (max-width: 768px) {
-  .user-page {
-    padding: 1.5rem 0;
-  }
-  
-  .container {
-    padding: 0 1rem;
-  }
-  
-  .page-title {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-  }
-  
-  .profile-card {
-    padding: 1.2rem;
-    border-radius: 12px;
-  }
-  
-  .profile-header {
-    flex-direction: column;
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .profile-avatar {
-    width: 90px;
-    height: 90px;
-    margin-right: 0;
-    margin-bottom: 1rem;
-  }
-  
-  .avatar-initials {
-    font-size: 2rem;
-  }
-  
-  .profile-info h2 {
-    font-size: 1.4rem;
-  }
-  
-  .user-role {
-    font-size: 0.9rem;
-    justify-content: center;
-  }
-
-  .form-actions {
-    flex-direction: column;
-    margin-top: 1.5rem;
-  }
-
-  .profile-stats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.8rem;
-    margin-bottom: 1.8rem;
-  }
-  
-  .stat-card {
-    padding: 1rem 0.5rem;
-  }
-  
-  .stat-value {
-    font-size: 1.5rem;
-    margin-bottom: 0.3rem;
-  }
-  
-  .stat-label {
-    font-size: 0.8rem;
-  }
-
-  .info-display {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .notification-settings {
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .form-group label {
-    font-size: 0.9rem;
-  }
-  
-  .form-group input {
-    padding: 0.7rem 0.8rem;
-    font-size: 0.95rem;
-  }
-  
-  .primary-button, 
-  .secondary-button {
-    padding: 0.7rem 1.5rem;
-    font-size: 0.95rem;
-  }
-}
-
-/* Small devices (phones, less than 576px) */
-@media (max-width: 480px) {
-  .user-page {
-    padding: 1rem 0;
-  }
-  
-  .container {
-    padding: 0 0.8rem;
-  }
-  
-  .page-title {
-    font-size: 1.3rem;
-  }
-  
-  .profile-card {
-    padding: 1rem;
-    border-radius: 10px;
-  }
-  
-  .profile-avatar {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .avatar-initials {
-    font-size: 1.7rem;
-  }
-  
-  .profile-info h2 {
-    font-size: 1.2rem;
-  }
-  
-  .profile-edit-section h3 {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-  }
-  
-  .profile-stats {
-    grid-template-columns: 1fr;
-    gap: 0.7rem;
-  }
-  
-  .stat-value {
-    font-size: 1.4rem;
-  }
-  
-  .info-group label {
-    font-size: 0.8rem;
-  }
-  
-  .info-value {
-    font-size: 0.9rem;
-    padding: 0.4rem 0;
-  }
-  
-  .form-group {
-    margin-bottom: 1.2rem;
-  }
-  
-  .form-check label {
-    font-size: 0.9rem;
-  }
-  
-  .primary-button, 
-  .secondary-button {
-    width: 100%;
-    justify-content: center;
-    padding: 0.65rem 1.2rem;
-    font-size: 0.9rem;
-  }
-}
-</style>

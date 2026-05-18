@@ -78,8 +78,8 @@ O banco deve passar a acomodar:
 
 ### Evolução documentada
 
-- Redis pode apoiar cache curto de snapshot de permissões por sessão
-- esse snapshot não substitui o backend como fonte de verdade autorizadora
+- Redis apoia blacklist de token quando aplicável
+- permissões RBAC são resolvidas no backend pelo banco, sem snapshot persistido
 
 ## RabbitMQ
 

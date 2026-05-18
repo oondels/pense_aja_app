@@ -16,9 +16,23 @@ export const marketplaceService = {
     return response.data
   },
 
-  async listRequests(dassOffice) {
+  async listRequests(dassOffice, params = {}) {
     const response = await api.get('/marketplace/requests', {
-      params: { dassOffice },
+      params: { dassOffice, ...params },
+    })
+    return response.data
+  },
+
+  async listMyRequests(dassOffice, params = {}) {
+    const response = await api.get('/marketplace/requests/me', {
+      params: { dassOffice, ...params },
+    })
+    return response.data
+  },
+
+  async listPublicRequests(params = {}) {
+    const response = await commonApi.get('/marketplace/requests/public', {
+      params,
     })
     return response.data
   },

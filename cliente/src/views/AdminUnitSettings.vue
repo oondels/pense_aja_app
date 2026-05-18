@@ -43,44 +43,122 @@
         </section>
 
         <section v-else-if="activeTab === 'scoring'" class="space-y-4">
-          <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <h2 class="text-lg font-semibold text-gray-950">Parâmetros da avaliação</h2>
+          <div
+            class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm d-flex flex-column justify-content-center"
+          >
+            <h2 class="text-lg font-semibold text-gray-950">Parâmetros da avaliação - Bonificações</h2>
             <div class="mt-4 grid gap-3 md:grid-cols-3">
-              <label class="text-sm font-medium text-gray-700">
-                Limite de bonificação por avaliação
-                <input
-                  v-model.number="settings.metadata.maxEvaluationBonusPoints"
-                  class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-                  min="0"
-                  type="number"
-                />
-              </label>
+              <v-text-field
+                v-model.number="settings.metadata.maxEvaluationBonusPoints"
+                label="Limite de bonificação por avaliação"
+                variant="outlined"
+                type="number"
+                min="0"
+              ></v-text-field>
             </div>
           </div>
 
           <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <div class="flex items-center justify-between gap-3">
-              <h2 class="text-lg font-semibold text-gray-950">Classificações e pontos</h2>
-              <button class="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50" type="button" @click="addScoringRule">
-                <i class="mdi mdi-plus"></i>
-                Adicionar
-              </button>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-950">Classificação de pontos</h2>
+                <p class="mt-1 text-sm text-gray-600">
+                  A letra <span class="text-red-500">A</span> representa a maior pontuação e as próximas letras seguem
+                  em ordem decrescente.
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  class="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                  type="button"
+                  @click="addScoringRule"
+                >
+                  <i class="mdi mdi-plus"></i>
+                  Adicionar pontuação
+                </button>
+                <button
+                  class="inline-flex items-center gap-2 rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:border-gray-200 disabled:text-gray-300"
+                  type="button"
+                  :disabled="activeScoringRules.length <= 1"
+                  @click="removeLastScoringRule"
+                >
+                  <i class="mdi mdi-minus"></i>
+                  Remover última
+                </button>
+              </div>
             </div>
 
-            <div class="mt-4 space-y-3">
-              <article v-for="(rule, index) in settings.scoringRules" :key="rule.id || index" class="grid gap-3 rounded-md border border-gray-200 p-3 md:grid-cols-7">
-                <input v-model="rule.classification" class="rounded-md border border-gray-300 px-3 py-2 text-sm uppercase" maxlength="3" placeholder="A" />
-                <input v-model="rule.label" class="rounded-md border border-gray-300 px-3 py-2 text-sm md:col-span-2" placeholder="Rótulo" />
-                <input v-model="rule.description" class="rounded-md border border-gray-300 px-3 py-2 text-sm md:col-span-2" placeholder="Descrição" />
-                <input v-model.number="rule.score" class="rounded-md border border-gray-300 px-3 py-2 text-sm" min="1" type="number" />
-                <input v-model.number="rule.displayOrder" class="rounded-md border border-gray-300 px-3 py-2 text-sm" min="1" type="number" />
-                <label class="inline-flex items-center gap-2 text-sm text-gray-700">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <article
+                v-for="rule in activeScoringRules"
+                :key="rule.id || rule.classification"
+                class="rounded-lg border border-gray-200 bg-gray-50 p-4"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <span
+                    class="flex h-10 w-10 items-center justify-center rounded-full bg-red-700 text-lg font-bold text-white"
+                  >
+                    {{ rule.classification }}
+                  </span>
+                  <span class="text-2xl font-bold text-gray-950">{{ Number(rule.score || 0) }} pts</span>
+                </div>
+                <h3 class="mt-3 text-sm font-semibold text-gray-900">
+                  {{ rule.label || `Classificação ${rule.classification}` }}
+                </h3>
+                <p class="mt-1 line-clamp-2 text-xs text-gray-500">
+                  {{ rule.description || "Sem descrição configurada." }}
+                </p>
+              </article>
+            </div>
+
+            <div class="mt-5 space-y-3">
+              <article
+                v-for="(rule, index) in orderedScoringRules"
+                :key="rule.id || `${rule.classification}-${index}`"
+                class="grid gap-3 rounded-md border border-gray-200 p-3 md:grid-cols-8"
+                :class="{ 'bg-gray-50 opacity-70': !rule.active }"
+              >
+                <label class="text-sm font-medium text-gray-700">
+                  Letra
+                  <input
+                    v-model="rule.classification"
+                    class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase"
+                    maxlength="3"
+                  />
+                </label>
+                <label class="text-sm font-medium text-gray-700 md:col-span-2">
+                  Nome
+                  <input v-model="rule.label" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+                </label>
+                <label class="text-sm font-medium text-gray-700 md:col-span-2">
+                  Descrição
+                  <input
+                    v-model="rule.description"
+                    class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  />
+                </label>
+                <label class="text-sm font-medium text-gray-700">
+                  Pontos
+                  <input
+                    v-model.number="rule.score"
+                    class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    min="1"
+                    type="number"
+                  />
+                </label>
+                <label class="text-sm font-medium text-gray-700">
+                  Ordem
+                  <input
+                    v-model.number="rule.displayOrder"
+                    class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    min="1"
+                    type="number"
+                  />
+                </label>
+                <label class="mt-6 inline-flex items-center gap-2 text-sm text-gray-700">
                   <input v-model="rule.active" class="h-4 w-4 rounded border-gray-300 text-red-700" type="checkbox" />
                   Ativa
                 </label>
-                <button class="justify-self-start rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 md:col-span-2" type="button" @click="deactivateRule(rule)">
-                  Desativar
-                </button>
               </article>
             </div>
           </div>
@@ -90,22 +168,47 @@
           <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
             <div class="flex items-center justify-between gap-3">
               <h2 class="text-lg font-semibold text-gray-950">Etapas de avaliação</h2>
-              <button class="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50" type="button" @click="addWorkflowStep">
+              <button
+                class="rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                type="button"
+                @click="addWorkflowStep"
+              >
                 <i class="mdi mdi-plus"></i>
                 Adicionar
               </button>
             </div>
 
             <div class="mt-4 space-y-3">
-              <article v-for="(step, index) in settings.workflowSteps" :key="step.id || index" class="grid gap-3 rounded-md border border-gray-200 p-3 md:grid-cols-6">
-                <input v-model="step.stepCode" class="rounded-md border border-gray-300 px-3 py-2 text-sm" placeholder="analyst_review" />
-                <input v-model.number="step.stepOrder" class="rounded-md border border-gray-300 px-3 py-2 text-sm" min="1" type="number" />
-                <input v-model="step.requiredPermission" class="rounded-md border border-gray-300 px-3 py-2 text-sm md:col-span-2" placeholder="idea.evaluate" />
+              <article
+                v-for="(step, index) in settings.workflowSteps"
+                :key="step.id || index"
+                class="grid gap-3 rounded-md border border-gray-200 p-3 md:grid-cols-6"
+              >
+                <input
+                  v-model="step.stepCode"
+                  class="rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  placeholder="analyst_review"
+                />
+                <input
+                  v-model.number="step.stepOrder"
+                  class="rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  min="1"
+                  type="number"
+                />
+                <input
+                  v-model="step.requiredPermission"
+                  class="rounded-md border border-gray-300 px-3 py-2 text-sm md:col-span-2"
+                  placeholder="idea.evaluate"
+                />
                 <select v-model="step.metadata.reviewSlot" class="rounded-md border border-gray-300 px-3 py-2 text-sm">
                   <option value="analista">Analista</option>
                   <option value="gerente">Gerente</option>
                 </select>
-                <input v-model="step.terminalStatus" class="rounded-md border border-gray-300 px-3 py-2 text-sm" placeholder="concluded" />
+                <input
+                  v-model="step.terminalStatus"
+                  class="rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  placeholder="concluded"
+                />
                 <label class="inline-flex items-center gap-2 text-sm text-gray-700">
                   <input v-model="step.active" class="h-4 w-4 rounded border-gray-300 text-red-700" type="checkbox" />
                   Ativa
@@ -115,46 +218,94 @@
           </div>
         </section>
 
-        <section v-else-if="activeTab === 'marketplace'" class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <section
+          v-else-if="activeTab === 'marketplace'"
+          class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+        >
           <h2 class="text-lg font-semibold text-gray-950">Política de marketplace</h2>
           <div class="mt-4 grid gap-3 md:grid-cols-3">
             <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-              <input v-model="settings.marketplacePolicy.allowRefundAfterCommit" class="h-4 w-4 rounded border-gray-300 text-red-700" type="checkbox" />
+              <input
+                v-model="settings.marketplacePolicy.allowRefundAfterCommit"
+                class="h-4 w-4 rounded border-gray-300 text-red-700"
+                type="checkbox"
+              />
               Permitir estorno após commit
             </label>
             <label class="text-sm font-medium text-gray-700">
               Adapter de voucher
-              <input v-model="settings.marketplacePolicy.voucherAdapter" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" placeholder="noop" />
+              <input
+                v-model="settings.marketplacePolicy.voucherAdapter"
+                class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                placeholder="noop"
+              />
             </label>
             <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-              <input v-model="settings.marketplacePolicy.active" class="h-4 w-4 rounded border-gray-300 text-red-700" type="checkbox" />
+              <input
+                v-model="settings.marketplacePolicy.active"
+                class="h-4 w-4 rounded border-gray-300 text-red-700"
+                type="checkbox"
+              />
               Política ativa
             </label>
           </div>
         </section>
 
-        <section v-else-if="activeTab === 'adjustments'" class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
-          <form class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm" @submit.prevent="submitPointsAdjustment">
+        <section
+          v-else-if="activeTab === 'adjustments'"
+          class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]"
+        >
+          <form
+            class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+            @submit.prevent="submitPointsAdjustment"
+          >
             <h2 class="text-lg font-semibold text-gray-950">Ajustar pontuação</h2>
             <div class="mt-4 grid gap-3 md:grid-cols-2">
               <label class="text-sm font-medium text-gray-700">
                 Matrícula
-                <input v-model.trim="adjustmentForm.registration" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" inputmode="numeric" required />
+                <v-text-field
+                  required
+                  variant="outlined"
+                  v-model.trim="adjustmentForm.registration"
+                  label="Matrícula"
+                  type="number"
+                  inputmode="numeric"
+                ></v-text-field>
               </label>
+
               <label class="text-sm font-medium text-gray-700">
                 Operação
-                <select v-model="adjustmentForm.direction" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
-                  <option value="credit">Adicionar pontos</option>
-                  <option value="debit">Subtrair pontos</option>
-                </select>
+                <v-select
+                  v-model="adjustmentForm.direction"
+                  item-title="name"
+                  item-value="id"
+                  variant="outlined"
+                  :items="[
+                    { name: 'Adicionar Pontos', id: 'credit' },
+                    { name: 'Subtrair Pontos', id: 'debit' },
+                  ]"
+                >
+                </v-select>
               </label>
+
               <label class="text-sm font-medium text-gray-700">
                 Pontos
-                <input v-model.number="adjustmentForm.amount" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" min="1" required type="number" />
+                <input
+                  v-model.number="adjustmentForm.amount"
+                  class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  min="1"
+                  required
+                  type="number"
+                />
               </label>
               <label class="text-sm font-medium text-gray-700 md:col-span-2">
                 Justificativa
-                <textarea v-model.trim="adjustmentForm.reason" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm" required rows="4"></textarea>
+                <textarea
+                  v-model.trim="adjustmentForm.reason"
+                  class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  required
+                  rows="4"
+                ></textarea>
               </label>
             </div>
             <button
@@ -170,7 +321,7 @@
             <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-600">Resultado</h3>
             <div v-if="adjustmentResult" class="mt-3 space-y-2 text-sm text-gray-700">
               <p><strong>Matrícula:</strong> {{ adjustmentResult.registration }}</p>
-              <p><strong>Operação:</strong> {{ adjustmentResult.direction === 'credit' ? 'Crédito' : 'Débito' }}</p>
+              <p><strong>Operação:</strong> {{ adjustmentResult.direction === "credit" ? "Crédito" : "Débito" }}</p>
               <p><strong>Pontos:</strong> {{ adjustmentResult.amount }}</p>
               <p><strong>Saldo disponível:</strong> {{ adjustmentResult.availableBalance }}</p>
             </div>
@@ -181,8 +332,13 @@
         <section v-else class="grid gap-4 md:grid-cols-2">
           <article class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
             <h2 class="text-lg font-semibold text-gray-950">Catálogo</h2>
-            <p class="mt-2 text-sm text-gray-600">Gerencie itens, pontos e disponibilidade do marketplace da unidade.</p>
-            <router-link class="mt-4 inline-flex items-center gap-2 rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800" to="/admin/catalog">
+            <p class="mt-2 text-sm text-gray-600">
+              Gerencie itens, pontos e disponibilidade do marketplace da unidade.
+            </p>
+            <router-link
+              class="mt-4 inline-flex items-center gap-2 rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800"
+              to="/admin/catalog"
+            >
               <i class="mdi mdi-store-edit-outline"></i>
               Abrir catálogo
             </router-link>
@@ -190,7 +346,10 @@
           <article class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
             <h2 class="text-lg font-semibold text-gray-950">RBAC</h2>
             <p class="mt-2 text-sm text-gray-600">Gerencie vínculos de usuário, unidade e papéis administrativos.</p>
-            <router-link class="mt-4 inline-flex items-center gap-2 rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800" to="/admin/rbac">
+            <router-link
+              class="mt-4 inline-flex items-center gap-2 rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800"
+              to="/admin/rbac"
+            >
               <i class="mdi mdi-account-key-outline"></i>
               Abrir RBAC
             </router-link>
@@ -208,25 +367,30 @@
         </template>
       </PermissionGate>
     </div>
+
+    <Notification ref="notification" />
   </main>
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import PermissionGate from '@/components/shared/PermissionGate.vue'
-import UnitRequiredState from '@/components/shared/UnitRequiredState.vue'
-import { unitSettingsService } from '@/services/unitSettingsService.js'
-import { createUserPointsAdjustment } from '@/services/userService.js'
-import { useUserStore } from '@/stores/userStore.js'
+import { computed, onMounted, reactive, ref } from "vue";
+import PermissionGate from "@/components/shared/PermissionGate.vue";
+import UnitRequiredState from "@/components/shared/UnitRequiredState.vue";
+import { unitSettingsService } from "@/services/unitSettingsService.js";
+import { createUserPointsAdjustment } from "@/services/userService.js";
+import { useUserStore } from "@/stores/userStore.js";
+import Notification from "@/components/Notification.vue";
 
-const userStore = useUserStore()
-const loading = ref(false)
-const saving = ref(false)
-const feedback = ref('')
-const feedbackType = ref('success')
-const adjustmentLoading = ref(false)
-const adjustmentResult = ref(null)
-const activeTab = ref('scoring')
+const notification = ref(null);
+
+const userStore = useUserStore();
+const loading = ref(false);
+const saving = ref(false);
+const feedback = ref("");
+const feedbackType = ref("success");
+const adjustmentLoading = ref(false);
+const adjustmentResult = ref(null);
+const activeTab = ref("scoring");
 const settings = reactive({
   active: true,
   metadata: {},
@@ -234,150 +398,224 @@ const settings = reactive({
   workflowSteps: [],
   marketplacePolicy: {
     allowRefundAfterCommit: true,
-    voucherAdapter: 'noop',
+    voucherAdapter: "noop",
     active: true,
     metadata: {},
   },
-})
+});
 const adjustmentForm = reactive({
-  registration: '',
-  direction: 'credit',
+  registration: "",
+  direction: "credit",
   amount: 1,
-  reason: '',
-})
+  reason: "",
+});
 
 const tabs = [
-  { key: 'scoring', label: 'Avaliação e pontuação', icon: 'mdi mdi-star-settings-outline' },
-  { key: 'workflow', label: 'Workflow', icon: 'mdi mdi-source-branch' },
-  { key: 'marketplace', label: 'Marketplace', icon: 'mdi mdi-store-cog-outline' },
-  { key: 'adjustments', label: 'Ajustes de pontuação', icon: 'mdi mdi-account-cash-outline', permission: 'points.adjust' },
-  { key: 'operations', label: 'Catálogo e RBAC', icon: 'mdi mdi-tune-variant' },
-]
+  { key: "scoring", label: "Avaliação e pontuação", icon: "mdi mdi-star-settings-outline" },
+  // { key: "workflow", label: "Workflow", icon: "mdi mdi-source-branch" },
+  // { key: "marketplace", label: "Marketplace", icon: "mdi mdi-store-cog-outline" },
+  {
+    key: "adjustments",
+    label: "Ajustes de pontuação",
+    icon: "mdi mdi-account-cash-outline",
+    permission: "points.adjust",
+  },
+  { key: "operations", label: "Catálogo e RBAC", icon: "mdi mdi-tune-variant" },
+];
 
-const dassOffice = computed(() => userStore.dassOffice || localStorage.getItem('unidadeDass') || '')
-const visibleTabs = computed(() => tabs.filter((tab) => !tab.permission || userStore.hasPermission(tab.permission)))
-const feedbackClass = computed(() => (
-  feedbackType.value === 'success'
-    ? 'border-green-200 bg-green-50 text-green-800'
-    : 'border-red-200 bg-red-50 text-red-800'
-))
+const dassOffice = computed(() => userStore.dassOffice || localStorage.getItem("unidadeDass") || "");
+const visibleTabs = computed(() => tabs.filter((tab) => !tab.permission || userStore.hasPermission(tab.permission)));
+const orderedScoringRules = computed(() =>
+  [...settings.scoringRules].sort((left, right) => {
+    const leftOrder = Number(left.displayOrder || 0);
+    const rightOrder = Number(right.displayOrder || 0);
+    if (leftOrder !== rightOrder) return leftOrder - rightOrder;
+    return String(left.classification || "").localeCompare(String(right.classification || ""));
+  }),
+);
+const activeScoringRules = computed(() => orderedScoringRules.value.filter((rule) => rule.active !== false));
+const feedbackClass = computed(() =>
+  feedbackType.value === "success"
+    ? "border-green-200 bg-green-50 text-green-800"
+    : "border-red-200 bg-red-50 text-red-800",
+);
 
 const normalizeSettings = (data) => {
-  settings.active = data.active ?? true
+  settings.active = data.active ?? true;
   settings.metadata = {
     ...(data.metadata || {}),
     maxEvaluationBonusPoints: Number(data.metadata?.maxEvaluationBonusPoints ?? 2),
-  }
+  };
   settings.scoringRules = (data.scoringRules || []).map((rule, index) => ({
     ...rule,
     label: rule.label || rule.classification,
-    description: rule.description || '',
+    description: rule.description || "",
     displayOrder: rule.displayOrder || index + 1,
     active: rule.active ?? true,
-  }))
+  }));
   settings.workflowSteps = (data.workflowSteps || []).map((step) => ({
     ...step,
-    terminalStatus: step.terminalStatus || '',
+    terminalStatus: step.terminalStatus || "",
     active: step.active ?? true,
     metadata: {
       ...(step.metadata || {}),
-      reviewSlot: step.metadata?.reviewSlot || (step.stepCode?.includes('manager') ? 'gerente' : 'analista'),
+      reviewSlot: step.metadata?.reviewSlot || (step.stepCode?.includes("manager") ? "gerente" : "analista"),
     },
-  }))
+  }));
   settings.marketplacePolicy = {
     allowRefundAfterCommit: data.marketplacePolicy?.allowRefundAfterCommit ?? true,
-    voucherAdapter: data.marketplacePolicy?.voucherAdapter || 'noop',
+    voucherAdapter: data.marketplacePolicy?.voucherAdapter || "noop",
     active: data.marketplacePolicy?.active ?? true,
     metadata: data.marketplacePolicy?.metadata || {},
-  }
-}
+  };
+};
 
 const submitPointsAdjustment = async () => {
-  if (!userStore.hasPermission('points.adjust')) return
-  adjustmentLoading.value = true
-  feedback.value = ''
+  if (!userStore.hasPermission("points.adjust")) return;
+  adjustmentLoading.value = true;
+  feedback.value = "";
   try {
     adjustmentResult.value = await createUserPointsAdjustment(adjustmentForm.registration, {
       dassOffice: dassOffice.value,
       direction: adjustmentForm.direction,
       amount: Number(adjustmentForm.amount),
       reason: adjustmentForm.reason,
-    })
-    feedbackType.value = 'success'
-    feedback.value = 'Ajuste de pontuação registrado com sucesso.'
-    adjustmentForm.amount = 1
-    adjustmentForm.reason = ''
+    });
+
+    notification.value.showPopup("success", "Sucesso", "Ajuste de pontuação registrado com sucesso!");
+
+    adjustmentForm.amount = 1;
+    adjustmentForm.reason = "";
   } catch (error) {
-    feedbackType.value = 'error'
-    feedback.value = error.response?.data?.message || 'Não foi possível registrar ajuste de pontuação.'
+    notification.value.showPopup(
+      "error",
+      "Erro",
+      error.response?.data?.message || "Não foi possível registrar ajuste de pontuação.",
+    );
   } finally {
-    adjustmentLoading.value = false
+    adjustmentLoading.value = false;
   }
-}
+};
 
 const loadSettings = async () => {
-  if (!dassOffice.value || !userStore.hasPermission('unit.config.manage')) return
-  loading.value = true
-  feedback.value = ''
+  if (!dassOffice.value || !userStore.hasPermission("unit.config.manage")) return;
+  loading.value = true;
   try {
-    normalizeSettings(await unitSettingsService.getSettings(dassOffice.value))
+    normalizeSettings(await unitSettingsService.getSettings(dassOffice.value));
   } catch (error) {
-    feedbackType.value = 'error'
-    feedback.value = error.response?.data?.message || 'Não foi possível carregar configurações.'
+    notification.value.showPopup(
+      "error",
+      "Erro",
+      error.response?.data?.message || "Não foi possível carregar configurações.",
+    );
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
+
+const normalizeActiveScoringRules = () => {
+  activeScoringRules.value.forEach((rule, index) => {
+    const letter = String.fromCharCode(65 + index);
+    rule.classification = letter;
+    rule.label = rule.label || letter;
+    rule.displayOrder = index + 1;
+    rule.score = Math.max(1, Number(rule.score || activeScoringRules.value.length - index));
+    rule.active = true;
+  });
+};
+
+const updateScoreList = (action) => {
+  activeScoringRules.value.forEach((item) => {
+    const currentScore = Number(item.score || 0);
+    item.score = action === "add" ? currentScore + 1 : Math.max(1, currentScore - 1);
+  });
+};
 
 const addScoringRule = () => {
-  const nextIndex = settings.scoringRules.length
+  const nextIndex = activeScoringRules.value.length;
+  const nextLetter = String.fromCharCode(65 + nextIndex);
+  const lastScore = Number(activeScoringRules.value[nextIndex - 1]?.score || nextIndex + 1);
+
+  updateScoreList("add");
+
   settings.scoringRules.push({
-    classification: String.fromCharCode(65 + nextIndex),
-    label: String.fromCharCode(65 + nextIndex),
-    description: '',
-    score: Math.max(1, settings.scoringRules.length + 1),
+    classification: nextLetter,
+    label: nextLetter,
+    description: "",
+    score: Math.max(1, lastScore - 1),
     displayOrder: nextIndex + 1,
     active: true,
     metadata: {},
-  })
-}
+  });
+  normalizeActiveScoringRules();
+};
 
-const deactivateRule = (rule) => {
-  rule.active = false
-}
+const removeLastScoringRule = () => {
+  const lastActiveRule = activeScoringRules.value.at(-1);
+  if (!lastActiveRule || activeScoringRules.value.length <= 1) return;
+
+  const ruleIndex = settings.scoringRules.indexOf(lastActiveRule);
+  if (ruleIndex === -1) return;
+
+  settings.scoringRules.splice(ruleIndex, 1);
+  updateScoreList("remove");
+  normalizeActiveScoringRules();
+};
+
+const normalizeScoringRulesForSave = () => {
+  const activeRules = activeScoringRules.value;
+  const inactiveRules = orderedScoringRules.value.filter((rule) => rule.active === false);
+
+  activeRules.forEach((rule, index) => {
+    const letter = String.fromCharCode(65 + index);
+    rule.classification = letter;
+    rule.label = rule.label || letter;
+    rule.displayOrder = index + 1;
+    rule.score = Math.max(1, Number(rule.score || activeRules.length - index));
+    rule.active = true;
+  });
+
+  inactiveRules.forEach((rule, index) => {
+    rule.displayOrder = activeRules.length + index + 1;
+    rule.active = false;
+  });
+};
 
 const addWorkflowStep = () => {
   settings.workflowSteps.push({
     stepCode: `step_${settings.workflowSteps.length + 1}`,
     stepOrder: settings.workflowSteps.length + 1,
-    requiredPermission: 'idea.evaluate',
-    terminalStatus: '',
+    requiredPermission: "idea.evaluate",
+    terminalStatus: "",
     active: true,
-    metadata: { reviewSlot: 'analista' },
-  })
-}
+    metadata: { reviewSlot: "analista" },
+  });
+};
 
 const saveSettings = async () => {
-  saving.value = true
-  feedback.value = ''
+  saving.value = true;
   try {
-    const updated = await unitSettingsService.updateSettings(dassOffice.value, settings)
-    normalizeSettings(updated)
-    userStore.unitConfig = updated
-    localStorage.setItem(`unitConfig:${dassOffice.value}`, JSON.stringify(updated))
-    feedbackType.value = 'success'
-    feedback.value = 'Configurações salvas com sucesso.'
+    normalizeScoringRulesForSave();
+    const updated = await unitSettingsService.updateSettings(dassOffice.value, settings);
+    normalizeSettings(updated);
+    userStore.unitConfig = updated;
+    localStorage.setItem(`unitConfig:${dassOffice.value}`, JSON.stringify(updated));
+
+    notification.value.showPopup("success", "Sucesso", "Configurações salvas com sucesso.");
   } catch (error) {
-    feedbackType.value = 'error'
-    feedback.value = error.response?.data?.message || 'Não foi possível salvar configurações.'
+    notification.value.showPopup(
+      "error",
+      "Erro",
+      error.response?.data?.message || "Não foi possível salvar configurações.",
+    );
   } finally {
-    saving.value = false
+    saving.value = false;
   }
-}
+};
 
 onMounted(async () => {
-  userStore.carregarUsuario()
-  await userStore.loadSessionContext(dassOffice.value)
-  await loadSettings()
-})
+  userStore.carregarUsuario();
+  await userStore.loadSessionContext(dassOffice.value);
+  await loadSettings();
+});
 </script>

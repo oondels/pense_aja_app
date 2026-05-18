@@ -15,12 +15,12 @@ import UnitSettingsRoutes from "./routes/unitSettings.route";
 import { startUploadListener } from "./workers/uploadListener";
 
 const app = express();
-const port = Number(dotenv.PORT) || 2512;
+const port = 2512;
 const openApiPath = path.resolve(process.cwd(), "openapi.yaml");
 
 const allowedOrigins = dotenv.ALLOWED_ORIGINS
   ? dotenv.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
-  : ["http://10.100.1.43:5050", "http://localhost:5050", "http://localhost:5173/"];
+  : ["http://10.100.1.43:5050", "http://localhost:5050", "http://localhost:5173"];
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cookieParser());

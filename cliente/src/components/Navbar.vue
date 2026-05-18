@@ -68,43 +68,44 @@
       </div>
     </div>
 
+    <!-- Navegações header -->
     <nav class="relative z-10 flex flex-wrap items-center gap-2 px-4 pb-2">
-      <router-link class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white" to="/pense-aja">
+      <router-link :class="navLinkClass('/pense-aja')" to="/pense-aja">
         Ideias
       </router-link>
-      <router-link class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white" to="/dashboard">
+      <router-link :class="navLinkClass('/dashboard')" to="/dashboard">
         Dashboard
       </router-link>
-      <router-link class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white" to="/marketplace">
+      <router-link :class="navLinkClass('/marketplace')" to="/marketplace">
         Marketplace
       </router-link>
-      <router-link class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white" to="/user/points-history">
+      <router-link :class="navLinkClass('/user/points-history')" to="/user/points-history">
         Pontos
       </router-link>
       <router-link
         v-if="user.hasPermission('marketplace.request.approve')"
-        class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white"
+        :class="navLinkClass('/admin/marketplace')"
         to="/admin/marketplace"
       >
         Resgates
       </router-link>
       <router-link
         v-if="user.hasPermission('catalog.manage')"
-        class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white"
+        :class="navLinkClass('/admin/catalog')"
         to="/admin/catalog"
       >
         Catálogo
       </router-link>
       <router-link
         v-if="user.hasPermission('unit.config.manage')"
-        class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white"
+        :class="navLinkClass('/admin/unit-settings')"
         to="/admin/unit-settings"
       >
         Configurações
       </router-link>
       <router-link
         v-if="user.hasPermission('rbac.manage')"
-        class="rounded-md bg-white/80 px-3 py-1.5 text-sm font-semibold text-gray-700 hover:bg-white"
+        :class="navLinkClass('/admin/rbac')"
         to="/admin/rbac"
       >
         RBAC
@@ -121,8 +122,8 @@
         >
         <v-btn @click="handleRegisterClick"><i class="mdi mdi-lightbulb-on-outline text-xl"></i> Registrar</v-btn>
         <v-btn @click="handleLoginClick">
-          <i :class="user?.matricula ? 'mdi mdi-logout' : 'mdi mdi-account-circle'" class="text-xl"></i>
-          {{ user?.matricula ? "Sair" : "Entrar" }}
+          <i :class="user?.matricula ? 'mdi mdi-account-circle' : 'mdi mdi-account-circle'" class="text-xl"></i>
+          {{ user?.matricula ? "Perfil" : "Entrar" }}
         </v-btn>
       </v-bottom-navigation>
     </v-layout>
@@ -133,7 +134,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
 import Notification from "./Notification.vue";
 
@@ -149,6 +150,13 @@ const isMenuOpen = ref(false);
 const isMobile = ref(false);
 
 const router = useRouter();
+const route = useRoute();
+const navLinkClass = (path) => [
+  "rounded-md px-3 py-1.5 text-sm font-semibold transition-colors",
+  route.path === path
+    ? "bg-red-700 text-white shadow"
+    : "bg-white/80 text-gray-700 hover:bg-white",
+];
 const goHome = () => router.push("/pense-aja");
 const handleNotify = (payload) => {
   notification.value?.showPopup(payload.type, payload.title, payload.message, payload.time);

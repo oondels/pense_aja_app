@@ -23,7 +23,7 @@ Este arquivo é a porta de entrada do frontend para leitura humana e lookup por 
 - Related: login, store, register, links principais
 
 ## Session and User Store
-- Keywords: session, storage, pinia, user store, sessionStorage, localStorage, unidadeDass, permission snapshot
+- Keywords: session, storage, pinia, user store, sessionStorage, localStorage, unidadeDass, permission context
 - File: `cliente/src/stores/userStore.js` e `specs/frontend/ARCHITECTURE.md`
 - Related: auth, perfil, permissões, unidade, sessão
 
@@ -108,7 +108,7 @@ Este arquivo é a porta de entrada do frontend para leitura humana e lookup por 
 - Related: rotas, services, profile, dashboard
 
 ## Frontend Integrations
-- Keywords: integration, backend, auth api, notification, upload, vite api url, permission snapshot
+- Keywords: integration, backend, auth api, notification, upload, vite api url, permission context
 - File: `specs/frontend/INTEGRATIONS.md`
 - Related: httpClient, interceptors, env, Docker
 
