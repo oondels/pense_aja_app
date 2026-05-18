@@ -152,6 +152,8 @@ escopo da unidade.
 - Aprovação ou conclusão de resgate gera `commit`.
 - Rejeição ou cancelamento elegível gera `release`.
 - Estorno posterior gera `refund`.
+- Lançamentos de `marketplace_redemption` usam `source_id` igual ao id da
+  solicitação de resgate; o item de catálogo fica em `metadata.catalogItemId`.
 - Reversões e transições relacionadas referenciam lançamento anterior quando
   aplicável.
 

@@ -1020,13 +1020,35 @@ export const PenseAjaService = {
         actorRegistration ?? analista.analistaUser ?? null;
       const operatorName = actorName ?? analista.analistaName ?? "";
 
+      const redemptionRepository = queryRunner.manager.getRepository(
+        MarketplaceRedemptionRequestEntity
+      );
+      const redemptionRequest = await redemptionRepository.save(
+        redemptionRepository.create({
+          matricula: String(colaboradorData.matricula),
+          unidade_dass: validDassOffice,
+          catalog_item_id: String(getProduct.id),
+          request_status: "completed",
+          reserved_ledger_entry_id: null,
+          approval_actor_registration: operatorRegistration,
+          approval_actor_name: operatorName,
+          fulfillment_type:
+            getProduct.item_type === "voucher"
+              ? "voucher_issue"
+              : "physical_delivery",
+          legacy_prize_id: null,
+          createdat: now,
+          updatedat: now,
+        })
+      );
+
       const reserveEntry = await LedgerService.createEntry(queryRunner, {
         registration: String(colaboradorData.matricula),
         dassOffice: validDassOffice,
         entryType: "reserve",
         amount: Number(getProduct.points_cost),
         sourceType: "marketplace_redemption",
-        sourceId: `catalog:${getProduct.id}`,
+        sourceId: String(redemptionRequest.id),
         correlationId,
         reason: "Reserva de saldo para resgate legado.",
         createdByRegistration: operatorRegistration,
@@ -1040,26 +1062,9 @@ export const PenseAjaService = {
         },
       });
 
-      const redemptionRepository = queryRunner.manager.getRepository(
-        MarketplaceRedemptionRequestEntity
-      );
-      const redemptionRequest = await redemptionRepository.save(
-        redemptionRepository.create({
-          matricula: String(colaboradorData.matricula),
-          unidade_dass: validDassOffice,
-          catalog_item_id: String(getProduct.id),
-          request_status: "completed",
-          reserved_ledger_entry_id: String(reserveEntry.id),
-          approval_actor_registration: operatorRegistration,
-          approval_actor_name: operatorName,
-          fulfillment_type:
-            getProduct.item_type === "voucher"
-              ? "voucher_issue"
-              : "physical_delivery",
-          legacy_prize_id: null,
-          createdat: now,
-          updatedat: now,
-        })
+      await redemptionRepository.update(
+        { id: redemptionRequest.id },
+        { reserved_ledger_entry_id: String(reserveEntry.id), updatedat: now }
       );
 
       await LedgerService.createEntry(queryRunner, {

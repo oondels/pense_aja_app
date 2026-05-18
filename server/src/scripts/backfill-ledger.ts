@@ -1,7 +1,7 @@
 import { initializeDatabase } from "../config/database";
 
 // Backfill set-based: evita N+1 SELECT/INSERT por registro legado e mantém
-// idempotência pelo índice único (source_type, source_id).
+// idempotência pelos índices únicos parciais de origem legada.
 interface CountRow {
   total: string;
 }
@@ -136,7 +136,7 @@ const run = async () => {
               jsonb_build_object('ideaId', points.id_pense_aja),
               CURRENT_TIMESTAMP
             FROM pense_aja.pense_aja_pontos points
-            ON CONFLICT (source_type, source_id) DO NOTHING
+            ON CONFLICT DO NOTHING
             RETURNING
               id,
               unidade_dass,
@@ -223,7 +223,7 @@ const run = async () => {
               jsonb_build_object('rewardName', rewards.premio_solicitado),
               CURRENT_TIMESTAMP
             FROM pense_aja.pense_aja_premios rewards
-            ON CONFLICT (source_type, source_id) DO NOTHING
+            ON CONFLICT DO NOTHING
             RETURNING
               id,
               unidade_dass,

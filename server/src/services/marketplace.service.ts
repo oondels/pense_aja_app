@@ -345,13 +345,33 @@ export const MarketplaceService = {
 
       const now = new Date();
       const correlationId = randomUUID();
+      const requestRepository = queryRunner.manager.getRepository(
+        MarketplaceRedemptionRequestEntity
+      );
+      const request = await requestRepository.save(
+        requestRepository.create({
+          matricula: registration,
+          unidade_dass: validDassOffice,
+          catalog_item_id: String(item.id),
+          request_status: "pending_approval",
+          reserved_ledger_entry_id: null,
+          approval_actor_registration: null,
+          approval_actor_name: null,
+          fulfillment_type:
+            item.item_type === "voucher" ? "voucher_issue" : "physical_delivery",
+          legacy_prize_id: null,
+          createdat: now,
+          updatedat: now,
+        })
+      );
+
       const reserveEntry = await LedgerService.createEntry(queryRunner, {
         registration,
         dassOffice: validDassOffice,
         entryType: "reserve",
         amount: Number(item.points_cost),
         sourceType: "marketplace_redemption",
-        sourceId: `catalog:${item.id}`,
+        sourceId: String(request.id),
         correlationId,
         reason: input.reason ?? "Reserva de saldo para solicitação de resgate.",
         createdByRegistration: actor.registration,
@@ -362,24 +382,9 @@ export const MarketplaceService = {
         },
       });
 
-      const requestRepository = queryRunner.manager.getRepository(
-        MarketplaceRedemptionRequestEntity
-      );
-      const request = await requestRepository.save(
-        requestRepository.create({
-          matricula: registration,
-          unidade_dass: validDassOffice,
-          catalog_item_id: String(item.id),
-          request_status: "pending_approval",
-          reserved_ledger_entry_id: String(reserveEntry.id),
-          approval_actor_registration: null,
-          approval_actor_name: null,
-          fulfillment_type:
-            item.item_type === "voucher" ? "voucher_issue" : "physical_delivery",
-          legacy_prize_id: null,
-          createdat: now,
-          updatedat: now,
-        })
+      await requestRepository.update(
+        { id: request.id },
+        { reserved_ledger_entry_id: String(reserveEntry.id), updatedat: now }
       );
 
       await AuditService.recordEvent(queryRunner, {
@@ -553,6 +558,7 @@ export const MarketplaceService = {
       );
       const request = await requestRepository.findOne({
         where: { id: Number(id), unidade_dass: validDassOffice },
+        lock: { mode: "pessimistic_write" },
       });
 
       if (!request) {

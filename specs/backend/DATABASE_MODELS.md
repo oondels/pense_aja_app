@@ -158,7 +158,9 @@ Origens operacionais usadas no fluxo atual:
 - `idea_evaluation`: pontuação base por avaliação de ideia
 - `idea_evaluation_bonus`: bonificação extra na avaliação
 - `manual_adjustment`: ajuste manual auditado por administrador
-- `marketplace_redemption`: reserva, consumo, liberação e estorno de resgate
+- `marketplace_redemption`: reserva, consumo, liberação e estorno de resgate;
+  `source_id` aponta para `marketplace_redemption_requests.id` e o catálogo
+  relacionado fica em `metadata.catalogItemId`
 
 ### `points_balance_projection`
 

@@ -39,8 +39,9 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Valida matrícula da URL, usuário, produto ativo e unidade Dass.
 - Usa `marketplace_catalog_items` para localizar produto por `id` ou `legacy_product_id`.
 - Recalcula e bloqueia `points_balance_projection` dentro da transação antes de validar saldo.
-- Cria lançamento `reserve` e `commit` em `points_ledger_entries`.
 - Cria solicitação concluída em `marketplace_redemption_requests`.
+- Cria lançamento `reserve` e `commit` em `points_ledger_entries` com
+  `source_id` igual ao id da solicitação.
 - Registra auditoria `marketplace.request.completed`.
 - Não grava novos resgates na tabela legada `pense_aja.pense_aja_premios`.
 
@@ -238,7 +239,8 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Ignora `registration` e `requesterName` enviados no corpo para evitar solicitação em nome de terceiros.
 - Valida item ativo, disponibilidade e saldo disponível.
 - Bloqueia `points_balance_projection` com `FOR UPDATE`.
-- Cria lançamento `reserve` no ledger.
+- Cria lançamento `reserve` no ledger com `source_id` igual ao id da
+  solicitação.
 - Cria solicitação `pending_approval` em `marketplace_redemption_requests`.
 - Registra auditoria `marketplace.request.created`.
 
