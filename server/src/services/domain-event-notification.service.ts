@@ -202,7 +202,7 @@ const notifyIdeaCreated = async (
     }
 
     await NotificationService.sendNotification({
-      to: String(manager.matricula),
+      to: String(manager.email),
       subject: "Aplicativo Pense Aja",
       title: "Novo Pense Aja Cadastrado.",
       message: `Um novo registro de Pense Aja foi cadastrado pelo usuário ${formatUserName(
