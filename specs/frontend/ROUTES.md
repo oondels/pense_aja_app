@@ -176,6 +176,7 @@ Tela administrativa de permissões e papéis.
   - lista e formulário usam apenas papéis retornados pelo backend para o escopo do admin
   - permite cadastrar e editar múltiplos papéis para a mesma matrícula em uma ação
   - editar papéis adiciona/atualiza os papéis selecionados e não remove papéis omitidos
+  - exibe legenda explicativa dos papéis disponíveis, sem códigos técnicos
   - possui filtros por busca, matrícula, papel e status
   - somente `admin_master` vê o filtro por unidade e pode listar todas as unidades
   - alterna entre cards e lista, com preferência persistida em `localStorage`

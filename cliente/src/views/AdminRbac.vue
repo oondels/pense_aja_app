@@ -73,6 +73,26 @@
           </button>
         </form>
 
+        <section class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+          <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 class="text-base font-semibold text-gray-950">Legenda de papéis</h2>
+              <p class="mt-1 text-sm text-gray-600">Entenda o que cada nível de permissão libera para o usuário.</p>
+            </div>
+          </div>
+
+          <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <article
+              v-for="role in roleLegendItems"
+              :key="role.code"
+              class="rounded-lg border border-gray-100 bg-gray-50 p-3"
+            >
+              <h3 class="text-sm font-semibold text-gray-950">{{ role.name }}</h3>
+              <p class="mt-1 text-sm leading-5 text-gray-600">{{ role.description }}</p>
+            </article>
+          </div>
+        </section>
+
         <section class="grid gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-5">
           <input
             v-model.trim="filters.search"
@@ -283,6 +303,25 @@ const columns = [
   { key: "activeFrom", label: "Início" },
   { key: "activeUntil", label: "Fim" },
 ];
+
+const roleDescriptions = {
+  admin_master: "Gerencia permissões de todas as unidades e todos os níveis de acesso.",
+  unit_admin:
+    "Gerencia configurações e permissões da própria unidade, exceto administradores mestres e outros administradores de unidade.",
+  idea_admin: "Administra o fluxo de ideias da unidade e pode liberar usuários para cadastrar ideias.",
+  idea_reviewer: "Avalia ideias recebidas na unidade.",
+  idea_submitter: "Cadastra e acompanha ideias.",
+  marketplace_admin: "Administra o marketplace da unidade e pode liberar operadores.",
+  marketplace_operator: "Acompanha e executa etapas operacionais de solicitações do marketplace.",
+};
+
+const roleLegendItems = computed(() =>
+  roles.value.map((role) => ({
+    code: role.code,
+    name: role.nome,
+    description: roleDescriptions[role.code] || "Este papel possui permissões configuradas pela equipe de administração.",
+  })),
+);
 
 const toInputDate = (value) => {
   if (!value) return "";
