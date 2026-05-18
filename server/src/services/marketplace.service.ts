@@ -21,6 +21,7 @@ import {
 } from "../types/contracts";
 import { assertDassOffice } from "../utils/dassOffice";
 import { AuditService } from "./audit.service";
+import { DomainEventNotificationService } from "./domain-event-notification.service";
 import { LedgerService } from "./ledger.service";
 import { VoucherAdapterService } from "./voucher-adapter.service";
 
@@ -137,6 +138,26 @@ const applyRequestSelects = (query: any) =>
     .addSelect("request.legacy_prize_id", "legacyPrizeId")
     .addSelect("request.createdat", "createdAt")
     .addSelect("request.updatedat", "updatedAt");
+
+const dispatchMarketplaceNotificationSafely = async (
+  event:
+    | {
+        type: "marketplace.request.created";
+        request: MarketplaceRequestRecord;
+        dassOffice: DassOffice;
+      }
+    | {
+        type: "marketplace.request.updated";
+        request: MarketplaceRequestRecord;
+        dassOffice: DassOffice;
+      }
+) => {
+  try {
+    await DomainEventNotificationService.dispatch(event);
+  } catch {
+    return;
+  }
+};
 
 export const MarketplaceService = {
   async listCatalog(dassOffice: string): Promise<MarketplaceCatalogItemRecord[]> {
@@ -413,7 +434,18 @@ export const MarketplaceService = {
       );
 
       await queryRunner.commitTransaction();
-      return this.getRequestById(String(request.id), validDassOffice);
+      const createdRequest = await this.getRequestById(
+        String(request.id),
+        validDassOffice
+      );
+
+      await dispatchMarketplaceNotificationSafely({
+        type: "marketplace.request.created",
+        request: createdRequest,
+        dassOffice: validDassOffice,
+      });
+
+      return createdRequest;
     } catch (error) {
       if (queryRunner.isTransactionActive) {
         await queryRunner.rollbackTransaction();
@@ -637,7 +669,15 @@ export const MarketplaceService = {
       });
 
       await queryRunner.commitTransaction();
-      return this.getRequestById(id, validDassOffice);
+      const updatedRequest = await this.getRequestById(id, validDassOffice);
+
+      await dispatchMarketplaceNotificationSafely({
+        type: "marketplace.request.updated",
+        request: updatedRequest,
+        dassOffice: validDassOffice,
+      });
+
+      return updatedRequest;
     } catch (error) {
       if (queryRunner.isTransactionActive) {
         await queryRunner.rollbackTransaction();
@@ -794,7 +834,15 @@ export const MarketplaceService = {
       });
 
       await queryRunner.commitTransaction();
-      return this.getRequestById(id, validDassOffice);
+      const updatedRequest = await this.getRequestById(id, validDassOffice);
+
+      await dispatchMarketplaceNotificationSafely({
+        type: "marketplace.request.updated",
+        request: updatedRequest,
+        dassOffice: validDassOffice,
+      });
+
+      return updatedRequest;
     } catch (error) {
       if (queryRunner.isTransactionActive) {
         await queryRunner.rollbackTransaction();

@@ -6,6 +6,7 @@ vi.hoisted(() => {
 
 import * as database from "../src/config/database";
 import { AuditService } from "../src/services/audit.service";
+import { DomainEventNotificationService } from "../src/services/domain-event-notification.service";
 import { LedgerService } from "../src/services/ledger.service";
 import { MarketplaceService } from "../src/services/marketplace.service";
 
@@ -77,6 +78,9 @@ describe("MarketplaceService — workflow transitions and ledger entries", () =>
     } as any);
     vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
     vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
+    vi.spyOn(DomainEventNotificationService, "dispatch").mockResolvedValue({
+      notificationTargetFound: true,
+    });
     vi.spyOn(MarketplaceService, "getRequestById").mockResolvedValue({
       id: 10,
       registration: "1234567",
@@ -198,5 +202,111 @@ describe("MarketplaceService — workflow transitions and ledger entries", () =>
     const syncIndex = calls.indexOf("sync-projection");
     const entryIndex = calls.indexOf("create-entry");
     expect(syncIndex).toBeGreaterThan(entryIndex);
+  });
+
+  it("dispatches requester notification after transition commit", async () => {
+    const queryRunner = buildQueryRunner({ request_status: "pending_approval" });
+    mockCommon(queryRunner);
+    vi.spyOn(LedgerService, "createEntry").mockResolvedValue({} as any);
+    const dispatch = vi.spyOn(DomainEventNotificationService, "dispatch");
+
+    await MarketplaceService.approveRequest("10", { dassOffice: "SEST" }, ACTOR);
+
+    expect(queryRunner.commitTransaction).toHaveBeenCalledOnce();
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "marketplace.request.updated",
+      request: expect.objectContaining({
+        id: 10,
+        registration: "1234567",
+      }),
+      dassOffice: "SEST",
+    });
+  });
+
+  it("keeps transition success when notification dispatch fails", async () => {
+    const queryRunner = buildQueryRunner({ request_status: "pending_approval" });
+    mockCommon(queryRunner);
+    vi.spyOn(LedgerService, "createEntry").mockResolvedValue({} as any);
+    vi.spyOn(DomainEventNotificationService, "dispatch").mockRejectedValue(
+      new Error("notification failed")
+    );
+
+    const result = await MarketplaceService.approveRequest(
+      "10",
+      { dassOffice: "SEST" },
+      ACTOR
+    );
+
+    expect(result.id).toBe(10);
+    expect(queryRunner.rollbackTransaction).not.toHaveBeenCalled();
+  });
+
+  it("dispatches operator notification after request creation commit", async () => {
+    const requestRepo = {
+      create: vi.fn((input) => input),
+      save: vi.fn().mockResolvedValue(BASE_REQUEST),
+      update: vi.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const itemRepo = {
+      findOne: vi.fn().mockResolvedValue(BASE_ITEM),
+    };
+    const queryRunner = {
+      connect: vi.fn(),
+      startTransaction: vi.fn(),
+      commitTransaction: vi.fn(),
+      rollbackTransaction: vi.fn(),
+      release: vi.fn(),
+      isTransactionActive: true,
+      isReleased: false,
+      query: vi.fn().mockResolvedValue([{ available_balance: "100" }]),
+      manager: {
+        getRepository: vi.fn((entity: any) => {
+          const name = entity?.options?.name ?? "";
+          return name === "MarketplaceCatalogItem" ? itemRepo : requestRepo;
+        }),
+      },
+    } as any;
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue({
+      createQueryRunner: () => queryRunner,
+    } as any);
+    vi.spyOn(LedgerService, "syncBalanceProjection").mockResolvedValue();
+    vi.spyOn(LedgerService, "createEntry").mockResolvedValue({ id: 5 } as any);
+    vi.spyOn(AuditService, "recordEvent").mockResolvedValue();
+    vi.spyOn(MarketplaceService, "getRequestById").mockResolvedValue({
+      id: 10,
+      registration: "1234567",
+      requesterName: "Usuario Teste",
+      dassOffice: "SEST",
+      catalogItemId: "catalog-uuid",
+      catalogItemName: "Mochila",
+      catalogItemPointsCost: 50,
+      catalogItemType: "physical",
+      requestStatus: "pending_approval",
+      reservedLedgerEntryId: 5,
+      approvalActorRegistration: null,
+      approvalActorName: null,
+      fulfillmentType: "physical_delivery",
+      legacyPrizeId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    const dispatch = vi
+      .spyOn(DomainEventNotificationService, "dispatch")
+      .mockResolvedValue({ notificationTargetFound: true });
+
+    await MarketplaceService.createRequest(
+      { dassOffice: "SEST", catalogItemId: "catalog-uuid" },
+      { registration: "1234567", username: "Usuario Teste" }
+    );
+
+    expect(queryRunner.commitTransaction).toHaveBeenCalledOnce();
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "marketplace.request.created",
+      request: expect.objectContaining({
+        id: 10,
+        requestStatus: "pending_approval",
+      }),
+      dassOffice: "SEST",
+    });
   });
 });

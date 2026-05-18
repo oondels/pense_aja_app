@@ -2,8 +2,13 @@ import logger from "../utils/logger";
 import {
   DassOffice,
   EvaluatePenseAjaResult,
+  MarketplaceRequestRecord,
   UserManagerNotificationTarget,
 } from "../types/contracts";
+import EmailEntity from "../models/Email";
+import RbacRoleEntity from "../models/RbacRole";
+import RbacUserUnitRoleEntity from "../models/RbacUserUnitRole";
+import { initializeDatabase } from "../config/database";
 import { NotificationService } from "./notification.service";
 import { UserPenseaja } from "./user-penseaja.service";
 
@@ -26,7 +31,28 @@ interface IdeaEvaluatedEvent {
   dassOffice: DassOffice;
 }
 
-type DomainNotificationEvent = IdeaCreatedEvent | IdeaEvaluatedEvent;
+interface MarketplaceRequestCreatedEvent {
+  type: "marketplace.request.created";
+  request: MarketplaceRequestRecord;
+  dassOffice: DassOffice;
+}
+
+interface MarketplaceRequestUpdatedEvent {
+  type: "marketplace.request.updated";
+  request: MarketplaceRequestRecord;
+  dassOffice: DassOffice;
+}
+
+type MarketplaceOperatorNotificationTarget = {
+  registration: string;
+  email: string;
+};
+
+type DomainNotificationEvent =
+  | IdeaCreatedEvent
+  | IdeaEvaluatedEvent
+  | MarketplaceRequestCreatedEvent
+  | MarketplaceRequestUpdatedEvent;
 
 interface NotificationDispatchResult {
   notificationTargetFound: boolean;
@@ -59,6 +85,21 @@ const formatEvaluatorName = (
     .join(" ");
 };
 
+const marketplaceStatusLabel: Record<string, string> = {
+  pending_approval: "pendente de aprovação",
+  approved: "aprovada",
+  rejected: "rejeitada",
+  fulfillment_in_progress: "em separação ou entrega",
+  completed: "concluída",
+  cancelled: "cancelada",
+  refunded: "estornada",
+};
+
+const getMarketplaceItemDescription = (request: MarketplaceRequestRecord) =>
+  request.catalogItemName
+    ? `${request.catalogItemName} (${request.catalogItemPointsCost ?? 0} pontos)`
+    : `item ${request.catalogItemId}`;
+
 const logNotificationSideEffectError = (
   flow: string,
   error: unknown,
@@ -85,6 +126,56 @@ const findManagerByUserSafely = async (
       dassOffice,
     });
     return null;
+  }
+};
+
+const findMarketplaceOperatorTargetsSafely = async (
+  dassOffice: DassOffice
+): Promise<MarketplaceOperatorNotificationTarget[]> => {
+  try {
+    const dataSource = await initializeDatabase();
+    const rows = await dataSource
+      .getRepository(RbacUserUnitRoleEntity)
+      .createQueryBuilder("assignment")
+      .innerJoin(
+        RbacRoleEntity as any,
+        "role",
+        "role.id = assignment.role_id"
+      )
+      .innerJoin(
+        EmailEntity as any,
+        "email",
+        "email.matricula = assignment.matricula AND email.unidade_dass = assignment.unidade_dass"
+      )
+      .select("assignment.matricula", "registration")
+      .addSelect("email.email", "email")
+      .where("assignment.unidade_dass = :dassOffice", { dassOffice })
+      .andWhere("assignment.active = true")
+      .andWhere("(assignment.active_from IS NULL OR assignment.active_from <= CURRENT_TIMESTAMP)")
+      .andWhere("(assignment.active_until IS NULL OR assignment.active_until >= CURRENT_TIMESTAMP)")
+      .andWhere("role.code IN (:...roles)", {
+        roles: ["marketplace_operator", "marketplace_admin"],
+      })
+      .andWhere("email.email IS NOT NULL")
+      .getRawMany<{ registration: string; email: string }>();
+
+    const targets = new Map<string, MarketplaceOperatorNotificationTarget>();
+    rows.forEach((row) => {
+      const registration = String(row.registration);
+      if (row.email && !targets.has(registration)) {
+        targets.set(registration, {
+          registration,
+          email: row.email,
+        });
+      }
+    });
+
+    return [...targets.values()];
+  } catch (error) {
+    logNotificationSideEffectError("buscar-operadores-marketplace", error, {
+      dassOffice,
+    });
+    return [];
   }
 };
 
@@ -178,16 +269,115 @@ const notifyIdeaEvaluated = async (
   }
 };
 
+const notifyMarketplaceRequestCreated = async (
+  event: MarketplaceRequestCreatedEvent
+): Promise<NotificationDispatchResult> => {
+  const targets = await findMarketplaceOperatorTargetsSafely(event.dassOffice);
+
+  if (!targets.length) {
+    return { notificationTargetFound: false };
+  }
+
+  await Promise.all(
+    targets.map(async (target) => {
+      try {
+        const notificationEnabled =
+          await NotificationService.isNotificationEnabled(
+            target.registration,
+            event.dassOffice
+          );
+
+        if (!notificationEnabled) {
+          return;
+        }
+
+        await NotificationService.sendNotification({
+          to: target.email,
+          subject: "Aplicativo Pense Aja",
+          title: "Nova solicitação de resgate.",
+          message: `Uma nova solicitação de resgate foi criada por ${
+            event.request.requesterName ?? event.request.registration
+          }. Brinde: ${getMarketplaceItemDescription(event.request)}.`,
+          application: "Pense e Aja",
+          link: `${appBaseUrl}/admin/marketplace`,
+        });
+      } catch (error) {
+        logNotificationSideEffectError("marketplace-criacao", error, {
+          requestId: event.request.id,
+          targetRegistration: target.registration,
+          dassOffice: event.dassOffice,
+        });
+      }
+    })
+  );
+
+  return { notificationTargetFound: true };
+};
+
+const notifyMarketplaceRequestUpdated = async (
+  event: MarketplaceRequestUpdatedEvent
+): Promise<NotificationDispatchResult> => {
+  try {
+    const userEmail = await UserPenseaja.getUserEmail(
+      event.request.registration,
+      event.dassOffice
+    );
+
+    if (!userEmail) {
+      return { notificationTargetFound: false };
+    }
+
+    const notificationEnabled = await NotificationService.isNotificationEnabled(
+      event.request.registration,
+      event.dassOffice
+    );
+
+    if (!notificationEnabled) {
+      return { notificationTargetFound: true };
+    }
+
+    const statusLabel =
+      marketplaceStatusLabel[event.request.requestStatus] ??
+      event.request.requestStatus;
+
+    await NotificationService.sendNotification({
+      to: userEmail.email,
+      subject: "Aplicativo Pense Aja",
+      title: "Solicitação de resgate atualizada.",
+      message: `Sua solicitação de resgate foi atualizada para ${statusLabel}. Brinde: ${getMarketplaceItemDescription(
+        event.request
+      )}.`,
+      application: "Pense e Aja",
+      link: `${appBaseUrl}/marketplace`,
+    });
+
+    return { notificationTargetFound: true };
+  } catch (error) {
+    logNotificationSideEffectError("marketplace-atualizacao", error, {
+      requestId: event.request.id,
+      registration: event.request.registration,
+      dassOffice: event.dassOffice,
+    });
+    return { notificationTargetFound: false };
+  }
+};
+
 export const DomainEventNotificationService = {
   async dispatch(
     event: DomainNotificationEvent
   ): Promise<NotificationDispatchResult> {
-    console.log('Notificando evento do tipo: ', event.type);
-    
     if (event.type === "idea.created") {
       return notifyIdeaCreated(event);
     }
 
-    return notifyIdeaEvaluated(event);
+    if (event.type === "idea.evaluated") {
+      return notifyIdeaEvaluated(event);
+    }
+
+    if (event.type === "marketplace.request.created") {
+      return notifyMarketplaceRequestCreated(event);
+    }
+
+    return notifyMarketplaceRequestUpdated(event);
   },
 };
