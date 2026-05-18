@@ -200,12 +200,19 @@ escopo da unidade.
   do token autenticado.
 - Solicitação valida item ativo, disponibilidade e saldo disponível.
 - Solicitação cria `reserve` e entra como `pending_approval`.
+- Criação de solicitação notifica operadores e admins de marketplace ativos na
+  unidade, respeitando a preferência `authorized_notifications_apps` do
+  destinatário.
 - Aprovação exige `marketplace.request.approve`, cria `commit` e conclui a
   solicitação como `completed`.
 - Rejeição exige `marketplace.request.approve`, cria `release` e marca
   `rejected`.
 - Estorno exige `marketplace.request.approve` ou `marketplace.refund`, cria
   `refund` e marca `refunded`.
+- Atualizações de solicitação de resgate notificam o solicitante, respeitando a
+  preferência `authorized_notifications_apps` do próprio usuário.
+- Falhas de consulta ou envio de notificação não bloqueiam criação, transição,
+  ledger ou auditoria de marketplace.
 - Listagem administrativa de solicitações aceita filtros por status e matrícula
   e retorna paginação.
 - Consulta própria exige token e sempre usa a matrícula autenticada.

@@ -245,6 +245,8 @@ Ele deve ser lido como referência operacional do que está implementado em
   solicitação.
 - Cria solicitação `pending_approval` em `marketplace_redemption_requests`.
 - Registra auditoria `marketplace.request.created`.
+- Notifica operadores e admins de marketplace da unidade quando a preferência
+  `pense_aja` estiver habilitada para cada destinatário.
 
 ### `GET /marketplace/requests`
 
@@ -280,6 +282,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Transiciona `pending_approval` para `completed`.
 - Cria lançamento `commit` relacionado à reserva.
 - Registra auditoria `marketplace.request.approved`.
+- Notifica o solicitante quando a preferência `pense_aja` estiver habilitada.
 
 ### `PUT /marketplace/requests/:id/reject`
 
@@ -288,6 +291,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Transiciona `pending_approval` para `rejected`.
 - Cria lançamento `release` relacionado à reserva.
 - Registra auditoria `marketplace.request.rejected`.
+- Notifica o solicitante quando a preferência `pense_aja` estiver habilitada.
 
 ### `PUT /marketplace/requests/:id/refund`
 
@@ -296,6 +300,7 @@ Ele deve ser lido como referência operacional do que está implementado em
 - Transiciona `completed` para `refunded`.
 - Cria lançamento `refund`.
 - Registra auditoria `marketplace.request.refunded`.
+- Notifica o solicitante quando a preferência `pense_aja` estiver habilitada.
 
 ## Módulo `/dashboard`
 

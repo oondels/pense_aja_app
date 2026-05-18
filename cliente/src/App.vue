@@ -2,7 +2,7 @@
   <div v-if="!maintenanceMode">
     <Navbar />
 
-    <GetUserEmail />
+    <!-- <GetUserEmail /> -->
     <GetUserOffice />
     <router-view />
   </div>
@@ -29,6 +29,13 @@ onMounted(() => {
   userStore.carregarUsuario();
   userStore.loadSessionContext(unidade);
 });
+
+const isMaintenanceMode = () => {
+  if (maintenanceMode) {
+    return true;
+  }
+  return false;
+}
 </script>
 
 <style>
