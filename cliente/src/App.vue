@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!maintenanceMode">
+  <div v-if="!isMaintenanceMode()">
     <Navbar />
 
     <!-- <GetUserEmail /> -->
@@ -22,8 +22,9 @@ import Maintenance from "./components/Maintenance.vue";
 import { onMounted } from "vue";
 import { useUserStore } from "@/stores/userStore.js";
 
-const maintenanceMode = false;
+const maintenanceMode = true;
 const unidade = localStorage.getItem("unidadeDass");
+const bypassMaintenanceMode = localStorage.getItem("bypassMaintenanceMode")
 onMounted(() => {
   const userStore = useUserStore();
   userStore.carregarUsuario();
@@ -31,7 +32,7 @@ onMounted(() => {
 });
 
 const isMaintenanceMode = () => {
-  if (maintenanceMode) {
+  if (maintenanceMode && !bypassMaintenanceMode) {
     return true;
   }
   return false;
