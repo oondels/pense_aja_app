@@ -264,6 +264,8 @@ e mutação relevante.
 - Ideia implementada no dashboard é uma ideia fora de espera (`em_espera != '1'`)
   com aprovação de analista ou gerente.
 - Indicadores de pontuação e resgate derivam de ledger e marketplace.
+- Relatórios analíticos separam avaliações de Admin e Avaliador de ideias para
+  acompanhar cobertura, aprovação e pendências de cada grupo avaliador.
 - Destaques de ideias não devem tratar dados sintéticos como métrica canônica.
 - Métricas devem refletir estados consolidados do backend.
 

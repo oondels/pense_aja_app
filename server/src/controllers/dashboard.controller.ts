@@ -59,7 +59,8 @@ export const DashboardController = {
       const result = await DashboardService.getSummaryData(
         dassOffice,
         range.startDate,
-        range.endDate
+        range.endDate,
+        { includeReport: req.query.includeReport === "true" }
       );
 
       res.status(200).json({ erro: false, dados: result });

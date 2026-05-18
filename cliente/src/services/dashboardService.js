@@ -8,7 +8,7 @@ export const dashboardService = {
    * @param {string|Date} endDate - Data de fim (opcional)
    * @returns {Promise<Object>} Dados do resumo
    */
-  async getSummaryData(dassOffice, startDate = null, endDate = null) {
+  async getSummaryData(dassOffice, startDate = null, endDate = null, options = {}) {
     try {
       const params = {};
 
@@ -18,6 +18,10 @@ export const dashboardService = {
 
       if (endDate) {
         params.endDate = endDate instanceof Date ? endDate.toISOString() : endDate;
+      }
+
+      if (options.includeReport) {
+        params.includeReport = "true";
       }
 
       const response = await commonApi.get(`/dashboard/summary/${dassOffice}`, { params });

@@ -73,8 +73,9 @@ Tela analítica e de relatório.
 - o período padrão vai de `01/01` do ano atual até hoje
 - o card `Implementadas` exibe a métrica consolidada do backend: ideias fora de espera com aprovação de analista ou gerente
 - o relatório só é gerado se `startDate` e `endDate` forem válidos
-- a exportação monta planilhas no browser usando `xlsx`
-- várias abas previstas no relatório estão comentadas no código
+- a exportação consome `GET /dashboard/summary/:dassOffice?includeReport=true`
+  e monta planilhas no browser usando `xlsx`
+- o XLSX separa métricas de avaliação de Admin e Avaliador de ideias em abas próprias
 
 ## `/admin/unit-settings`
 

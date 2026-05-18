@@ -175,6 +175,11 @@ paths:
         - $ref: "#/components/parameters/DassOfficePath"
         - $ref: "#/components/parameters/StartDateQuery"
         - $ref: "#/components/parameters/EndDateQuery"
+        - in: query
+          name: includeReport
+          schema:
+            type: boolean
+          description: Quando true, inclui dados canônicos para geração do relatório XLSX.
         - name: name
           in: query
           required: false
@@ -2147,6 +2152,9 @@ components:
           type: integer
         registration:
           type: string
+        requesterName:
+          type: string
+          nullable: true
         dassOffice:
           $ref: "#/components/schemas/DassOffice"
         catalogItemId:
@@ -2179,6 +2187,9 @@ components:
       properties:
         registration:
           type: string
+        userName:
+          type: string
+          nullable: true
         dassOffice:
           $ref: "#/components/schemas/DassOffice"
         permissions:
@@ -2528,6 +2539,10 @@ components:
           type: integer
         marketplaceCompleted:
           type: integer
+        report:
+          type: object
+          nullable: true
+          additionalProperties: true
     DashboardMonthlyEnvelope:
       allOf:
         - $ref: "#/components/schemas/DashboardEnvelope"

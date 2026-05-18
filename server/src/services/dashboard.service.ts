@@ -7,7 +7,13 @@ import {
   DashboardEngagementContributor,
   DashboardIdeaHighlight,
   DashboardMonthlyData,
+  DashboardReportData,
+  DashboardReportDimensionRow,
+  DashboardReportEvaluationMetrics,
+  DashboardReportIdeaRow,
+  DashboardReportMarketplace,
   DashboardSummaryData,
+  DashboardSummaryOptions,
 } from "../types/contracts";
 
 const validOffices = ["SEST", "VDC", "ITB", "VDC-CONF", "STJ"];
@@ -54,11 +60,151 @@ const rejectedExpression =
   "idea.status_gerente = 'reprove' OR idea.status_analista = 'reprove'";
 const pendingExpression = `NOT (${implementedExpression}) AND NOT (${rejectedExpression})`;
 
+const normalizeStatus = (status?: string | null) =>
+  String(status ?? "").trim().toLowerCase();
+
+const isApproved = (status?: string | null) => normalizeStatus(status) === "approve";
+const isRejected = (status?: string | null) => normalizeStatus(status) === "reprove";
+
+const getCanonicalStatus = (idea: {
+  em_espera?: string | null;
+  status_gerente?: string | null;
+  status_analista?: string | null;
+}) => {
+  if (isRejected(idea.status_gerente) || isRejected(idea.status_analista)) {
+    return "Reprovada";
+  }
+  if (idea.em_espera === "1") {
+    return "Em espera";
+  }
+  if (isApproved(idea.status_gerente) || isApproved(idea.status_analista)) {
+    return "Implementada";
+  }
+  return "Pendente";
+};
+
+const toRate = (value: number, total: number) =>
+  total > 0 ? Number(((value / total) * 100).toFixed(2)) : 0;
+
+const buildReportDateFilter = (
+  alias: string,
+  column: string,
+  startDate: Date | undefined,
+  endDate: Date | undefined,
+  params: unknown[]
+) => {
+  const clauses: string[] = [];
+  if (startDate) {
+    params.push(startDate.toISOString());
+    clauses.push(`${alias}.${column} >= $${params.length}`);
+  }
+  if (endDate) {
+    params.push(endDate.toISOString());
+    clauses.push(`${alias}.${column} < ($${params.length}::timestamptz + interval '1 day')`);
+  }
+  return clauses.length ? ` AND ${clauses.join(" AND ")}` : "";
+};
+
+const emptyDimension = (label: string): DashboardReportDimensionRow => ({
+  label,
+  total: 0,
+  implemented: 0,
+  rejected: 0,
+  pending: 0,
+  waiting: 0,
+  adminReviewed: 0,
+  ideaEvaluatorReviewed: 0,
+  implementationRate: 0,
+});
+
+const incrementDimension = (
+  map: Map<string, DashboardReportDimensionRow>,
+  label: string,
+  idea: DashboardReportIdeaRow
+) => {
+  const safeLabel = label || "Não informado";
+  const current = map.get(safeLabel) ?? emptyDimension(safeLabel);
+  current.total += 1;
+  if (idea.canonicalStatus === "Implementada") current.implemented += 1;
+  if (idea.canonicalStatus === "Reprovada") current.rejected += 1;
+  if (idea.canonicalStatus === "Pendente") current.pending += 1;
+  if (idea.canonicalStatus === "Em espera") current.waiting += 1;
+  if (idea.adminStatus) current.adminReviewed += 1;
+  if (idea.ideaEvaluatorStatus) current.ideaEvaluatorReviewed += 1;
+  current.implementationRate = toRate(current.implemented, current.total);
+  map.set(safeLabel, current);
+};
+
+const mapDimensionRows = (map: Map<string, DashboardReportDimensionRow>) =>
+  [...map.values()].sort((a, b) => b.total - a.total || a.label.localeCompare(b.label));
+
+const buildEvaluationMetrics = (
+  ideas: DashboardReportIdeaRow[]
+): DashboardReportEvaluationMetrics => {
+  const build = (
+    statusKey: "adminStatus" | "ideaEvaluatorStatus",
+    evaluatorKey: "adminEvaluator" | "ideaEvaluator"
+  ) => {
+    const summary = {
+      totalReviewed: 0,
+      approved: 0,
+      rejected: 0,
+      pending: 0,
+      waiting: ideas.filter((idea) => idea.canonicalStatus === "Em espera").length,
+      reviewRate: 0,
+      approvalRate: 0,
+      ranking: [] as DashboardReportEvaluationMetrics["adminReview"]["ranking"],
+    };
+    const ranking = new Map<string, (typeof summary.ranking)[number]>();
+
+    for (const idea of ideas) {
+      const status = normalizeStatus(idea[statusKey]);
+      if (!status) {
+        summary.pending += 1;
+        continue;
+      }
+
+      summary.totalReviewed += 1;
+      if (status === "approve") summary.approved += 1;
+      if (status === "reprove") summary.rejected += 1;
+
+      const evaluatorName = idea[evaluatorKey] || "Não informado";
+      const current =
+        ranking.get(evaluatorName) ?? {
+          evaluatorName,
+          totalReviewed: 0,
+          approved: 0,
+          rejected: 0,
+          pending: 0,
+          approvalRate: 0,
+        };
+      current.totalReviewed += 1;
+      if (status === "approve") current.approved += 1;
+      if (status === "reprove") current.rejected += 1;
+      current.approvalRate = toRate(current.approved, current.totalReviewed);
+      ranking.set(evaluatorName, current);
+    }
+
+    summary.reviewRate = toRate(summary.totalReviewed, ideas.length);
+    summary.approvalRate = toRate(summary.approved, summary.totalReviewed);
+    summary.ranking = [...ranking.values()].sort(
+      (a, b) => b.totalReviewed - a.totalReviewed || a.evaluatorName.localeCompare(b.evaluatorName)
+    );
+    return summary;
+  };
+
+  return {
+    adminReview: build("adminStatus", "adminEvaluator"),
+    ideaEvaluatorReview: build("ideaEvaluatorStatus", "ideaEvaluator"),
+  };
+};
+
 export class DashboardService {
   static async getSummaryData(
     dassOffice: string,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
+    options: DashboardSummaryOptions = {}
   ): Promise<DashboardSummaryData> {
     try {
       validateDassOffice(dassOffice);
@@ -143,7 +289,7 @@ export class DashboardService {
       };
       const marketplace = marketplaceRows[0] ?? { pending: "0", completed: "0" };
 
-      return {
+      const summary: DashboardSummaryData = {
         totalIdeas: Number(data?.total_ideas) || 0,
         implementedIdeas: Number(data?.implemented_ideas) || 0,
         pendingIdeas: Number(data?.pending_ideas) || 0,
@@ -160,6 +306,18 @@ export class DashboardService {
         marketplacePending: Number(marketplace.pending) || 0,
         marketplaceCompleted: Number(marketplace.completed) || 0,
       };
+
+      if (options.includeReport) {
+        summary.report = await this.buildReportData(
+          dataSource,
+          dassOffice,
+          startDate,
+          endDate,
+          summary
+        );
+      }
+
+      return summary;
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
@@ -167,6 +325,219 @@ export class DashboardService {
       console.error("Erro ao buscar dados do dashboard:", error);
       throw new CustomError("Erro interno do servidor ao buscar dados do dashboard");
     }
+  }
+
+  private static async buildReportData(
+    dataSource: Awaited<ReturnType<typeof initializeDatabase>>,
+    dassOffice: string,
+    startDate: Date | undefined,
+    endDate: Date | undefined,
+    summary: DashboardSummaryData
+  ): Promise<DashboardReportData> {
+    const ideaParams: unknown[] = [dassOffice];
+    const ideaDateFilter = buildReportDateFilter(
+      "idea",
+      "createdat",
+      startDate,
+      endDate,
+      ideaParams
+    );
+    const marketplaceParams: unknown[] = [dassOffice];
+    const marketplaceDateFilter = buildReportDateFilter(
+      "request",
+      "createdat",
+      startDate,
+      endDate,
+      marketplaceParams
+    );
+
+    const [ideaRows, marketplaceRows] = await Promise.all([
+      dataSource.query(
+        `
+          SELECT
+            idea.id,
+            idea.matricula,
+            idea.nome,
+            idea.setor,
+            idea.gerente,
+            idea.fabrica,
+            idea.turno,
+            idea.nome_projeto,
+            idea.createdat,
+            idea.data_realizada,
+            idea.status_gerente,
+            idea.status_analista,
+            idea.classificacao,
+            idea.em_espera,
+            idea.situacao_anterior,
+            idea.situacao_atual,
+            idea.ganhos,
+            idea.gerente_aprovador,
+            idea.data_aprogerente,
+            idea.justificativa_gerente,
+            idea.analista_avaliador,
+            idea.data_avaanalista,
+            idea.justificativa_analista,
+            COALESCE(points.valor, 0) AS pontuacao
+          FROM pense_aja.pense_aja_dass idea
+          LEFT JOIN (
+            SELECT
+              ledger.source_id,
+              COALESCE(SUM(CASE WHEN ledger.entry_type = 'earn' THEN ledger.amount ELSE 0 END), 0)
+                - COALESCE(SUM(CASE WHEN ledger.entry_type = 'reverse' THEN ledger.amount ELSE 0 END), 0) AS valor
+            FROM pense_aja.points_ledger_entries ledger
+            WHERE ledger.unidade_dass = $1
+              AND ledger.source_type IN ('idea_evaluation', 'idea_evaluation_bonus')
+              AND ledger.status = 'confirmed'
+            GROUP BY ledger.source_id
+          ) points ON points.source_id = idea.id::text
+          WHERE idea.unidade_dass = $1
+            AND idea.excluido = false
+            ${ideaDateFilter}
+          ORDER BY idea.createdat DESC, idea.id DESC
+        `,
+        ideaParams
+      ) as Promise<Array<Record<string, unknown>>>,
+      dataSource.query(
+        `
+          SELECT
+            COUNT(DISTINCT request.id) FILTER (WHERE request.request_status IN ('pending_approval', 'approved', 'fulfillment_in_progress')) AS pending,
+            COUNT(DISTINCT request.id) FILTER (WHERE request.request_status = 'completed') AS completed,
+            COUNT(DISTINCT request.id) FILTER (WHERE request.request_status = 'refunded') AS refunded,
+            COUNT(DISTINCT request.id) FILTER (WHERE request.request_status = 'rejected') AS rejected,
+            COUNT(DISTINCT request.id) FILTER (WHERE request.request_status = 'cancelled') AS cancelled,
+            COALESCE(SUM(CASE WHEN ledger.entry_type = 'commit' THEN ledger.amount ELSE 0 END), 0) AS points_committed,
+            COALESCE(SUM(CASE WHEN ledger.entry_type = 'reserve' THEN ledger.amount ELSE 0 END), 0)
+              - COALESCE(SUM(CASE WHEN ledger.entry_type IN ('commit', 'release') THEN ledger.amount ELSE 0 END), 0) AS points_reserved,
+            COALESCE(SUM(CASE WHEN ledger.entry_type = 'refund' THEN ledger.amount ELSE 0 END), 0) AS points_refunded
+          FROM pense_aja.marketplace_redemption_requests request
+          LEFT JOIN pense_aja.points_ledger_entries ledger
+            ON ledger.source_type = 'marketplace_redemption'
+           AND ledger.source_id = request.id::text
+           AND ledger.status = 'confirmed'
+          WHERE request.unidade_dass = $1
+            ${marketplaceDateFilter}
+        `,
+        marketplaceParams
+      ) as Promise<Array<Record<string, unknown>>>,
+    ]);
+
+    const ideas = ideaRows.map((row): DashboardReportIdeaRow => {
+      const statusInput = {
+        em_espera: row.em_espera as string | null,
+        status_gerente: row.status_gerente as string | null,
+        status_analista: row.status_analista as string | null,
+      };
+
+      return {
+        id: Number(row.id),
+        registration: String(row.matricula),
+        collaboratorName: String(row.nome ?? ""),
+        sector: String(row.setor ?? "Não informado"),
+        manager: String(row.gerente ?? "Não informado"),
+        factory: String(row.fabrica ?? "Não informado"),
+        shift: String(row.turno ?? "Não informado"),
+        projectName: String(row.nome_projeto ?? ""),
+        createdAt: row.createdat as string | Date,
+        realizedAt: (row.data_realizada as string | Date | null) ?? null,
+        canonicalStatus: getCanonicalStatus(statusInput),
+        classification: (row.classificacao as string | null) ?? null,
+        points: Number(row.pontuacao) || 0,
+        previousSituation: String(row.situacao_anterior ?? ""),
+        currentSituation: String(row.situacao_atual ?? ""),
+        gains: row.ganhos ?? null,
+        adminEvaluator: (row.gerente_aprovador as string | null) ?? null,
+        adminStatus: (row.status_gerente as string | null) ?? null,
+        adminReviewedAt: (row.data_aprogerente as string | Date | null) ?? null,
+        adminJustification: (row.justificativa_gerente as string | null) ?? null,
+        ideaEvaluator: (row.analista_avaliador as string | null) ?? null,
+        ideaEvaluatorStatus: (row.status_analista as string | null) ?? null,
+        ideaEvaluatorReviewedAt: (row.data_avaanalista as string | Date | null) ?? null,
+        ideaEvaluatorJustification: (row.justificativa_analista as string | null) ?? null,
+      };
+    });
+
+    const dimensions = {
+      sector: new Map<string, DashboardReportDimensionRow>(),
+      manager: new Map<string, DashboardReportDimensionRow>(),
+      factory: new Map<string, DashboardReportDimensionRow>(),
+      shift: new Map<string, DashboardReportDimensionRow>(),
+      status: new Map<string, DashboardReportDimensionRow>(),
+    };
+    const monthlyMap = new Map<string, DashboardReportDimensionRow & { month: string; points: number }>();
+
+    for (const idea of ideas) {
+      incrementDimension(dimensions.sector, idea.sector, idea);
+      incrementDimension(dimensions.manager, idea.manager, idea);
+      incrementDimension(dimensions.factory, idea.factory, idea);
+      incrementDimension(dimensions.shift, idea.shift, idea);
+      incrementDimension(dimensions.status, idea.canonicalStatus, idea);
+
+      const month = new Date(idea.createdAt).toISOString().slice(0, 7);
+      const current = monthlyMap.get(month) ?? {
+        ...emptyDimension(month),
+        month,
+        points: 0,
+      };
+      current.total += 1;
+      if (idea.canonicalStatus === "Implementada") current.implemented += 1;
+      if (idea.canonicalStatus === "Reprovada") current.rejected += 1;
+      if (idea.canonicalStatus === "Pendente") current.pending += 1;
+      if (idea.canonicalStatus === "Em espera") current.waiting += 1;
+      if (idea.adminStatus) current.adminReviewed += 1;
+      if (idea.ideaEvaluatorStatus) current.ideaEvaluatorReviewed += 1;
+      current.implementationRate = toRate(current.implemented, current.total);
+      current.points += idea.points;
+      monthlyMap.set(month, current);
+    }
+
+    const marketplaceRaw = marketplaceRows[0] ?? {};
+    const marketplace: DashboardReportMarketplace = {
+      pending: Number(marketplaceRaw.pending) || 0,
+      completed: Number(marketplaceRaw.completed) || 0,
+      refunded: Number(marketplaceRaw.refunded) || 0,
+      rejected: Number(marketplaceRaw.rejected) || 0,
+      cancelled: Number(marketplaceRaw.cancelled) || 0,
+      pointsCommitted: Number(marketplaceRaw.points_committed) || 0,
+      pointsReserved: Math.max(Number(marketplaceRaw.points_reserved) || 0, 0),
+      pointsRefunded: Number(marketplaceRaw.points_refunded) || 0,
+    };
+
+    return {
+      metadata: {
+        dassOffice,
+        startDate: startDate ? startDate.toISOString() : null,
+        endDate: endDate ? endDate.toISOString() : null,
+        generatedAt: new Date().toISOString(),
+        version: "1.0",
+      },
+      kpis: {
+        totalIdeas: summary.totalIdeas,
+        implementedIdeas: summary.implementedIdeas,
+        pendingIdeas: summary.pendingIdeas,
+        rejectedIdeas: summary.rejectedIdeas,
+        inAnalysis: summary.inAnalysis,
+        implementationRate: toRate(summary.implementedIdeas, summary.totalIdeas),
+        totalValue: summary.totalValue,
+        avgValue: summary.avgValue,
+        totalPointsEarned: summary.totalPointsEarned ?? 0,
+        totalPointsRedeemed: summary.totalPointsRedeemed ?? 0,
+        totalPointsReserved: summary.totalPointsReserved ?? 0,
+        marketplacePending: summary.marketplacePending ?? 0,
+        marketplaceCompleted: summary.marketplaceCompleted ?? 0,
+      },
+      evaluationMetrics: buildEvaluationMetrics(ideas),
+      ideas,
+      dimensions: {
+        sector: mapDimensionRows(dimensions.sector),
+        manager: mapDimensionRows(dimensions.manager),
+        factory: mapDimensionRows(dimensions.factory),
+        shift: mapDimensionRows(dimensions.shift),
+        status: mapDimensionRows(dimensions.status),
+      },
+      monthly: [...monthlyMap.values()].sort((a, b) => a.month.localeCompare(b.month)),
+      marketplace,
+    };
   }
 
   static async getMonthlyData(

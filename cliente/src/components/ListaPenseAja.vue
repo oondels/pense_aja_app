@@ -630,13 +630,13 @@
                                 evaluationValue === 3
                                   ? 'text-green-500'
                                   : evaluationValue === 2
-                                  ? 'text-blue-500'
-                                  : 'text-yellow-500',
+                                    ? 'text-blue-500'
+                                    : 'text-yellow-500',
                               ]"
                             >
                               {{
                                 Object.keys(classifications).find(
-                                  (key) => classifications[key].value === evaluationValue
+                                  (key) => classifications[key].value === evaluationValue,
                                 )
                               }}
                             </span>
@@ -645,7 +645,7 @@
                                 evaluationValue
                                   ? classifications[
                                       Object.keys(classifications).find(
-                                        (key) => classifications[key].value === evaluationValue
+                                        (key) => classifications[key].value === evaluationValue,
                                       )
                                     ].name
                                   : "Não avaliado"
@@ -718,36 +718,51 @@
                           ></textarea>
                         </div>
 
-                        <div
+                        <v-card
                           v-if="evaluationValue && maxBonusPoints > 0"
-                          class="rounded-md border border-amber-200 bg-amber-50 p-3"
+                          variant="tonal"
+                          color="warning"
+                          class="pa-4 mb-4 border rounded-lg"
                         >
-                          <div class="row g-3 align-items-end">
-                            <label class="col-md-4 text-sm fw-semibold text-gray-700">
-                              Bonificação
-                              <input
+                          <v-row dense>
+                            <v-col cols="12" md="4">
+                              <v-text-field
                                 v-model.number="bonusPoints"
-                                class="form-control mt-1"
                                 type="number"
-                                min="0"
+                                label="Bonificação"
+                                suffix="pt(s)"
+                                :min="0"
                                 :max="maxBonusPoints"
-                              />
-                            </label>
-                            <label class="col-md-8 text-sm fw-semibold text-gray-700">
-                              Justificativa da bonificação
-                              <textarea
+                                variant="outlined"
+                                density="comfortable"
+                                bg-color="surface"
+                                hide-details
+                              ></v-text-field>
+                            </v-col>
+
+                            <v-col cols="12" md="8">
+                              <v-textarea
                                 v-model="bonusJustification"
-                                class="form-control mt-1"
+                                label="Justificativa da bonificação"
+                                placeholder="Explique o motivo da bonificação extra..."
                                 rows="2"
+                                auto-grow
+                                variant="outlined"
+                                density="comfortable"
+                                bg-color="surface"
                                 :disabled="!bonusPoints"
-                                placeholder="Explique a bonificação extra."
-                              ></textarea>
-                            </label>
+                                hide-details
+                              ></v-textarea>
+                            </v-col>
+                          </v-row>
+
+                          <div class="mt-3 d-flex align-center text-caption text-medium-emphasis">
+                            <v-icon size="small" class="me-2" color="warning">mdi-information-outline</v-icon>
+                            <span>
+                              Limite configurado para a unidade: <strong>{{ maxBonusPoints }} ponto(s)</strong>.
+                            </span>
                           </div>
-                          <p class="mb-0 mt-2 text-xs text-amber-800">
-                            Limite configurado para a unidade: {{ maxBonusPoints }} ponto(s).
-                          </p>
-                        </div>
+                        </v-card>
                       </div>
 
                       <!-- Flags -->
@@ -959,7 +974,7 @@ const loadContent = async () => {
       "error",
       "Unidade do colaborador não encontrada.",
       "Entre em contato com a equipe de automação",
-      10000
+      10000,
     );
     return;
   }
@@ -1933,7 +1948,9 @@ onBeforeUnmount(() => {
   background: #f5f5f5;
   margin-bottom: 20px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .rating-badge:hover {

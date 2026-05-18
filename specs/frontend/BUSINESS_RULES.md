@@ -132,6 +132,8 @@ O frontend do Pense&Aja é uma camada de experiência e consumo de dados consoli
 
 - consome agregações do backend e fallback local em parte dos composables
 - o relatório XLSX é montado no cliente
+- o relatório consome dados canônicos do backend e separa avaliações de Admin e
+  Avaliador de ideias para medir atuação operacional dos avaliadores
 
 ### Modelo-alvo
 

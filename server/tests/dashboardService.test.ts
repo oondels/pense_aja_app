@@ -138,6 +138,116 @@ describe("DashboardService — getSummaryData", () => {
     expectImplementedExpression(String(pendingCall?.[0] ?? ""));
   });
 
+  it("includes report data with separated admin and idea evaluator metrics", async () => {
+    const qb = buildQueryBuilder({
+      total_ideas: "2",
+      implemented_ideas: "1",
+      pending_ideas: "1",
+      rejected_ideas: "0",
+      approved_by_manager: "1",
+      in_analysis: "0",
+      total_value: "100",
+      avg_value: "50",
+    });
+    const dataSource = {
+      getRepository: vi.fn(() => ({
+        createQueryBuilder: vi.fn(() => qb),
+      })),
+      query: vi
+        .fn()
+        .mockResolvedValueOnce([
+          { total_earned: "10", total_committed: "5", total_refunded: "0", total_reserved: "2" },
+        ])
+        .mockResolvedValueOnce([{ pending: "1", completed: "1" }])
+        .mockResolvedValueOnce([
+          {
+            id: "1",
+            matricula: "123",
+            nome: "Ana",
+            setor: "Produção",
+            gerente: "Maria",
+            fabrica: "F1",
+            turno: "A",
+            nome_projeto: "Projeto A",
+            createdat: new Date("2024-01-10"),
+            data_realizada: new Date("2024-01-09"),
+            status_gerente: "approve",
+            status_analista: "approve",
+            classificacao: "A",
+            em_espera: "0",
+            situacao_anterior: "Antes",
+            situacao_atual: "Depois",
+            ganhos: null,
+            gerente_aprovador: "Admin Maria",
+            data_aprogerente: new Date("2024-01-11"),
+            justificativa_gerente: "Ok admin",
+            analista_avaliador: "Avaliador João",
+            data_avaanalista: new Date("2024-01-12"),
+            justificativa_analista: "Ok avaliador",
+            pontuacao: "10",
+          },
+          {
+            id: "2",
+            matricula: "456",
+            nome: "Bruno",
+            setor: "Qualidade",
+            gerente: "Maria",
+            fabrica: "F1",
+            turno: "B",
+            nome_projeto: "Projeto B",
+            createdat: new Date("2024-01-15"),
+            data_realizada: new Date("2024-01-14"),
+            status_gerente: null,
+            status_analista: null,
+            classificacao: null,
+            em_espera: "0",
+            situacao_anterior: "Antes",
+            situacao_atual: "Depois",
+            ganhos: null,
+            gerente_aprovador: null,
+            data_aprogerente: null,
+            justificativa_gerente: null,
+            analista_avaliador: null,
+            data_avaanalista: null,
+            justificativa_analista: null,
+            pontuacao: "0",
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            pending: "1",
+            completed: "1",
+            refunded: "0",
+            rejected: "0",
+            cancelled: "0",
+            points_committed: "5",
+            points_reserved: "2",
+            points_refunded: "0",
+          },
+        ]),
+    };
+    vi.spyOn(database, "initializeDatabase").mockResolvedValue(dataSource as any);
+
+    const result = await DashboardService.getSummaryData("SEST", undefined, undefined, {
+      includeReport: true,
+    });
+
+    expect(result.report?.evaluationMetrics.adminReview).toMatchObject({
+      totalReviewed: 1,
+      approved: 1,
+      pending: 1,
+    });
+    expect(result.report?.evaluationMetrics.ideaEvaluatorReview).toMatchObject({
+      totalReviewed: 1,
+      approved: 1,
+      pending: 1,
+    });
+    expect(result.report?.ideas[0]).toMatchObject({
+      adminEvaluator: "Admin Maria",
+      ideaEvaluator: "Avaliador João",
+    });
+  });
+
   it("throws CustomError 400 for invalid dassOffice", async () => {
     await expect(
       DashboardService.getSummaryData("INVALID")

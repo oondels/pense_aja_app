@@ -303,9 +303,12 @@ Ele deve ser lido como referência operacional do que está implementado em
 
 - Retorna resumo agregado da unidade.
 - Não exige autenticação.
-- Aceita `startDate` e `endDate` opcionais.
+- Aceita `startDate`, `endDate` e `includeReport` opcionais.
 - Inclui métricas de ideias, pontuação, ledger e marketplace.
 - Considera ideia implementada quando não está em espera e possui aprovação de analista ou gerente.
+- Com `includeReport=true`, inclui bloco `report` com detalhes para XLSX:
+  metadados, KPIs, ideias detalhadas, dimensões, série mensal, marketplace e
+  métricas separadas de avaliação por Admin e Avaliador de ideias.
 
 ### `GET /dashboard/monthly/:dassOffice`
 
