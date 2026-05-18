@@ -73,25 +73,31 @@
           </button>
         </form>
 
-        <section class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 class="text-base font-semibold text-gray-950">Legenda de papéis</h2>
-              <p class="mt-1 text-sm text-gray-600">Entenda o que cada nível de permissão libera para o usuário.</p>
-            </div>
-          </div>
+        <v-expansion-panels>
+          <v-expansion-panel>
+            <v-expansion-panel-title><h3>Legenda de papéis</h3></v-expansion-panel-title>
 
-          <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            <article
-              v-for="role in roleLegendItems"
-              :key="role.code"
-              class="rounded-lg border border-gray-100 bg-gray-50 p-3"
-            >
-              <h3 class="text-sm font-semibold text-gray-950">{{ role.name }}</h3>
-              <p class="mt-1 text-sm leading-5 text-gray-600">{{ role.description }}</p>
-            </article>
-          </div>
-        </section>
+            <v-expansion-panel-text class="rounded-lg border border-gray-200 bg-yellow-50 p-4 text-sm text-yellow-900">
+              <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 class="text-base font-semibold text-gray-950">Legenda de papéis</h2>
+                  <p class="mt-1 text-sm text-gray-600">Entenda o que cada nível de permissão libera para o usuário.</p>
+                </div>
+              </div>
+
+              <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <article
+                  v-for="role in roleLegendItems"
+                  :key="role.code"
+                  class="rounded-lg border border-gray-100 bg-gray-50 p-3"
+                >
+                  <h3 class="text-sm font-semibold text-gray-950">{{ role.name }}</h3>
+                  <p class="mt-1 text-sm leading-5 text-gray-600">{{ role.description }}</p>
+                </article>
+              </div>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
 
         <section class="grid gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-5">
           <input
@@ -192,7 +198,9 @@
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
                   {{ assignment.registration }} · {{ assignment.dassOffice }}
                 </p>
-                <h2 class="mt-1 text-base font-semibold text-gray-950">{{ assignment.userName || "Usuário não localizado" }}</h2>
+                <h2 class="mt-1 text-base font-semibold text-gray-950">
+                  {{ assignment.userName || "Usuário não localizado" }}
+                </h2>
                 <p class="mt-1 text-sm text-gray-600">{{ assignment.roleName }} · {{ assignment.roleCode }}</p>
               </div>
               <span
@@ -305,7 +313,6 @@ const columns = [
 ];
 
 const roleDescriptions = {
-  admin_master: "Gerencia permissões de todas as unidades e todos os níveis de acesso.",
   unit_admin:
     "Gerencia configurações e permissões da própria unidade, exceto administradores mestres e outros administradores de unidade.",
   idea_admin: "Administra o fluxo de ideias da unidade e pode liberar usuários para cadastrar ideias.",
@@ -316,11 +323,16 @@ const roleDescriptions = {
 };
 
 const roleLegendItems = computed(() =>
-  roles.value.map((role) => ({
-    code: role.code,
-    name: role.nome,
-    description: roleDescriptions[role.code] || "Este papel possui permissões configuradas pela equipe de administração.",
-  })),
+  roles.value
+    .filter((role) => role?.code !== "admin_master" && role?.code !== "idea_submitter")
+    .map((role) => {
+      return {
+        code: role.code,
+        name: role.nome,
+        description:
+          roleDescriptions[role.code] || "Este papel possui permissões configuradas pela equipe de administração.",
+      };
+    }),
 );
 
 const toInputDate = (value) => {
@@ -365,7 +377,11 @@ const loadRbac = async () => {
     roles.value = roleList;
     assignments.value = assignmentList;
   } catch (error) {
-    notification.value.showPopup("error", "Erro", "Erro ao listar papeis e níveis de acesso, entre em contato com o suporte!");
+    notification.value.showPopup(
+      "error",
+      "Erro",
+      "Erro ao listar papeis e níveis de acesso, entre em contato com o suporte!",
+    );
   } finally {
     loading.value = false;
   }

@@ -22,7 +22,7 @@ import Maintenance from "./components/Maintenance.vue";
 import { onMounted } from "vue";
 import { useUserStore } from "@/stores/userStore.js";
 
-const maintenanceMode = true;
+const maintenanceMode = false;
 const unidade = localStorage.getItem("unidadeDass");
 const bypassMaintenanceMode = localStorage.getItem("bypassMaintenanceMode")
 onMounted(() => {
