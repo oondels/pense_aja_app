@@ -44,20 +44,20 @@ export const CollaboratorSestEntity = createCollaboratorEntity(
 
 export const CollaboratorVdcEntity = createCollaboratorEntity(
   "CollaboratorVdc",
-  "lista_funcionario_VDC"
+  "lista_funcionario_vdc"
 );
 
 export const CollaboratorItbEntity = createCollaboratorEntity(
   "CollaboratorItb",
-  "lista_funcionario_ITB"
+  "lista_funcionario_itb"
 );
 
 export const CollaboratorVdcConfEntity = createCollaboratorEntity(
   "CollaboratorVdcConf",
-  "lista_funcionario_VDC-CONF"
+  "lista_funcionario_vdc_conf"
 );
 
 export const CollaboratorStjEntity = createCollaboratorEntity(
   "CollaboratorStj",
-  "lista_funcionario_STJ"
+  "lista_funcionario_stj"
 );
