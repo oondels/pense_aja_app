@@ -13,7 +13,7 @@
             <h1
               class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 flex items-center justify-center lg:justify-start animate-fade-in-down"
             >
-              PENSE & AJA
+              PENSE & AJA - 16/07/2026
               <span class="ml-3 inline-block w-10 h-10">
                 <img
                   v-lazy="'/assets/img/icons/idea-on-brain.png'"
