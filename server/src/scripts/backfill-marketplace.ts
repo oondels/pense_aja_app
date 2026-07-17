@@ -119,7 +119,7 @@ const run = async () => {
             NULL,
             0,
             'physical',
-            true,
+            false,
             NULL,
             '{"source":"legacy_reward_fallback"}'::jsonb,
             NULL,

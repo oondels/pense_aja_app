@@ -6,6 +6,7 @@ import { PointsAdjustments1720000004000 } from "./1720000004000-PointsAdjustment
 import { UniquePointsLedgerSource1720000005000 } from "./1720000005000-UniquePointsLedgerSource";
 import { RbacScopeHardening1720000006000 } from "./1720000006000-RbacScopeHardening";
 import { RbacPermissionBackfill1720000007000 } from "./1720000007000-RbacPermissionBackfill";
+import { HideLegacyMarketplaceFallbackItems1720000008000 } from "./1720000008000-HideLegacyMarketplaceFallbackItems";
 
 export const migrations = [
   BackendFoundation1720000000000,
@@ -16,4 +17,5 @@ export const migrations = [
   UniquePointsLedgerSource1720000005000,
   RbacScopeHardening1720000006000,
   RbacPermissionBackfill1720000007000,
+  HideLegacyMarketplaceFallbackItems1720000008000,
 ];
